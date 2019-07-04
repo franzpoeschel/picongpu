@@ -139,7 +139,7 @@ namespace openPMD
             std::string fullName = fileName + fileInfix + "." + fileExtension;
             log< picLog::INPUT_OUTPUT >( "openPMD: open file: %1%" ) % fullName;
             openPMDSeries = std::unique_ptr<::openPMD::Series >(
-                new ::openPMD::Series( fullName, at, communicator ) );
+                new ::openPMD::Series( fullName, at, communicator, jsonConfig ) );
             if( at == ::openPMD::AccessType::CREATE )
             {
                 openPMDSeries->setMeshesPath( MESHES_PATH );
@@ -571,6 +571,7 @@ namespace openPMD
                     timeOffset );
 
                 dc.releaseData( T::getName() );
+                params->openPMDSeries->advance();
 #endif
             }
         };
@@ -855,6 +856,12 @@ namespace openPMD
                 }
             }
 
+            if( mThreadParams.openPMDSeries )
+            {
+                throw std::runtime_error(
+                    "openPMDWriter: Series already "
+                    "open when trying to restart." );
+            }
             mThreadParams.openSeries( ::openPMD::AccessType::READ_ONLY );
 
             ::openPMD::Iteration iteration =
@@ -1286,9 +1293,17 @@ namespace openPMD
             bool dumpFields = plugins::misc::containsObject(
                 vectorOfDataSourceNames, "fields_all" );
 
-            log< picLog::INPUT_OUTPUT >( "openPMD: opening Series %1%" ) %
-                threadParams->fileName;
-            threadParams->openSeries( ::openPMD::AccessType::CREATE );
+            if( threadParams->openPMDSeries )
+            {
+                log< picLog::INPUT_OUTPUT >( "openPMD: Series still open, reusing" );
+                //TODO check for same configuration
+            }
+            else
+            {
+                log< picLog::INPUT_OUTPUT >( "openPMD: opening Series %1%" ) %
+                    threadParams->fileName;
+                threadParams->openSeries( ::openPMD::AccessType::CREATE );
+            }
 
             bool dumpAllParticles = plugins::misc::containsObject(
                 vectorOfDataSourceNames, "species_all" );
@@ -1381,11 +1396,7 @@ namespace openPMD
             // avoid deadlock between not finished pmacc tasks and mpi calls in
             // openPMD
             __getTransactionEvent().waitForFinished();
-
-            /* close openPMD Series, most likely the actual write point */
-            log< picLog::INPUT_OUTPUT >( "openPMD: closing series: %1%" ) %
-                threadParams->fileName;
-            threadParams->closeSeries();
+            mThreadParams.openPMDSeries->flush();
 
             return;
         }
