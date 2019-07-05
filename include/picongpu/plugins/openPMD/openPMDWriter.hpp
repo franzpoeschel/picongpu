@@ -452,6 +452,7 @@ namespace openPMD
         std::string const & file,
         std::string const & dir )
     {
+
         fileExtension = help.fileNameExtension.get( id );
         fileInfix = help.fileNameInfix.get( id );
         if ( fileInfix == "NULL" )
@@ -463,6 +464,11 @@ namespace openPMD
             file : dir + "/" + file;
 
         jsonConfig = help.jsonConfig.get( id );
+
+        log< picLog::INPUT_OUTPUT >( "openPMD: setting file pattern: %1%%2%.%3%" ) %
+        fileName % fileInfix % fileExtension;
+
+        log< picLog::INPUT_OUTPUT >( "openPMD: setting JSON configuration to %1%") % jsonConfig;
 
         {
             std::string strategyString =
@@ -1305,6 +1311,21 @@ namespace openPMD
                 threadParams->openSeries( ::openPMD::AccessType::CREATE );
             }
 
+            /* attributes written here are pure meta data
+             *
+             * openPMD's ADIOS1 backend has an issue that requires the first
+             * call to flush (even if implicit) to contain a dataset write
+             * operation. Hence we delay the writing of metadata if ADIOS1
+             * backend is active.
+             * Otherwise we execute this as soon as possible to better support
+             * streaming-based modes of operation
+             */
+            if( !threadParams->isADIOS1() )
+            {
+                WriteMeta writeMetaAttributes;
+                writeMetaAttributes( threadParams );
+            }
+
             bool dumpAllParticles = plugins::misc::containsObject(
                 vectorOfDataSourceNames, "species_all" );
 
@@ -1390,13 +1411,16 @@ namespace openPMD
             writeIdProviderNextId( *threadParams, idProviderState.nextId );
 
             /* attributes written here are pure meta data */
-            WriteMeta writeMetaAttributes;
-            writeMetaAttributes( threadParams );
+            if( threadParams->isADIOS1() )
+            {
+                WriteMeta writeMetaAttributes;
+                writeMetaAttributes( threadParams );
+            }
 
             // avoid deadlock between not finished pmacc tasks and mpi calls in
             // openPMD
             __getTransactionEvent().waitForFinished();
-            mThreadParams.openPMDSeries->flush();
+            mThreadParams.openPMDSeries->advance();
 
             return;
         }

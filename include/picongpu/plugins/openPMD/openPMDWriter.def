@@ -65,10 +65,6 @@ namespace openPMD
 
     class openPMDWriter;
     class Help;
-    // passes through to openPMDWriter constructor
-    // used to avoid forward declaring the constructor
-    template< typename ... Args >
-    openPMDWriter makeOpenPMDWriter( Args && ... );
 
     struct ThreadParams
     {

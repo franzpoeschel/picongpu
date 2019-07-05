@@ -563,7 +563,7 @@ namespace openPMD
 
                 /* openPMD ED-PIC: additional attributes */
                 setParticleAttributes( iteration );
-                params->openPMDSeries->flush();
+                params->openPMDSeries->advance();
             }
 
             log< picLog::INPUT_OUTPUT >(
