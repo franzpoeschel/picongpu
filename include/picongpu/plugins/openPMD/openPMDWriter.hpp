@@ -1420,6 +1420,8 @@ namespace openPMD
             // avoid deadlock between not finished pmacc tasks and mpi calls in
             // openPMD
             __getTransactionEvent().waitForFinished();
+            mThreadParams.openPMDSeries
+                ->iterations[ mThreadParams.currentStep ].setFinalized();
             mThreadParams.openPMDSeries->advance();
 
             return;
