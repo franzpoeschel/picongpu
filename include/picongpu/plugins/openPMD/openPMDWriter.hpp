@@ -577,6 +577,8 @@ namespace openPMD
                     timeOffset );
 
                 dc.releaseData( T::getName() );
+                log< picLog::INPUT_OUTPUT >( 
+                    "openPMD: advancing the openPMD Series" );
                 params->openPMDSeries->advance();
 #endif
             }
@@ -692,6 +694,9 @@ namespace openPMD
                     timeOffset );
 
                 dc.releaseData( FieldTmp::getUniqueId( 0 ) );
+                log< picLog::INPUT_OUTPUT >( 
+                    "openPMD: advancing the openPMD Series" );
+                params->openPMDSeries->advance();
             }
         };
 
@@ -1420,6 +1425,10 @@ namespace openPMD
             // avoid deadlock between not finished pmacc tasks and mpi calls in
             // openPMD
             __getTransactionEvent().waitForFinished();
+            log< picLog::INPUT_OUTPUT >( 
+                "openPMD: declaring iteration %1% finished and "
+                "advancing the openPMD Series" ) 
+                % mThreadParams.currentStep;
             mThreadParams.openPMDSeries
                 ->iterations[ mThreadParams.currentStep ].setFinalized();
             mThreadParams.openPMDSeries->advance();
