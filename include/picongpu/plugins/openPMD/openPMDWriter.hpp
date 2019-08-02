@@ -229,7 +229,8 @@ namespace openPMD
         plugins::multi::Option< std::string > fileNameInfix = {
             "infix",
             "openPMD filename infix (use to pick file- or group-based "
-            "layout in openPMD)",
+            "layout in openPMD)\nset to NULL to keep empty (e.g. to pick"
+            " group-based iteration layout)",
             "_%06T"
         };
 
@@ -453,6 +454,10 @@ namespace openPMD
     {
         fileExtension = help.fileNameExtension.get( id );
         fileInfix = help.fileNameInfix.get( id );
+        if ( fileInfix == "NULL" )
+        {
+            fileInfix = "";
+        }
         /* if file name is relative, prepend with common directory */
         fileName = boost::filesystem::path( file ).has_root_path() ?
             file : dir + "/" + file;
