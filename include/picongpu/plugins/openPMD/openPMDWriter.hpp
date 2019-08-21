@@ -144,6 +144,12 @@ namespace openPMD
             {
                 openPMDSeries->setMeshesPath( MESHES_PATH );
             }
+            if( at != ::openPMD::AccessType::READ_ONLY )
+            {
+                openPMDSeries->setMpiRanksMetaInfo(
+                    ::openPMD::host_info::byMethod(
+                        ::openPMD::host_info::Method::HOSTNAME ) );
+            }
             log< picLog::INPUT_OUTPUT >(
                 "openPMD: successfully opened file: %1%" ) %
                 fullName;
