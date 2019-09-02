@@ -131,7 +131,14 @@ namespace openPMD
                 {
                     recordComponent.setUnitSI( unit.at( d ) );
                 }
+                std::stringstream description;
+                description << "[" << params->currentStep << " "
+                    << openPMDName() << " " << name_lookup[ d ]
+                    << " " << globalOffset << " " << elements << "] begin";
+                params->m_dumpTimes.now< std::chrono::milliseconds >(
+                    description.str( ) );
                 params->openPMDSeries->flush();
+                params->m_dumpTimes.now< std::chrono::milliseconds >( "end" );
             }
 
             std::array< double, 7 > unitDimensionArr;

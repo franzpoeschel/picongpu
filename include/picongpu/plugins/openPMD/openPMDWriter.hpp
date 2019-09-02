@@ -1438,6 +1438,7 @@ namespace openPMD
             mThreadParams.openPMDSeries
                 ->iterations[ mThreadParams.currentStep ].setFinalized();
             mThreadParams.openPMDSeries->advance();
+            mThreadParams.m_dumpTimes.flush( );
 
             return;
         }

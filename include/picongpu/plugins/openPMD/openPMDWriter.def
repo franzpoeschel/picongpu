@@ -27,6 +27,7 @@
 #include <pmacc/types.hpp>
 
 #include <openPMD/openPMD.hpp>
+#include <openPMD/benchmark/utils/DumpTimes.hpp>
 
 #include <iostream> // std::cerr
 #include <limits>
@@ -104,6 +105,17 @@ namespace openPMD
         DataSpace< simDim >
             localWindowToDomainOffset; /** offset from local moving
                                           window to local domain */
+
+        ::openPMD::DumpTimes<> m_dumpTimes{
+            [](){
+                static GridController<simDim>& gc =
+                    Environment<simDim>::get().GridController();
+                static std::string dumpFile =
+                    "PIC_times_" + std::to_string( gc.getGlobalRank( ) )
+                    + ".txt";
+                return dumpFile;
+            }()
+        };
 
         ::openPMD::Series &
         openSeries( ::openPMD::AccessType at );

@@ -565,7 +565,13 @@ namespace openPMD
                 setParticleAttributes( iteration );
                 log< picLog::INPUT_OUTPUT >( 
                     "openPMD: advancing the openPMD Series" );
+                params->m_dumpTimes.now< std::chrono::milliseconds >(
+                    "Advance species " +  T_SpeciesFilter::getName()
+                );
                 params->openPMDSeries->advance();
+                params->m_dumpTimes.now< std::chrono::milliseconds >(
+                    "Finished advance species"
+                );
             }
 
             log< picLog::INPUT_OUTPUT >(
