@@ -120,7 +120,7 @@ namespace openPMD
             log< picLog::INPUT_OUTPUT >(
                 "openPMD: (begin) write meta attributes." );
 
-            ::openPMD::Series series = *threadParams->openPMDSeries;
+            ::openPMD::Series & series = *threadParams->openPMDSeries;
 
             /*
              * The openPMD API will kindly write the obligatory metadata by

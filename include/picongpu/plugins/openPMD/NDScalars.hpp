@@ -92,7 +92,7 @@ namespace openPMD
                                              .getPosition()[ d ];
             }
 
-            ::openPMD::Series series = *params.openPMDSeries;
+            ::openPMD::Series & series = *params.openPMDSeries;
             ::openPMD::MeshRecordComponent mrc =
                 series.iterations[ params.currentStep ]
                     .meshes[ baseName + "_" + group ][ dataset ];
@@ -174,7 +174,7 @@ namespace openPMD
 
 
             auto datasetName = baseName + "/" + group + "/" + dataset;
-            ::openPMD::Series series = *params.openPMDSeries;
+            ::openPMD::Series & series = *params.openPMDSeries;
             ::openPMD::MeshRecordComponent mrc =
                 series.iterations[ params.currentStep ]
                     .meshes[ baseName + "_" + group ][ dataset ];

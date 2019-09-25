@@ -72,7 +72,7 @@ namespace openPMD
 
             DataSpace< simDim > local_domain_size =
                 params->window.localDimensions.size;
-            ::openPMD::Series series = *params->openPMDSeries;
+            ::openPMD::Series & series = *params->openPMDSeries;
             ::openPMD::Container<::openPMD::Mesh > & meshes =
                 series.iterations[ params->currentStep ].meshes;
 

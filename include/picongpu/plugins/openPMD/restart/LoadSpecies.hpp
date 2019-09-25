@@ -100,7 +100,7 @@ namespace openPMD
             GridController< simDim > & gc =
                 Environment< simDim >::get().GridController();
 
-            ::openPMD::Series series = *params->openPMDSeries;
+            ::openPMD::Series & series = *params->openPMDSeries;
             ::openPMD::Container<::openPMD::ParticleSpecies > & particles =
                 series.iterations[ params->currentStep ].particles;
             ::openPMD::ParticleSpecies particleSpecies =

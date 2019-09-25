@@ -372,7 +372,7 @@ namespace openPMD
                 ThisSpecies::FrameType::getName(), true );
             const std::string speciesGroup( T_Species::getName() );
 
-            ::openPMD::Series series = *params->openPMDSeries;
+            ::openPMD::Series & series = *params->openPMDSeries;
             ::openPMD::Iteration iteration =
                 series.iterations[ params->currentStep ];
 
