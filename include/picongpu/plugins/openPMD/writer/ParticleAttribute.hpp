@@ -93,7 +93,11 @@ namespace openPMD
             if ( elements > 0 )
                 storeBfr = std::shared_ptr< ComponentType >{
                     new ComponentType[ elements ],
-                    []( ComponentType * ptr ) { delete[] ptr; }
+                    []( ComponentType * ptr ) {
+                        std::cout << "PARTICLE ATTRIBUTE POINTER DELETE."
+                                  << std::endl;
+                        delete[] ptr;
+                    }
                 };
 
             for( uint32_t d = 0; d < components; d++ )

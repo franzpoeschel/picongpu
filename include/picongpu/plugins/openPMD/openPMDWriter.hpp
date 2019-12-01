@@ -970,6 +970,9 @@ namespace openPMD
         void
         endWrite()
         {
+            std::cout << "POINTER STILL IN USE BY "
+                      << mThreadParams.fieldBuffer.use_count() << " ENTITIES."
+                      << std::endl;
             mThreadParams.fieldBuffer.reset();
         }
 
@@ -981,7 +984,10 @@ namespace openPMD
             if( size > 0 )
                 mThreadParams.fieldBuffer = std::shared_ptr< float_X >{
                     new float_X[ size ],
-                    []( float_X * ptr ) { delete[] ptr; }
+                    []( float_X * ptr ) {
+                        std::cout << "DELETING FIELD BUFFER." << std::endl;
+                        delete[] ptr;
+                    }
                 };
         }
 
@@ -1431,14 +1437,20 @@ namespace openPMD
             // avoid deadlock between not finished pmacc tasks and mpi calls in
             // openPMD
             __getTransactionEvent().waitForFinished();
-            log< picLog::INPUT_OUTPUT >( 
+            log< picLog::INPUT_OUTPUT >(
                 "openPMD: declaring iteration %1% finished and "
-                "advancing the openPMD Series" ) 
-                % mThreadParams.currentStep;
-            mThreadParams.openPMDSeries
-                ->iterations[ mThreadParams.currentStep ].setFinalized();
+                "advancing the openPMD Series" ) %
+                mThreadParams.currentStep;
+            mThreadParams.m_dumpTimes.now< std::chrono::milliseconds >(
+                "Finalizing iteration " +
+                std::to_string( mThreadParams.currentStep ) +
+                " and advancing." );
+            mThreadParams.openPMDSeries->iterations[ mThreadParams.currentStep ]
+                .setFinalized();
             mThreadParams.openPMDSeries->advance();
-            mThreadParams.m_dumpTimes.flush( );
+            mThreadParams.m_dumpTimes.now< std::chrono::milliseconds >(
+                "Done." );
+            mThreadParams.m_dumpTimes.flush();
 
             return;
         }
