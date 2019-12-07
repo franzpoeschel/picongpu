@@ -1274,6 +1274,9 @@ namespace openPMD
         void
         write( ThreadParams * threadParams, std::string mpiTransportParams )
         {
+            threadParams->m_dumpTimes.now< std::chrono::milliseconds >(
+                "Beginning iteration " +
+                std::to_string( mThreadParams.currentStep ) );
             /* y direction can be negative for first gpu */
             const pmacc::Selection< simDim > & localDomain =
                 Environment< simDim >::get().SubGrid().getLocalDomain();
