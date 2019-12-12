@@ -1185,6 +1185,7 @@ namespace openPMD
                         params->fieldsGlobalSizeDims,
                         true,
                         params->compressionMethod );
+		        mrc.setUnitSI( unit[ d ] );
                 if ( params->fieldBuffer )
                     mrc.storeChunk< ComponentType >(
                         params->fieldBuffer,
