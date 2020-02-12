@@ -1468,7 +1468,8 @@ namespace openPMD
                 " and advancing." );
             mThreadParams.openPMDSeries->iterations[ mThreadParams.currentStep ]
                 .setFinalized();
-            mThreadParams.openPMDSeries->advance();
+            mThreadParams.openPMDSeries
+                ->iterations[ mThreadParams.currentStep ].advance();
             mThreadParams.m_dumpTimes.now< std::chrono::milliseconds >(
                 "Done." );
             mThreadParams.m_dumpTimes.flush();
