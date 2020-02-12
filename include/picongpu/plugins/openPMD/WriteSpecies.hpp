@@ -568,7 +568,7 @@ namespace openPMD
                 params->m_dumpTimes.now< std::chrono::milliseconds >(
                     "Advance species " +  T_SpeciesFilter::getName()
                 );
-                params->openPMDSeries->advance();
+                // params->openPMDSeries->advance();
                 params->m_dumpTimes.now< std::chrono::milliseconds >(
                     "Finished advance species"
                 );

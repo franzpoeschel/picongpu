@@ -585,7 +585,7 @@ namespace openPMD
                 dc.releaseData( T::getName() );
                 log< picLog::INPUT_OUTPUT >( 
                     "openPMD: advancing the openPMD Series" );
-                params->openPMDSeries->advance();
+                // params->openPMDSeries->advance();
 #endif
             }
         };
@@ -639,6 +639,8 @@ namespace openPMD
             HINLINE void
             operator_impl( ThreadParams * params )
             {
+                params->m_dumpTimes.now< std::chrono::milliseconds >(
+                    "Begin write field " + getName() );
                 DataConnector & dc = Environment<>::get().DataConnector();
 
                 /*## update field ##*/
@@ -702,7 +704,11 @@ namespace openPMD
                 dc.releaseData( FieldTmp::getUniqueId( 0 ) );
                 log< picLog::INPUT_OUTPUT >( 
                     "openPMD: advancing the openPMD Series" );
-                params->openPMDSeries->advance();
+                params->m_dumpTimes.now< std::chrono::milliseconds >(
+                    "Advance field " + getName() );
+                // params->openPMDSeries->advance();
+                params->m_dumpTimes.now< std::chrono::milliseconds >(
+                    "End" );
             }
         };
 
@@ -1172,6 +1178,8 @@ namespace openPMD
             /* write the actual field data */
             for( uint32_t d = 0; d < nComponents; d++ )
             {
+                params->m_dumpTimes.now< std::chrono::milliseconds >(
+                    "Component " + std::to_string( d ) + " prepare" );
                 const size_t plane_full_size =
                     field_full[ 1 ] * field_full[ 0 ] * nComponents;
                 const size_t plane_no_guard_size =
@@ -1226,7 +1234,11 @@ namespace openPMD
                         asStandardVector< simDim >( params->fieldsOffsetDims ),
                         asStandardVector< simDim >( params->fieldsSizeDims ) );
 
+                params->m_dumpTimes.now< std::chrono::milliseconds >(
+                    "Component " + std::to_string( d ) + " flush" );
                 params->openPMDSeries->flush();
+                params->m_dumpTimes.now< std::chrono::milliseconds >(
+                    "Component " + std::to_string( d ) + " end" );
             }
         }
 
@@ -1277,6 +1289,12 @@ namespace openPMD
             threadParams->m_dumpTimes.now< std::chrono::milliseconds >(
                 "Beginning iteration " +
                 std::to_string( mThreadParams.currentStep ) );
+            // if ( mThreadParams.currentStep < 1000 && mThreadParams.currentStep != 0 )
+            // {
+            //     std::cout << "skipping iteration " << mThreadParams.currentStep
+            //         << std::endl;
+            //     return;
+            // }
             /* y direction can be negative for first gpu */
             const pmacc::Selection< simDim > & localDomain =
                 Environment< simDim >::get().SubGrid().getLocalDomain();
