@@ -39,6 +39,7 @@
 #include <utility>
 #include <mpi.h>
 #include <splash/splash.h>
+#include <openPMD/openPMD.hpp>
 
 namespace picongpu
 {
@@ -56,6 +57,7 @@ namespace picongpu
          * \param axis_element plot to create: e.g. py, x from momentum/spatial-coordinate
          * \param unit sim unit of the buffer
          * \param strSpecies unique short hand name of the species
+         * \param filenameSuffix infix + extension part of openPMD filename
          * \param currentStep current time step
          * \param mpiComm communicator of the participating ranks
          */
@@ -67,16 +69,18 @@ namespace picongpu
             const float_64 pRange_unit,
             const float_64 unit,
             const std::string strSpecies,
+            const std::string filenameSuffix,
+            const std::string jsonConfig,
             const uint32_t currentStep,
             MPI_Comm mpiComm) const
         {
-            using namespace splash;
             typedef T_Type Type;
             const int bufDim = T_bufDim;
 
             /** file name *****************************************************
              *    phaseSpace/PhaseSpace_xpy_timestep.h5                       */
             std::string fCoords("xyz");
+            std::string openPMDFilename = "phaseSpace/PhaseSpace" + filenameSuffix;
             std::ostringstream filename;
             filename << "phaseSpace/PhaseSpace_" << strSpecies << "_" << fCoords.at(axis_element.space) << "p"
                      << fCoords.at(axis_element.momentum);
@@ -86,6 +90,8 @@ namespace picongpu
             MPI_CHECK(MPI_Comm_size(mpiComm, &size));
 
             /** create parallel domain collector ******************************/
+            ::openPMD::Series series(openPMDFilename, ::openPMD::Access::CREATE, jsonConfig);
+            ::openPMD::Iteration iteration = series.iterations[currentStep];
             ParallelDomainCollector pdc(mpiComm, MPI_INFO_NULL, Dimensions(size, 1, 1), 10);
 
             pmacc::GridController<simDim>& gc = pmacc::Environment<simDim>::get().GridController();
@@ -111,9 +117,11 @@ namespace picongpu
 
             /* globalDomain of the phase space */
             splash::Dimensions globalPhaseSpace_size(hBuffer.size().x(), rGlobalSize, 1);
+            ::openPMD::Extent globalPhaseSpace_extent{hBuffer.size().x(), rGlobalSize, 1};
 
             /* global moving window meta information */
             splash::Dimensions globalPhaseSpace_offset(0, 0, 0);
+            // ::openPMD::Offset globalPhaseSpace_offset{0,0,0};
             int globalMovingWindowOffset = 0;
             int globalMovingWindowSize = rGlobalSize;
             if(axis_element.space == AxisDescription::y) /* spatial axis == y */
@@ -127,11 +135,16 @@ namespace picongpu
             /* localDomain: offset of it in the globalDomain and size */
             splash::Dimensions localPhaseSpace_offset(0, rLocalOffset, 0);
             splash::Dimensions localPhaseSpace_size(hBuffer.size().x(), rLocalSize, 1);
+            ::openPMD::Offset _localPhaseSpace_offset{0, rLocalOffset, 0};
+            ::openPMD::Extent _localPhaseSpace_extent{hBuffer.size().x(), rLocalSize, 1};
 
             /** Dataset Name **************************************************/
             std::ostringstream dataSetName;
             /* xpx or ypz or ... */
             dataSetName << fCoords.at(axis_element.space) << "p" << fCoords.at(axis_element.momentum);
+            std::ostringstream _dataSetName;
+            _dataSetName << strSpecies << "_" << fCoords.at(axis_element.space) << "p"
+                         << fCoords.at(axis_element.momentum);
 
             /** debug log *****************************************************/
             int rank;
@@ -146,6 +159,13 @@ namespace picongpu
 
             // avoid deadlock between not finished pmacc tasks and mpi calls in HDF5
             __getTransactionEvent().waitForFinished();
+
+            ::openPMD::MeshRecordComponent dataset
+                = iteration.meshes[_dataSetName.str()][::openPMD::RecordComponent::SCALAR];
+            dataset.resetDataset({::openPMD::determineDatatype<Type>(), globalPhaseSpace_extent});
+
+            std::shared_ptr<Type> data(&(*hBuffer.origin()(0, rGuardCells)), [](auto&) {});
+            dataset.storeChunk<Type>(data, _localPhaseSpace_offset, _localPhaseSpace_extent);
 
             pdc.writeDomain(
                 currentStep,
@@ -203,6 +223,7 @@ namespace picongpu
             /** close file ****************************************************/
             pdc.finalize();
             pdc.close();
+            iteration.close();
         }
     };
 

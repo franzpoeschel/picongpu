@@ -87,6 +87,22 @@ namespace picongpu
             plugins::multi::Option<float_X> momentum_range_min = {"min", "min range momentum [m_species c]"};
             plugins::multi::Option<float_X> momentum_range_max = {"max", "max range momentum [m_species c]"};
 
+            plugins::multi::Option<std::string> file_name_extension
+                = {"ext",
+                   "openPMD filename extension (this controls the"
+                   "backend picked by the openPMD API)",
+                   "bp"};
+
+            plugins::multi::Option<std::string> file_name_infix
+                = {"infix",
+                   "openPMD filename infix (use to pick file- or group-based "
+                   "layout in openPMD)\nset to NULL to keep empty (e.g. to pick"
+                   " group-based iteration layout)",
+                   "_%03T"};
+
+            plugins::multi::Option<std::string> json_config
+                = {"json", "advanced (backend) configuration for openPMD in JSON format", "{}"};
+
             //! string list with all possible particle filters
             std::string concatenatedFilterNames;
             std::vector<std::string> allowedFilters;
@@ -108,6 +124,9 @@ namespace picongpu
                 element_momentum.registerHelp(desc, masterPrefix + prefix);
                 momentum_range_min.registerHelp(desc, masterPrefix + prefix);
                 momentum_range_max.registerHelp(desc, masterPrefix + prefix);
+                file_name_extension.registerHelp(desc, masterPrefix + prefix);
+                file_name_infix.registerHelp(desc, masterPrefix + prefix);
+                json_config.registerHelp(desc, masterPrefix + prefix);
             }
 
             void expandHelp(
