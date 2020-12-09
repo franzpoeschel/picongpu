@@ -110,10 +110,10 @@ namespace picongpu
             /** calculate local and global size of the phase space ***********/
             const uint32_t numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
             const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
-            const int rLocalOffset = subGrid.getLocalDomain().offset[axis_element.space];
-            const int rLocalSize = int(hBuffer.size().y() - 2 * rGuardCells);
-            const int rGlobalSize = subGrid.getGlobalDomain().size[axis_element.space];
-            PMACC_VERIFY(rLocalSize == subGrid.getLocalDomain().size[axis_element.space]);
+            const std::uint64_t rLocalOffset = subGrid.getLocalDomain().offset[axis_element.space];
+            const std::uint64_t rLocalSize = int(hBuffer.size().y() - 2 * rGuardCells);
+            const std::uint64_t rGlobalSize = subGrid.getGlobalDomain().size[axis_element.space];
+            PMACC_VERIFY(int(rLocalSize) == subGrid.getLocalDomain().size[axis_element.space]);
 
             /* globalDomain of the phase space */
             splash::Dimensions globalPhaseSpace_size(hBuffer.size().x(), rGlobalSize, 1);
@@ -121,8 +121,8 @@ namespace picongpu
 
             /* global moving window meta information */
             splash::Dimensions globalPhaseSpace_offset(0, 0, 0);
-            int globalMovingWindowOffset = 0;
-            int globalMovingWindowSize = rGlobalSize;
+            std::uint64_t globalMovingWindowOffset = 0;
+            std::uint64_t globalMovingWindowSize = rGlobalSize;
             if(axis_element.space == AxisDescription::y) /* spatial axis == y */
             {
                 globalPhaseSpace_offset.set(0, numSlides * rLocalSize, 0);
