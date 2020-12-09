@@ -159,8 +159,8 @@ namespace picongpu
             // avoid deadlock between not finished pmacc tasks and mpi calls in HDF5
             __getTransactionEvent().waitForFinished();
 
-            ::openPMD::MeshRecordComponent dataset
-                = iteration.meshes[_dataSetName.str()][::openPMD::RecordComponent::SCALAR];
+            ::openPMD::Mesh mesh = iteration.meshes[_dataSetName.str()];
+            ::openPMD::MeshRecordComponent dataset = mesh[::openPMD::RecordComponent::SCALAR];
             dataset.resetDataset({::openPMD::determineDatatype<Type>(), globalPhaseSpace_extent});
 
             std::shared_ptr<Type> data(&(*hBuffer.origin()(0, rGuardCells)), [](auto const&) {});
@@ -191,16 +191,22 @@ namespace picongpu
             SplashFloat64Type ctFloat64;
             SplashFloatXType ctFloatX;
 
+            mesh.setAttribute("sim_unit", unit);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "sim_unit", &unit);
+            mesh.setAttribute("p_unit", pRange_unit);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "p_unit", &pRange_unit);
+            mesh.setAttribute("p_min", axis_p_range.first);
             pdc.writeAttribute(currentStep, ctFloatX, dataSetName.str().c_str(), "p_min", &(axis_p_range.first));
+            mesh.setAttribute("p_max", axis_p_range.second);
             pdc.writeAttribute(currentStep, ctFloatX, dataSetName.str().c_str(), "p_max", &(axis_p_range.second));
+            mesh.setGridGlobalOffset(std::vector<double>{double(globalMovingWindowOffset), 0.});
             pdc.writeAttribute(
                 currentStep,
                 ctInt,
                 dataSetName.str().c_str(),
                 "movingWindowOffset",
                 &globalMovingWindowOffset);
+            // movingWindowSize needs not explicitly be given, since it's in the dataset dimensions
             pdc.writeAttribute(
                 currentStep,
                 ctInt,
@@ -208,15 +214,20 @@ namespace picongpu
                 "movingWindowSize",
                 &globalMovingWindowSize);
 
+            mesh.setAttribute("dr", cellSize[axis_element.space]);
             pdc.writeAttribute(
                 currentStep,
                 ctFloatX,
                 dataSetName.str().c_str(),
                 "dr",
                 &(cellSize[axis_element.space]));
+            mesh.setAttribute("dV", CELL_VOLUME);
             pdc.writeAttribute(currentStep, ctFloatX, dataSetName.str().c_str(), "dV", &CELL_VOLUME);
+            mesh.setGridUnitSI(UNIT_LENGTH);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "dr_unit", &UNIT_LENGTH);
+            iteration.setDt(DELTA_T);
             pdc.writeAttribute(currentStep, ctFloatX, dataSetName.str().c_str(), "dt", &DELTA_T);
+            iteration.setTimeUnitSI(UNIT_TIME);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "dt_unit", &UNIT_TIME);
 
             /** close file ****************************************************/
