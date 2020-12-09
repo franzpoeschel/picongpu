@@ -163,7 +163,7 @@ namespace picongpu
                 = iteration.meshes[_dataSetName.str()][::openPMD::RecordComponent::SCALAR];
             dataset.resetDataset({::openPMD::determineDatatype<Type>(), globalPhaseSpace_extent});
 
-            std::shared_ptr<Type> data(&(*hBuffer.origin()(0, rGuardCells)), [](auto&) {});
+            std::shared_ptr<Type> data(&(*hBuffer.origin()(0, rGuardCells)), [](auto const&) {});
             dataset.storeChunk<Type>(data, _localPhaseSpace_offset, _localPhaseSpace_extent);
 
             pdc.writeDomain(
