@@ -117,11 +117,10 @@ namespace picongpu
 
             /* globalDomain of the phase space */
             splash::Dimensions globalPhaseSpace_size(hBuffer.size().x(), rGlobalSize, 1);
-            ::openPMD::Extent globalPhaseSpace_extent{hBuffer.size().x(), rGlobalSize, 1};
+            ::openPMD::Extent globalPhaseSpace_extent{rGlobalSize, hBuffer.size().x()};
 
             /* global moving window meta information */
             splash::Dimensions globalPhaseSpace_offset(0, 0, 0);
-            // ::openPMD::Offset globalPhaseSpace_offset{0,0,0};
             int globalMovingWindowOffset = 0;
             int globalMovingWindowSize = rGlobalSize;
             if(axis_element.space == AxisDescription::y) /* spatial axis == y */
@@ -135,8 +134,8 @@ namespace picongpu
             /* localDomain: offset of it in the globalDomain and size */
             splash::Dimensions localPhaseSpace_offset(0, rLocalOffset, 0);
             splash::Dimensions localPhaseSpace_size(hBuffer.size().x(), rLocalSize, 1);
-            ::openPMD::Offset _localPhaseSpace_offset{0, rLocalOffset, 0};
-            ::openPMD::Extent _localPhaseSpace_extent{hBuffer.size().x(), rLocalSize, 1};
+            ::openPMD::Offset _localPhaseSpace_offset{rLocalOffset, 0};
+            ::openPMD::Extent _localPhaseSpace_extent{rLocalSize, hBuffer.size().x()};
 
             /** Dataset Name **************************************************/
             std::ostringstream dataSetName;
