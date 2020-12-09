@@ -303,7 +303,7 @@ namespace picongpu
                 pRange_unit,
                 unit,
                 Species::FrameType::getName() + "_" + m_help->filter.get(m_id),
-                m_help->file_name_infix.get(m_id) + "." + m_help->file_name_extension.get(m_id),
+                m_help->file_name_extension.get(m_id),
                 m_help->json_config.get(m_id),
                 currentStep,
                 this->commFileWriter);

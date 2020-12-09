@@ -69,7 +69,7 @@ namespace picongpu
             const float_64 pRange_unit,
             const float_64 unit,
             const std::string strSpecies,
-            const std::string filenameSuffix,
+            const std::string filenameExtension,
             const std::string jsonConfig,
             const uint32_t currentStep,
             MPI_Comm mpiComm) const
@@ -80,17 +80,20 @@ namespace picongpu
             /** file name *****************************************************
              *    phaseSpace/PhaseSpace_xpy_timestep.h5                       */
             std::string fCoords("xyz");
-            std::string openPMDFilename = "phaseSpace/PhaseSpace" + filenameSuffix;
+            std::ostringstream openPMDFilename;
+            openPMDFilename << "phaseSpace/PhaseSpace_" << strSpecies << "_" << fCoords.at(axis_element.space) << "p"
+                            << fCoords.at(axis_element.momentum) << "_%06T." << filenameExtension;
             std::ostringstream filename;
             filename << "phaseSpace/PhaseSpace_" << strSpecies << "_" << fCoords.at(axis_element.space) << "p"
                      << fCoords.at(axis_element.momentum);
+
 
             /** get size of the fileWriter communicator ***********************/
             int size;
             MPI_CHECK(MPI_Comm_size(mpiComm, &size));
 
             /** create parallel domain collector ******************************/
-            ::openPMD::Series series(openPMDFilename, ::openPMD::Access::CREATE, jsonConfig);
+            ::openPMD::Series series(openPMDFilename.str(), ::openPMD::Access::CREATE, jsonConfig);
             ::openPMD::Iteration iteration = series.iterations[currentStep];
             ParallelDomainCollector pdc(mpiComm, MPI_INFO_NULL, Dimensions(size, 1, 1), 10);
 

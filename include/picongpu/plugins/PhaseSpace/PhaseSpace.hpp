@@ -97,13 +97,6 @@ namespace picongpu
                    "backend picked by the openPMD API)",
                    "h5"};
 
-            plugins::multi::Option<std::string> file_name_infix
-                = {"infix",
-                   "openPMD filename infix (use to pick file- or group-based "
-                   "layout in openPMD)\nset to NULL to keep empty (e.g. to pick"
-                   " group-based iteration layout)",
-                   "_%03T"};
-
             plugins::multi::Option<std::string> json_config
                 = {"json", "advanced (backend) configuration for openPMD in JSON format", "{}"};
 
@@ -129,7 +122,6 @@ namespace picongpu
                 momentum_range_min.registerHelp(desc, masterPrefix + prefix);
                 momentum_range_max.registerHelp(desc, masterPrefix + prefix);
                 file_name_extension.registerHelp(desc, masterPrefix + prefix);
-                file_name_infix.registerHelp(desc, masterPrefix + prefix);
                 json_config.registerHelp(desc, masterPrefix + prefix);
             }
 
