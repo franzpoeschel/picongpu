@@ -87,11 +87,15 @@ namespace picongpu
             plugins::multi::Option<float_X> momentum_range_min = {"min", "min range momentum [m_species c]"};
             plugins::multi::Option<float_X> momentum_range_max = {"max", "max range momentum [m_species c]"};
 
+            /*
+             * Set to h5 for now at least, to make for easier comparison of
+             * output with old outpu
+             */
             plugins::multi::Option<std::string> file_name_extension
                 = {"ext",
                    "openPMD filename extension (this controls the"
                    "backend picked by the openPMD API)",
-                   "bp"};
+                   "h5"};
 
             plugins::multi::Option<std::string> file_name_infix
                 = {"infix",
