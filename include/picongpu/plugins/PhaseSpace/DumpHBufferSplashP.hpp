@@ -46,7 +46,7 @@ namespace picongpu
     class DumpHBuffer
     {
     private:
-        typedef typename MappingDesc::SuperCellSize SuperCellSize;
+        using SuperCellSize = typename MappingDesc::SuperCellSize;
 
     public:
         /** Dump the PhaseSpace host Buffer
@@ -74,7 +74,7 @@ namespace picongpu
             const uint32_t currentStep,
             MPI_Comm mpiComm) const
         {
-            typedef T_Type Type;
+            using Type = T_Type;
             const int bufDim = T_bufDim;
 
             /** file name *****************************************************
