@@ -185,8 +185,10 @@ class PhaseSpaceData(DataReader):
         containing ps and ps_meta for each requested iteration.
         If a single iteration is requested, return the tuple (ps, ps_meta).
         """
-        available_iterations = self.get_iterations(
-            ps, species, species_filter)
+
+        data_file_path = self.get_data_path(ps, species, species_filter)
+        series = io.Series(data_file_path, io.Access.read_only)
+        available_iterations = [key for key, _ in series.iterations.items()]
 
         if iteration is not None:
             if not isinstance(iteration, collections.Iterable):
@@ -201,28 +203,26 @@ class PhaseSpaceData(DataReader):
             iteration = available_iterations
 
         ret = []
-        for it in iteration:
-            data_file_path, data_hdf5_name = self.get_data_path(
-                ps,
-                species,
-                species_filter,
-                it)
-
-            f = h5.File(data_file_path, 'r')
-            ps_data = f[data_hdf5_name]
+        for index in iteration:
+            it = series.iterations[index]
+            dataset_name = "{}_{}_{}".format( species, species_filter, ps)
+            mesh = it.meshes[dataset_name]
+            ps_data = mesh[io.Mesh_Record_Component.SCALAR]
 
             # all in SI
-            dV = ps_data.attrs['dV'] * ps_data.attrs['dr_unit']**3
-            unitSI = ps_data.attrs['sim_unit']
-            p_range = ps_data.attrs['p_unit'] * \
-                np.array([ps_data.attrs['p_min'], ps_data.attrs['p_max']])
+            dV = mesh.get_attribute('dV') * mesh.grid_unit_SI**3
+            unitSI = mesh.get_attribute('sim_unit')
+            p_range = mesh.get_attribute('p_unit') * \
+                np.array(
+                    [mesh.get_attribute('p_min'), mesh.get_attribute('p_max')])
 
-            mv_start = ps_data.attrs['movingWindowOffset']
-            mv_end = mv_start + ps_data.attrs['movingWindowSize']
+            mv_start = int(mesh.grid_global_offset[0])
+            mv_end = mv_start + ps_data.shape[0]
             #                2D histogram:         0 (r_i); 1 (p_i)
-            spatial_offset = ps_data.attrs['_global_start'][1]
+            # spatial_offset = ps_data.attrs['_global_start'][1]
+            spatial_offset = 0 # @todo
 
-            dr = ps_data.attrs['dr'] * ps_data.attrs['dr_unit']
+            dr = mesh.get_attribute('dr') * mesh.grid_unit_SI
 
             r_range_cells = np.array([mv_start, mv_end]) + spatial_offset
             r_range = r_range_cells * dr
@@ -230,9 +230,9 @@ class PhaseSpaceData(DataReader):
             extent = np.append(r_range, p_range)
 
             # cut out the current window & scale by unitSI
-            ps_cut = ps_data[mv_start:mv_end, :] * unitSI
+            ps_cut = ps_data[:, mv_start:mv_end] * unitSI
 
-            f.close()
+            it.close()
 
             ps_meta = PhaseSpaceMeta(
                 species, species_filter, ps, ps_cut.shape, extent, dV)
