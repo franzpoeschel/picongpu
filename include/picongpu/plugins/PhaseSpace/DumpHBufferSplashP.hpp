@@ -82,9 +82,9 @@ namespace picongpu
             std::string fCoords("xyz");
             std::ostringstream openPMDFilename;
             openPMDFilename << "phaseSpace/PhaseSpace_" << strSpecies << "_" << fCoords.at(axis_element.space) << "p"
-                            << fCoords.at(axis_element.momentum) << "_%06T." << filenameExtension;
+                            << fCoords.at(axis_element.momentum) << "_%T." << filenameExtension;
             std::ostringstream filename;
-            filename << "phaseSpace/PhaseSpace_" << strSpecies << "_" << fCoords.at(axis_element.space) << "p"
+            filename << "phaseSpace/OldPhaseSpace_" << strSpecies << "_" << fCoords.at(axis_element.space) << "p"
                      << fCoords.at(axis_element.momentum);
 
 
