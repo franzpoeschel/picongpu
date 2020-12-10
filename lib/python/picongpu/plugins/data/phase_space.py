@@ -12,7 +12,7 @@ import numpy as np
 import os
 import glob
 import re
-import h5py as h5
+import openpmd_api as io
 
 
 class PhaseSpaceMeta(object):
@@ -89,19 +89,13 @@ class PhaseSpaceData(DataReader):
         species_filter: string
             name of the particle species filter, default is 'all'
             (defined in ``particleFilters.param``)
-        iteration : (unsigned) int or list of int [unitless]
-            The iteration at which to read the data.
-            If 'None', a regular expression string matching
-            all iterations will be returned.
 
         Returns
         -------
-        A string with a file path and a string with a in-file HDF5 path if
-        iteration is a single value or a list of length one.
-        If iteration is a list of length > 1, a list of paths is returned.
-        If iteration is None, only the first string is returned and contains a
-        regex-* for the position iteration.
+        A string with a the full openPMD file path pattern for loading from
+        a file-based iteration layout.
         """
+        # @todo different file extensions?
         if species is None:
             raise ValueError('The species parameter can not be None!')
         if species_filter is None:
@@ -123,43 +117,14 @@ class PhaseSpaceData(DataReader):
                           'Did the simulation already run?'
                           .format(self.run_directory))
 
-        if iteration is not None:
-            if not isinstance(iteration, collections.Iterable):
-                iteration = [iteration]
-
-            ret = []
-            for it in iteration:
-                data_file_name = self.data_file_prefix.format(
-                    species,
-                    species_filter,
-                    ps,
-                    str(it)) + self.data_file_suffix
-                data_file_path = os.path.join(output_dir, data_file_name)
-
-                if not os.path.isfile(data_file_path):
-                    raise IOError('The file {} does not exist.\n'
-                                  'Did the simulation already run?'
-                                  .format(data_file_path))
-
-                data_hdf5_name = self.data_hdf5_path.format(
-                    it,
-                    ps)
-
-                ret.append((data_file_path, data_hdf5_name))
-            if len(iteration) == 1:
-                return ret[0]
-            else:
-                return ret
-        else:
-            iteration_str = "*"
-
-            data_file_name = self.data_file_prefix.format(
-                species,
-                species_filter,
-                ps,
-                iteration_str
-            ) + self.data_file_suffix
-            return os.path.join(output_dir, data_file_name)
+        iteration_str = "%T"
+        data_file_name = self.data_file_prefix.format(
+            species,
+            species_filter,
+            ps,
+            iteration_str
+        ) + self.data_file_suffix
+        return os.path.join(output_dir, data_file_name)
 
     def get_iterations(self, ps, species, species_filter='all'):
         """
@@ -184,19 +149,8 @@ class PhaseSpaceData(DataReader):
         # get the regular expression matching all available files
         data_file_path = self.get_data_path(ps, species, species_filter)
 
-        matching_files = glob.glob(data_file_path)
-        re_it = re.compile(data_file_path.replace("*", "([0-9]+)"))
-
-        iterations = np.array(
-            sorted(
-                map(
-                    lambda file_path:
-                    np.uint64(re_it.match(file_path).group(1)),
-                    matching_files
-                )
-            ),
-            dtype=np.uint64
-        )
+        series = io.Series(data_file_path, io.Access.read_only)
+        iterations = [key for key, _ in series.iterations.items()]
 
         return iterations
 
