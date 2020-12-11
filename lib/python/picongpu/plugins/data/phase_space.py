@@ -228,7 +228,7 @@ class PhaseSpaceData(DataReader):
             extent = np.append(r_range, p_range)
 
             # cut out the current window & scale by unitSI
-            ps_cut = ps_data[:, mv_start:mv_end] * unitSI
+            ps_cut = ps_data[mv_start:mv_end, :] * unitSI
 
             it.close()
 
