@@ -10,8 +10,6 @@ from .base_reader import DataReader
 import collections
 import numpy as np
 import os
-import glob
-import re
 import openpmd_api as io
 
 
@@ -205,7 +203,7 @@ class PhaseSpaceData(DataReader):
         ret = []
         for index in iteration:
             it = series.iterations[index]
-            dataset_name = "{}_{}_{}".format( species, species_filter, ps)
+            dataset_name = "{}_{}_{}".format(species, species_filter, ps)
             mesh = it.meshes[dataset_name]
             ps_data = mesh[io.Mesh_Record_Component.SCALAR]
 
@@ -220,7 +218,7 @@ class PhaseSpaceData(DataReader):
             mv_end = mv_start + ps_data.shape[0]
             #                2D histogram:         0 (r_i); 1 (p_i)
             # spatial_offset = ps_data.attrs['_global_start'][1]
-            spatial_offset = 0 # @todo
+            spatial_offset = 0  # @todo
 
             dr = mesh.get_attribute('dr') * mesh.grid_unit_SI
 
