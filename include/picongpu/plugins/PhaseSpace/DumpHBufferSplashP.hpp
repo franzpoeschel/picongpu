@@ -124,11 +124,13 @@ namespace picongpu
 
             /* global moving window meta information */
             splash::Dimensions globalPhaseSpace_offset(0, 0, 0);
+            ::openPMD::Offset _globalPhaseSpace_offset{0, 0};
             std::uint64_t globalMovingWindowOffset = 0;
             std::uint64_t globalMovingWindowSize = rGlobalSize;
             if(axis_element.space == AxisDescription::y) /* spatial axis == y */
             {
                 globalPhaseSpace_offset.set(0, numSlides * rLocalSize, 0);
+                _globalPhaseSpace_offset[0] = numSlides * rLocalSize;
                 Window window = MovingWindow::getInstance().getWindow(currentStep);
                 globalMovingWindowOffset = window.globalDimensions.offset[axis_element.space];
                 globalMovingWindowSize = window.globalDimensions.size[axis_element.space];
@@ -194,6 +196,8 @@ namespace picongpu
             SplashFloatXType ctFloatX;
 
             float_X const dr = cellSize[axis_element.space];
+            mesh.setAttribute("_global_start", _globalPhaseSpace_offset);
+            mesh.setAttribute("_global_size", globalPhaseSpace_extent);
             mesh.setAttribute("sim_unit", unit);
             mesh.setGridUnitSI(unit);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "sim_unit", &unit);

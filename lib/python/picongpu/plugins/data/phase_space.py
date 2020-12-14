@@ -217,8 +217,7 @@ class PhaseSpaceData(DataReader):
             mv_start = mesh.get_attribute('movingWindowOffset')
             mv_end = mv_start + mesh.get_attribute('movingWindowSize')
             #                2D histogram:         0 (r_i); 1 (p_i)
-            # spatial_offset = ps_data.attrs['_global_start'][1]
-            spatial_offset = 0  # @todo
+            spatial_offset = mesh.get_attribute('_global_start')[0]
 
             dr = mesh.get_attribute('dr') * mesh.get_attribute('dr_unit')
 
