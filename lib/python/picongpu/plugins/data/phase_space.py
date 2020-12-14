@@ -208,7 +208,7 @@ class PhaseSpaceData(DataReader):
             ps_data = mesh[ps]
 
             # all in SI
-            dV = mesh.get_attribute('dV') * mesh.get_attribute('dr') **3
+            dV = mesh.get_attribute('dV') * mesh.get_attribute('dr')**3
             unitSI = mesh.get_attribute('sim_unit')
             p_range = mesh.get_attribute('p_unit') * \
                 np.array(
