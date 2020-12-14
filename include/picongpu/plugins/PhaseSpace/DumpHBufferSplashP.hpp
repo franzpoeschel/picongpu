@@ -146,8 +146,9 @@ namespace picongpu
             std::ostringstream dataSetName;
             /* xpx or ypz or ... */
             dataSetName << fCoords.at(axis_element.space) << "p" << fCoords.at(axis_element.momentum);
-            std::ostringstream dimensionsName;
-            dimensionsName << fCoords.at(axis_element.space) << "p" << fCoords.at(axis_element.momentum);
+            std::ostringstream _dataSetName;
+            _dataSetName << strSpecies << "_" << fCoords.at(axis_element.space) << "p"
+                         << fCoords.at(axis_element.momentum);
 
             /** debug log *****************************************************/
             int rank;
@@ -163,8 +164,8 @@ namespace picongpu
             // avoid deadlock between not finished pmacc tasks and mpi calls in HDF5
             __getTransactionEvent().waitForFinished();
 
-            ::openPMD::Mesh mesh = iteration.meshes[strSpecies];
-            ::openPMD::MeshRecordComponent dataset = mesh[dimensionsName.str()];
+            ::openPMD::Mesh mesh = iteration.meshes[_dataSetName.str()];
+            ::openPMD::MeshRecordComponent dataset = mesh[::openPMD::RecordComponent::SCALAR];
             dataset.resetDataset({::openPMD::determineDatatype<Type>(), globalPhaseSpace_extent});
 
             std::shared_ptr<Type> data(&(*hBuffer.origin()(0, rGuardCells)), [](auto const&) {});

@@ -203,9 +203,9 @@ class PhaseSpaceData(DataReader):
         ret = []
         for index in iteration:
             it = series.iterations[index]
-            dataset_name = "{}_{}".format(species, species_filter)
+            dataset_name = "{}_{}_{}".format(species, species_filter, ps)
             mesh = it.meshes[dataset_name]
-            ps_data = mesh[ps]
+            ps_data = mesh[io.Mesh_Record_Component.SCALAR]
 
             # all in SI
             dV = mesh.get_attribute('dV') * mesh.get_attribute('dr')**3
