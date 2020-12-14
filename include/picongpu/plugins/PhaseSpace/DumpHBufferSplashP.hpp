@@ -144,9 +144,8 @@ namespace picongpu
             std::ostringstream dataSetName;
             /* xpx or ypz or ... */
             dataSetName << fCoords.at(axis_element.space) << "p" << fCoords.at(axis_element.momentum);
-            std::ostringstream _dataSetName;
-            _dataSetName << strSpecies << "_" << fCoords.at(axis_element.space) << "p"
-                         << fCoords.at(axis_element.momentum);
+            std::ostringstream dimensionsName;
+            dimensionsName << fCoords.at(axis_element.space) << "p" << fCoords.at(axis_element.momentum);
 
             /** debug log *****************************************************/
             int rank;
@@ -162,8 +161,8 @@ namespace picongpu
             // avoid deadlock between not finished pmacc tasks and mpi calls in HDF5
             __getTransactionEvent().waitForFinished();
 
-            ::openPMD::Mesh mesh = iteration.meshes[_dataSetName.str()];
-            ::openPMD::MeshRecordComponent dataset = mesh[::openPMD::RecordComponent::SCALAR];
+            ::openPMD::Mesh mesh = iteration.meshes[strSpecies];
+            ::openPMD::MeshRecordComponent dataset = mesh[dimensionsName.str()];
             dataset.resetDataset({::openPMD::determineDatatype<Type>(), globalPhaseSpace_extent});
 
             std::shared_ptr<Type> data(&(*hBuffer.origin()(0, rGuardCells)), [](auto const&) {});
@@ -194,7 +193,9 @@ namespace picongpu
             SplashFloat64Type ctFloat64;
             SplashFloatXType ctFloatX;
 
+            float_X const dr = cellSize[axis_element.space];
             mesh.setAttribute("sim_unit", unit);
+            mesh.setGridUnitSI(unit);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "sim_unit", &unit);
             mesh.setAttribute("p_unit", pRange_unit);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "p_unit", &pRange_unit);
@@ -202,31 +203,27 @@ namespace picongpu
             pdc.writeAttribute(currentStep, ctFloatX, dataSetName.str().c_str(), "p_min", &(axis_p_range.first));
             mesh.setAttribute("p_max", axis_p_range.second);
             pdc.writeAttribute(currentStep, ctFloatX, dataSetName.str().c_str(), "p_max", &(axis_p_range.second));
-            mesh.setGridGlobalOffset(std::vector<double>{double(globalMovingWindowOffset), 0.});
+            mesh.setGridGlobalOffset({globalMovingWindowOffset * dr, axis_p_range.first});
+            mesh.setAttribute("movingWindowOffset", globalMovingWindowOffset);
             pdc.writeAttribute(
                 currentStep,
                 ctInt,
                 dataSetName.str().c_str(),
                 "movingWindowOffset",
                 &globalMovingWindowOffset);
-            // movingWindowSize needs not explicitly be given, since it's in the dataset dimensions
+            mesh.setAttribute("movingWindowSize", globalMovingWindowSize);
             pdc.writeAttribute(
                 currentStep,
                 ctInt,
                 dataSetName.str().c_str(),
                 "movingWindowSize",
                 &globalMovingWindowSize);
-
-            mesh.setAttribute("dr", cellSize[axis_element.space]);
-            pdc.writeAttribute(
-                currentStep,
-                ctFloatX,
-                dataSetName.str().c_str(),
-                "dr",
-                &(cellSize[axis_element.space]));
+            mesh.setAttribute("dr", dr);
+            pdc.writeAttribute(currentStep, ctFloatX, dataSetName.str().c_str(), "dr", &dr);
             mesh.setAttribute("dV", CELL_VOLUME);
             pdc.writeAttribute(currentStep, ctFloatX, dataSetName.str().c_str(), "dV", &CELL_VOLUME);
-            mesh.setGridUnitSI(UNIT_LENGTH);
+            mesh.setGridSpacing(std::vector<float_X>{dr, CELL_VOLUME / dr});
+            mesh.setAttribute("dr_unit", UNIT_LENGTH);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "dr_unit", &UNIT_LENGTH);
             iteration.setDt(DELTA_T);
             pdc.writeAttribute(currentStep, ctFloatX, dataSetName.str().c_str(), "dt", &DELTA_T);

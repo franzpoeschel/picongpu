@@ -203,24 +203,24 @@ class PhaseSpaceData(DataReader):
         ret = []
         for index in iteration:
             it = series.iterations[index]
-            dataset_name = "{}_{}_{}".format(species, species_filter, ps)
+            dataset_name = "{}_{}".format(species, species_filter)
             mesh = it.meshes[dataset_name]
-            ps_data = mesh[io.Mesh_Record_Component.SCALAR]
+            ps_data = mesh[ps]
 
             # all in SI
-            dV = mesh.get_attribute('dV') * mesh.grid_unit_SI**3
+            dV = mesh.get_attribute('dV') * mesh.get_attribute('dr') **3
             unitSI = mesh.get_attribute('sim_unit')
             p_range = mesh.get_attribute('p_unit') * \
                 np.array(
                     [mesh.get_attribute('p_min'), mesh.get_attribute('p_max')])
 
-            mv_start = int(mesh.grid_global_offset[0])
-            mv_end = mv_start + ps_data.shape[0]
+            mv_start = mesh.get_attribute('movingWindowOffset')
+            mv_end = mv_start + mesh.get_attribute('movingWindowSize')
             #                2D histogram:         0 (r_i); 1 (p_i)
             # spatial_offset = ps_data.attrs['_global_start'][1]
             spatial_offset = 0  # @todo
 
-            dr = mesh.get_attribute('dr') * mesh.grid_unit_SI
+            dr = mesh.get_attribute('dr') * mesh.get_attribute('dr_unit')
 
             r_range_cells = np.array([mv_start, mv_end]) + spatial_offset
             r_range = r_range_cells * dr
