@@ -97,6 +97,15 @@ namespace picongpu
             ::openPMD::Iteration iteration = series.iterations[currentStep];
             ParallelDomainCollector pdc(mpiComm, MPI_INFO_NULL, Dimensions(size, 1, 1), 10);
 
+            const std::string software("PIConGPU");
+
+            std::stringstream softwareVersion;
+            softwareVersion << PICONGPU_VERSION_MAJOR << "." << PICONGPU_VERSION_MINOR << "."
+                            << PICONGPU_VERSION_PATCH;
+            if(!std::string(PICONGPU_VERSION_LABEL).empty())
+                softwareVersion << "-" << PICONGPU_VERSION_LABEL;
+            series.setSoftware(software, softwareVersion.str());
+
             pmacc::GridController<simDim>& gc = pmacc::Environment<simDim>::get().GridController();
             DataCollector::FileCreationAttr fAttr;
             Dimensions mpiPosition(gc.getPosition()[axis_element.space], 0, 0);
@@ -166,8 +175,9 @@ namespace picongpu
 
             ::openPMD::Mesh mesh = iteration.meshes[_dataSetName.str()];
             ::openPMD::MeshRecordComponent dataset = mesh[::openPMD::RecordComponent::SCALAR];
-            dataset.resetDataset({::openPMD::determineDatatype<Type>(), globalPhaseSpace_extent});
+            dataset.setPosition(std::vector<float_X>{0., 0.}); // @todo always correct?
 
+            dataset.resetDataset({::openPMD::determineDatatype<Type>(), globalPhaseSpace_extent});
             std::shared_ptr<Type> data(&(*hBuffer.origin()(0, rGuardCells)), [](auto const&) {});
             dataset.storeChunk<Type>(data, _localPhaseSpace_offset, _localPhaseSpace_extent);
 
@@ -199,6 +209,7 @@ namespace picongpu
             float_X const dr = cellSize[axis_element.space];
             mesh.setAttribute("_global_start", _globalPhaseSpace_offset);
             mesh.setAttribute("_global_size", globalPhaseSpace_extent);
+            mesh.setAxisLabels({axis_element.spaceAsString(), axis_element.momentumAsString()});
             mesh.setAttribute("sim_unit", unit);
             mesh.setGridUnitSI(unit);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "sim_unit", &unit);
