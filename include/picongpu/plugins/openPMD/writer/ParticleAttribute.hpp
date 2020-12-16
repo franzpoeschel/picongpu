@@ -60,7 +60,8 @@ namespace picongpu
                 std::string const& basepath,
                 const size_t elements,
                 const size_t globalElements,
-                const size_t globalOffset)
+                const size_t globalOffset,
+                const uint32_t currentStep)
             {
                 using Identifier = T_Identifier;
                 using ValueType = typename pmacc::traits::Resolve<Identifier>::type::type;
@@ -147,7 +148,12 @@ namespace picongpu
                         span[i] = reinterpret_cast<ComponentType*>(dataPtr)[d + i * components];
                     }
 
+                    std::stringstream description;
+                    description << "[" << currentStep << " " << openPMDName() << " " << name_lookup[d] << " "
+                                << globalOffset << " " << elements << "] begin";
+                    params->m_dumpTimes.now<std::chrono::milliseconds>(description.str());
                     params->openPMDSeries->flush(PreferredFlushTarget::Disk);
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("end");
                 }
 
                 log<picLog::INPUT_OUTPUT>("openPMD:  ( end ) write species attribute: %1%") % Identifier::getName();
