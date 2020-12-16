@@ -533,6 +533,7 @@ Please pick either of the following:
 
                 HINLINE void operator_impl(ThreadParams* params)
                 {
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("Begin write field " + getName());
                     DataConnector& dc = Environment<>::get().DataConnector();
 
                     /*## update field ##*/
@@ -1032,6 +1033,8 @@ Please pick either of the following:
                         continue;
                     }
 
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("Component " + std::to_string(d) + " prepare");
+
                     // ask openPMD to create a buffer for us
                     // in some backends (ADIOS2), this allows avoiding memcopies
                     auto span = storeChunkSpan<float_X>(
@@ -1075,7 +1078,9 @@ Please pick either of the following:
                         }
                     }
 
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("Component " + std::to_string(d) + " flush");
                     params->openPMDSeries->flush();
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("Component " + std::to_string(d) + " end");
                 }
             }
 
@@ -1118,6 +1123,8 @@ Please pick either of the following:
 
             void write(ThreadParams* threadParams, std::string mpiTransportParams)
             {
+                threadParams->m_dumpTimes.now<std::chrono::milliseconds>(
+                    "Beginning iteration " + std::to_string(mThreadParams.currentStep));
                 /* y direction can be negative for first gpu */
                 const pmacc::Selection<simDim> localDomain = Environment<simDim>::get().SubGrid().getLocalDomain();
                 DataSpace<simDim> particleOffset(localDomain.offset);
@@ -1240,7 +1247,11 @@ Please pick either of the following:
                 // avoid deadlock between not finished pmacc tasks and mpi calls in
                 // openPMD
                 __getTransactionEvent().waitForFinished();
+                mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>(
+                    "Closing iteration " + std::to_string(mThreadParams.currentStep));
                 mThreadParams.openPMDSeries->WRITE_ITERATIONS[mThreadParams.currentStep].close();
+                mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>("Done.");
+                mThreadParams.m_dumpTimes.flush();
 
                 return;
             }
