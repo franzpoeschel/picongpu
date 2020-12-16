@@ -135,7 +135,12 @@ namespace picongpu
                         span[i] = reinterpret_cast<ComponentType*>(dataPtr)[d + i * components];
                     }
 
+                    std::stringstream description;
+                    description << "[" << params->currentStep << " " << openPMDName() << " " << name_lookup[d] << " "
+                                << globalOffset << " " << elements << "] begin";
+                    params->m_dumpTimes.now<std::chrono::milliseconds>(description.str());
                     flushSeries(*params->openPMDSeries, PreferredFlushTarget::Disk);
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("end");
                 }
 
                 auto unitMap = convertToUnitDimension(unitDimension);
