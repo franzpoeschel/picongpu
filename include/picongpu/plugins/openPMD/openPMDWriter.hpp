@@ -793,6 +793,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
 
                 HINLINE void operator_impl(ThreadParams* params, uint32_t const currentStep)
                 {
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("Begin write field " + getName());
                     DataConnector& dc = Environment<>::get().DataConnector();
 
                     /*## update field ##*/
@@ -1632,6 +1633,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                         continue;
                     }
 
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("Component " + std::to_string(d) + " prepare");
+
                     // ask openPMD to create a buffer for us
                     // in some backends (ADIOS2), this allows avoiding memcopies
                     auto span = storeChunkSpan<ComponentType>(
@@ -1679,7 +1682,9 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                         }
                     }
 
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("Component " + std::to_string(d) + " flush");
                     flushSeries(*params->openPMDSeries, PreferredFlushTarget::Disk);
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("Component " + std::to_string(d) + " end");
                 }
             }
 
@@ -1726,6 +1731,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
 
             void write(ThreadParams* threadParams, uint32_t const currentStep, std::string mpiTransportParams)
             {
+                threadParams->m_dumpTimes.now<std::chrono::milliseconds>(
+                    "Beginning iteration " + std::to_string(currentStep));
                 const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
                 const pmacc::Selection<simDim> localDomain = subGrid.getLocalDomain();
                 const pmacc::Selection<simDim> globalDomain = subGrid.getGlobalDomain();
@@ -1850,7 +1857,11 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 // avoid deadlock between not finished pmacc tasks and mpi calls in
                 // openPMD
                 eventSystem::getTransactionEvent().waitForFinished();
+                mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>(
+                    "Closing iteration " + std::to_string(currentStep));
                 mThreadParams.openPMDSeries->writeIterations()[currentStep].close();
+                mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>("Done.");
+                mThreadParams.m_dumpTimes.flush();
 
                 return;
             }

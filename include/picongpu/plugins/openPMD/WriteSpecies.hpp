@@ -439,7 +439,8 @@ namespace picongpu
                     basename,
                     myNumParticles,
                     globalNumParticles,
-                    myParticleOffset);
+                    myParticleOffset,
+                    currentStep);
 
                 log<picLog::INPUT_OUTPUT>("openPMD:  (begin) free memory: %1%") % T_SpeciesFilter::getName();
                 /* free host memory */
@@ -499,7 +500,9 @@ namespace picongpu
                         globalNumParticles,
                         *params->jsonMatcher,
                         series.particlesPath() + speciesGroup);
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("Flush species " + T_SpeciesFilter::getName());
                     flushSeries(*params->openPMDSeries, PreferredFlushTarget::Buffer);
+                    params->m_dumpTimes.now<std::chrono::milliseconds>("Finished flush species");
                 }
 
                 log<picLog::INPUT_OUTPUT>("openPMD: ( end ) writing particle patches for %1%")
