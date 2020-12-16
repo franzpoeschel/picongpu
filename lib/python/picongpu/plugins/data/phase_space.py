@@ -69,10 +69,9 @@ class PhaseSpaceData(DataReader):
         super().__init__(run_directory)
 
         self.data_file_prefix = "PhaseSpace_{0}_{1}_{2}_{3}"
-        self.data_file_suffix = ".h5"
         self.data_hdf5_path = "/data/{0}/{1}"
 
-    def get_data_path(self, ps, species, species_filter="all", iteration=None):
+    def get_data_path(self, ps, species, species_filter="all", file_ext="h5"):
         """
         Return the path to the underlying data file.
 
@@ -87,6 +86,9 @@ class PhaseSpaceData(DataReader):
         species_filter: string
             name of the particle species filter, default is 'all'
             (defined in ``particleFilters.param``)
+        file_ext: string
+            filename extension for openPMD backend
+            default is 'h5' for the HDF5 backend
 
         Returns
         -------
@@ -121,10 +123,11 @@ class PhaseSpaceData(DataReader):
             species_filter,
             ps,
             iteration_str
-        ) + self.data_file_suffix
+        ) + '.' + file_ext
         return os.path.join(output_dir, data_file_name)
 
-    def get_iterations(self, ps, species, species_filter='all'):
+    def get_iterations(self, ps, species, species_filter='all',
+                       file_ext="h5"):
         """
         Return an array of iterations with available data.
 
@@ -139,13 +142,17 @@ class PhaseSpaceData(DataReader):
         species_filter: string
             name of the particle species filter, default is 'all'
             (defined in ``particleFilters.param``)
+        file_ext: string
+            filename extension for openPMD backend
+            default is 'h5' for the HDF5 backend
 
         Returns
         -------
         An array with unsigned integers.
         """
         # get the regular expression matching all available files
-        data_file_path = self.get_data_path(ps, species, species_filter)
+        data_file_path = self.get_data_path(ps, species, species_filter,
+                                            file_ext=file_ext)
 
         series = io.Series(data_file_path, io.Access.read_only)
         iterations = [key for key, _ in series.iterations.items()]
@@ -153,7 +160,7 @@ class PhaseSpaceData(DataReader):
         return iterations
 
     def _get_for_iteration(self, iteration, ps, species, species_filter='all',
-                           **kwargs):
+                           file_ext = "h5", **kwargs):
         """
         Get a phase space histogram.
 
@@ -171,6 +178,9 @@ class PhaseSpaceData(DataReader):
         species_filter: string
             name of the particle species filter, default is 'all'
             (defined in ``particleFilters.param``)
+        file_ext: string
+            filename extension for openPMD backend
+            default is 'h5' for the HDF5 backend
 
         Returns
         -------
@@ -184,7 +194,8 @@ class PhaseSpaceData(DataReader):
         If a single iteration is requested, return the tuple (ps, ps_meta).
         """
 
-        data_file_path = self.get_data_path(ps, species, species_filter)
+        data_file_path = self.get_data_path(ps, species, species_filter,
+                                            file_ext=file_ext)
         series = io.Series(data_file_path, io.Access.read_only)
         available_iterations = [key for key, _ in series.iterations.items()]
 
