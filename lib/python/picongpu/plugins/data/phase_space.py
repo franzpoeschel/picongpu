@@ -160,7 +160,7 @@ class PhaseSpaceData(DataReader):
         return iterations
 
     def _get_for_iteration(self, iteration, ps, species, species_filter='all',
-                           file_ext = "h5", **kwargs):
+                           file_ext="h5", **kwargs):
         """
         Get a phase space histogram.
 
