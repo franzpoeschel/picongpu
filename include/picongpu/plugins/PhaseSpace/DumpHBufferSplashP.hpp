@@ -40,6 +40,7 @@
 #include <mpi.h>
 #include <splash/splash.h>
 #include <openPMD/openPMD.hpp>
+#include <vector>
 
 namespace picongpu
 {
@@ -206,7 +207,20 @@ namespace picongpu
             SplashFloat64Type ctFloat64;
             SplashFloatXType ctFloatX;
 
+            pmacc::Selection<simDim> globalDomain = subGrid.getGlobalDomain();
+            pmacc::Selection<simDim> totalDomain = subGrid.getTotalDomain();
+            // convert things to std::vector<> for the openPMD API to enjoy
+            std::vector<int> globalDomainSize{&globalDomain.size[0], &globalDomain.size[0] + simDim};
+            std::vector<int> globalDomainOffset{&globalDomain.offset[0], &globalDomain.offset[0] + simDim};
+            std::vector<int> totalDomainSize{&totalDomain.size[0], &totalDomain.size[0] + simDim};
+            std::vector<int> totalDomainOffset{&totalDomain.offset[0], &totalDomain.offset[0] + simDim};
+
             float_X const dr = cellSize[axis_element.space];
+
+            mesh.setAttribute("globalDomainSize", globalDomainSize);
+            mesh.setAttribute("globalDomainOffset", globalDomainOffset);
+            mesh.setAttribute("totalDomainSize", totalDomainSize);
+            mesh.setAttribute("totalDomainOffset", totalDomainOffset);
             mesh.setAttribute("_global_start", _globalPhaseSpace_offset);
             mesh.setAttribute("_global_size", globalPhaseSpace_extent);
             mesh.setAxisLabels({axis_element.spaceAsString(), axis_element.momentumAsString()});
