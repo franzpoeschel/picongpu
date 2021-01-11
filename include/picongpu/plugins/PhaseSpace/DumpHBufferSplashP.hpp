@@ -214,6 +214,15 @@ namespace picongpu
             std::vector<int> globalDomainOffset{&globalDomain.offset[0], &globalDomain.offset[0] + simDim};
             std::vector<int> totalDomainSize{&totalDomain.size[0], &totalDomain.size[0] + simDim};
             std::vector<int> totalDomainOffset{&totalDomain.offset[0], &totalDomain.offset[0] + simDim};
+            std::vector<std::string> globalDomainAxisLabels;
+            if(simDim == DIM2)
+            {
+                globalDomainAxisLabels = {"y", "x"}; // 2D: F[y][x]
+            }
+            if(simDim == DIM3)
+            {
+                globalDomainAxisLabels = {"z", "y", "x"}; // 3D: F[z][y][x]
+            }
 
             float_X const dr = cellSize[axis_element.space];
 
@@ -221,6 +230,8 @@ namespace picongpu
             mesh.setAttribute("globalDomainOffset", globalDomainOffset);
             mesh.setAttribute("totalDomainSize", totalDomainSize);
             mesh.setAttribute("totalDomainOffset", totalDomainOffset);
+            mesh.setAttribute("globalDomainAxisLabels", globalDomainAxisLabels);
+            mesh.setAttribute("totalDomainAxisLabels", globalDomainAxisLabels);
             mesh.setAttribute("_global_start", _globalPhaseSpace_offset);
             mesh.setAttribute("_global_size", globalPhaseSpace_extent);
             mesh.setAxisLabels({axis_element.spaceAsString(), axis_element.momentumAsString()});
