@@ -236,7 +236,11 @@ namespace picongpu
             mesh.setAttribute("_global_size", globalPhaseSpace_extent);
             mesh.setAxisLabels({axis_element.spaceAsString(), axis_element.momentumAsString()});
             mesh.setAttribute("sim_unit", unit);
-            mesh.setGridUnitSI(unit);
+            dataset.setUnitSI(unit);
+            {
+                using UD = ::openPMD::UnitDimension;
+                mesh.setUnitDimension({{UD::I, 1.0}, {UD::T, 1.0}, {UD::L, -1.0}}); // charge density
+            }
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "sim_unit", &unit);
             mesh.setAttribute("p_unit", pRange_unit);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "p_unit", &pRange_unit);
@@ -270,6 +274,11 @@ namespace picongpu
             pdc.writeAttribute(currentStep, ctFloatX, dataSetName.str().c_str(), "dt", &DELTA_T);
             iteration.setTimeUnitSI(UNIT_TIME);
             pdc.writeAttribute(currentStep, ctFloat64, dataSetName.str().c_str(), "dt_unit", &UNIT_TIME);
+            /*
+             * The value represents an aggregation over one cell, so any value is correct for the mesh position.
+             * Just use the center.
+             */
+            dataset.setPosition(std::vector<float>{0.5, 0.5});
 
             /** close file ****************************************************/
             pdc.finalize();
