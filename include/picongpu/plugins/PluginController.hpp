@@ -212,8 +212,7 @@ namespace picongpu
             plugins::radiation::Radiation<bmpl::_1>,
             plugins::multi::Master<ParticleCalorimeter<bmpl::_1>>,
 #endif
-// temporary until libsplash output is deactivated
-#if(ENABLE_OPENPMD * ENABLE_HDF5 == 1)
+#if(ENABLE_OPENPMD == 1)
             plugins::multi::Master<PhaseSpace<particles::shapes::Counter::ChargeAssignment, bmpl::_1>>
 #endif
 #if(PMACC_CUDA_ENABLED == 1)

@@ -20,7 +20,7 @@
 #pragma once
 
 #include "PhaseSpace.hpp"
-#include "DumpHBufferSplashP.hpp"
+#include "DumpHBufferOpenPMD.hpp"
 
 #include <pmacc/cuSTL/container/DeviceBuffer.hpp>
 #include <pmacc/cuSTL/cursor/MultiIndexCursor.hpp>
