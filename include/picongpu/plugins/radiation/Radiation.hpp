@@ -20,8 +20,8 @@
 
 #pragma once
 
-#if(ENABLE_HDF5 != 1)
-#    error The activated radiation plugin (radiation.param) requires HDF5
+#if(ENABLE_HDF5 * ENABLE_OPENPMD != 1)
+#    error The activated radiation plugin (radiation.param) requires openPMD-api with a HDF5 backend
 #endif
 
 #include "picongpu/simulation_defines.hpp"
@@ -43,6 +43,8 @@
 #include <pmacc/traits/GetNumWorkers.hpp>
 #include <pmacc/traits/HasIdentifier.hpp>
 
+
+#include <openPMD/openPMD.hpp>
 #include <boost/filesystem.hpp>
 
 #include <cstdlib>
