@@ -142,7 +142,6 @@ namespace picongpu
                 std::string particlesPathName;
 
                 mpi::MPIReduce reduce;
-                bool compressionOn;
                 static const int numberMeshRecords = 3;
 
             public:
@@ -162,7 +161,6 @@ namespace picongpu
                     , lastStep(0)
                     , meshesPathName("DetectorMesh/")
                     , particlesPathName("DetectorParticle/")
-                    , compressionOn(false)
                 {
                     Environment<>::get().PluginConnector().registerPlugin(this);
                 }
@@ -234,9 +232,6 @@ namespace picongpu
                         (pluginPrefix + ".folderRadPerGPU").c_str(),
                         po::value<std::string>(&folderRadPerGPU)->default_value("radPerGPU"),
                         "folder in which the radiation of each GPU is written")(
-                        (pluginPrefix + ".compression").c_str(),
-                        po::bool_switch(&compressionOn),
-                        "enable compression of hdf5 output")(
                         (pluginPrefix + ".numJobs").c_str(),
                         po::value<int>(&numJobs)->default_value(2),
                         "Number of independent jobs used for the radiation calculation.");
@@ -678,8 +673,6 @@ namespace picongpu
                     splash::DataCollector::FileCreationAttr fAttr;
 
                     splash::DataCollector::initFileCreationAttr(fAttr);
-                    fAttr.enableCompression = compressionOn;
-
                     std::ostringstream filename;
                     filename << name << currentStep;
 
