@@ -259,9 +259,9 @@ namespace picongpu
                     if(isMaster)
                     {
                         // this will lead to wrong lastRad output right after the checkpoint if the restart point is
-                        // not a dump point. The correct lastRad data can be reconstructed from hdf5 data
+                        // not a dump point. The correct lastRad data can be reconstructed from openPMD data
                         // since text based lastRad output will be obsolete soon, this is not a problem
-                        readHDF5file(
+                        readOpenPMDfile(
                             timeSumArray,
                             restartDirectory + "/" + speciesName + std::string("_radRestart_"),
                             timeStep);
@@ -284,7 +284,9 @@ namespace picongpu
                     // write backup file
                     if(isMaster)
                     {
-                        writeHDF5file(tmp_result, restartDirectory + "/" + speciesName + std::string("_radRestart_"));
+                        writeOpenPMDfile(
+                            tmp_result,
+                            restartDirectory + "/" + speciesName + std::string("_radRestart_"));
                     }
                 }
 
@@ -353,8 +355,8 @@ namespace picongpu
 
                         if(isMaster)
                         {
-                            fs.createDirectory("radiationHDF5");
-                            fs.setDirectoryPermissions("radiationHDF5");
+                            fs.createDirectory("radiationOpenPMD");
+                            fs.setDirectoryPermissions("radiationOpenPMD");
                         }
 
 
@@ -531,14 +533,14 @@ namespace picongpu
                 }
 
 
-                /** write total radiation data as HDF5 file */
-                void writeAmplitudesToHDF5()
+                /** write total radiation data as openPMD file */
+                void writeAmplitudesToOpenPMD()
                 {
                     if(isMaster)
                     {
-                        writeHDF5file(
+                        writeOpenPMDfile(
                             timeSumArray,
-                            std::string("radiationHDF5/") + speciesName + std::string("_radAmplitudes_"));
+                            std::string("radiationOpenPMD/") + speciesName + std::string("_radAmplitudes_"));
                     }
                 }
 
@@ -560,11 +562,11 @@ namespace picongpu
                     saveRadPerGPU(currentGPUpos);
                     writeLastRadToText();
                     writeTotalRadToText();
-                    writeAmplitudesToHDF5();
+                    writeAmplitudesToOpenPMD();
                 }
 
 
-                /** This method returns hdf5 data structure names for amplitudes
+                /** This method returns openPMD data structure names for amplitudes
                  *
                  *  Arguments:
                  *  int index - index of Amplitude
@@ -588,7 +590,7 @@ namespace picongpu
                     return path + dataLabelsList[index];
                 }
 
-                /** This method returns hdf5 data structure names for detector directions
+                /** This method returns openPMD data structure names for detector directions
                  *
                  *  Arguments:
                  *  int index - index of detector
@@ -613,7 +615,7 @@ namespace picongpu
                 }
 
 
-                /** This method returns hdf5 data structure names for detector frequencies
+                /** This method returns openPMD data structure names for detector frequencies
                  *
                  *  Arguments:
                  *  int index - index of detector
@@ -637,7 +639,7 @@ namespace picongpu
                     return path + dataLabelsList[index];
                 }
 
-                /** This method returns hdf5 data structure names for all mesh records
+                /** This method returns openPMD data structure names for all mesh records
                  *
                  *  Arguments:
                  *  int index - index of record
@@ -661,49 +663,60 @@ namespace picongpu
                 }
 
 
-                /** Write Amplitude data to HDF5 file
+                /** Write Amplitude data to openPMD file
                  *
                  * Arguments:
                  * Amplitude* values - array of complex amplitude values
                  * std::string name - path and beginning of file name to store data to
                  */
-                void writeHDF5file(std::vector<Amplitude>& values, std::string name)
+                void writeOpenPMDfile(std::vector<Amplitude>& values, std::string name)
                 {
-                    splash::SerialDataCollector hdf5DataFile(1);
-                    splash::DataCollector::FileCreationAttr fAttr;
+                    // h5 splash::SerialDataCollector openPMDdataFile(1);
+                    // h5 splash::DataCollector::FileCreationAttr fAttr;
 
-                    splash::DataCollector::initFileCreationAttr(fAttr);
+                    // h5 splash::DataCollector::initFileCreationAttr(fAttr);
                     std::ostringstream filename;
-                    filename << name << currentStep;
+                    filename << name << currentStep << ".h5";
 
-                    hdf5DataFile.open(filename.str().c_str(), fAttr);
+                    // h5 openPMDdataFile.open(filename.str().c_str(), fAttr);
+                    ::openPMD::Series openPMDdataFile(filename.str(), ::openPMD::Access::CREATE);
+                    auto openPMDdataFileIteration = openPMDdataFile.iterations[currentStep];
 
-                    typename PICToSplash<Amplitude::complex_T::type>::type radSplashType;
+                    // h5 typename PICToSplash<Amplitude::complex_T::type>::type radSplashType;
 
 
-                    splash::Dimensions bufferSize(
-                        Amplitude::numComponents,
-                        radiation_frequencies::N_omega,
-                        parameters::N_observer);
+                    // h5 splash::Dimensions bufferSize(
+                    // h5     Amplitude::numComponents,
+                    // h5     radiation_frequencies::N_omega,
+                    // h5     parameters::N_observer);
 
-                    splash::Dimensions componentSize(1, radiation_frequencies::N_omega, parameters::N_observer);
+                    // h5 splash::Dimensions componentSize(1, radiation_frequencies::N_omega, parameters::N_observer);
+                    auto bufferExtent
+                        = std::vector<uint32_t>(::openPMD::Extent{1, radiation_frequencies::N_omega, parameters::N_observer});
 
-                    splash::Dimensions stride(Amplitude::numComponents, 1, 1);
+
+                    // h5 splash::Dimensions stride(Amplitude::numComponents, 1, 1);
 
                     /* get the radiation amplitude unit */
                     Amplitude UnityAmplitude(1., 0., 0., 0., 0., 0.);
                     const picongpu::float_64 factor = UnityAmplitude.calc_radiation() * UNIT_ENERGY * UNIT_TIME;
 
-                    typedef PICToSplash<float_X>::type SplashFloatXType;
-                    SplashFloatXType splashFloatXType;
+                    // h5 typedef PICToSplash<float_X>::type SplashFloatXType;
+                    // h5 SplashFloatXType splashFloatXType;
 
                     for(uint32_t ampIndex = 0; ampIndex < Amplitude::numComponents; ++ampIndex)
                     {
-                        splash::Dimensions offset(ampIndex, 0, 0);
-                        splash::Selection dataSelection(bufferSize, componentSize, offset, stride);
+                        // h5 splash::Dimensions offset(ampIndex, 0, 0);
+                        // h5 splash::Selection dataSelection(bufferSize, componentSize, offset, stride);
+
+                        auto bufferOffset = std::vector<uint32_t>(::openPMD::Extent{ampIndex, 0, 0});
 
                         /* save data for each x/y/z * Re/Im amplitude */
-                        hdf5DataFile.write(
+                        auto amplitudeMesh = iteration.meshes[dataLabels(ampIndex))];
+                        auto dataset = amplitudeMesh[::openPMD::RecordComponent::SCALAR];
+                        dataset.resetDataset({::openPMD::determineDatatype<float_64>(), bufferExtent});
+
+                        openPMDdataFile.write(
                             currentStep,
                             radSplashType,
                             3,
@@ -712,7 +725,7 @@ namespace picongpu
                             values.data());
 
                         /* save SI unit as attribute together with data set */
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             radSplashType,
                             (meshesPathName + dataLabels(ampIndex)).c_str(),
@@ -721,7 +734,7 @@ namespace picongpu
 
                         /* position */
                         std::vector<float_X> positionMesh(simDim, 0.0); /* there is no offset - zero */
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             splashFloatXType,
                             (meshesPathName + dataLabels(ampIndex)).c_str(),
@@ -732,7 +745,7 @@ namespace picongpu
                     }
 
                     /* save SI unit as attribute in the Amplitude group (for convenience) */
-                    hdf5DataFile.writeAttribute(
+                    openPMDdataFile.writeAttribute(
                         currentStep,
                         radSplashType,
                         (meshesPathName + std::string("Amplitude")).c_str(),
@@ -755,7 +768,7 @@ namespace picongpu
                             offset,
                             strideDetector);
 
-                        hdf5DataFile.write(
+                        openPMDdataFile.write(
                             currentStep,
                             radSplashType,
                             3,
@@ -765,7 +778,7 @@ namespace picongpu
 
                         /* save SI unit as attribute together with data set */
                         const picongpu::float_64 factorDirection = 1.0;
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             radSplashType,
                             (meshesPathName + dataLabelsDetectorDirection(detectorDim)).c_str(),
@@ -774,7 +787,7 @@ namespace picongpu
 
                         /* position */
                         std::vector<float_X> positionMesh(simDim, 0.0); /* there is no offset - zero */
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             splashFloatXType,
                             (meshesPathName + dataLabelsDetectorDirection(detectorDim)).c_str(),
@@ -793,7 +806,7 @@ namespace picongpu
                     splash::Dimensions offset(0, 0, 0);
                     splash::Selection dataSelection(bufferSizeOmega, bufferSizeOmega, offset, strideOmega);
 
-                    hdf5DataFile.write(
+                    openPMDdataFile.write(
                         currentStep,
                         radSplashType,
                         3,
@@ -803,7 +816,7 @@ namespace picongpu
 
                     /* save SI unit as attribute together with data set */
                     const picongpu::float_64 factorOmega = 1.0 / UNIT_TIME;
-                    hdf5DataFile.writeAttribute(
+                    openPMDdataFile.writeAttribute(
                         currentStep,
                         radSplashType,
                         (meshesPathName + dataLabelsDetectorFrequency(0)).c_str(),
@@ -812,7 +825,7 @@ namespace picongpu
 
                     /* position */
                     std::vector<float_X> positionMesh(simDim, 0.0); /* there is no offset - zero */
-                    hdf5DataFile.writeAttribute(
+                    openPMDdataFile.writeAttribute(
                         currentStep,
                         splashFloatXType,
                         (meshesPathName + dataLabelsDetectorFrequency(0)).c_str(),
@@ -826,26 +839,26 @@ namespace picongpu
                     /* begin required openPMD global attributes */
                     std::string openPMDversion("1.0.0");
                     splash::ColTypeString ctOpenPMDversion(openPMDversion.length());
-                    hdf5DataFile.writeGlobalAttribute(ctOpenPMDversion, "openPMD", openPMDversion.c_str());
+                    openPMDdataFile.writeGlobalAttribute(ctOpenPMDversion, "openPMD", openPMDversion.c_str());
 
                     const uint32_t openPMDextension = 0; // no extension
                     splash::ColTypeUInt32 ctUInt32;
-                    hdf5DataFile.writeGlobalAttribute(ctUInt32, "openPMDextension", &openPMDextension);
+                    openPMDdataFile.writeGlobalAttribute(ctUInt32, "openPMDextension", &openPMDextension);
 
                     std::string basePath("/data/%T/");
                     splash::ColTypeString ctBasePath(basePath.length());
-                    hdf5DataFile.writeGlobalAttribute(ctBasePath, "basePath", basePath.c_str());
+                    openPMDdataFile.writeGlobalAttribute(ctBasePath, "basePath", basePath.c_str());
 
                     splash::ColTypeString ctMeshesPath(meshesPathName.length());
-                    hdf5DataFile.writeGlobalAttribute(ctMeshesPath, "meshesPath", meshesPathName.c_str());
+                    openPMDdataFile.writeGlobalAttribute(ctMeshesPath, "meshesPath", meshesPathName.c_str());
 
 
                     splash::ColTypeString ctParticlesPath(particlesPathName.length());
-                    hdf5DataFile.writeGlobalAttribute(ctParticlesPath, "particlesPath", particlesPathName.c_str());
+                    openPMDdataFile.writeGlobalAttribute(ctParticlesPath, "particlesPath", particlesPathName.c_str());
 
                     std::string iterationEncoding("fileBased");
                     splash::ColTypeString ctIterationEncoding(iterationEncoding.length());
-                    hdf5DataFile.writeGlobalAttribute(
+                    openPMDdataFile.writeGlobalAttribute(
                         ctIterationEncoding,
                         "iterationEncoding",
                         iterationEncoding.c_str());
@@ -855,13 +868,16 @@ namespace picongpu
                     const int indexCutDirectory = name.rfind('/');
                     std::string iterationFormat(name.substr(indexCutDirectory + 1) + std::string("%T_0_0_0.h5"));
                     splash::ColTypeString ctIterationFormat(iterationFormat.length());
-                    hdf5DataFile.writeGlobalAttribute(ctIterationFormat, "iterationFormat", iterationFormat.c_str());
+                    openPMDdataFile.writeGlobalAttribute(
+                        ctIterationFormat,
+                        "iterationFormat",
+                        iterationFormat.c_str());
 
-                    hdf5DataFile.writeAttribute(currentStep, splashFloatXType, nullptr, "dt", &DELTA_T);
+                    openPMDdataFile.writeAttribute(currentStep, splashFloatXType, nullptr, "dt", &DELTA_T);
                     const float_X time = float_X(currentStep) * DELTA_T;
-                    hdf5DataFile.writeAttribute(currentStep, splashFloatXType, nullptr, "time", &time);
+                    openPMDdataFile.writeAttribute(currentStep, splashFloatXType, nullptr, "time", &time);
                     splash::ColTypeDouble ctDouble;
-                    hdf5DataFile.writeAttribute(currentStep, ctDouble, nullptr, "timeUnitSI", &UNIT_TIME);
+                    openPMDdataFile.writeAttribute(currentStep, ctDouble, nullptr, "timeUnitSI", &UNIT_TIME);
 
                     /* end required openPMD global attributes */
 
@@ -871,12 +887,12 @@ namespace picongpu
                     if(author.length() > 0)
                     {
                         splash::ColTypeString ctAuthor(author.length());
-                        hdf5DataFile.writeGlobalAttribute(ctAuthor, "author", author.c_str());
+                        openPMDdataFile.writeGlobalAttribute(ctAuthor, "author", author.c_str());
                     }
 
                     std::string software("PIConGPU");
                     splash::ColTypeString ctSoftware(software.length());
-                    hdf5DataFile.writeGlobalAttribute(ctSoftware, "software", software.c_str());
+                    openPMDdataFile.writeGlobalAttribute(ctSoftware, "software", software.c_str());
 
                     std::stringstream softwareVersion;
                     softwareVersion << PICONGPU_VERSION_MAJOR << "." << PICONGPU_VERSION_MINOR << "."
@@ -884,14 +900,14 @@ namespace picongpu
                     if(!std::string(PICONGPU_VERSION_LABEL).empty())
                         softwareVersion << "-" << PICONGPU_VERSION_LABEL;
                     splash::ColTypeString ctSoftwareVersion(softwareVersion.str().length());
-                    hdf5DataFile.writeGlobalAttribute(
+                    openPMDdataFile.writeGlobalAttribute(
                         ctSoftwareVersion,
                         "softwareVersion",
                         softwareVersion.str().c_str());
 
                     std::string date = helper::getDateString("%F %T %z");
                     splash::ColTypeString ctDate(date.length());
-                    hdf5DataFile.writeGlobalAttribute(ctDate, "date", date.c_str());
+                    openPMDdataFile.writeGlobalAttribute(ctDate, "date", date.c_str());
 
                     /* end recommended openPMD global attributes */
 
@@ -901,7 +917,7 @@ namespace picongpu
                     {
                         /* timeOffset */
                         const float_X timeOffset = 0.0;
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             splashFloatXType,
                             (meshesPathName + meshRecordLabels(i)).c_str(),
@@ -910,7 +926,7 @@ namespace picongpu
 
                         /* gridGlobalOffset */
                         std::vector<float_64> gridGlobalOffset(simDim, 0.0); /* there is no offset - zero */
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             ctDouble,
                             (meshesPathName + meshRecordLabels(i)).c_str(),
@@ -922,7 +938,7 @@ namespace picongpu
                         /* gridUnit */
                         /* ALL grids have indices as axises - thus no unit conversion */
                         const double unitNone = 1.0;
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             ctDouble,
                             (meshesPathName + meshRecordLabels(i)).c_str(),
@@ -932,7 +948,7 @@ namespace picongpu
                         /* geometry */
                         const std::string geometry("cartesian");
                         splash::ColTypeString ctGeometry(geometry.length());
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             ctGeometry,
                             (meshesPathName + meshRecordLabels(i)).c_str(),
@@ -942,7 +958,7 @@ namespace picongpu
                         /* dataOrder */
                         const std::string dataOrder("C");
                         splash::ColTypeString ctDataOrder(dataOrder.length());
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             ctDataOrder,
                             (meshesPathName + meshRecordLabels(i)).c_str(),
@@ -952,7 +968,7 @@ namespace picongpu
                         std::vector<float_X> gridSpacing(simDim, 0.0);
                         for(uint32_t d = 0; d < simDim; ++d)
                             gridSpacing.at(d) = float_X(1.0);
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             splashFloatXType,
                             (meshesPathName + meshRecordLabels(i)).c_str(),
@@ -986,7 +1002,7 @@ namespace picongpu
                         myArrOfStr = getSplashArrayOfString(myListOfStr);
                         splash::ColTypeString ctSomeListOfStr(myArrOfStr.maxLen);
 
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             ctSomeListOfStr,
                             (meshesPathName + meshRecordLabels(i)).c_str(),
@@ -1014,7 +1030,7 @@ namespace picongpu
                             /* units 1./second -> Time^-1  */
                             unitDimension[traits::SIBaseUnits::time] = -1.0;
                         }
-                        hdf5DataFile.writeAttribute(
+                        openPMDdataFile.writeAttribute(
                             currentStep,
                             ctDouble,
                             (meshesPathName + meshRecordLabels(i)).c_str(),
@@ -1026,28 +1042,27 @@ namespace picongpu
                     /* end required openPMD attributes for meshes */
                     /* end openPMD attributes */
 
-                    hdf5DataFile.close();
+                    openPMDdataFile.close();
                 }
 
 
-                /** Read Amplitude data from HDF5 file
+                /** Read Amplitude data from openPMD file
                  *
                  * Arguments:
                  * Amplitude* values - array of complex amplitudes to store data in
                  * std::string name - path and beginning of file name with data stored in
                  * const int timeStep - time step to read
                  */
-                void readHDF5file(std::vector<Amplitude>& values, std::string name, const int timeStep)
+                void readOpenPMDfile(std::vector<Amplitude>& values, std::string name, const int timeStep)
                 {
-                    splash::SerialDataCollector hdf5DataFile(1);
-                    splash::DataCollector::FileCreationAttr fAttr;
-
-                    splash::DataCollector::initFileCreationAttr(fAttr);
-
-                    fAttr.fileAccType = splash::DataCollector::FAT_READ;
+                    // h5 splash::SerialDataCollector openPMDdataFile(1);
+                    // h5 splash::DataCollector::FileCreationAttr fAttr;
+                    // h5 splash::DataCollector::initFileCreationAttr(fAttr);
+                    // h5 fAttr.fileAccType = splash::DataCollector::FAT_READ;
 
                     std::ostringstream filename;
                     /* add to standard ending added by libSplash for SerialDataCollector */
+                    /* TODO: Check if openPMD now allows to avoid the _0_0_0 ending. */
                     filename << name << timeStep << "_0_0_0.h5";
 
                     /* check if restart file exists */
@@ -1059,22 +1074,33 @@ namespace picongpu
                     }
                     else
                     {
-                        hdf5DataFile.open(filename.str().c_str(), fAttr);
+                        ::openPMD::Series openPMDdataFile(filename.str(), ::openPMD::Access::READ_ONLY);
 
-                        typename PICToSplash<float_64>::type radSplashType;
-
-                        splash::Dimensions componentSize(1, radiation_frequencies::N_omega, parameters::N_observer);
+                        // h5  openPMDdataFile.open(filename.str().c_str(), fAttr);
+                        // h5 typename PICToSplash<float_64>::type radSplashType;
+                        // h5 splash::Dimensions componentSize(1, radiation_frequencies::N_omega,
+                        // parameters::N_observer);
 
                         const int N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
                         picongpu::float_64* tmpBuffer = new picongpu::float_64[N_tmpBuffer];
 
                         for(uint32_t ampIndex = 0; ampIndex < Amplitude::numComponents; ++ampIndex)
                         {
-                            hdf5DataFile.read(
-                                timeStep,
-                                (meshesPathName + dataLabels(ampIndex)).c_str(),
-                                componentSize,
-                                tmpBuffer);
+                            auto dataset = openPMDdataFile.iterations[timeStep]
+                                                .meshes[dataLabels(ampIndex)).c_str()][::openPMD::RecordComponent::SCALAR];
+                            ::openPMD::Extent extent = dataset.getExtent();
+                            ::openPMD::Offset offset(extent.size(), 0);
+
+                            dataset.loadChunk(
+                                std::shared_ptr<float_64>{tmpBuffer, [](auto const*) {}},
+                                offset,
+                                extent);
+
+                            // h5 openPMDdataFile.read(
+                            // h5    timeStep,
+                            // h5    (meshesPathName + dataLabels(ampIndex)).c_str(),
+                            // h5    componentSize,
+                            // h5    tmpBuffer);
 
                             for(int copyIndex = 0; copyIndex < N_tmpBuffer; ++copyIndex)
                             {
@@ -1085,9 +1111,10 @@ namespace picongpu
                         }
 
                         delete[] tmpBuffer;
-                        hdf5DataFile.close();
+                        // h5 openPMDdataFile.close();
+                        openPMDdataFile.iterations[restartStep].close();
 
-                        log<picLog::INPUT_OUTPUT>("Radiation (%1%): read radiation data from HDF5") % speciesName;
+                        log<picLog::INPUT_OUTPUT>("Radiation (%1%): read radiation data from openPMD") % speciesName;
                     }
                 }
 

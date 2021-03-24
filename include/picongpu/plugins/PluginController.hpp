@@ -73,7 +73,6 @@
 #    include "picongpu/plugins/IsaacPlugin.hpp"
 #endif
 
-
 #if(ENABLE_HDF5 * ENABLE_OPENPMD == 1)
 // needs to be openPMD-api only in the future to support adios
 #    include "picongpu/plugins/radiation/Radiation.hpp"
