@@ -161,6 +161,8 @@ Please pick either of the following:
                     openPMDSeries->setMeshesPath(MESHES_PATH);
                     openPMDSeries->setParticlesPath(PARTICLES_PATH);
                 }
+                openPMDSeries->setMpiRanksMetaInfo(
+                    ::openPMD::host_info::byMethod(::openPMD::host_info::Method::HOSTNAME));
                 log<picLog::INPUT_OUTPUT>("openPMD: successfully opened file: %1%") % fullName;
                 return *openPMDSeries;
             }
