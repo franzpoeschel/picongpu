@@ -115,8 +115,17 @@ namespace picongpu
 
             std::vector<double> times;
             DumpTimes<> m_dumpTimes{[]() {
+                constexpr unsigned MAX_LOGS = 20;
                 static GridController<simDim>& gc = Environment<simDim>::get().GridController();
-                static std::string dumpFile = "PIC_times_" + std::to_string(gc.getGlobalRank()) + ".txt";
+                auto const size = gc.getGlobalSize();
+                auto const rank = gc.getGlobalRank();
+                auto stride = (size + MAX_LOGS) / MAX_LOGS - 1; // sdiv, ceil(a/b)
+                if(stride == 0)
+                {
+                    ++stride;
+                }
+                std::string const dumpFile
+                    = rank % stride == 0 ? "PIC_times_" + std::to_string(rank) + ".txt" : "/dev/null";
                 return dumpFile;
             }()};
 
