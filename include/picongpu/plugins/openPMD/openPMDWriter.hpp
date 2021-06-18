@@ -157,6 +157,10 @@ Please pick either of the following:
   Make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 )END");
                 }
+                else if(openPMDSeries->backend() == "ADIOS2")
+                {
+                    openPMDSeries->setIterationEncoding(::openPMD::IterationEncoding::variableBased);
+                }
                 if(at == ::openPMD::Access::CREATE)
                 {
                     openPMDSeries->setMeshesPath(MESHES_PATH);
