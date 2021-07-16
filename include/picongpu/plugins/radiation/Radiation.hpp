@@ -669,10 +669,11 @@ namespace picongpu
                 {
                     std::ostringstream filename;
                     // TODO: needs to be changed to ".h5" and also support adios
-                    filename << name << currentStep << "_0_0_0.h5";
+                    filename << name << "%T_0_0_0.h5";
 
                     ::openPMD::Series openPMDdataFile = ::openPMD::Series(filename.str(), ::openPMD::Access::CREATE);
                     ::openPMD::Iteration openPMDdataFileIteration = openPMDdataFile.iterations[currentStep];
+                    openPMDdataFile.setMeshesPath(meshesPathName.c_str());
 
                     // begin: write amplitude data
                     ::openPMD::Mesh mesh_amp = openPMDdataFileIteration.meshes[dataLabels(-1)];
@@ -719,7 +720,8 @@ namespace picongpu
                         }
                         // write actual data
                         mesh_amp[dir].storeChunk(::openPMD::shareRaw(tmpBuffer), offset_amp, extent_amp);
-                    }
+                        openPMDdataFile.flush();
+		    }
                     delete[] tmpBuffer;
                     // end: write amplitude data
 
@@ -764,6 +766,7 @@ namespace picongpu
 
                         // write actual data
                         mesh_n[dir].storeChunk(::openPMD::shareRaw(tmpBuffer), offset_n, extent_n);
+			openPMDdataFile.flush();
                     }
                     delete[] tmpBuffer;
 
@@ -804,7 +807,6 @@ namespace picongpu
 
                     /* begin openPMD attributes */
                     /* begin required openPMD global attributes */
-                    openPMDdataFile.setMeshesPath(meshesPathName.c_str());
 
                     openPMDdataFileIteration.setDt<float>(DELTA_T);
                     const float_X time = float_X(currentStep) * DELTA_T;
