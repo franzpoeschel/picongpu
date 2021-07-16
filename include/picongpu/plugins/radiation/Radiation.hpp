@@ -694,35 +694,36 @@ namespace picongpu
                     Amplitude UnityAmplitude(1., 0., 0., 0., 0., 0.);
                     const picongpu::float_64 factor = UnityAmplitude.calc_radiation() * UNIT_ENERGY * UNIT_TIME;
 
-                    // buffer for data re-arangement
-                    int N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
-                    picongpu::float_64* tmpBuffer = new picongpu::float_64[N_tmpBuffer];
+		    {
+                    	// buffer for data re-arangement
+                    	const int N_tmpBuffer = radiation_frequencies::N_omega *  parameters::N_observer;
+		    	std::vector< float_64 > tmpBuffer(N_tmpBuffer);
 
-                    // reshape abstract MeshRecordComponent
-                    ::openPMD::Datatype datatype_amp = ::openPMD::determineDatatype(::openPMD::shareRaw(tmpBuffer));
-                    ::openPMD::Extent extent_amp = {parameters::N_observer, radiation_frequencies::N_omega, 1};
-                    ::openPMD::Offset offset_amp = {0, 0, 0};
+                    	// reshape abstract MeshRecordComponent
+                    	::openPMD::Datatype datatype_amp = ::openPMD::determineDatatype(::openPMD::shareRaw(tmpBuffer));
+                    	::openPMD::Extent extent_amp = {parameters::N_observer, radiation_frequencies::N_omega, 1};
+                    	::openPMD::Offset offset_amp = {0, 0, 0};
 
-                    for(uint32_t ampIndex = 0; ampIndex < Amplitude::numComponents; ++ampIndex)
-                    {
-                        std::string dir = dataLabels(ampIndex);
-                        mesh_amp[dir].setUnitSI(factor);
-                        mesh_amp[dir].setPosition(std::vector<double>{0.0, 0.0, 0.0});
-                        ::openPMD::Dataset dataset_amp = ::openPMD::Dataset(datatype_amp, extent_amp);
-                        mesh_amp[dir].resetDataset(dataset_amp);
+                    	for(uint32_t ampIndex = 0; ampIndex < Amplitude::numComponents; ++ampIndex)
+                    	{
+                        	std::string dir = dataLabels(ampIndex);
+                        	mesh_amp[dir].setUnitSI(factor);
+                        	mesh_amp[dir].setPosition(std::vector<double>{0.0, 0.0, 0.0});
+                        	::openPMD::Dataset dataset_amp = ::openPMD::Dataset(datatype_amp, extent_amp);
+                        	mesh_amp[dir].resetDataset(dataset_amp);
 
-                        // select data
-                        for(int copyIndex = 0; copyIndex < N_tmpBuffer; ++copyIndex)
-                        {
-                            tmpBuffer[copyIndex]
-                                = ((picongpu::float_64*)
-                                       values.data())[ampIndex + Amplitude::numComponents * copyIndex];
-                        }
-                        // write actual data
-                        mesh_amp[dir].storeChunk(::openPMD::shareRaw(tmpBuffer), offset_amp, extent_amp);
-                        openPMDdataFile.flush();
+                        	// select data
+                        	for(int copyIndex = 0; copyIndex < N_tmpBuffer; ++copyIndex)
+                        	{
+                            		tmpBuffer[copyIndex]
+                                		= ((picongpu::float_64*)
+                                       	values.data())[ampIndex + Amplitude::numComponents * copyIndex];
+                        	}	
+                        	// write actual data
+                        	mesh_amp[dir].storeChunk(::openPMD::shareRaw(tmpBuffer), offset_amp, extent_amp);
+                        	openPMDdataFile.flush();
+		    	}	
 		    }
-                    delete[] tmpBuffer;
                     // end: write amplitude data
 
 
@@ -739,36 +740,36 @@ namespace picongpu
                     mesh_n.setAxisLabels(std::vector<std::string>{"detector direction index", "None", "None"});
                     mesh_n.setUnitDimension(std::map<::openPMD::UnitDimension, double>{});
 
-                    N_tmpBuffer = parameters::N_observer;
-                    tmpBuffer = new picongpu::float_64[N_tmpBuffer];
+		    {
+                    	std::vector< float_64 > tmpBuffer(parameters::N_observer);
 
-                    // reshape abstract MeshRecordComponent
-                    ::openPMD::Datatype datatype_n = ::openPMD::determineDatatype(::openPMD::shareRaw(tmpBuffer));
-                    ::openPMD::Extent extent_n = {parameters::N_observer, 1, 1};
-                    ::openPMD::Offset offset_n = {0, 0, 0};
+                    	// reshape abstract MeshRecordComponent
+                    	::openPMD::Datatype datatype_n = ::openPMD::determineDatatype(::openPMD::shareRaw(tmpBuffer));
+                    	::openPMD::Extent extent_n = {parameters::N_observer, 1, 1};
+                    	::openPMD::Offset offset_n = {0, 0, 0};
 
-                    const picongpu::float_64 factorDirection = 1.0;
+                    	const picongpu::float_64 factorDirection = 1.0;
 
-                    for(uint32_t detectorDim = 0; detectorDim < 3; ++detectorDim)
-                    {
-                        std::string dir = dataLabelsDetectorDirection(detectorDim);
-                        mesh_n[dir].setUnitSI(factorDirection);
-                        mesh_n[dir].setPosition(std::vector<double>{0.0, 0.0, 0.0});
-                        ::openPMD::Dataset dataset_n = ::openPMD::Dataset(datatype_n, extent_n);
-                        mesh_n[dir].resetDataset(dataset_n);
+                    	for(uint32_t detectorDim = 0; detectorDim < 3; ++detectorDim)
+                    	{
+                        	std::string dir = dataLabelsDetectorDirection(detectorDim);
+                        	mesh_n[dir].setUnitSI(factorDirection);
+                        	mesh_n[dir].setPosition(std::vector<double>{0.0, 0.0, 0.0});
+                        	::openPMD::Dataset dataset_n = ::openPMD::Dataset(datatype_n, extent_n);
+                        	mesh_n[dir].resetDataset(dataset_n);
 
-                        // select data
-                        for(int copyIndex = 0; copyIndex < N_tmpBuffer; ++copyIndex)
-                        {
-                            tmpBuffer[copyIndex]
-                                = ((picongpu::float_64*) detectorPositions.data())[detectorDim + 3 * copyIndex];
-                        }
+                        	// select data
+                        	for(int copyIndex = 0; copyIndex < parameters::N_observer; ++copyIndex)
+                        	{
+                            		tmpBuffer[copyIndex]
+                                	= ((picongpu::float_64*) detectorPositions.data())[detectorDim + 3 * copyIndex];
+                        	}
 
-                        // write actual data
-                        mesh_n[dir].storeChunk(::openPMD::shareRaw(tmpBuffer), offset_n, extent_n);
-			openPMDdataFile.flush();
-                    }
-                    delete[] tmpBuffer;
+                        	// write actual data
+                        	mesh_n[dir].storeChunk(::openPMD::shareRaw(tmpBuffer), offset_n, extent_n);
+				openPMDdataFile.flush();
+                    	}
+		    }
 
                     // end: write observer
 
