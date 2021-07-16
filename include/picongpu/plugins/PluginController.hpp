@@ -203,8 +203,7 @@ namespace picongpu
             plugins::multi::Master<BinEnergyParticles<bmpl::_1>>,
             CountParticles<bmpl::_1>,
             PngPlugin<Visualisation<bmpl::_1, PngCreator>>,
-            plugins::transitionRadiation::TransitionRadiation<bmpl::_1>
-            ,
+            plugins::transitionRadiation::TransitionRadiation<bmpl::_1>,
 #if(ENABLE_OPENPMD == 1)
             plugins::radiation::Radiation<bmpl::_1>,
             plugins::xrayScattering::XrayScattering<bmpl::_1>,

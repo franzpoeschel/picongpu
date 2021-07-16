@@ -668,7 +668,7 @@ namespace picongpu
                 void writeOpenPMDfile(std::vector<Amplitude>& values, std::string name)
                 {
                     std::ostringstream filename;
-		    // TODO: needs to be changed to ".h5" and also support adios
+                    // TODO: needs to be changed to ".h5" and also support adios
                     filename << name << currentStep << "_0_0_0.h5";
 
                     ::openPMD::Series openPMDdataFile = ::openPMD::Series(filename.str(), ::openPMD::Access::CREATE);
@@ -750,7 +750,7 @@ namespace picongpu
                     for(uint32_t detectorDim = 0; detectorDim < 3; ++detectorDim)
                     {
                         std::string dir = dataLabelsDetectorDirection(detectorDim);
-		        mesh_n[dir].setUnitSI(factorDirection);
+                        mesh_n[dir].setUnitSI(factorDirection);
                         mesh_n[dir].setPosition(std::vector<double>{0.0, 0.0, 0.0});
                         ::openPMD::Dataset dataset_n = ::openPMD::Dataset(datatype_n, extent_n);
                         mesh_n[dir].resetDataset(dataset_n);
@@ -759,8 +759,7 @@ namespace picongpu
                         for(int copyIndex = 0; copyIndex < N_tmpBuffer; ++copyIndex)
                         {
                             tmpBuffer[copyIndex]
-                                = ((picongpu::float_64*)
-                                       detectorPositions.data())[detectorDim + 3 * copyIndex];
+                                = ((picongpu::float_64*) detectorPositions.data())[detectorDim + 3 * copyIndex];
                         }
 
                         // write actual data
@@ -866,7 +865,9 @@ namespace picongpu
 
                         for(uint32_t ampIndex = 0; ampIndex < Amplitude::numComponents; ++ampIndex)
                         {
-                            ::openPMD::MeshRecordComponent dataset = openPMDdataFile.iterations[timeStep].meshes[dataLabels(-1).c_str()][dataLabels(ampIndex).c_str()];
+                            ::openPMD::MeshRecordComponent dataset
+                                = openPMDdataFile.iterations[timeStep]
+                                      .meshes[dataLabels(-1).c_str()][dataLabels(ampIndex).c_str()];
                             ::openPMD::Extent extent = dataset.getExtent();
                             ::openPMD::Offset offset(extent.size(), 0);
 
