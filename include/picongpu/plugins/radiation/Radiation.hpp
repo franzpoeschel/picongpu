@@ -20,7 +20,7 @@
 
 #pragma once
 
-#if(ENABLE_HDF5 * ENABLE_OPENPMD != 1)
+#if(ENABLE_OPENPMD != 1)
 #    error The activated radiation plugin (radiation.param) requires openPMD-api with a HDF5 backend
 #endif
 
@@ -52,7 +52,6 @@
 #include <vector>
 
 #include <openPMD/openPMD.hpp>
-#include <splash/splash.h>
 
 namespace picongpu
 {
@@ -669,7 +668,8 @@ namespace picongpu
                 void writeOpenPMDfile(std::vector<Amplitude>& values, std::string name)
                 {
                     std::ostringstream filename;
-                    filename << name << currentStep << "0_0_0.h5";
+		    // TODO: needs to be changed to ".h5" and also support adios
+                    filename << name << currentStep << "_0_0_0.h5";
 
                     ::openPMD::Series openPMDdataFile = ::openPMD::Series(filename.str(), ::openPMD::Access::CREATE);
                     ::openPMD::Iteration openPMDdataFileIteration = openPMDdataFile.iterations[currentStep];
@@ -694,7 +694,7 @@ namespace picongpu
                     const picongpu::float_64 factor = UnityAmplitude.calc_radiation() * UNIT_ENERGY * UNIT_TIME;
 
                     // buffer for data re-arangement
-                    const int N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
+                    int N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
                     picongpu::float_64* tmpBuffer = new picongpu::float_64[N_tmpBuffer];
 
                     // reshape abstract MeshRecordComponent
@@ -737,8 +737,8 @@ namespace picongpu
                     mesh_n.setAxisLabels(std::vector<std::string>{"detector direction index", "None", "None"});
                     mesh_n.setUnitDimension(std::map<::openPMD::UnitDimension, double>{});
 
-                    const int N_tmpBuffer = parameters::N_observer;
-                    picongpu::float_64* tmpBuffer = new picongpu::float_64[N_tmpBuffer];
+                    N_tmpBuffer = parameters::N_observer;
+                    tmpBuffer = new picongpu::float_64[N_tmpBuffer];
 
                     // reshape abstract MeshRecordComponent
                     ::openPMD::Datatype datatype_n = ::openPMD::determineDatatype(::openPMD::shareRaw(tmpBuffer));
@@ -749,8 +749,8 @@ namespace picongpu
 
                     for(uint32_t detectorDim = 0; detectorDim < 3; ++detectorDim)
                     {
-                        std::string dir
-                            = dataLabelsDetectorDirection(detectorDim) mesh_n[dir].setUnitSI(factorDirection);
+                        std::string dir = dataLabelsDetectorDirection(detectorDim);
+		        mesh_n[dir].setUnitSI(factorDirection);
                         mesh_n[dir].setPosition(std::vector<double>{0.0, 0.0, 0.0});
                         ::openPMD::Dataset dataset_n = ::openPMD::Dataset(datatype_n, extent_n);
                         mesh_n[dir].resetDataset(dataset_n);
@@ -760,7 +760,7 @@ namespace picongpu
                         {
                             tmpBuffer[copyIndex]
                                 = ((picongpu::float_64*)
-                                       detectorPositions.data())[ampIndex + Amplitude::numComponents * copyIndex];
+                                       detectorPositions.data())[detectorDim + 3 * copyIndex];
                         }
 
                         // write actual data
@@ -827,11 +827,11 @@ namespace picongpu
                         openPMDdataFile.setAuthor(author);
 
                     std::string date = helper::getDateString("%F %T %z");
-                    series.setDate(date);
+                    openPMDdataFile.setDate(date);
                     /* end recommended openPMD global attributes */
 
                     openPMDdataFile.flush();
-                    openPMDdataFile.close();
+                    openPMDdataFileIteration.close();
                 }
 
 
@@ -844,11 +844,6 @@ namespace picongpu
                  */
                 void readOpenPMDfile(std::vector<Amplitude>& values, std::string name, const int timeStep)
                 {
-                    // h5 splash::SerialDataCollector openPMDdataFile(1);
-                    // h5 splash::DataCollector::FileCreationAttr fAttr;
-                    // h5 splash::DataCollector::initFileCreationAttr(fAttr);
-                    // h5 fAttr.fileAccType = splash::DataCollector::FAT_READ;
-
                     std::ostringstream filename;
                     /* add to standard ending added by libSplash for SerialDataCollector */
                     /* TODO: Check if openPMD now allows to avoid the _0_0_0 ending. */
@@ -871,7 +866,7 @@ namespace picongpu
 
                         for(uint32_t ampIndex = 0; ampIndex < Amplitude::numComponents; ++ampIndex)
                         {
-                            ::openPMD::MeshRecordComponent dataset = openPMDdataFile.iterations[iteration].meshes[dataLabels(-1)).c_str()][dataLabels(ampIndex)).c_str()];
+                            ::openPMD::MeshRecordComponent dataset = openPMDdataFile.iterations[timeStep].meshes[dataLabels(-1).c_str()][dataLabels(ampIndex).c_str()];
                             ::openPMD::Extent extent = dataset.getExtent();
                             ::openPMD::Offset offset(extent.size(), 0);
 
@@ -888,7 +883,7 @@ namespace picongpu
                         }
 
                         delete[] tmpBuffer;
-                        openPMDdataFile.iterations[restartStep].close();
+                        openPMDdataFile.iterations[timeStep].close();
 
                         log<picLog::INPUT_OUTPUT>("Radiation (%1%): read radiation data from openPMD") % speciesName;
                     }

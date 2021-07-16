@@ -73,7 +73,7 @@
 #    include "picongpu/plugins/IsaacPlugin.hpp"
 #endif
 
-#if(ENABLE_HDF5 * ENABLE_OPENPMD == 1)
+#if(ENABLE_OPENPMD == 1)
 // needs to be openPMD-api only in the future to support adios
 #    include "picongpu/plugins/radiation/Radiation.hpp"
 #    include "picongpu/plugins/radiation/VectorTypes.hpp"
@@ -204,12 +204,9 @@ namespace picongpu
             CountParticles<bmpl::_1>,
             PngPlugin<Visualisation<bmpl::_1, PngCreator>>,
             plugins::transitionRadiation::TransitionRadiation<bmpl::_1>
-#if(ENABLE_HDF5 == 1)
             ,
-            plugins::radiation::Radiation<bmpl::_1>
-#endif
 #if(ENABLE_OPENPMD == 1)
-            ,
+            plugins::radiation::Radiation<bmpl::_1>,
             plugins::xrayScattering::XrayScattering<bmpl::_1>,
             plugins::multi::Master<ParticleCalorimeter<bmpl::_1>>,
             plugins::multi::Master<PhaseSpace<particles::shapes::Counter::ChargeAssignment, bmpl::_1>>
