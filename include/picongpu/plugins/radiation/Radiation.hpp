@@ -673,7 +673,7 @@ namespace picongpu
 
                     ::openPMD::Series openPMDdataFile = ::openPMD::Series(filename.str(), ::openPMD::Access::CREATE);
                     ::openPMD::Iteration openPMDdataFileIteration = openPMDdataFile.iterations[currentStep];
-                    openPMDdataFile.setMeshesPath(meshesPathName.c_str());
+                    openPMDdataFile.setMeshesPath(meshesPathName);
 
                     // begin: write amplitude data
                     ::openPMD::Mesh mesh_amp = openPMDdataFileIteration.meshes[dataLabels(-1)];
@@ -700,8 +700,7 @@ namespace picongpu
                         std::vector<float_64> tmpBuffer(N_tmpBuffer);
 
                         // reshape abstract MeshRecordComponent
-                        ::openPMD::Datatype datatype_amp
-                            = ::openPMD::determineDatatype(::openPMD::shareRaw(tmpBuffer));
+                        ::openPMD::Datatype datatype_amp = ::openPMD::determineDatatype<float_64>();
                         ::openPMD::Extent extent_amp = {parameters::N_observer, radiation_frequencies::N_omega, 1};
                         ::openPMD::Offset offset_amp = {0, 0, 0};
 
@@ -721,7 +720,7 @@ namespace picongpu
                                            values.data())[ampIndex + Amplitude::numComponents * copyIndex];
                             }
                             // write actual data
-                            mesh_amp[dir].storeChunk(::openPMD::shareRaw(tmpBuffer), offset_amp, extent_amp);
+                            mesh_amp[dir].storeChunk(tmpBuffer, offset_amp, extent_amp);
                             openPMDdataFile.flush();
                         }
                     }
@@ -745,7 +744,7 @@ namespace picongpu
                         std::vector<float_64> tmpBuffer(parameters::N_observer);
 
                         // reshape abstract MeshRecordComponent
-                        ::openPMD::Datatype datatype_n = ::openPMD::determineDatatype(::openPMD::shareRaw(tmpBuffer));
+                        ::openPMD::Datatype datatype_n = ::openPMD::determineDatatype<float_64>();
                         ::openPMD::Extent extent_n = {parameters::N_observer, 1, 1};
                         ::openPMD::Offset offset_n = {0, 0, 0};
 
@@ -767,7 +766,7 @@ namespace picongpu
                             }
 
                             // write actual data
-                            mesh_n[dir].storeChunk(::openPMD::shareRaw(tmpBuffer), offset_n, extent_n);
+                            mesh_n[dir].storeChunk(tmpBuffer, offset_n, extent_n);
                             openPMDdataFile.flush();
                         }
                     }
@@ -797,14 +796,14 @@ namespace picongpu
 
                     // reshape abstract MeshRecordComponent
                     ::openPMD::Datatype datatype_omega
-                        = ::openPMD::determineDatatype(::openPMD::shareRaw(detectorFrequencies.data()));
+                        = ::openPMD::determineDatatype<decltype(detectorFrequencies)::value_type>();
                     ::openPMD::Extent extent_omega = {1, radiation_frequencies::N_omega, 1};
                     ::openPMD::Dataset dataset_omega = ::openPMD::Dataset(datatype_omega, extent_omega);
                     omega_mrc.resetDataset(dataset_omega);
 
                     // write actual data
                     ::openPMD::Offset offset_omega = {0, 0, 0};
-                    omega_mrc.storeChunk(::openPMD::shareRaw(detectorFrequencies.data()), offset_omega, extent_omega);
+                    omega_mrc.storeChunk(detectorFrequencies, offset_omega, extent_omega);
                     // end: write frequencies
 
                     /* begin openPMD attributes */
@@ -833,8 +832,8 @@ namespace picongpu
                     openPMDdataFile.setDate(date);
                     /* end recommended openPMD global attributes */
 
-                    openPMDdataFile.flush();
                     openPMDdataFileIteration.close();
+                    openPMDdataFile.flush();
                 }
 
 
