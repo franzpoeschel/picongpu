@@ -849,8 +849,7 @@ namespace picongpu
                 {
                     std::ostringstream filename;
                     /* add to standard ending added by libSplash for SerialDataCollector */
-                    /* TODO: Check if openPMD now allows to avoid the _0_0_0 ending. */
-                    filename << name << timeStep << "_0_0_0.h5";
+                    filename << name << timeStep << ".h5";
 
                     /* check if restart file exists */
                     if(!boost::filesystem::exists(filename.str()))
