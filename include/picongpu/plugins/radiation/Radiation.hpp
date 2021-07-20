@@ -20,7 +20,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD != 1)
+#if(ENABLE_OPENPMD * openPMD_HAVE_HDF5 != 1)
 #    error The activated radiation plugin (radiation.param) requires openPMD-api with a HDF5 backend
 #endif
 
