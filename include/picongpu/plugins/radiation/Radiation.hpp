@@ -715,18 +715,19 @@ namespace picongpu
 
                             // ask openPMD to create a buffer for us
                             // in some backends (ADIOS2), this allows avoiding memcopies
-                            auto span = storeChunkSpan(
-                                            mesh_amp[dir],
-                                            offset_amp,
-                                            extent_amp,
-                                            [&fallbackBuffer](size_t numElements)
-                                            {
-                                                // if there is no special backend support for creating buffers,
-                                                // use the fallback buffer
-                                                fallbackBuffer.resize(numElements);
-                                                return fallbackBuffer.data();
-                                            })
-                                            .currentBuffer();
+                            auto span
+                                = storeChunkSpan(
+                                      mesh_amp[dir],
+                                      offset_amp,
+                                      extent_amp,
+                                      [&fallbackBuffer](size_t numElements)
+                                      {
+                                          // if there is no special backend support for creating buffers,
+                                          // use the fallback buffer
+                                          fallbackBuffer.resize(numElements);
+                                          return std::shared_ptr<float_64>{fallbackBuffer.data(), [](auto const*) {}};
+                                      })
+                                      .currentBuffer();
 
                             // select data
                             for(int copyIndex = 0; copyIndex < N_tmpBuffer; ++copyIndex)
@@ -775,18 +776,19 @@ namespace picongpu
 
                             // ask openPMD to create a buffer for us
                             // in some backends (ADIOS2), this allows avoiding memcopies
-                            auto span = storeChunkSpan(
-                                            mesh_n[dir],
-                                            offset_n,
-                                            extent_n,
-                                            [&fallbackBuffer](size_t numElements)
-                                            {
-                                                // if there is no special backend support for creating buffers,
-                                                // use the fallback buffer
-                                                fallbackBuffer.resize(numElements);
-                                                return fallbackBuffer.data();
-                                            })
-                                            .currentBuffer();
+                            auto span
+                                = storeChunkSpan(
+                                      mesh_n[dir],
+                                      offset_n,
+                                      extent_n,
+                                      [&fallbackBuffer](size_t numElements)
+                                      {
+                                          // if there is no special backend support for creating buffers,
+                                          // use the fallback buffer
+                                          fallbackBuffer.resize(numElements);
+                                          return std::shared_ptr<float_64>{fallbackBuffer.data(), [](auto const*) {}};
+                                      })
+                                      .currentBuffer();
 
                             // select data
                             for(int copyIndex = 0; copyIndex < parameters::N_observer; ++copyIndex)
