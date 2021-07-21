@@ -28,6 +28,7 @@
 
 #include "picongpu/particles/traits/SpeciesEligibleForSolver.hpp"
 #include "picongpu/plugins/ISimulationPlugin.hpp"
+#include "picongpu/plugins/common/openPMDVersion.def"
 #include "picongpu/plugins/common/stringHelpers.hpp"
 #include "picongpu/plugins/radiation/ExecuteParticleFilter.hpp"
 #include "picongpu/plugins/radiation/Radiation.kernel"
@@ -697,7 +698,7 @@ namespace picongpu
                     {
                         // buffer for data re-arangement
                         const int N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
-                        std::vector<float_64> tmpBuffer(N_tmpBuffer);
+                        std::vector<float_64> fallbackBuffer;
 
                         // reshape abstract MeshRecordComponent
                         ::openPMD::Datatype datatype_amp = ::openPMD::determineDatatype<float_64>();
@@ -712,15 +713,29 @@ namespace picongpu
                             ::openPMD::Dataset dataset_amp = ::openPMD::Dataset(datatype_amp, extent_amp);
                             mesh_amp[dir].resetDataset(dataset_amp);
 
+                            // ask openPMD to create a buffer for us
+                            // in some backends (ADIOS2), this allows avoiding memcopies
+                            auto span = storeChunkSpan(
+                                            mesh_amp[dir],
+                                            offset_amp,
+                                            extent_amp,
+                                            [&fallbackBuffer](size_t numElements)
+                                            {
+                                                // if there is no special backend support for creating buffers,
+                                                // use the fallback buffer
+                                                fallbackBuffer.resize(numElements);
+                                                return fallbackBuffer.data();
+                                            })
+                                            .currentBuffer();
+
                             // select data
                             for(int copyIndex = 0; copyIndex < N_tmpBuffer; ++copyIndex)
                             {
-                                tmpBuffer[copyIndex]
-                                    = ((picongpu::float_64*)
-                                           values.data())[ampIndex + Amplitude::numComponents * copyIndex];
+                                span[copyIndex] = reinterpret_cast<picongpu::float_64*>(
+                                    values.data())[ampIndex + Amplitude::numComponents * copyIndex];
                             }
-                            // write actual data
-                            mesh_amp[dir].storeChunk(tmpBuffer, offset_amp, extent_amp);
+                            // flush data now
+                            // this allows us to reuse the fallbackBuffer in the next iteration
                             openPMDdataFile.flush();
                         }
                     }
@@ -741,7 +756,7 @@ namespace picongpu
                     mesh_n.setUnitDimension(std::map<::openPMD::UnitDimension, double>{});
 
                     {
-                        std::vector<float_64> tmpBuffer(parameters::N_observer);
+                        std::vector<float_64> fallbackBuffer;
 
                         // reshape abstract MeshRecordComponent
                         ::openPMD::Datatype datatype_n = ::openPMD::determineDatatype<float_64>();
@@ -758,15 +773,30 @@ namespace picongpu
                             ::openPMD::Dataset dataset_n = ::openPMD::Dataset(datatype_n, extent_n);
                             mesh_n[dir].resetDataset(dataset_n);
 
+                            // ask openPMD to create a buffer for us
+                            // in some backends (ADIOS2), this allows avoiding memcopies
+                            auto span = storeChunkSpan(
+                                            mesh_n[dir],
+                                            offset_n,
+                                            extent_n,
+                                            [&fallbackBuffer](size_t numElements)
+                                            {
+                                                // if there is no special backend support for creating buffers,
+                                                // use the fallback buffer
+                                                fallbackBuffer.resize(numElements);
+                                                return fallbackBuffer.data();
+                                            })
+                                            .currentBuffer();
+
                             // select data
                             for(int copyIndex = 0; copyIndex < parameters::N_observer; ++copyIndex)
                             {
-                                tmpBuffer[copyIndex]
-                                    = ((picongpu::float_64*) detectorPositions.data())[detectorDim + 3 * copyIndex];
+                                span[copyIndex] = reinterpret_cast<picongpu::float_64*>(
+                                    detectorPositions.data())[detectorDim + 3 * copyIndex];
                             }
 
-                            // write actual data
-                            mesh_n[dir].storeChunk(tmpBuffer, offset_n, extent_n);
+                            // flush data now
+                            // this allows us to reuse the fallbackBuffer in the next iteration
                             openPMDdataFile.flush();
                         }
                     }
@@ -803,6 +833,11 @@ namespace picongpu
 
                     // write actual data
                     ::openPMD::Offset offset_omega = {0, 0, 0};
+                    /*
+                     * Here, we don't use storeChunkSpan, since detectorFrequencies
+                     * is created and filled upon activation of the plugin,
+                     * so it survives beyond the writing of a single dataset.
+                     */
                     omega_mrc.storeChunk(detectorFrequencies, offset_omega, extent_omega);
                     // end: write frequencies
 
