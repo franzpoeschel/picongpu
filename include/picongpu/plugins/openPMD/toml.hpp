@@ -19,8 +19,10 @@
 
 #pragma once
 
+#include <cstdint>
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 namespace picongpu
@@ -29,37 +31,27 @@ namespace picongpu
     {
         class DataSources
         {
-            using Period_t = std::map<uint32_t, std::set<std::string>>;
+        public:
+            using SimulationStep_t = uint32_t;
+
+        private:
+            using Period_t = std::map<SimulationStep_t, std::set<std::string>>;
             Period_t m_period;
 
             /*
              * For each period p, let s be the upcoming step divisible by p.
              * Then m_nextActiveAt[s] contains p.
              */
-            std::map<uint32_t, std::vector<uint32_t>> m_nextActiveAt;
+            std::map<SimulationStep_t, std::vector<SimulationStep_t>> m_upcomingSteps;
 
         public:
-            DataSources(std::string tomlFiles)
-            {
-                // todo: read from toml files
-            }
+            DataSources(std::string tomlFiles);
 
-            std::vector<std::string> currentDataSources() const
-            {
-                // todo
-                return {std::string("fields_all"), "species_all"};
-            }
+            std::vector<std::string> currentDataSources() const;
 
-            uint32_t currentStep() const
-            {
-                return m_period.begin()->first;
-            }
+            SimulationStep_t currentStep() const;
 
-            DataSources& operator++()
-            {
-                // todo
-                return *this;
-            }
+            DataSources& operator++();
         };
     } // namespace toml
 } // namespace picongpu
