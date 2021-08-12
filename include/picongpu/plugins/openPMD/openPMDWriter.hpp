@@ -212,6 +212,8 @@ Please pick either of the following:
 
             plugins::multi::Option<std::string> source = {"source", "data sources: ", "species_all, fields_all"};
 
+            plugins::multi::Option<std::string> tomlSources = {"toml", "specify dynamic data sources via TOML", ""};
+
             std::vector<std::string> allowedDataSources = {"species_all", "fields_all"};
 
             plugins::multi::Option<std::string> fileName = {"file", "openPMD file basename"};
@@ -302,6 +304,7 @@ Please pick either of the following:
                 boost::program_options::options_description& desc,
                 std::string const& masterPrefix = std::string{})
             {
+                tomlSources.registerHelp(desc, masterPrefix + prefix);
                 compression.registerHelp(desc, masterPrefix + prefix);
                 fileName.registerHelp(desc, masterPrefix + prefix);
                 fileNameExtension.registerHelp(desc, masterPrefix + prefix);
@@ -408,6 +411,12 @@ Please pick either of the following:
                                  " plugin is invalid."
                               << std::endl;
                 }
+            }
+
+            std::string const& notifyPeriod = help.notifyPeriod.get(id);
+            if(!tomlDataSources && notifyPeriod == "dynamic")
+            {
+                tomlDataSources = std::make_unique<toml::DataSources>(help.tomlSources.get(id));
             }
         }
 
@@ -624,7 +633,14 @@ Please pick either of the following:
                     std::string notifyPeriod = m_help->notifyPeriod.get(id);
                     /* only register for notify callback when .period is set on
                      * command line */
-                    if(!notifyPeriod.empty())
+                    if(notifyPeriod == "dynamic")
+                    {
+                        Environment<>::get().PluginConnector().setNotificationPeriod(this, "1");
+
+                        /** create notify directory */
+                        Environment<simDim>::get().Filesystem().createDirectoryWithPermissions(outputDirectory);
+                    }
+                    else if(!notifyPeriod.empty())
                     {
                         Environment<>::get().PluginConnector().setNotificationPeriod(this, notifyPeriod);
 
@@ -656,6 +672,11 @@ Please pick either of the following:
                 // notify is only allowed if the plugin is not controlled by the
                 // class Checkpoint
                 assert(m_help->selfRegister);
+                if(mThreadParams.tomlDataSources && mThreadParams.tomlDataSources->currentStep() != currentStep)
+                {
+                    // nothing to do
+                    return;
+                }
 
                 __getTransactionEvent().waitForFinished();
 
@@ -665,6 +686,10 @@ Please pick either of the following:
                 mThreadParams.window = MovingWindow::getInstance().getWindow(currentStep);
                 mThreadParams.isCheckpoint = false;
                 dumpData(currentStep);
+                if(mThreadParams.tomlDataSources)
+                {
+                    ++*mThreadParams.tomlDataSources;
+                }
             }
 
             virtual void restart(uint32_t restartStep, std::string const& restartDirectory)
@@ -780,6 +805,20 @@ Please pick either of the following:
             }
 
         private:
+            std::vector<std::string> currentDataSources()
+            {
+                if(mThreadParams.tomlDataSources)
+                {
+                    return mThreadParams.tomlDataSources->currentDataSources();
+                }
+                else
+                {
+                    std::string dataSourceNames = m_help->source.get(m_id);
+
+                    return plugins::misc::splitString(plugins::misc::removeSpaces(dataSourceNames));
+                }
+            }
+
             void endWrite()
             {
                 mThreadParams.fieldBuffer.resize(0);

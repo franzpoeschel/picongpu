@@ -22,6 +22,7 @@
 #include "picongpu/simulation_defines.hpp"
 
 #include "picongpu/plugins/openPMD/Json.hpp"
+#include "picongpu/plugins/openPMD/toml.hpp"
 #include "picongpu/simulation/control/MovingWindow.hpp"
 
 #include <pmacc/math/Vector.hpp>
@@ -88,6 +89,8 @@ namespace picongpu
             std::string fileInfix;
 
             std::unique_ptr<AbstractJsonMatcher> jsonMatcher;
+
+            std::unique_ptr<toml::DataSources> tomlDataSources;
 
             WriteSpeciesStrategy strategy = WriteSpeciesStrategy::ADIOS;
 

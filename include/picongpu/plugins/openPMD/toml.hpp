@@ -19,9 +19,47 @@
 
 #pragma once
 
+#include <map>
+#include <set>
+#include <vector>
+
 namespace picongpu
 {
     namespace toml
     {
+        class DataSources
+        {
+            using Period_t = std::map<uint32_t, std::set<std::string>>;
+            Period_t m_period;
+
+            /*
+             * For each period p, let s be the upcoming step divisible by p.
+             * Then m_nextActiveAt[s] contains p.
+             */
+            std::map<uint32_t, std::vector<uint32_t>> m_nextActiveAt;
+
+        public:
+            DataSources(std::string tomlFiles)
+            {
+                // todo: read from toml files
+            }
+
+            std::vector<std::string> currentDataSources() const
+            {
+                // todo
+                return {std::string("fields_all"), "species_all"};
+            }
+
+            uint32_t currentStep() const
+            {
+                return m_period.begin()->first;
+            }
+
+            DataSources& operator++()
+            {
+                // todo
+                return *this;
+            }
+        };
     } // namespace toml
 } // namespace picongpu
