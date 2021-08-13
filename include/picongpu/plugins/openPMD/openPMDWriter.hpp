@@ -814,7 +814,6 @@ Please pick either of the following:
                 else
                 {
                     std::string dataSourceNames = m_help->source.get(m_id);
-
                     return plugins::misc::splitString(plugins::misc::removeSpaces(dataSourceNames));
                 }
             }
@@ -1190,9 +1189,7 @@ Please pick either of the following:
                 std::vector<std::string> vectorOfDataSourceNames;
                 if(m_help->selfRegister)
                 {
-                    std::string dataSourceNames = m_help->source.get(m_id);
-
-                    vectorOfDataSourceNames = plugins::misc::splitString(plugins::misc::removeSpaces(dataSourceNames));
+                    vectorOfDataSourceNames = currentDataSources();
                 }
 
                 bool dumpFields = plugins::misc::containsObject(vectorOfDataSourceNames, "fields_all");
