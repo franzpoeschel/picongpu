@@ -1,4 +1,4 @@
-/* Copyright 2021 Franz Poeschel
+/* Copyright 2021 Franz Poeschel and Fabian Koller
  *
  * This file is part of PIConGPU.
  *
@@ -21,14 +21,183 @@
 
 #    include "picongpu/plugins/openPMD/toml.hpp"
 
+#    include "picongpu/plugins/misc/removeSpaces.hpp"
+#    include "picongpu/plugins/misc/splitString.hpp"
+
+#    include <chrono>
+#    include <thread> // std::this_thread::sleep_for
+#    include <utility> // std::forward
+
+#    ifdef _WIN32
+#        include <windows.h>
+#    else
+#        include <sys/stat.h>
+#    endif
+
 #    include <toml.hpp>
+
+namespace
+{
+    bool file_exists(std::string const& path)
+    {
+#    ifdef _WIN32
+        DWORD attributes = GetFileAttributes(path.c_str());
+        return (attributes != INVALID_FILE_ATTRIBUTES && !(attributes & FILE_ATTRIBUTE_DIRECTORY));
+#    else
+        struct stat s;
+        return (0 == stat(path.c_str(), &s)) && S_ISREG(s.st_mode);
+#    endif
+    }
+
+    using Period_t = picongpu::toml::DataSources::Period_t;
+    using SimulationStep_t = picongpu::toml::DataSources::SimulationStep_t;
+
+    void mergePeriodTable(Period_t& into, Period_t const& from)
+    {
+        for(auto& pair : from)
+        {
+            for(std::string const& dataSource : pair.second)
+            {
+                // C++ does not have destructive iterators over std::set,
+                // so a copy will have to do here
+                into[pair.first].insert(dataSource);
+            }
+        }
+    }
+
+    Period_t parseSingleTomlFile(std::string const& path)
+    {
+        Period_t res;
+        using toml_t = toml::basic_value<toml::discard_comments>;
+        auto data = toml::parse(path);
+        if(not data.contains("period"))
+        {
+            return {};
+        }
+        auto& periodTable = [&data]() -> decltype(data)::table_type&
+        {
+            try
+            {
+                return toml::find(data, "period").as_table();
+            }
+            catch(toml::type_error const& e)
+            {
+                throw std::runtime_error(
+                    "[openPMD plugin] Key 'period' in TOML file must be a table (" + std::string(e.what()) + ")");
+            }
+        }();
+        for(auto& pair : periodTable)
+        {
+            SimulationStep_t period{};
+            try
+            {
+                period = std::stoul(pair.first);
+            }
+            catch(std::invalid_argument const&)
+            {
+                throw std::runtime_error(
+                    "[openPMD plugin] TOML file keys must be unsigned integers, got: '" + pair.first + "'.");
+            }
+            auto& dataSources = res[period];
+            using maybe_array_t = toml::result<decltype(data)::array_type*, toml::type_error>;
+            auto dataSourcesInToml = [&pair]() -> maybe_array_t
+            {
+                try
+                {
+                    return toml::ok(&pair.second.as_array());
+                }
+                catch(toml::type_error const& e)
+                {
+                    return toml::err(e);
+                }
+            }();
+            if(dataSourcesInToml.is_ok())
+            {
+                // 1. option: dataSources is an array:
+                for(auto& value : *dataSourcesInToml.as_ok())
+                {
+                    auto dataSource
+                        = toml::expect<std::string>(value)
+                              .or_else(
+                                  [](auto const&) -> toml::success<std::string>
+                                  {
+                                      throw std::runtime_error("[openPMD plugin] Data sources in TOML "
+                                                               "file must be a string or a vector of strings.");
+                                  })
+                              .value;
+                    dataSources.insert(std::move(dataSource));
+                }
+            }
+            else
+            {
+                // 2. option: dataSources is no array, check if it is a simple string
+                auto dataSource
+                    = toml::expect<std::string>(pair.second)
+                          .or_else(
+                              [](auto const&) -> toml::success<std::string>
+                              {
+                                  throw std::runtime_error("[openPMD plugin] Data sources in TOML "
+                                                           "file must be a string or a vector of strings.");
+                              })
+                          .value;
+                dataSources.insert(std::move(dataSource));
+            }
+        }
+        return res;
+    }
+
+    template<typename ChronoDuration>
+    Period_t waitForParseAndMergeTomlFiles(std::vector<std::string> paths, ChronoDuration&& sleepInterval)
+    {
+        Period_t res;
+        std::vector<decltype(paths)::iterator> toRemove;
+        toRemove.reserve(paths.size());
+        while(true)
+        {
+            for(auto it = paths.begin(); it != paths.end(); ++it)
+            {
+                auto const& path = *it;
+                if(file_exists(path))
+                {
+                    mergePeriodTable(res, parseSingleTomlFile(path));
+                }
+                toRemove.push_back(it);
+            }
+            // std::vector<>::erase
+            // "Invalidates iterators and references at or after the point of the erase, including the end() iterator."
+            // -> erase iterators from back to begin
+            for(auto it = toRemove.rbegin(); it != toRemove.rend(); ++it)
+            {
+                paths.erase(*it);
+            }
+            toRemove.clear();
+            // Put the exit condition here, so we can skip the last sleep
+            if(paths.empty())
+            {
+                break;
+            }
+            std::this_thread::sleep_for(sleepInterval);
+        }
+        return res;
+    }
+
+    template<typename ChronoDuration>
+    Period_t waitForParseAndMergeTomlFiles(std::string const& paths, ChronoDuration&& sleepInterval)
+    {
+        using namespace picongpu::plugins::misc;
+        return waitForParseAndMergeTomlFiles(
+            splitString(removeSpaces(paths)),
+            std::forward<ChronoDuration>(sleepInterval));
+    }
+} // namespace
 
 
 namespace picongpu
 {
     namespace toml
     {
-        DataSources::DataSources(std::string tomlFiles) : m_period{{100, {std::string("fields_all"), "species_all"}}}
+        using namespace std::literals::chrono_literals;
+        DataSources::DataSources(std::string tomlFiles) : m_period{waitForParseAndMergeTomlFiles(tomlFiles, 5s)}
         {
             // todo: read from toml files
             // verify that a step will always be available

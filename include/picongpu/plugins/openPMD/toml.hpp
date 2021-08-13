@@ -33,9 +33,9 @@ namespace picongpu
         {
         public:
             using SimulationStep_t = uint32_t;
+            using Period_t = std::map<SimulationStep_t, std::set<std::string>>;
 
         private:
-            using Period_t = std::map<SimulationStep_t, std::set<std::string>>;
             Period_t m_period;
 
             /*
