@@ -83,6 +83,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib> // getenv
+#include <iostream>
 #include <list>
 #include <sstream>
 #include <string>
@@ -1318,4 +1319,16 @@ Please pick either of the following:
         }
 
     } // namespace openPMD
+
+    namespace toml
+    {
+        void writeLog(char const* message, size_t argsc, char const** argsv)
+        {
+            auto logg = log<picLog::INPUT_OUTPUT>(message);
+            for(size_t i = 0; i < argsc; ++i)
+            {
+                logg = logg % argsv[i];
+            }
+        }
+    } // namespace toml
 } // namespace picongpu

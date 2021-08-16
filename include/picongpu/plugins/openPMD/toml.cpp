@@ -25,6 +25,7 @@
 #    include "picongpu/plugins/misc/splitString.hpp"
 
 #    include <chrono>
+#    include <sstream>
 #    include <thread> // std::this_thread::sleep_for
 #    include <utility> // std::forward
 
@@ -142,6 +143,26 @@ namespace
     template<typename ChronoDuration>
     Period_t waitForParseAndMergeTomlFiles(std::vector<std::string> paths, ChronoDuration&& sleepInterval)
     {
+        auto formatVectorOfStrings = [](std::vector<std::string> const& paths) -> std::string {
+            if(paths.empty())
+            {
+                return "[]";
+            }
+            std::stringstream res;
+            res << "[";
+            for(size_t i = 0; i < paths.size() - 1; ++i)
+            {
+                res << paths[i] << ", ";
+            }
+            res << *paths.rbegin() << "]";
+            return res.str();
+        };
+        {
+            auto pathsFormatted = formatVectorOfStrings(paths);
+            char const*(argsv[]) = {pathsFormatted.c_str()};
+            picongpu::toml::writeLog("openPMD: Reading data requirements from TOML files:\n\t%1%", 1, argsv);
+        }
+
         Period_t res;
         std::vector<decltype(paths)::iterator> toRemove;
         toRemove.reserve(paths.size());
@@ -153,8 +174,8 @@ namespace
                 if(file_exists(path))
                 {
                     mergePeriodTable(res, parseSingleTomlFile(path));
+                    toRemove.push_back(it);
                 }
-                toRemove.push_back(it);
             }
             // std::vector<>::erase
             // "Invalidates iterators and references at or after the point of the erase, including the end() iterator."
@@ -168,6 +189,11 @@ namespace
             if(paths.empty())
             {
                 break;
+            }
+            {
+                auto pathsFormatted = formatVectorOfStrings(paths);
+                char const*(argsv[]) = {pathsFormatted.c_str()};
+                picongpu::toml::writeLog("openPMD: Still waiting for TOML files:\n\t%1%", 1, argsv);
             }
             std::this_thread::sleep_for(sleepInterval);
         }
@@ -190,7 +216,9 @@ namespace picongpu
     namespace toml
     {
         using namespace std::literals::chrono_literals;
-        DataSources::DataSources(std::string const& tomlFiles) : m_period{waitForParseAndMergeTomlFiles(tomlFiles, 5s)}
+        constexpr std::chrono::seconds const WAIT_TIME = 5s;
+
+        DataSources::DataSources(std::string const& tomlFiles) : m_period{waitForParseAndMergeTomlFiles(tomlFiles, WAIT_TIME)}
         {
             // todo: read from toml files
             // verify that a step will always be available

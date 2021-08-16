@@ -53,5 +53,9 @@ namespace picongpu
 
             DataSources& operator++();
         };
+
+        // Definition of this needs to go in NVCC-compiled files
+        // (openPMDWriter.hpp) due to include structure of PIConGPU
+        void writeLog(char const* message, size_t argsn, char const** argsv);
     } // namespace toml
 } // namespace picongpu
