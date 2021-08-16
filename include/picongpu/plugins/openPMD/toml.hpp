@@ -45,7 +45,7 @@ namespace picongpu
             std::map<SimulationStep_t, std::vector<SimulationStep_t>> m_upcomingSteps;
 
         public:
-            DataSources(std::string tomlFiles);
+            DataSources(std::string const& tomlFiles);
 
             std::vector<std::string> currentDataSources() const;
 

@@ -74,8 +74,7 @@ namespace
         {
             return {};
         }
-        auto& periodTable = [&data]() -> decltype(data)::table_type&
-        {
+        auto& periodTable = [&data]() -> decltype(data)::table_type& {
             try
             {
                 return toml::find(data, "period").as_table();
@@ -100,8 +99,7 @@ namespace
             }
             auto& dataSources = res[period];
             using maybe_array_t = toml::result<decltype(data)::array_type*, toml::type_error>;
-            auto dataSourcesInToml = [&pair]() -> maybe_array_t
-            {
+            auto dataSourcesInToml = [&pair]() -> maybe_array_t {
                 try
                 {
                     return toml::ok(&pair.second.as_array());
@@ -118,12 +116,10 @@ namespace
                 {
                     auto dataSource
                         = toml::expect<std::string>(value)
-                              .or_else(
-                                  [](auto const&) -> toml::success<std::string>
-                                  {
-                                      throw std::runtime_error("[openPMD plugin] Data sources in TOML "
-                                                               "file must be a string or a vector of strings.");
-                                  })
+                              .or_else([](auto const&) -> toml::success<std::string> {
+                                  throw std::runtime_error("[openPMD plugin] Data sources in TOML "
+                                                           "file must be a string or a vector of strings.");
+                              })
                               .value;
                     dataSources.insert(std::move(dataSource));
                 }
@@ -131,15 +127,12 @@ namespace
             else
             {
                 // 2. option: dataSources is no array, check if it is a simple string
-                auto dataSource
-                    = toml::expect<std::string>(pair.second)
-                          .or_else(
-                              [](auto const&) -> toml::success<std::string>
-                              {
-                                  throw std::runtime_error("[openPMD plugin] Data sources in TOML "
-                                                           "file must be a string or a vector of strings.");
-                              })
-                          .value;
+                auto dataSource = toml::expect<std::string>(pair.second)
+                                      .or_else([](auto const&) -> toml::success<std::string> {
+                                          throw std::runtime_error("[openPMD plugin] Data sources in TOML "
+                                                                   "file must be a string or a vector of strings.");
+                                      })
+                                      .value;
                 dataSources.insert(std::move(dataSource));
             }
         }
@@ -197,7 +190,7 @@ namespace picongpu
     namespace toml
     {
         using namespace std::literals::chrono_literals;
-        DataSources::DataSources(std::string tomlFiles) : m_period{waitForParseAndMergeTomlFiles(tomlFiles, 5s)}
+        DataSources::DataSources(std::string const& tomlFiles) : m_period{waitForParseAndMergeTomlFiles(tomlFiles, 5s)}
         {
             // todo: read from toml files
             // verify that a step will always be available
