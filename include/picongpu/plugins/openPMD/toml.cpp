@@ -97,7 +97,12 @@ namespace
             SimulationStep_t period{};
             try
             {
-                period = std::stoul(pair.first);
+                size_t pos = 0;
+                period = std::stoul(pair.first, &pos);
+                if(pos != pair.first.length())
+                {
+                    throw std::invalid_argument("The whole key must be parseable to an unsigned integer.");
+                }
             }
             catch(std::invalid_argument const&)
             {
