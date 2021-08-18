@@ -29,6 +29,8 @@
 #    include <thread> // std::this_thread::sleep_for
 #    include <utility> // std::forward
 
+#    include <mpi.h>
+
 #    ifdef _WIN32
 #        include <windows.h>
 #    else
