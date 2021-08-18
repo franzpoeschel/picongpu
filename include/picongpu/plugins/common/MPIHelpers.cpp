@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <numeric>
 #include <sstream>
 #include <vector>
 
@@ -57,6 +58,78 @@ namespace picongpu
         if(rank != 0)
         {
             res = recvbuf.data();
+        }
+        return res;
+    }
+
+    /**
+     * @brief Read a file in MPI-collective manner.
+     *
+     * The file is read on rank 0 and its contents subsequently distributed
+     * to all other ranks.
+     *
+     * @param path Path for the file to read.
+     * @param comm MPI communicator.
+     * @return std::string Full file content.
+     */
+    std::vector<std::string> collective_files_read(std::vector<std::string> const& paths, MPI_Comm comm)
+    {
+        int rank, size;
+        MPI_Comm_rank(comm, &rank);
+        MPI_Comm_size(comm, &size);
+        size_t nfiles = paths.size();
+
+        std::vector<std::string> res(nfiles);
+        std::vector<size_t> stringLengths(nfiles, 0);
+        if(rank == 0)
+        {
+            for(size_t i = 0; i < nfiles; ++i)
+            {
+                auto const& path = paths[i];
+                std::fstream handle;
+                handle.open(path, std::ios_base::in);
+                std::stringstream stream;
+                stream << handle.rdbuf();
+                res[i] = stream.str();
+                if(!handle.good())
+                {
+                    throw std::runtime_error("Failed reading JSON config from file " + path + ".");
+                }
+                stringLengths[i] = res.size() + 1;
+            }
+        }
+        MPI_Datatype datatype = MPI_Types<size_t>{}.value;
+        int err = MPI_Bcast(stringLengths.data(), nfiles, datatype, 0, comm);
+        if(err)
+        {
+            throw std::runtime_error("[collective_files_read] MPI_Bcast stringLengths failure.");
+        }
+        size_t const totalStringLength = std::accumulate(stringLengths.begin(), stringLengths.end(), 0);
+        std::vector<char> recvbuf(totalStringLength, 0);
+        if(rank == 0)
+        {
+            size_t cursor = 0;
+            for(size_t i = 0; i < nfiles; ++i)
+            {
+                auto stringLength = stringLengths[i];
+                std::copy_n(res[i].c_str(), stringLength, recvbuf.data() + cursor);
+                cursor += stringLength;
+            }
+        }
+        err = MPI_Bcast(recvbuf.data(), totalStringLength, MPI_CHAR, 0, comm);
+        if(err)
+        {
+            throw std::runtime_error("[collective_file_read] MPI_Bcast file content failure.");
+        }
+        if(rank != 0)
+        {
+            size_t cursor = 0;
+            for(size_t i = 0; i < nfiles; ++i)
+            {
+                auto stringLength = stringLengths[i];
+                res[i] = recvbuf.data() + cursor;
+                cursor += stringLength;
+            }
         }
         return res;
     }

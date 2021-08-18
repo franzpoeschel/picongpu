@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <mpi.h>
 
 namespace picongpu
@@ -42,4 +44,16 @@ namespace picongpu
      * @return std::string Full file content.
      */
     std::string collective_file_read(std::string const& path, MPI_Comm comm);
+
+    /**
+     * @brief Read a file in MPI-collective manner.
+     *
+     * The file is read on rank 0 and its contents subsequently distributed
+     * to all other ranks.
+     *
+     * @param path Path for the file to read.
+     * @param comm MPI communicator.
+     * @return std::string Full file content.
+     */
+    std::vector<std::string> collective_files_read(std::vector<std::string> const& paths, MPI_Comm comm);
 } // namespace picongpu
