@@ -95,7 +95,7 @@ namespace picongpu
                 {
                     throw std::runtime_error("Failed reading JSON config from file " + path + ".");
                 }
-                stringLengths[i] = res.size() + 1;
+                stringLengths[i] = res[i].size() + 1;
             }
         }
         MPI_Datatype datatype = MPI_Types<size_t>{}.value;

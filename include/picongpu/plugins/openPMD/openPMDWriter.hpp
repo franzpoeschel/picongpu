@@ -417,7 +417,7 @@ Please pick either of the following:
             std::string const& notifyPeriod = help.notifyPeriod.get(id);
             if(!tomlDataSources && notifyPeriod == "dynamic")
             {
-                tomlDataSources = std::make_unique<toml::DataSources>(help.tomlSources.get(id));
+                tomlDataSources = std::make_unique<toml::DataSources>(help.tomlSources.get(id), communicator);
             }
         }
 

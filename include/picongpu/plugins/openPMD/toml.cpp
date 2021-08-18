@@ -21,6 +21,7 @@
 
 #    include "picongpu/plugins/openPMD/toml.hpp"
 
+#    include "picongpu/plugins/common/MPIHelpers.hpp"
 #    include "picongpu/plugins/misc/removeSpaces.hpp"
 #    include "picongpu/plugins/misc/splitString.hpp"
 
@@ -68,11 +69,14 @@ namespace
         }
     }
 
-    Period_t parseSingleTomlFile(std::string const& path)
+    Period_t parseSingleTomlFile(std::string const& content, std::string const& file = "unknown file")
     {
         Period_t res;
         using toml_t = toml::basic_value<toml::discard_comments>;
-        auto data = toml::parse(path);
+        auto data = [&content, &file]() {
+            std::istringstream istream(content.c_str());
+            return toml::parse(istream, file);
+        }();
         if(not data.contains("period"))
         {
             return {};
@@ -143,8 +147,13 @@ namespace
     }
 
     template<typename ChronoDuration>
-    Period_t waitForParseAndMergeTomlFiles(std::vector<std::string> paths, ChronoDuration&& sleepInterval)
+    Period_t waitForParseAndMergeTomlFiles(
+        std::vector<std::string> paths,
+        ChronoDuration&& sleepInterval,
+        MPI_Comm comm)
     {
+        int rank;
+        MPI_Comm_rank(comm, &rank);
         auto formatVectorOfStrings = [](std::vector<std::string> const& paths) -> std::string {
             if(paths.empty())
             {
@@ -165,50 +174,64 @@ namespace
             picongpu::toml::writeLog("openPMD: Reading data requirements from TOML files:\n\t%1%", 1, argsv);
         }
 
-        Period_t res;
-        std::vector<decltype(paths)::iterator> toRemove;
-        toRemove.reserve(paths.size());
-        while(true)
+        // wait for files to appear
+        if(rank == 0)
         {
-            for(auto it = paths.begin(); it != paths.end(); ++it)
+            std::vector<std::string> stillWaitingForPaths = paths;
+            std::vector<decltype(stillWaitingForPaths)::iterator> toRemove;
+            toRemove.reserve(stillWaitingForPaths.size());
+            while(true)
             {
-                auto const& path = *it;
-                if(file_exists(path))
+                for(auto it = stillWaitingForPaths.begin(); it != stillWaitingForPaths.end(); ++it)
                 {
-                    mergePeriodTable(res, parseSingleTomlFile(path));
-                    toRemove.push_back(it);
+                    auto const& path = *it;
+                    if(file_exists(path))
+                    {
+                        toRemove.push_back(it);
+                    }
                 }
+                // std::vector<>::erase
+                // "Invalidates iterators and references at or after the point of the erase, including the end()
+                // iterator."
+                // -> erase iterators from back to begin
+                for(auto it = toRemove.rbegin(); it != toRemove.rend(); ++it)
+                {
+                    stillWaitingForPaths.erase(*it);
+                }
+                toRemove.clear();
+                // Put the exit condition here, so we can skip the last sleep
+                if(stillWaitingForPaths.empty())
+                {
+                    break;
+                }
+                {
+                    auto pathsFormatted = formatVectorOfStrings(stillWaitingForPaths);
+                    char const*(argsv[]) = {pathsFormatted.c_str()};
+                    picongpu::toml::writeLog("openPMD: Still waiting for TOML files:\n\t%1%", 1, argsv);
+                }
+                std::this_thread::sleep_for(sleepInterval);
             }
-            // std::vector<>::erase
-            // "Invalidates iterators and references at or after the point of the erase, including the end() iterator."
-            // -> erase iterators from back to begin
-            for(auto it = toRemove.rbegin(); it != toRemove.rend(); ++it)
-            {
-                paths.erase(*it);
-            }
-            toRemove.clear();
-            // Put the exit condition here, so we can skip the last sleep
-            if(paths.empty())
-            {
-                break;
-            }
-            {
-                auto pathsFormatted = formatVectorOfStrings(paths);
-                char const*(argsv[]) = {pathsFormatted.c_str()};
-                picongpu::toml::writeLog("openPMD: Still waiting for TOML files:\n\t%1%", 1, argsv);
-            }
-            std::this_thread::sleep_for(sleepInterval);
+        }
+
+        picongpu::toml::writeLog("openPMD: Reading TOML files collectively");
+        std::vector<std::string> fileContents = picongpu::collective_files_read(paths, comm);
+
+        Period_t res;
+        for(size_t i = 0; i < fileContents.size(); ++i)
+        {
+            mergePeriodTable(res, parseSingleTomlFile(fileContents[i], paths[i]));
         }
         return res;
     }
 
     template<typename ChronoDuration>
-    Period_t waitForParseAndMergeTomlFiles(std::string const& paths, ChronoDuration&& sleepInterval)
+    Period_t waitForParseAndMergeTomlFiles(std::string const& paths, ChronoDuration&& sleepInterval, MPI_Comm comm)
     {
         using namespace picongpu::plugins::misc;
         return waitForParseAndMergeTomlFiles(
             splitString(removeSpaces(paths)),
-            std::forward<ChronoDuration>(sleepInterval));
+            std::forward<ChronoDuration>(sleepInterval),
+            comm);
     }
 } // namespace
 
@@ -220,7 +243,8 @@ namespace picongpu
         using namespace std::literals::chrono_literals;
         constexpr std::chrono::seconds const WAIT_TIME = 5s;
 
-        DataSources::DataSources(std::string const& tomlFiles) : m_period{waitForParseAndMergeTomlFiles(tomlFiles, WAIT_TIME)}
+        DataSources::DataSources(std::string const& tomlFiles, MPI_Comm comm)
+            : m_period{waitForParseAndMergeTomlFiles(tomlFiles, WAIT_TIME, comm)}
         {
             // todo: read from toml files
             // verify that a step will always be available

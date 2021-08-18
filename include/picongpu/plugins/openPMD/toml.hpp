@@ -25,6 +25,8 @@
 #include <string>
 #include <vector>
 
+#include <mpi.h>
+
 namespace picongpu
 {
     namespace toml
@@ -45,7 +47,7 @@ namespace picongpu
             std::map<SimulationStep_t, std::vector<SimulationStep_t>> m_upcomingSteps;
 
         public:
-            DataSources(std::string const& tomlFiles);
+            DataSources(std::string const& tomlFiles, MPI_Comm);
 
             std::vector<std::string> currentDataSources() const;
 
@@ -56,6 +58,6 @@ namespace picongpu
 
         // Definition of this needs to go in NVCC-compiled files
         // (openPMDWriter.hpp) due to include structure of PIConGPU
-        void writeLog(char const* message, size_t argsn, char const** argsv);
+        void writeLog(char const* message, size_t argsn = 0, char const** argsv = nullptr);
     } // namespace toml
 } // namespace picongpu
