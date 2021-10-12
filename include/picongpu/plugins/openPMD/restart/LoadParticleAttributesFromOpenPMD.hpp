@@ -31,6 +31,7 @@
 #include <pmacc/traits/GetNComponents.hpp>
 #include <pmacc/traits/Resolve.hpp>
 
+#include <cstring> // std::memcpy
 #include <memory>
 
 #include <openPMD/openPMD.hpp>
@@ -122,8 +123,9 @@ namespace picongpu
 #pragma omp parallel for simd
                     for(size_t i = 0; i < elements; ++i)
                     {
-                        ComponentType* ref = &reinterpret_cast<ComponentType*>(dataPtr)[i * components + n];
-                        *ref = loadBfr.get()[i];
+                        ValueType* ref = reinterpret_cast<ValueType*>(
+                            &reinterpret_cast<ComponentType*>(dataPtr)[i * components + n]);
+                        std::memcpy(ref, &loadBfr.get()[i], sizeof(ComponentType));
                     }
                 }
 

@@ -176,11 +176,9 @@ namespace picongpu
 
                 log<picLog::INPUT_OUTPUT>("openPMD: Schedule read scalar %1%)") % datasetName;
 
-                std::shared_ptr<T_Scalar> readValue = mrc.loadChunk<T_Scalar>(start, count);
+                mrc.loadChunk<T_Scalar>(std::shared_ptr<T_Scalar>{value, [](auto const*) {}}, start, count);
 
                 series.flush();
-
-                *value = *readValue;
 
                 if(!attrName.empty())
                 {

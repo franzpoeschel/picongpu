@@ -44,6 +44,7 @@
 #include <boost/filesystem.hpp>
 
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -889,7 +890,9 @@ namespace picongpu
                             = ::openPMD::Series(filename.str(), ::openPMD::Access::READ_ONLY);
 
                         const int N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
-                        picongpu::float_64* tmpBuffer = new picongpu::float_64[N_tmpBuffer];
+                        std::shared_ptr<double> tmpBuffer{new double[N_tmpBuffer], [](double* ptr) {
+                                                              delete[] ptr;
+                                                          }};
 
                         for(uint32_t ampIndex = 0; ampIndex < Amplitude::numComponents; ++ampIndex)
                         {
@@ -899,19 +902,21 @@ namespace picongpu
                             ::openPMD::Extent extent = dataset.getExtent();
                             ::openPMD::Offset offset(extent.size(), 0);
 
-                            dataset.loadChunk(std::shared_ptr<double>{tmpBuffer, [](auto const*) {}}, offset, extent);
+                            dataset.loadChunk(tmpBuffer, offset, extent);
 
                             openPMDdataFile.flush();
 
                             for(int copyIndex = 0; copyIndex < N_tmpBuffer; ++copyIndex)
                             {
-                                /* convert data directly because Amplitude is just 6 float_32 */
-                                ((picongpu::float_64*) values.data())[ampIndex + Amplitude::numComponents * copyIndex]
-                                    = tmpBuffer[copyIndex];
+                                /* convert data directly because Amplitude is just 6 float_64 */
+                                picongpu::float_64 asFloat64 = tmpBuffer.get()[copyIndex];
+                                std::memcpy(
+                                    &values.data()[ampIndex + Amplitude::numComponents * copyIndex],
+                                    &asFloat64,
+                                    sizeof(picongpu::float_64));
                             }
                         }
 
-                        delete[] tmpBuffer;
                         openPMDdataFile.iterations[timeStep].close();
 
                         log<picLog::INPUT_OUTPUT>("Radiation (%1%): read radiation data from openPMD") % speciesName;
