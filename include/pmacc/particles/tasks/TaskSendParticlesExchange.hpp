@@ -120,7 +120,7 @@ namespace pmacc
         ~TaskSendParticlesExchange() override
         {
             notify(this->myId, RECVFINISHED, nullptr);
-            if(retryCounter != 0)
+            if(false && retryCounter != 0)
             {
                 std::cerr << "Performance warning: send/receive buffer for species " << ParBase::FrameType::getName()
                           << " is too small (max: " << maxSize << ", direction: " << exchange << " '"
