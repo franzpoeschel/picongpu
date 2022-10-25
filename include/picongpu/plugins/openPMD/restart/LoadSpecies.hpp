@@ -104,8 +104,7 @@ namespace picongpu
                 size_t patchIdx = getPatchIdx(params, particleSpecies, numRanks);
 
                 std::shared_ptr<uint64_t> fullParticlesInfoShared
-                    = particleSpecies.particlePatches["numParticles"][::openPMD::RecordComponent::SCALAR]
-                          .load<uint64_t>();
+                    = particleSpecies.particlePatches["numParticles"].load<uint64_t>();
                 particles.seriesFlush();
                 uint64_t* fullParticlesInfo = fullParticlesInfoShared.get();
 
