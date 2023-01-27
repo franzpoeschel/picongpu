@@ -123,6 +123,7 @@ if [ -f !TBG_dstPath/input/bin/cuda_memtest ] && [ !TBG_numHostedDevicesPerNode 
 else
     run_cuda_memtest=0
 fi
+run_cuda_memtest=0
 
 # test if cuda_memtest binary is available and we have the node exclusive
 if [ $run_cuda_memtest -eq 1 ] ; then
@@ -182,6 +183,13 @@ fi
 # instance of openpmd-pipe writing data per node. It does not matter that this
 # data does not necessarily stem from the same node.
 export OPENPMD_CHUNK_DISTRIBUTION=hostname_binpacking_fail
+# Without this environment variable, the MPI-UCX will not allow multi-node jobs
+# on Crusher.
+export UCX_TLS=all
+
+# Logging
+export UCX_LOG_LEVEL=data
+export SstVerbose=30
 
 export MPICH_OFI_NIC_POLICY=NUMA # The default
 
@@ -237,7 +245,6 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
       --cpu-bind=verbose,mask_cpu:$mask     \
       -K1                                   \
       !TBG_dstPath/input/bin/picongpu       \
-        --mpiDirect                         \
         !TBG_author                         \
         !TBG_programParams                  \
         > ../pic.out 2> ../pic.err          &
