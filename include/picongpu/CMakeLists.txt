@@ -377,6 +377,19 @@ if(PIC_SEARCH_openPMD)
     endif(openPMD_FOUND)
 endif()
 
+# # Included recursively via PMacc already...
+# add_subdirectory(
+#     "${PIConGPUapp_SOURCE_DIR}/../../filesystem"
+#     "${CMAKE_CURRENT_BINARY_DIR}/build_filesystem"
+#     # EXCLUDE_FROM_ALL ensures that toml11 is not part of
+#     # make install.
+#     # The library is header-only and linking it against
+#     # PIConGPU targets is sufficient.
+#     # It needs not be part of any build or install targets
+#     # explicitly.
+#     EXCLUDE_FROM_ALL)
+set(HOST_LIBS ${HOST_LIBS} ghc_filesystem)
+
 PIC_dependency_set_status(openPMD ${openPMD_FOUND})
 
 ################################################################################

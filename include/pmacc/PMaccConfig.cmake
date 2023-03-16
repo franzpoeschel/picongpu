@@ -148,6 +148,12 @@ target_include_directories(pmacc
         $<BUILD_INTERFACE:${PMacc_DIR}/..>
         $<INSTALL_INTERFACE:${PMacc_DIR}/..>)
 
+add_subdirectory(${PMacc_DIR}/../../filesystem ${CMAKE_BINARY_DIR}/filesystem)
+target_include_directories(pmacc
+    SYSTEM PRIVATE
+    $<TARGET_PROPERTY:ghc_filesystem,INTERFACE_INCLUDE_DIRECTORIES>)
+
+
 # Even if there are no sources CMAKE has to know the language.
 set_target_properties(pmacc PROPERTIES LINKER_LANGUAGE CXX)
 

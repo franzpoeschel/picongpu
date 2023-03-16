@@ -29,7 +29,7 @@
 #    include <pmacc/communication/manager_common.hpp>
 
 #    include <chrono>
-#    include <filesystem>
+#include <ghc/filesystem.hpp>
 #    include <sstream>
 #    include <thread> // std::this_thread::sleep_for
 #    include <utility> // std::forward
@@ -228,7 +228,7 @@ namespace
 
             char const* argsv[] = {path.c_str()};
             ChronoDuration waitedFor = 0s;
-            while(!std::filesystem::exists(path))
+            while(!ghc::filesystem::exists(path))
             {
                 picongpu::toml::writeLog("openPMD: Still waiting for TOML file:\n\t%1%", 1, argsv);
                 if(waitedFor > timeout)

@@ -45,7 +45,7 @@
 #include <algorithm> // std::any
 #include <complex>
 #include <cstdlib>
-#include <filesystem>
+#include <ghc/filesystem.hpp>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -1060,7 +1060,7 @@ namespace picongpu
                     filename << name << timeStep << "_0_0_0" + extension;
 
                     /* check if restart file exists */
-                    if(!std::filesystem::exists(filename.str()))
+                    if(!ghc::filesystem::exists(filename.str()))
                     {
                         log<radLog::SIMULATION_STATE>(
                             "Radiation (%1%): restart file not found (%2%) - start with zero values")

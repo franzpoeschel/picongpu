@@ -37,7 +37,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <csignal>
-#include <filesystem>
+#include <ghc/filesystem.hpp>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -449,7 +449,7 @@ namespace pmacc
         const std::string checkpointMasterFile
             = this->restartDirectory + std::string("/") + this->CHECKPOINT_MASTER_FILE;
 
-        if(!std::filesystem::exists(checkpointMasterFile))
+        if(!ghc::filesystem::exists(checkpointMasterFile))
             return checkpoints;
 
         std::ifstream file(checkpointMasterFile.c_str());
