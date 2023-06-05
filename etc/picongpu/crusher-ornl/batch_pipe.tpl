@@ -209,6 +209,9 @@ export OPENPMD_CHUNK_DISTRIBUTION=hostname_binpacking_fail
 
 export MPICH_OFI_NIC_POLICY=NUMA # The default
 
+# For enabling networking even on single nodes
+export MPICH_SINGLE_HOST_ENABLED=0
+
 if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
     # Run PIConGPU
     echo "Start PIConGPU."
@@ -262,6 +265,7 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
       --cpu-bind=verbose,mask_cpu:$mask     \
       --network=single_node_vni,job_vni     \
       -K1                                   \
+      --network=single_node_vni,job_vni     \
       !TBG_dstPath/input/bin/picongpu       \
         --mpiDirect                         \
         !TBG_author                         \
