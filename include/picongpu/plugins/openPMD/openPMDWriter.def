@@ -51,7 +51,6 @@ namespace picongpu
         using namespace pmacc;
         using AbstractJsonMatcher = json::AbstractJsonMatcher;
 
-
         namespace po = boost::program_options;
 
 
@@ -67,6 +66,7 @@ namespace picongpu
             HDF5
         };
 
+        constexpr char const* picongpuInternal = "picongpu_internal";
 
         /**
          * Writes simulation data to openPMD series.

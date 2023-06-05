@@ -68,7 +68,7 @@ namespace picongpu
              *
              *  Must be called before executing the functor
              */
-            std::tuple<::openPMD::MeshRecordComponent, ::openPMD::Offset, ::openPMD::Extent> prepare(
+            std::tuple<::openPMD::RecordComponent, ::openPMD::Offset, ::openPMD::Extent> prepare(
                 ThreadParams& params,
                 uint32_t const currentStep,
                 T_Attribute attribute)
@@ -90,22 +90,25 @@ namespace picongpu
                 }
 
                 ::openPMD::Series& series = *params.openPMDSeries;
-                ::openPMD::MeshRecordComponent mrc
-                    = series.writeIterations()[currentStep].meshes[baseName + "_" + group][dataset];
+                ::openPMD::RecordComponent rc = series.writeIterations()[currentStep][baseName][group]
+                                                    .asContainerOf<::openPMD::RecordComponent>()[dataset];
 
                 if(!attrName.empty())
                 {
                     log<picLog::INPUT_OUTPUT>("openPMD: write attribute %1% of %2%D scalars: %3%") % attrName % simDim
                         % name;
 
-                    mrc.setAttribute(attrName, attribute);
+                    rc.setAttribute(attrName, attribute);
                 }
 
+                /*
+                 * @todo: Adapt datasetName
+                 */
                 std::string datasetName = series.meshesPath() + baseName + "_" + group + "/" + dataset;
-                params.initDataset<simDim>(mrc, openPMDScalarType, std::move(globalDomainSize), datasetName);
+                params.initDataset<simDim>(rc, openPMDScalarType, std::move(globalDomainSize), datasetName);
 
                 return std::make_tuple(
-                    std::move(mrc),
+                    std::move(rc),
                     static_cast<::openPMD::Offset>(asStandardVector(std::move(localDomainOffset))),
                     static_cast<::openPMD::Extent>(asStandardVector(Dimensions::create(1))));
             }
@@ -163,9 +166,9 @@ namespace picongpu
 
                 auto datasetName = baseName + "/" + group + "/" + dataset;
                 ::openPMD::Series& series = *params.openPMDSeries;
-                ::openPMD::MeshRecordComponent mrc
-                    = series.iterations[currentStep].open().meshes[baseName + "_" + group][dataset];
-                auto ndim = mrc.getDimensionality();
+                ::openPMD::RecordComponent rc = series.iterations[currentStep][baseName][group]
+                                                    .asContainerOf<::openPMD::RecordComponent>()[dataset];
+                auto ndim = rc.getDimensionality();
                 if(ndim != simDim)
                 {
                     throw std::runtime_error(std::string("Invalid dimensionality for ") + name);
@@ -186,7 +189,7 @@ namespace picongpu
 
                 log<picLog::INPUT_OUTPUT>("openPMD: Schedule read scalar %1%)") % datasetName;
 
-                std::shared_ptr<T_Scalar> readValue = mrc.loadChunk<T_Scalar>(start, count);
+                std::shared_ptr<T_Scalar> readValue = rc.loadChunk<T_Scalar>(start, count);
 
                 mrc.seriesFlush();
 
@@ -195,7 +198,7 @@ namespace picongpu
                 if(!attrName.empty())
                 {
                     log<picLog::INPUT_OUTPUT>("openPMD: read attribute %1% for scalars: %2%") % attrName % name;
-                    *attribute = mrc.getAttribute(attrName).get<T_Attribute>();
+                    *attribute = rc.getAttribute(attrName).get<T_Attribute>();
                 }
             }
         };

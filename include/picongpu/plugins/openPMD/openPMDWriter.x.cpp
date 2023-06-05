@@ -904,7 +904,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 auto const name = rngProvider->getName();
 
                 ::openPMD::Iteration iteration = params->openPMDSeries->writeIterations()[currentStep];
-                ::openPMD::Mesh mesh = iteration.meshes[name];
+                ::openPMD::Mesh mesh = iteration[picongpuInternal]["meshes"].asContainerOf<::openPMD::Mesh>()[name];
 
                 auto const unitDimension = std::vector<float_64>(7, 0.0);
                 auto const timeOffset = 0.0_X;
@@ -934,6 +934,9 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 recordGlobalSizeDims[0] *= sizeof(ValueType);
                 recordOffsetDims[0] *= sizeof(ValueType);
 
+                /*
+                 * @todo: Adapt datasetName
+                 */
                 params->initDataset<simDim>(
                     mesh,
                     ::openPMD::determineDatatype<ReinterpretedType>(),
@@ -973,7 +976,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 auto const name = rngProvider->getName();
 
                 ::openPMD::Iteration iteration = params->openPMDSeries->iterations[restartStep].open();
-                ::openPMD::Mesh mesh = iteration.meshes[name];
+                ::openPMD::Mesh mesh = iteration[picongpuInternal]["meshes"].asContainerOf<::openPMD::Mesh>()[name];
 
                 auto numRNGsPerSuperCell = DataSpace<simDim>::create(1);
                 numRNGsPerSuperCell.x() = numFrameSlots;
@@ -1349,7 +1352,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 ReadNDScalars<uint64_t, uint64_t>()(
                     mThreadParams,
                     restartStep,
-                    "picongpu",
+                    picongpuInternal,
                     "idProvider",
                     "startId",
                     &idProvState.startId,
@@ -1358,7 +1361,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 ReadNDScalars<uint64_t>()(
                     mThreadParams,
                     restartStep,
-                    "picongpu",
+                    picongpuInternal,
                     "idProvider",
                     "nextId",
                     &idProvState.nextId);
@@ -1896,11 +1899,11 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                         % idProviderState.startId % idProviderState.nextId % idProviderState.maxNumProc;
 
                     WriteNDScalars<uint64_t, uint64_t> writeIdProviderStartId(
-                        "picongpu",
+                        picongpuInternal,
                         "idProvider",
                         "startId",
                         "maxNumProc");
-                    WriteNDScalars<uint64_t, uint64_t> writeIdProviderNextId("picongpu", "idProvider", "nextId");
+                    WriteNDScalars<uint64_t, uint64_t> writeIdProviderNextId(picongpuInternal, "idProvider", "nextId");
                     writeIdProviderStartId(
                         *threadParams,
                         currentStep,
