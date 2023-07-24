@@ -33,6 +33,7 @@
 #SBATCH -S 0
 #SBATCH --exclusive # This one might not be strictly necessarily, haven't tested
 #SBATCH --network=single_node_vni,job_vni
+#SBATCH -C nvme
 
 ###################
 # Optional params #
@@ -128,6 +129,39 @@ if [ $? -ne 0 ] ; then
     exit 1
 fi
 unset MODULES_NO_OUTPUT
+
+srun -N !TBG_nodes_adjusted --ntasks-per-node=1 mkdir -p "/mnt/bb/$USER/sync_bins/lib"
+for binary in picongpu python; do
+    sbcast "$(which "$binary")" "/mnt/bb/$USER/sync_bins/$binary"
+    if [ ! "$?" == "0" ]; then
+        # CHECK EXIT CODE. When SBCAST fails, it may leave partial files on the compute nodes, and if you continue to launch srun,
+        # your application may pick up partially complete shared library files, which would give you confusing errors.
+        echo "SBCAST failed for $binary!"
+        exit 1
+    fi
+    ldd "$(which "$binary")" | awk '{print $3}' | grep "^$PREFIX" | while read i; do
+        echo ">\tSyncing $i"
+        sbcast -f "$i" "/mnt/bb/$USER/sync_bins/lib/${i##*/}"
+        if [ ! "$?" == "0" ]; then
+            # CHECK EXIT CODE. When SBCAST fails, it may leave partial files on the compute nodes, and if you continue to launch srun,
+            # your application may pick up partially complete shared library files, which would give you confusing errors.
+            echo "SBCAST failed for $i!"
+            exit 1
+        fi
+    done
+done
+export PATH="/mnt/bb/$USER/sync_bins/:$PATH"
+export LD_LIBRARY_PATH="/mnt/bb/$USER/sync_bins/lib:$LD_LIBRARY_PATH"
+
+verify_synced() {
+    ls "/mnt/bb/$USER/sync_bins/"* -lisah
+    echo
+    echo "PATH=$PATH"
+    echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+}
+verify_synced | sed 's|^|>\t|'
+
+echo "BEGIN DATE: $(date)"
 
 # set user rights to u=rwx;g=r-x;o=---
 umask 0027
@@ -281,3 +315,4 @@ else
     echo "Job stopped because of previous issues." >&2
 fi
 
+echo "END DATE: $(date)"
