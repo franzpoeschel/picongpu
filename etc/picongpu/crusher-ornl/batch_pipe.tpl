@@ -206,14 +206,14 @@ fi
 # strategy that is used, since the deciding factor is that there is only one
 # instance of openpmd-pipe writing data per node. It does not matter that this
 # data does not necessarily stem from the same node.
-export OPENPMD_CHUNK_DISTRIBUTION=hostname_binpacking_fail
+export OPENPMD_CHUNK_DISTRIBUTION=hostname_roundrobin_discard
 # Without this environment variable, the MPI-UCX will not allow multi-node jobs
 # on Crusher.
 export UCX_TLS=all
 
 # Logging
 export UCX_LOG_LEVEL=data
-export SstVerbose=30
+# export SstVerbose=30
 
 export MPICH_OFI_NIC_POLICY=NUMA # The default
 
