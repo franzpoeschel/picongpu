@@ -130,28 +130,24 @@ if [ $? -ne 0 ] ; then
 fi
 unset MODULES_NO_OUTPUT
 
-srun -N !TBG_nodes_adjusted --ntasks-per-node=1 mkdir -p "/mnt/bb/$USER/sync_bins/lib"
+squeue -u `whoami`
+
+srun -N !TBG_nodes_adjusted --ntasks-per-node=1 mkdir -p "/mnt/bb/$USER/sync_bins"
 for binary in picongpu python; do
-    sbcast "$(which "$binary")" "/mnt/bb/$USER/sync_bins/$binary"
+    sbcast --send-libs=yes "$(which "$binary")" "/mnt/bb/$USER/sync_bins/$binary"
     if [ ! "$?" == "0" ]; then
         # CHECK EXIT CODE. When SBCAST fails, it may leave partial files on the compute nodes, and if you continue to launch srun,
         # your application may pick up partially complete shared library files, which would give you confusing errors.
         echo "SBCAST failed for $binary!"
         exit 1
     fi
-    ldd "$(which "$binary")" | awk '{print $3}' | grep "^$PREFIX" | while read i; do
-        echo ">\tSyncing $i"
-        sbcast -f "$i" "/mnt/bb/$USER/sync_bins/lib/${i##*/}"
-        if [ ! "$?" == "0" ]; then
-            # CHECK EXIT CODE. When SBCAST fails, it may leave partial files on the compute nodes, and if you continue to launch srun,
-            # your application may pick up partially complete shared library files, which would give you confusing errors.
-            echo "SBCAST failed for $i!"
-            exit 1
-        fi
-    done
+done
+mapfile -t shared_libs < <(find "/mnt/bb/$USER/sync_bins" -mindepth 1 -type d)
+export LD_LIBRARY_PATH="$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
+for shared_lib in "${shared_libs[@]}"; do
+    export LD_LIBRARY_PATH="$(realpath "$shared_lib"):$LD_LIBRARY_PATH"
 done
 export PATH="/mnt/bb/$USER/sync_bins/:$PATH"
-export LD_LIBRARY_PATH="/mnt/bb/$USER/sync_bins/lib:$LD_LIBRARY_PATH"
 
 verify_synced() {
     ls "/mnt/bb/$USER/sync_bins/"* -lisah
@@ -259,6 +255,10 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
     echo '!TBG_inconfig_pipe' | tee inconfig.json
     echo '!TBG_outconfig_pipe' | tee outconfig.json
 
+    srun -l -N !TBG_nodes_adjusted --ntasks-per-node=1 which picongpu > which.txt
+    srun -l -N !TBG_nodes_adjusted --ntasks-per-node=1 ldd `which picongpu` > ldd.txt
+    srun -l -N !TBG_nodes_adjusted --ntasks-per-node=1 readelf -d `which picongpu` > readelf.txt
+
     mkdir -p openPMD
 
     export MPICH_OFI_CXI_PID_BASE=0
@@ -275,7 +275,7 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
       --cpus-per-task=!TBG_coresPerPipeInstance   \
       --cpu-bind=verbose,mask_cpu:$mask           \
       --network=single_node_vni,job_vni           \
-      openpmd-pipe                                \
+      python `which openpmd-pipe`                 \
         --infile "!TBG_streamdir"                 \
         --outfile "!TBG_dumpdir"                  \
         --inconfig @inconfig.json                 \
@@ -304,7 +304,7 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
       --cpu-bind=verbose,mask_cpu:$mask     \
       --network=single_node_vni,job_vni     \
       -K1                                   \
-      !TBG_dstPath/input/bin/picongpu       \
+      picongpu                              \
         !TBG_author                         \
         !TBG_programParams                  \
         > ../pic.out 2> ../pic.err          &
