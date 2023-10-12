@@ -247,6 +247,30 @@ export UCX_LOG_LEVEL=data
 
 export MPICH_OFI_NIC_POLICY=NUMA # The default
 
+clean_duplicates_stable()
+{
+    # read lines from stdin
+    local already_seen=()
+    while read line; do
+        local skip=0
+        for possible_duplicate in "${already_seen[@]}"; do
+            if [[ "$line" = "$possible_duplicate" ]]; then
+                skip=1
+                break
+            fi
+        done
+        if [[ "$skip" = 0 ]]; then
+            echo "$line"
+            already_seen+=("$line")
+        fi
+    done
+}
+
+export LD_LIBRARY_PATH="$(echo "$LD_LIBRARY_PATH" | tr : '\n' | clean_duplicates_stable | tr '\n' :)"
+echo -e "LD_LIBRARY_PATH after cleaning duplicate entries:\n$LD_LIBRARY_PATH"
+
+export PMI_MMAP_SYNC_WAIT_TIME=5000
+
 if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
     # Run PIConGPU
     echo "Start PIConGPU."
@@ -275,7 +299,8 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
       --cpus-per-task=!TBG_coresPerPipeInstance   \
       --cpu-bind=verbose,mask_cpu:$mask           \
       --network=single_node_vni,job_vni           \
-      python `which openpmd-pipe`                 \
+      /mnt/bb/$USER/sync_bins/python              \
+        `which openpmd-pipe`                      \
         --infile "!TBG_streamdir"                 \
         --outfile "!TBG_dumpdir"                  \
         --inconfig @inconfig.json                 \
@@ -304,7 +329,7 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
       --cpu-bind=verbose,mask_cpu:$mask     \
       --network=single_node_vni,job_vni     \
       -K1                                   \
-      picongpu                              \
+      /mnt/bb/$USER/sync_bins/picongpu      \
         !TBG_author                         \
         !TBG_programParams                  \
         > ../pic.out 2> ../pic.err          &
