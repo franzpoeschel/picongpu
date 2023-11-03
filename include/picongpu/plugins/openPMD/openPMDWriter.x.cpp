@@ -904,13 +904,10 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 auto const name = rngProvider->getName();
 
                 ::openPMD::Iteration iteration = params->openPMDSeries->writeIterations()[currentStep];
-                ::openPMD::Mesh mesh = iteration[picongpuInternal]["meshes"].asContainerOf<::openPMD::Mesh>()[name];
+                ::openPMD::RecordComponent rng_dataset
+                    = iteration[picongpuInternal]["RNG"].asContainerOf<::openPMD::RecordComponent>()[name];
 
-                auto const unitDimension = std::vector<float_64>(7, 0.0);
-                auto const timeOffset = 0.0_X;
-                writeFieldAttributes(params, currentStep, unitDimension, timeOffset, mesh);
-
-                std::string datasetName = params->openPMDSeries->meshesPath() + name;
+                std::string datasetName = params->openPMDSeries->meshesPath() + name; // @todo change
 
                 auto numRNGsPerSuperCell = DataSpace<simDim>::create(1);
                 numRNGsPerSuperCell.x() = numFrameSlots;
@@ -938,22 +935,19 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                  * @todo: Adapt datasetName
                  */
                 params->initDataset<simDim>(
-                    mesh,
+                    rng_dataset,
                     ::openPMD::determineDatatype<ReinterpretedType>(),
                     recordGlobalSizeDims,
                     datasetName);
-
-                // define record component level attributes
-                auto const inCellPosition = std::vector<float_X>(simDim, 0.0_X);
-                mesh.setPosition(inCellPosition);
-                auto const unit = 1.0_X;
-                mesh.setUnitSI(unit);
 
                 auto& buffer = rngProvider->getStateBuffer();
                 // getPointer() will wait for device->host transfer
                 ValueType* nativePtr = buffer.getHostBuffer().data();
                 ReinterpretedType* rawPtr = reinterpret_cast<ReinterpretedType*>(nativePtr);
-                mesh.storeChunkRaw(rawPtr, asStandardVector(recordOffsetDims), asStandardVector(recordLocalSizeDims));
+                rng_dataset.storeChunkRaw(
+                    rawPtr,
+                    asStandardVector(recordOffsetDims),
+                    asStandardVector(recordLocalSizeDims));
                 // avoid deadlock between not finished pmacc tasks and mpi blocking collectives
                 eventSystem::getTransactionEvent().waitForFinished();
                 params->openPMDSeries->flush(PreferredFlushTarget::Disk);
@@ -976,7 +970,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 auto const name = rngProvider->getName();
 
                 ::openPMD::Iteration iteration = params->openPMDSeries->iterations[restartStep].open();
-                ::openPMD::Mesh mesh = iteration[picongpuInternal]["meshes"].asContainerOf<::openPMD::Mesh>()[name];
+                ::openPMD::RecordComponent rng_dataset
+                    = iteration[picongpuInternal]["RNG"].asContainerOf<::openPMD::RecordComponent>()[name];
 
                 auto numRNGsPerSuperCell = DataSpace<simDim>::create(1);
                 numRNGsPerSuperCell.x() = numFrameSlots;
@@ -1005,7 +1000,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 /* Explicit template parameters to asStandardVector required
                  * as we need to change the element type as well
                  */
-                mesh.loadChunkRaw(
+                rng_dataset.loadChunkRaw(
                     rawPtr,
                     asStandardVector<VecUInt64, ::openPMD::Offset>(recordOffsetDims),
                     asStandardVector<VecUInt64, ::openPMD::Extent>(recordLocalSizeDims));
