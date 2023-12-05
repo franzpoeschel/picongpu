@@ -71,7 +71,7 @@
 .TBG_coresPerGPU=7
 .TBG_coresPerPipeInstance=7
 
-.TBG_DataTransport=mpi
+.TBG_DataTransport=fabric
 
 # Assign one OpenMP thread per available core per GPU (=task)
 export OMP_NUM_THREADS=!TBG_coresPerGPU
@@ -121,6 +121,8 @@ availability and requires manual intervention:
 EOF
 
 cd !TBG_dstPath
+
+set -o pipefail
 
 export MODULES_NO_OUTPUT=1
 source !TBG_profile
@@ -286,6 +288,8 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
     mkdir -p openPMD
 
     export MPICH_OFI_CXI_PID_BASE=0
+    # export FABRIC_IFACE=cxi2
+
     # Corresponds to the cores 0, 8, 16, 24, 32, 40, 48, 56
     # (first core in each L3 cache group)
     mask="0x101010101010101"
@@ -309,14 +313,11 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
 
     sleep 1
 
-    # Need threaded MPI for SST on ECP systems
-    export PIC_USE_THREADED_MPI=MPI_THREAD_MULTIPLE
-    # Enable workaround as described here:
-    # https://github.com/ornladios/ADIOS2/blob/master/docs/user_guide/source/advanced/ecp_hardware.rst
-    export PIC_WORKAROUND_CRAY_MPI_FINALIZE=1
     export MPICH_OFI_CXI_PID_BASE=$((MPICH_OFI_CXI_PID_BASE+1))
     # Corresponds to cores 1-8 (exclude first core) in each L3 cache group
     mask=0xfe,0xfe00,0xfe0000,0xfe000000,0xfe00000000,0xfe0000000000,0xfe000000000000,0xfe00000000000000
+
+    # export FABRIC_IFACE=cxi1
 
     srun                                    \
       --overlap                             \
