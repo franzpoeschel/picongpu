@@ -272,6 +272,31 @@ export LD_LIBRARY_PATH="$(echo "$LD_LIBRARY_PATH" | tr : '\n' | clean_duplicates
 echo -e "LD_LIBRARY_PATH after cleaning duplicate entries:\n$LD_LIBRARY_PATH"
 
 export PMI_MMAP_SYNC_WAIT_TIME=5000
+# export PIC_USE_THREADED_MPI=MPI_THREAD_MULTIPLE
+
+cat << EOF > ./tmp.sh
+#!/usr/bin/env bash
+
+# https://docs.olcf.ornl.gov/_images/Frontier_Node_Diagram.jpg
+# Each PIConGPU instance runs on one L3 cache group
+devices=(cxi2 cxi2 cxi1 cxi1 cxi3 cxi3 cxi0 cxi0)
+index_within_node=\$(( PMI_RANK % 8 ))
+export FABRIC_IFACE="\${devices[\$index_within_node]}"
+
+if (( PMI_RANK < 16 )); then
+    export SstVerbose=5
+    # export FI_LOG_LEVEL=Debug
+    # export OPENPMD_VERBOSE=1
+    "\$@"
+else
+    "\$@"
+fi
+
+EOF
+
+chmod +x ./tmp.sh
+sbcast ./tmp.sh /mnt/bb/$USER/sync_bins/launch.sh
+rm ./tmp.sh
 
 if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
     # Run PIConGPU
@@ -294,7 +319,7 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
     # (first core in each L3 cache group)
     mask="0x101010101010101"
 
-    srun                                          \
+    srun -l                                       \
       --ntasks !TBG_nodes                         \
       --nodes !TBG_nodes                          \
       $exclude_nodes                              \
@@ -303,6 +328,7 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
       --cpus-per-task=!TBG_coresPerPipeInstance   \
       --cpu-bind=verbose,mask_cpu:$mask           \
       --network=single_node_vni,job_vni           \
+      /mnt/bb/$USER/sync_bins/launch.sh           \
       /mnt/bb/$USER/sync_bins/python              \
         `which openpmd-pipe`                      \
         --infile "!TBG_streamdir"                 \
@@ -319,7 +345,7 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
 
     # export FABRIC_IFACE=cxi1
 
-    srun                                    \
+    srun -l                                 \
       --overlap                             \
       --ntasks !TBG_tasks                   \
       --nodes=!TBG_nodes                    \
@@ -330,6 +356,7 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
       --cpu-bind=verbose,mask_cpu:$mask     \
       --network=single_node_vni,job_vni     \
       -K1                                   \
+      /mnt/bb/$USER/sync_bins/launch.sh     \
       /mnt/bb/$USER/sync_bins/picongpu      \
         !TBG_author                         \
         !TBG_programParams                  \
