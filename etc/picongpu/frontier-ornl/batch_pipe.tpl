@@ -66,7 +66,7 @@
 # Keep data transport MPI for now.
 # "fabric" works as well with the latest ADIOS2 master, but there might still be issues.
 # If MPI is not available and fabric is available, ADIOS2 will fall back to that automatically anyway.
-.TBG_DataTransport=mpi
+.TBG_DataTransport=fabric
 
 # Assign one OpenMP thread per available core per GPU (=task)
 export OMP_NUM_THREADS=!TBG_coresPerGPU
@@ -117,6 +117,8 @@ EOF
 
 cd !TBG_dstPath
 
+set -o pipefail
+
 export MODULES_NO_OUTPUT=1
 source !TBG_profile
 if [ $? -ne 0 ] ; then
@@ -130,8 +132,10 @@ srun -N !TBG_nodes_adjusted --ntasks-per-node=1 mkdir -p "/mnt/bb/$USER/sync_bin
 # Use sbcast to put the launch binaries and their libraries to node-local storage.
 # Note that this puts only the Python binary itself, but not its runtime dependency to node-local storage.
 # That seems to be the lesser problem anyway.
-for binary in "!TBG_dstPath/input/bin/picongpu" "$(which python)"; do
-    sbcast --send-libs=yes "$binary" "/mnt/bb/$USER/sync_bins/${binary##*/}"
+for binary in "!TBG_dstPath/input/bin/"{picongpu,cuda_memtest,cuda_memtest.sh,mpiInfo} "$(which python)"; do
+    srun -N !TBG_nodes_adjusted --ntasks-per-node=1 mkdir -p "/mnt/bb/$USER/tmp/${binary##*/}"
+    tmp_dest="/mnt/bb/$USER/tmp/${binary##*/}/${binary##*/}"
+    sbcast --send-libs=yes "$binary" "$tmp_dest"
     if [ ! "$?" == "0" ]; then
         # CHECK EXIT CODE. When SBCAST fails, it may leave partial files on the compute nodes, and if you continue to launch srun,
         # your application may pick up partially complete shared library files, which would give you confusing errors.
@@ -139,6 +143,7 @@ for binary in "!TBG_dstPath/input/bin/picongpu" "$(which python)"; do
         exit 1
     fi
 done
+srun -N !TBG_nodes_adjusted --ntasks-per-node=1 mv "/mnt/bb/$USER/tmp/"*/* "/mnt/bb/$USER/sync_bins/"
 mapfile -t shared_libs < <(find "/mnt/bb/$USER/sync_bins" -mindepth 1 -type d)
 export LD_LIBRARY_PATH="$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
 for shared_lib in "${shared_libs[@]}"; do
@@ -193,7 +198,7 @@ n_broken_nodes=0
 # return code of cuda_memcheck
 node_check_err=1
 
-if [ -f !TBG_dstPath/input/bin/cuda_memtest ] && [ !TBG_numHostedDevicesPerNode -eq !TBG_mpiTasksPerNode ] ; then
+if [ -f /mnt/bb/$USER/sync_bins/cuda_memtest ] && [ !TBG_numHostedDevicesPerNode -eq !TBG_mpiTasksPerNode ] ; then
     run_cuda_memtest=1
 else
     run_cuda_memtest=0
@@ -213,7 +218,7 @@ if [ $run_cuda_memtest -eq 1 ] ; then
         # do not bind to any GPU, else we can not use the local MPI rank to select a GPU
         # - test always all except the broken nodes
         # - catch error to avoid that the batch script stops processing in case an error happened
-        node_check_err=$(srun -n $n_tasks --nodes=$((n_tasks / !TBG_numHostedDevicesPerNode)) $exclude_nodes -K1 --gpu-bind=none !TBG_dstPath/input/bin/cuda_memtest.sh && echo 0 || echo 1)
+        node_check_err=$(srun -n $n_tasks --nodes=$((n_tasks / !TBG_numHostedDevicesPerNode)) $exclude_nodes -K1 --gpu-bind=none /mnt/bb/$USER/sync_bins/cuda_memtest.sh && echo 0 || echo 1)
         cd ..
         ls -1 "cuda_memtest_$i" | sed -n -e 's/cuda_memtest_\([^_]*\)_.*/\1/p' | sort -u >> ./bad_nodes.txt
         n_broken_nodes=$(cat ./bad_nodes.txt | sort -u | wc -l)
@@ -262,8 +267,7 @@ export MPICH_OFI_NIC_POLICY=NUMA # The default
 
 # Increase the launch timeout to 10 minutes.
 # Default is 3 minutes.
-export PMI_MMAP_SYNC_WAIT_TIME=600
-
+export PMI_MMAP_SYNC_WAIT_TIME=1200
 
 # Create a little launch script to set some rank-specific environment variables
 cat << EOF > ./tmp.sh
