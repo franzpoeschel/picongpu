@@ -135,15 +135,16 @@ if [ $? -ne 0 ] ; then
 fi
 unset MODULES_NO_OUTPUT
 
+compressed_env="${PREFIX}.tar.gz"
+
 # Create a folder for putting our binaries inside the NVMe on every node.
 srun -N !TBG_nodes_adjusted --ntasks-per-node=1 mkdir -p "/mnt/bb/$USER/sync_bins"
 # Use sbcast to put the launch binaries and their libraries to node-local storage.
 # Note that this puts only the Python binary itself, but not its runtime dependency to node-local storage.
 # That seems to be the lesser problem anyway.
-for binary in "!TBG_dstPath/input/bin/"{picongpu,cuda_memtest,cuda_memtest.sh,mpiInfo} "$(which python)"; do
-    srun -N !TBG_nodes_adjusted --ntasks-per-node=1 mkdir -p "/mnt/bb/$USER/tmp/${binary##*/}"
-    tmp_dest="/mnt/bb/$USER/tmp/${binary##*/}/${binary##*/}"
-    sbcast --send-libs=yes "$binary" "$tmp_dest"
+for binary in "!TBG_dstPath/input/bin/"{picongpu,cuda_memtest,cuda_memtest.sh,mpiInfo} "$(which python)" "$compressed_env"; do
+    dest="/mnt/bb/$USER/sync_bins/${binary##*/}"
+    sbcast "$binary" "$dest"
     if [ ! "$?" == "0" ]; then
         # CHECK EXIT CODE. When SBCAST fails, it may leave partial files on the compute nodes, and if you continue to launch srun,
         # your application may pick up partially complete shared library files, which would give you confusing errors.
@@ -151,19 +152,28 @@ for binary in "!TBG_dstPath/input/bin/"{picongpu,cuda_memtest,cuda_memtest.sh,mp
         exit 1
     fi
 done
-srun -N !TBG_nodes_adjusted --ntasks-per-node=1 mv "/mnt/bb/$USER/tmp/"*/* "/mnt/bb/$USER/sync_bins/"
-mapfile -t shared_libs < <(find "/mnt/bb/$USER/sync_bins" -mindepth 1 -type d)
-export LD_LIBRARY_PATH="$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
-for shared_lib in "${shared_libs[@]}"; do
-    export LD_LIBRARY_PATH="$(realpath "$shared_lib"):$LD_LIBRARY_PATH"
-done
+
+srun -N !TBG_nodes_adjusted --ntasks-per-node=1 tar -xzf "/mnt/bb/$USER/sync_bins/local.tar.gz" --directory "/mnt/bb/$USER/"
+export LD_LIBRARY_PATH="/mnt/bb/$USER/local/lib:/mnt/bb/$USER/local/lib64:$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
 export PATH="/mnt/bb/$USER/sync_bins/:$PATH"
+for python_version in "/mnt/bb/$USER/local/"lib{64,}/python*; do
+    if [[ ! -d "$python_version" ]]; then
+        continue
+    fi
+    export PYTHONPATH="$python_version/site-packages:$PYTHONPATH"
+done
 
 verify_synced() {
+    ls "/mnt/bb/$USER/local/"* -lisah
     ls "/mnt/bb/$USER/sync_bins/"* -lisah
     echo
     echo "PATH=$PATH"
     echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+    echo "PYTHONPATH=$PYTHONPATH"
+
+    which picongpu
+    ldd `which picongpu`
+    srun python -c 'import openpmd_api; print("OPENPMD PATH:", openpmd_api)'
 }
 verify_synced | sed 's|^|>\t|'
 
