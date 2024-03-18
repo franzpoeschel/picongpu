@@ -430,7 +430,8 @@ namespace picongpu
                         basename,
                         myNumParticles,
                         globalNumParticles,
-                        myParticleOffset);
+                        myParticleOffset,
+                        currentStep);
                 }
 
                 log<picLog::INPUT_OUTPUT>("openPMD: ( end ) writing species: %1%") % T_SpeciesFilter::getName();
