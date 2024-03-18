@@ -171,11 +171,15 @@ verify_synced | sed 's|^|>\t|'
 
 # Remove duplicates from the LD_LIBRARY_PATH to speed up application launches
 # at large scale.
+# Additionally remove parallel filesystems from the LD_LIBRARY_PATH
 clean_duplicates_stable()
 {
     # read lines from stdin
     local already_seen=()
     while read line; do
+        if [[ -n "$(echo "$line" | grep -E '^(/ccs/home|/lustre/orion)')" ]]; then
+            continue
+        fi
         local skip=0
         for possible_duplicate in "${already_seen[@]}"; do
             if [[ "$line" = "$possible_duplicate" ]]; then
@@ -190,8 +194,10 @@ clean_duplicates_stable()
     done
 }
 
+# remove parallel filesystems from PYTHONPATH
+export PYTHONPATH="$(echo "$PYTHONPATH" | sed -E 's_:(/lustre/orion|/ccs/home)[^:]*__g')"
 export LD_LIBRARY_PATH="$(echo "$LD_LIBRARY_PATH" | tr : '\n' | clean_duplicates_stable | tr '\n' :)"
-echo -e "LD_LIBRARY_PATH after cleaning duplicate entries:\n$LD_LIBRARY_PATH"
+echo -e "LD_LIBRARY_PATH after cleaning duplicate entries:\n>\t$(echo "$LD_LIBRARY_PATH" | sed -E 's|:|\n>\t|g')"
 
 echo "BEGIN DATE: $(date)"
 
