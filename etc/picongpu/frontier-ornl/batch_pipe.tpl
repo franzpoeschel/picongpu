@@ -61,7 +61,7 @@
 .TBG_profile=${PIC_PROFILE:-"~/picongpu.profile"}
 
 # number of available/hosted devices per node in the system
-.TBG_numHostedDevicesPerNode=8
+.TBG_numHostedDevicesPerNode=4
 
 # number of CPU cores to block per GPU
 # we have 8 CPU cores per GPU (64cores/8gpus ~ 8cores)
@@ -299,8 +299,8 @@ cat << EOF > ./tmp.sh
 
 # https://docs.olcf.ornl.gov/_images/Frontier_Node_Diagram.jpg
 # Each PIConGPU instance runs on one L3 cache group
-devices=(cxi2 cxi2 cxi1 cxi1 cxi3 cxi3 cxi0 cxi0)
-index_within_node=\$(( PMI_RANK % 8 ))
+devices=(cxi2 cxi1 cxi3 cxi0)
+index_within_node=\$(( PMI_RANK % 4 ))
 export FABRIC_IFACE="\${devices[\$index_within_node]}"
 
 "\$@"
@@ -321,16 +321,15 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
     mkdir -p openPMD
 
     export MPICH_OFI_CXI_PID_BASE=0
-    # Corresponds to the cores 0, 8, 16, 24, 32, 40, 48, 56
-    # (first core in each L3 cache group)
-    mask="0x101010101010101"
+    # L3 cache groups 1 3 5 7
+    mask="0xff00000000000000ff,0xff00000000000000ff0000,0xff00000000000000ff00000000,0xff00000000000000ff000000000000"
 
     srun -l                                       \
       --ntasks !TBG_nodes                         \
       --nodes !TBG_nodes                          \
       $exclude_nodes                              \
-      --ntasks-per-node=1                         \
-      --gpus-per-node=0                           \
+      --ntasks-per-node=4                         \
+      --gpus-per-node=4                           \
       --cpus-per-task=!TBG_coresPerPipeInstance   \
       --cpu-bind=verbose,mask_cpu:$mask           \
       --network=single_node_vni,job_vni           \
@@ -349,8 +348,8 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
     # This might or might not be needed with libfabric-based SST which will be available with ADIOS2 v2.10.
     export PIC_USE_THREADED_MPI=MPI_THREAD_MULTIPLE
     export MPICH_OFI_CXI_PID_BASE=$((MPICH_OFI_CXI_PID_BASE+1))
-    # Corresponds to cores 1-8 (exclude first core) in each L3 cache group
-    mask=0xfe,0xfe00,0xfe0000,0xfe000000,0xfe00000000,0xfe0000000000,0xfe000000000000,0xfe00000000000000
+    # L3 cache groups 2 4 6 8
+    mask="0xff00000000000000ff00,0xff00000000000000ff000000,0xff00000000000000ff0000000000,0xff00000000000000ff00000000000000"
 
     srun -l                                 \
       --overlap                             \
