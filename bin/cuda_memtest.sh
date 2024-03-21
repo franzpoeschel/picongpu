@@ -34,7 +34,7 @@ if [ ! -x "./mpiInfo" ] ; then
    echo "file ./mpiInfo not exists or is not executable" >&2
    exit 1
 fi
-host_rank=`mpiInfo --mpi_host_rank | grep mpi_host_rank | cut -d":" -f2 | tr -d " "`
+host_rank="$PMI_LOCAL_RANK"
 output=`cuda_memtest --disable_all --device $host_rank $enable_gpu_tests --num_passes 1 --exit_on_error 2>&1`
 
 if [ $? -ne 0 ] ; then
