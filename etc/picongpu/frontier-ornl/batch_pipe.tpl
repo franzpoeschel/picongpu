@@ -173,7 +173,6 @@ verify_synced() {
 
     which picongpu
     ldd `which picongpu`
-    srun python -c 'import openpmd_api; print("OPENPMD PATH:", openpmd_api)'
 }
 verify_synced | sed 's|^|>\t|'
 
