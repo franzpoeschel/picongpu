@@ -187,6 +187,8 @@ namespace picongpu
                 pmacc::math::UInt64<DIM> const& globalDimensions);
 
             ::openPMD::Series& openSeries(::openPMD::Access at);
+
+            char const* diskFlushTarget() const;
 #endif
         };
 

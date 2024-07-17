@@ -34,7 +34,7 @@
 
 namespace picongpu::openPMD
 {
-    auto resolveJsonConfig(std::string const& commandLineValue, MPI_Comm comm) -> std::string
+    auto resolveJsonConfig(std::string const& commandLineValue, bool file_based, MPI_Comm comm) -> std::string
     {
         /*
          * hdf5.dataset.chunks = none
@@ -88,7 +88,7 @@ namespace picongpu::openPMD
          * safely ignore any attribute write if the current MPI rank is
          * not 0.
          */
-        std::string const& baseConfigString = R"(
+        std::string baseConfigString = R"(
         {
           "hdf5": {
             "dataset": {
@@ -104,8 +104,22 @@ namespace picongpu::openPMD
               }
             }
           }
+        })";
+        if(file_based)
+        {
+            baseConfigString = ::openPMD::json::merge(
+                baseConfigString,
+                R"(
+                {
+                  "adios2": {
+                    "engine": {
+                      "parameters": {
+                        "FlattenSteps": "ON"
+                      }
+                    }
+                  }
+                })");
         }
-        )";
         return ::openPMD::json::merge(baseConfigString, commandLineValue, comm);
     }
 

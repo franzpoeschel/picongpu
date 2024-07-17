@@ -509,7 +509,7 @@ namespace picongpu
                         eventSystem::getTransactionEvent().waitForFinished();
                         params->m_dumpTimes.now<std::chrono::milliseconds>(
                             "\tslice " + std::to_string(dumpIteration) + " flush");
-                        params->openPMDSeries->flush(PreferredFlushTarget::Disk);
+                        params->openPMDSeries->flush(params->diskFlushTarget());
                         params->m_dumpTimes.now<std::chrono::milliseconds>(
                             "\tslice " + std::to_string(dumpIteration) + " end");
 

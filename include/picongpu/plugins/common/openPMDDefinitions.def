@@ -22,7 +22,9 @@ namespace picongpu::openPMD
 {
     namespace PreferredFlushTarget
     {
-        inline constexpr char const* const Disk = R"({"adios2": {"engine": {"preferred_flush_target": "disk"}}})";
-        inline constexpr char const* const Buffer = R"({"adios2": {"engine": {"preferred_flush_target": "buffer"}}})";
+        constexpr inline char const* const Disk = R"({"adios2": {"engine": {"preferred_flush_target": "disk"}}})";
+        constexpr inline char const* const NewStep
+            = R"({"adios2": {"engine": {"preferred_flush_target": "new_step"}}})";
+        constexpr inline char const* const Buffer = R"({"adios2": {"engine": {"preferred_flush_target": "buffer"}}})";
     } // namespace PreferredFlushTarget
 } // namespace picongpu::openPMD

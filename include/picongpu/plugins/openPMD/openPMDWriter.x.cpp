@@ -125,6 +125,21 @@ namespace picongpu
             return recordComponent;
         }
 
+        char const* ThreadParams::diskFlushTarget() const
+        {
+            switch(openPMDSeries->iterationEncoding())
+            {
+            case ::openPMD::IterationEncoding::fileBased:
+                return PreferredFlushTarget::NewStep;
+            case ::openPMD::IterationEncoding::groupBased:
+            case ::openPMD::IterationEncoding::variableBased:
+                return PreferredFlushTarget::Disk;
+            }
+            // This is reached in case upstream adds new Iteration encodings.
+            // Ideally, compilers will then warn upon non-exhaustive switches.
+            return PreferredFlushTarget::Disk;
+        }
+
         template<typename T_Vec, typename T_Ret>
         T_Ret asStandardVector(T_Vec const& v)
         {
@@ -625,9 +640,19 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
             // Avoid repeatedly parsing the JSON config
             if(!jsonConfig.has_value())
             {
+                auto contains_file_expansion_pattern = [&]()
+                {
+                    std::regex pattern(".*%(0[[:digit:]]+)?T.*");
+                    std::smatch regexMatch;
+                    std::regex_match(fileInfix, regexMatch, pattern);
+                    return !regexMatch.empty();
+                }();
                 // avoid deadlock between not finished pmacc tasks and mpi blocking collectives
                 eventSystem::getTransactionEvent().waitForFinished();
-                jsonConfig.emplace(resolveJsonConfig(jsonConfigString, communicator));
+                jsonConfig.emplace(resolveJsonConfig(
+                    jsonConfigString,
+                    /* file_based = */ contains_file_expansion_pattern,
+                    communicator));
             }
 
             log<picLog::INPUT_OUTPUT>("openPMD: global JSON config: %1%") % *jsonConfig;
@@ -938,7 +963,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 mesh.storeChunkRaw(rawPtr, asStandardVector(recordOffsetDims), asStandardVector(recordLocalSizeDims));
                 // avoid deadlock between not finished pmacc tasks and mpi blocking collectives
                 eventSystem::getTransactionEvent().waitForFinished();
-                params->openPMDSeries->flush(PreferredFlushTarget::Disk);
+                params->openPMDSeries->flush(params->diskFlushTarget());
             }
 
             /** Implementation of loading random number generator states
@@ -1660,7 +1685,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                     {
                         // avoid deadlock between not finished pmacc tasks and mpi blocking collectives
                         eventSystem::getTransactionEvent().waitForFinished();
-                        params->openPMDSeries->flush(PreferredFlushTarget::Disk);
+                        params->openPMDSeries->flush(params->diskFlushTarget());
                         continue;
                     }
 
@@ -1716,7 +1741,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                     // avoid deadlock between not finished pmacc tasks and mpi blocking collectives
                     eventSystem::getTransactionEvent().waitForFinished();
                     params->m_dumpTimes.now<std::chrono::milliseconds>("\tComponent " + std::to_string(d) + " flush");
-                    params->openPMDSeries->flush(PreferredFlushTarget::Disk);
+                    params->openPMDSeries->flush(params->diskFlushTarget());
                     params->m_dumpTimes.now<std::chrono::milliseconds>("\tComponent " + std::to_string(d) + " end");
                 }
             }

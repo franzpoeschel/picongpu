@@ -25,5 +25,5 @@
 
 namespace picongpu::openPMD
 {
-    auto resolveJsonConfig(std::string const& commandLineValue, MPI_Comm) -> std::string;
+    auto resolveJsonConfig(std::string const& commandLineValue, bool file_based, MPI_Comm) -> std::string;
 } // namespace picongpu::openPMD
