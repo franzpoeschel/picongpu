@@ -1883,6 +1883,11 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>("Done.");
                 mThreadParams.m_dumpTimes.flush();
 
+                if(mThreadParams.openPMDSeries->iterationEncoding() == ::openPMD::IterationEncoding::fileBased)
+                {
+                    mThreadParams.closeSeries();
+                }
+
                 return;
             }
 
