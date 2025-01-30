@@ -10,6 +10,8 @@ from .. import pypicongpu
 from .species import Species
 from .interaction.ionization import IonizationModel
 
+from picongpu.pypicongpu.species.initmanager import InitManager
+
 from . import constants
 from .grid import Cartesian3DGrid
 from .interaction import Interaction
@@ -340,7 +342,7 @@ class Simulation(picmistandard.PICMI_Simulation):
                 pypicongpu_by_picmi_species, ionization_model_conversion_by_species
             )
 
-    def __get_init_manager(self) -> pypicongpu.species.InitManager:
+    def __get_init_manager(self) -> tuple[InitManager, typing.Dict[Species, pypicongpu.species.Species]]:
         """
         create & fill an Initmanager
 
@@ -361,7 +363,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.__fill_in_ionization_electrons(pypicongpu_by_picmi_species, ionization_model_conversion_by_species)
 
         # init PyPIConGPU init manager
-        initmgr = pypicongpu.species.InitManager()
+        initmgr = InitManager()  # This works because InitManager is imported
 
         for pypicongpu_species in pypicongpu_by_picmi_species.values():
             initmgr.all_species.append(pypicongpu_species)
@@ -373,7 +375,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         initmgr.all_operations += self.__get_operations_not_placed(pypicongpu_by_picmi_species)
         initmgr.all_operations += self.__get_operations_from_individual_species(pypicongpu_by_picmi_species)
 
-        return initmgr
+        return initmgr, pypicongpu_by_picmi_species
 
     def write_input_file(
         self, file_name: str, pypicongpu_simulation: typing.Optional[pypicongpu.simulation.Simulation] = None
@@ -455,7 +457,12 @@ class Simulation(picmistandard.PICMI_Simulation):
             # explictly disable laser (as required by pypicongpu)
             s.laser = None
 
-        s.init_manager = self.__get_init_manager()
+        s.init_manager, pypicongpu_by_picmi_species = self.__get_init_manager()
+
+        plugins = []
+        for entry in self.diagnostics:
+            plugins.append(entry.get_as_pypicongpu(pypicongpu_by_picmi_species))
+        s.plugins = plugins
 
         # set typical ppc if not set explicitly by user
         if self.picongpu_typical_ppc is None:

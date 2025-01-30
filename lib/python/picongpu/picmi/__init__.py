@@ -8,6 +8,7 @@ from .gaussian_laser import GaussianLaser
 from .species import Species
 from .layout import PseudoRandomLayout
 from . import constants
+from .phase_space import PhaseSpace
 
 from .distribution import FoilDistribution, UniformDistribution, GaussianDistribution
 from .interaction import Interaction
@@ -38,6 +39,7 @@ __all__ = [
     "Keldysh",
     "ThomasFermi",
     "Interaction",
+    "PhaseSpace",
 ]
 
 

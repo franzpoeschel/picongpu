@@ -46,6 +46,7 @@ class TestSimulation(unittest.TestCase):
         self.s.laser = None
         self.s.custom_user_input = None
         self.s.moving_window = None
+        self.s.plugins = "auto"
         self.s.init_manager = species.InitManager()
 
         self.laser = GaussianLaser()
@@ -183,7 +184,7 @@ class TestSimulation(unittest.TestCase):
         self.assertEqual(2, context["grid"]["cell_size"]["y"])
         self.assertEqual(None, context["laser"])
         self.assertEqual(self.s.init_manager.get_rendering_context(), context["species_initmanager"])
-        self.assertEqual(1, context["output"]["auto"]["period"])
+        self.assertEqual(1, context["output"][0]["data"]["period"])
 
         self.assertNotEqual([], context["species_initmanager"]["species"])
         self.assertNotEqual([], context["species_initmanager"]["operations"])
@@ -206,7 +207,7 @@ class TestSimulation(unittest.TestCase):
         """period is always at least one"""
         for time_steps in [1, 17, 99]:
             self.s.time_steps = time_steps
-            self.assertEqual(1, self.s.get_rendering_context()["output"]["auto"]["period"])
+            self.assertEqual(1, self.s.get_rendering_context()["output"][0]["data"]["period"])
 
     def test_custom_input_pass_thru(self):
         i = customuserinput.CustomUserInput()

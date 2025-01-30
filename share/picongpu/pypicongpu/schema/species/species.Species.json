@@ -46,7 +46,8 @@
                 "mass",
                 "charge",
                 "density_ratio",
-                "ground_state_ionization"
+                "ground_state_ionization",
+                "element_properties"
             ],
             "properties": {
                 "mass": {

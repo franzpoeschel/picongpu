@@ -1,9 +1,10 @@
 """
 This file is part of PIConGPU.
-Copyright 2024-2024 PIConGPU contributors
+Copyright 2024 PIConGPU contributors
 Authors: Masoud Afshari, Brian Edward Marre
 License: GPLv3+
 """
+
 
 from picongpu import picmi
 from picongpu import pypicongpu
@@ -13,6 +14,7 @@ import numpy as np
 @file PICMI user script reproducing the PIConGPU LWFA example
 
 This Python script is example PICMI user script reproducing the LaserWakefield example setup, based on 8.cfg.
+
 """
 
 # generation modifiers
@@ -22,7 +24,7 @@ ADD_CUSTOM_INPUT = True
 OUTPUT_DIRECTORY_PATH = "LWFA"
 
 numberCells = np.array([192, 2048, 192])
-cellSize = np.array([0.1772e-6, 0.4430e-7, 0.1772e-6])  # unit: meter)
+cellSize = np.array([0.1772e-6, 0.4430e-7, 0.1772e-6])  # unit: meter
 
 # Define the simulation grid based on grid.param
 grid = picmi.Cartesian3DGrid(
@@ -45,10 +47,7 @@ gaussianProfile = picmi.distribution.GaussianDistribution(
     vacuum_cells_front=50,
 )
 
-solver = picmi.ElectromagneticSolver(
-    grid=grid,
-    method="Yee",
-)
+solver = picmi.ElectromagneticSolver(grid=grid, method="Yee")
 
 laser = picmi.GaussianLaser(
     wavelength=0.8e-6,
@@ -73,8 +72,8 @@ species_list = []
 if not ENABLE_IONIZATION:
     interaction = None
 
-    electron_placed = picmi.Species(particle_type="electron", name="electron", initial_distribution=gaussianProfile)
-    species_list.append((electron_placed, random_layout))
+    electrons = picmi.Species(particle_type="electron", name="electron", initial_distribution=gaussianProfile)
+    species_list.append((electrons, random_layout))
 
     if ENABLE_IONS:
         hydrogen_fully_ionized = picmi.Species(
@@ -90,26 +89,38 @@ else:
     )
     species_list.append((hydrogen_with_ionization, random_layout))
 
-    electron_not_placed = picmi.Species(particle_type="electron", name="electron", initial_distribution=None)
-    species_list.append((electron_not_placed, None))
+    electrons = picmi.Species(particle_type="electron", name="electron", initial_distribution=None)
+    species_list.append((electrons, None))
 
     adk_ionization_model = picmi.ADK(
         ADK_variant=picmi.ADKVariant.CircularPolarization,
         ion_species=hydrogen_with_ionization,
-        ionization_electron_species=electron_not_placed,
+        ionization_electron_species=electrons,
         ionization_current=None,
     )
 
     bsi_effectiveZ_ionization_model = picmi.BSI(
         BSI_extensions=[picmi.BSIExtension.EffectiveZ],
         ion_species=hydrogen_with_ionization,
-        ionization_electron_species=electron_not_placed,
+        ionization_electron_species=electrons,
         ionization_current=None,
     )
 
     interaction = picmi.Interaction(
         ground_state_ionization_model_list=[adk_ionization_model, bsi_effectiveZ_ionization_model]
     )
+
+diagnostics_list = []
+diagnostics_list.append(
+    picmi.PhaseSpace(
+        species=electrons,
+        period=100,
+        spatial_coordinate="y",
+        momentum_coordinate="py",
+        min_momentum=-1.0,
+        max_momentum=1.0,
+    )
+)
 
 sim = picmi.Simulation(
     solver=solver,
@@ -118,8 +129,11 @@ sim = picmi.Simulation(
     picongpu_moving_window_move_point=0.9,
     picongpu_interaction=interaction,
 )
+
 for species, layout in species_list:
     sim.add_species(species, layout=layout)
+
+sim.diagnostics = diagnostics_list
 
 sim.add_laser(laser, None)
 
@@ -174,19 +188,6 @@ if ADD_CUSTOM_INPUT:
             "energy_histogram_filter": "all",
         },
         "energy histogram plugin configuration",
-    )
-
-    output_configuration.addToCustomInput(
-        {
-            "phase_space_species_name": "electron",
-            "phase_space_period": 100,
-            "phase_space_space": "y",
-            "phase_space_momentum": "py",
-            "phase_space_min": -1.0,
-            "phase_space_max": 1.0,
-            "phase_space_filter": "all",
-        },
-        "phase space plugin configuration",
     )
 
     output_configuration.addToCustomInput(

@@ -14,6 +14,7 @@ from . import util
 from . import output
 from .rendering import RenderedObject
 from .customuserinput import InterfaceCustomUserInput
+from .output.plugin import Plugin
 
 import typing
 import typeguard
@@ -66,14 +67,22 @@ class Simulation(RenderedObject):
     moving_window = util.build_typesafe_property(typing.Optional[MovingWindow])
     """used moving Window, set to None to disable"""
 
-    def __get_output_context(self) -> dict:
-        """retrieve all output objects"""
-        auto = output.Auto()
-        auto.period = max(1, int(self.time_steps / 100))
+    plugins = util.build_typesafe_property(typing.Optional[list[Plugin] | typing.Literal["auto"]])
 
-        return {
-            "auto": auto.get_rendering_context(),
-        }
+    def __get_output_context(self) -> dict | list[dict] | None:
+        """retrieve all output objects"""
+
+        if self.plugins == "auto":
+            auto = output.Auto()
+            auto.period = max(1, int(self.time_steps / 100))
+
+            return [auto.get_generic_plugin_rendering_context()]
+        else:
+            output_rendering_context = []
+            for entry in self.plugins:
+                output_rendering_context.append(entry.get_generic_plugin_rendering_context())
+
+            return output_rendering_context
 
     def __render_custom_user_input_list(self) -> dict:
         custom_rendering_context = {"tags": []}
@@ -109,6 +118,10 @@ class Simulation(RenderedObject):
             "species_initmanager": self.init_manager.get_rendering_context(),
             "output": self.__get_output_context(),
         }
+        if self.plugins is not None:
+            serialized["output"] = self.__get_output_context()
+        else:
+            serialized["output"] = None
 
         if self.laser is not None:
             serialized["laser"] = self.laser.get_rendering_context()
