@@ -37,3 +37,10 @@ docs/build/
 # Visual Studio configuration and output files
 out
 /.vs
+
+# clangd files
+.cache/clangd
+compile_commands.json
+
+# Zed configuration files
+.zed
