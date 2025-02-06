@@ -31,7 +31,6 @@
  *  - profiles::PlaneWave<>           : plane wave profile with given parameters
  *  - profiles::Polynom<>             : wavepacket with a polynomial temporal intensity shape profile with given
  * parameters
- *  - profiles::PulseFrontTilt<>      : GaussianPulse with tilted pulse front with given parameters
  *  - profiles::Wavepacket<>          : wavepacket with Gaussian spatial and temporal envelope profile with given
  * parameters
  *
@@ -291,12 +290,12 @@ namespace picongpu
                  */
                 static constexpr float_64 PREPULSE_DURATION_SI = LwfaGaussianPulseBaseParams::PULSE_DURATION_SI;
 
-                /** The laser pulse will be initialized half of RAMP_INIT times of the PULSE_DURATION before
+                /** The laser pulse will be initialized RAMP_INIT times the PULSE_DURATION before
                  * plateau and half at the end of the plateau
                  *
                  * unit: none
                  */
-                static constexpr float_64 RAMP_INIT = 16.0;
+                static constexpr float_64 RAMP_INIT = 8.0;
             };
 
             using GaussianProfile = profiles::GaussianPulse<GaussianPulseParam>;

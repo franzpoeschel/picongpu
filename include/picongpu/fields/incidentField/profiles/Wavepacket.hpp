@@ -135,7 +135,8 @@ namespace picongpu
                                     = ((runTime - Unitless::startDownramp) / Unitless::PULSE_DURATION
                                        / math::sqrt(2.0_X));
                                 envelope *= math::exp(-0.5_X * exponent * exponent);
-                                correctionFactor = (runTime - Unitless::startDownramp) / (tau * tau * Unitless::w);
+                                correctionFactor
+                                    = (runTime - Unitless::startDownramp) / (tau * tau * Unitless::OMEGA0);
                             }
                             else if(runTime < Unitless::endUpramp)
                             {
@@ -143,9 +144,9 @@ namespace picongpu
                                 auto const exponent
                                     = ((runTime - Unitless::endUpramp) / Unitless::PULSE_DURATION / math::sqrt(2.0_X));
                                 envelope *= math::exp(-0.5_X * exponent * exponent);
-                                correctionFactor = (runTime - Unitless::endUpramp) / (tau * tau * Unitless::w);
+                                correctionFactor = (runTime - Unitless::endUpramp) / (tau * tau * Unitless::OMEGA0);
                             }
-                            auto const phase = Unitless::w * runTime + Unitless::LASER_PHASE + phaseShift;
+                            auto const phase = Unitless::OMEGA0 * runTime + Unitless::LASER_PHASE + phaseShift;
                             return (math::sin(phase) + correctionFactor * math::cos(phase)) * envelope;
                         }
                     };

@@ -1,4 +1,4 @@
-/* Copyright 2013-2024 Axel Huebl, Sergei Bastrakov, Julian Lenz
+/* Copyright 2013-2024 Axel Huebl, Sergei Bastrakov, Julian Lenz, Klaus Steiniger
  *
  * This file is part of PIConGPU.
  *
@@ -38,9 +38,10 @@ namespace picongpu
                          *  unit: seconds */
                         static constexpr float_64 LASER_NOFOCUS_CONSTANT_SI = 13.34e-15;
 
-                        /** The laser pulse will be initialized after TIME_DELAY_SI half of PULSE_INIT times of the
-                         * PULSE_DURATION before and after the plateau unit: none */
-                        static constexpr float_64 RAMP_INIT = 20.6146;
+                        /** The laser pulse will be initialized after TIME_DELAY_SI for RAMP_INIT times
+                         * PULSE_DURATION before and after the plateau
+                         * unit: none */
+                        static constexpr float_64 RAMP_INIT = 10.3073;
 
                         template<typename My = PlaneWaveParam>
                         static nlohmann::json metadata()
@@ -55,7 +56,7 @@ namespace picongpu
                  * Defines a plane wave with temporally Gaussian envelope.
                  * Note that the resulting field values will be constant in transversal directions only along the
                  * generating surface.
-                 * In order to achieve this constness on the whole domain, additional conditions have to be fulfulled:
+                 * In order to achieve this constness on the whole domain, additional conditions have to be fulfilled:
                  * no absorber, no incident field sources and zero Huygens surface gap along the transversal
                  * directions.
                  *

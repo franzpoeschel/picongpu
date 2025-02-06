@@ -55,6 +55,12 @@ namespace picongpu::fields::incidentField
 
                 using Base = BaseParamUnitless<T_Params>;
 
+                // compile-time checks for physical sanity:
+                static_assert(Params::INT_RATIO_PREPULSE >= 0.0_X);
+                static_assert(Params::INT_RATIO_POINT_1 >= 0.0_X);
+                static_assert(Params::INT_RATIO_POINT_2 > 0.0_X);
+                static_assert(Params::INT_RATIO_POINT_3 > 0.0_X);
+
                 // unit: sim.unit.time()
                 static constexpr float_X LASER_NOFOCUS_CONSTANT
                     = static_cast<float_X>(Params::LASER_NOFOCUS_CONSTANT_SI / sim.unit.time());
@@ -81,7 +87,7 @@ namespace picongpu::fields::incidentField
                     (TIME_1 < TIME_2) && (TIME_2 < TIME_3) && (TIME_3 < endUpramp),
                     "The times in the parameters TIME_POINT_1/2/3 and the beginning of the plateau (which is "
                     "at "
-                    "TIME_PEAKPULSE - 0.5*RAMP_INIT*PULSE_DURATION) should be in ascending order");
+                    "TIME_PEAKPULSE - RAMP_INIT*PULSE_DURATION) should be in ascending order");
 
                 // some prerequisites for check of intensities (approximate check, because I can't use exp and
                 // log)
@@ -114,12 +120,12 @@ namespace picongpu::fields::incidentField
                       || (ratio_dt >= 0.2_X && ri1 > ri2 * ri2 * ri2 * ri2 * ri2);
 
                 /* a symmetric pulse will be initialized at generation plane for
-                 * a time of RAMP_INIT * PULSE_DURATION + LASER_NOFOCUS_CONSTANT = INIT_TIME.
+                 * a time of 2 * RAMP_INIT * PULSE_DURATION + LASER_NOFOCUS_CONSTANT = INIT_TIME.
                  * we shift the complete pulse for the half of this time to start with
                  * the front of the laser pulse.
                  */
                 static constexpr float_X time_start_init
-                    = static_cast<float_X>(TIME_1 - (0.5_X * Params::RAMP_INIT * Base::PULSE_DURATION));
+                    = static_cast<float_X>(TIME_1 - (Params::RAMP_INIT * Base::PULSE_DURATION));
             };
 
             /** Unitless exponential ramp with prepulse parameters
@@ -184,7 +190,7 @@ namespace picongpu::fields::incidentField
                 HDINLINE float_X getLongitudinal(float_X const time, float_X const phaseShift) const
                 {
                     auto const runTimeShifted = time + Unitless::time_start_init;
-                    auto const phase = Unitless::w * runTimeShifted + Unitless::LASER_PHASE + phaseShift;
+                    auto const phase = Unitless::OMEGA0 * runTimeShifted + Unitless::LASER_PHASE + phaseShift;
                     return math::cos(phase) * Unitless::AMPLITUDE * Envelope::getEnvelope(runTimeShifted);
                 }
             };

@@ -36,7 +36,10 @@ namespace picongpu
                      */
                     struct ExpRampWithPrepulseLongitudinalParam : public BaseParam
                     {
-                        /** Intensities of prepulse and exponential preramp
+                        /** Intensity ratios of prepulse and exponential preramp
+                         *
+                         * Note, all of these are expected to be positive.
+                         * Furthermore, INT_RATIO_POINT_2 and INT_RATIO_POINT_2 must be larger than zero.
                          *
                          * @{
                          */
@@ -57,8 +60,6 @@ namespace picongpu
                         static constexpr float_64 TIME_POINT_3_SI = -100.0e-15;
                         /** @} */
 
-                        static constexpr float_64 AMPLITUDE_SI = 1.0e6;
-
                         /** Pulse duration: sigma of std. gauss for intensity (E^2)
                          *  PREPULSE_DURATION_SI = FWHM_of_Intensity   / [ 2*sqrt{ 2* ln(2) } ]
                          *                                          [    2.354820045     ]
@@ -76,12 +77,12 @@ namespace picongpu
                             = 0.0 * WAVE_LENGTH_SI / ::picongpu::sim.si.getSpeedOfLight();
 
 
-                        /** The laser pulse will be initialized half of RAMP_INIT times of the PULSE_DURATION before
+                        /** The laser pulse will be initialized RAMP_INIT times the PULSE_DURATION before
                          * plateau and half at the end of the plateau
                          *
                          * unit: none
                          */
-                        static constexpr float_64 RAMP_INIT = 16.0;
+                        static constexpr float_64 RAMP_INIT = 8.0;
                     };
 
                     /** Default param set for ExpRampWithPrepulse profile

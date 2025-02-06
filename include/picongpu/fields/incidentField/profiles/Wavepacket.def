@@ -59,14 +59,6 @@ namespace picongpu
                          *  unit: none
                          */
                         static constexpr float_64 PULSE_INIT = 20.0;
-
-                        /** laser phase shift (no shift: 0.0)
-                         *
-                         * sin(omega*time + laser_phase): starts with phase=0 at center --> E-field=0 at center
-                         *
-                         * unit: rad, periodic in 2*pi
-                         */
-                        static constexpr float_X LASER_PHASE = 0.0;
                     };
                 } // namespace defaults
 
