@@ -1,4 +1,4 @@
-/* Copyright 2020-2024 Sergei Bastrakov, Finn-Ole Carstens
+/* Copyright 2020-2024 Sergei Bastrakov, Finn-Ole Carstens, Klaus Steiniger
  *
  * This file is part of PIConGPU.
  *
@@ -240,11 +240,11 @@ namespace picongpu
                     //! 3d version
                     HDINLINE float3_X getInternalCoordinates(float3_X const& totalCellIdx) const
                     {
-                        auto const shiftFromOrigin = totalCellIdx * sim.pic.getCellSize() - origin;
+                        auto const shiftFromFocus = totalCellIdx * sim.pic.getCellSize() - focus;
                         float3_X result;
-                        result[0] = pmacc::math::dot(shiftFromOrigin, getAxis0());
-                        result[1] = pmacc::math::dot(shiftFromOrigin, getAxis1());
-                        result[2] = pmacc::math::dot(shiftFromOrigin, getAxis2());
+                        result[0] = pmacc::math::dot(shiftFromFocus, getAxis0());
+                        result[1] = pmacc::math::dot(shiftFromFocus, getAxis1());
+                        result[2] = pmacc::math::dot(shiftFromFocus, getAxis2());
                         return result;
                     }
 
