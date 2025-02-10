@@ -97,6 +97,12 @@ set(_PMACC_MAX_ALPAKA_VERSION 1.2.0)
 # do not search for alpaka if it already exists
 # for example, a project that includes alpaka via add_subdirectory before including pmacc via add_subdirectory
 if(NOT TARGET alpaka::alpaka)
+
+    # mallocMC needs this and it must be set before alpaka is added
+    if(alpaka_ACC_GPU_CUDA_ENABLE OR alpaka_ACC_GPU_HIP_ENABLE)
+            set(alpaka_INSTALL ON CACHE BOOL "" FORCE)
+    endif()
+
     # the alpaka provider for the internal alpaka is only available,
     # if pmacc is used via add_subdirectory in another project
     # or examples are build
@@ -378,18 +384,17 @@ endif()
 ################################################################################
 
 if(alpaka_ACC_GPU_CUDA_ENABLE OR alpaka_ACC_GPU_HIP_ENABLE)
-    set(mallocMC_alpaka_PROVIDER "extern" CACHE STRING "Select which alpaka is used for mallocMC")
-    find_package(mallocMC 2.6.0 QUIET)
+    if(PMACC_alpaka_PROVIDER STREQUAL "intern")
+      set(mallocMC_USE_alpaka "${PMacc_DIR}/../../thirdParty/alpaka" CACHE STRING "Select which alpaka is used for mallocMC")
+    endif()
+    find_package(mallocMC 3.0.0 QUIET)
 
     if(NOT mallocMC_FOUND)
         message(STATUS "Using mallocMC from thirdParty/ directory")
-        set(MALLOCMC_ROOT "${PMacc_DIR}/../../thirdParty/mallocMC")
-        find_package(mallocMC 2.6.0 REQUIRED)
+        add_subdirectory("${PMacc_DIR}/../../thirdParty/mallocMC" ${CMAKE_BINARY_DIR}/mallocMC)
     endif(NOT mallocMC_FOUND)
 
-    target_include_directories(pmacc PUBLIC ${mallocMC_INCLUDE_DIRS})
-    target_link_libraries(pmacc PUBLIC ${mallocMC_LIBRARIES})
-    target_compile_definitions(pmacc PUBLIC ${mallocMC_DEFINITIONS})
+    target_link_libraries(pmacc PUBLIC mallocMC::mallocMC)
 endif()
 
 
