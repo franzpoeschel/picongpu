@@ -43,7 +43,7 @@ namespace picongpu
                 TPmaccTuple&& t,
                 std::index_sequence<Is...>)
             {
-                return std::forward<TFunc>(f)(std::make_pair(
+                return std::forward<TFunc>(f)(pmacc::memory::tuple::make_tuple(
                     std::integral_constant<std::size_t, Is>{},
                     pmacc::memory::tuple::get<Is>(std::forward<TPmaccTuple>(t)))...);
             }
