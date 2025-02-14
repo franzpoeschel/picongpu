@@ -25,6 +25,7 @@
 #    include "picongpu/fields/incidentField/Functors.hpp"
 #    include "picongpu/fields/incidentField/profiles/FromOpenPMDPulse.def"
 
+#    include <pmacc/math/Complex.hpp>
 #    include <pmacc/memory/buffers/HostDeviceBuffer.hpp>
 
 #    include <algorithm>
@@ -53,6 +54,7 @@
  * - get rid of the 'wrong' transformation from time to space (z = c*t) of the
  *   longitudinal axis by using several iterations inside the openPMD file
  *   instead of just one
+ * - allow 2D simulations
  */
 
 namespace picongpu
@@ -79,6 +81,7 @@ namespace picongpu
                     {
                         //! User SI parameters
                         using Params = T_Params;
+                        using dataType = typename Params::dataType; // field record data type
 
                         //! Unit propagation direction vector in 3d
                         static constexpr float_X DIR_X = static_cast<float_X>(Params::DIRECTION_X);
@@ -149,8 +152,14 @@ namespace picongpu
                              or Params::polarisationAxisOpenPMD == "z"));
 
                         PMACC_CASSERT_MSG(
-                            _error_propagationAxisOpenPMD_and_polarisationAxisOpenPMD_have_to_be_different_____check_your_parameters,
+                            _error_propagationAxisOpenPMD_and_polarisationAxisOpenPMD_have_to_be_different____check_your_parameters,
                             (Params::polarisationAxisOpenPMD != Params::propagationAxisOpenPMD));
+
+                        // check field data type
+                        PMACC_CASSERT_MSG(
+                            _error_unsupported_dataType____check_your_parameters,
+                            (std::is_same<dataType, float>::value or std::is_same<dataType, double>::value
+                             or std::is_same<dataType, std::complex<float>>::value));
                     };
 
                     template<typename T_Params>
@@ -172,7 +181,7 @@ namespace picongpu
                     {
                         //! Unitless parameters type
                         using Params = FromOpenPMDPulseUnitless<T_Params>;
-                        using dataType = typename Params::dataType;
+                        using dataType = typename Params::dataType; // field record data type
 
                         //! FromOpenPMD pulse E functor
                         using Functor = FromOpenPMDPulseFunctorIncidentE<T_Params>;
@@ -244,7 +253,7 @@ namespace picongpu
                             //! necessary attributes
                             // Raw = not yet aligned
                             ::openPMD::Extent const extentRaw = meshRecord.getExtent();
-                            auto const cellSizeRaw = mesh.gridSpacing<dataType>();
+                            auto const cellSizeRaw = mesh.gridSpacing<float_X>();
 
                             bufferExtentOpenPMD = std::make_shared<pmacc::HostDeviceBuffer<float_X, 1u>>(3u);
                             bufferCellSizeOpenPMD = std::make_shared<pmacc::HostDeviceBuffer<float_X, 1u>>(3u);
@@ -280,6 +289,9 @@ namespace picongpu
 
                             // field data
                             bufferFieldData = std::make_shared<pmacc::HostDeviceBuffer<float_X, 3u>>(extentOpenPMD);
+                            // das Problem ist hier wenn komplex!!
+                            // error: Type conversion during chunk loading not yet implemented! Data: CDOUBLE; Load as:
+                            // UNDEFINED', terminating
                             auto fieldData = std::shared_ptr<dataType>{nullptr};
                             fieldData = meshRecord.loadChunk<dataType>();
 
@@ -304,18 +316,30 @@ namespace picongpu
                                     openPMDIdx[aligningAxisIndex[d]] = tmpIndex % extentRaw[d];
                                     tmpIndex /= extentRaw[d];
                                 }
-                                hostFieldDataBox(openPMDIdx)
-                                    = static_cast<float_X>(fieldData.get()[linearIdx] * meshRecord.unitSI())
-                                    / sim.unit.eField();
+                                if constexpr(std::is_same<dataType, std::complex<float>>::value)
+                                {
+                                    // if the field record is complex, take only its real part
+                                    hostFieldDataBox(openPMDIdx)
+                                        = static_cast<float_X>(fieldData.get()[linearIdx].real() * meshRecord.unitSI())
+                                        / sim.unit.eField();
+                                }
+                                else if constexpr(
+                                    std::is_same<dataType, float>::value or std::is_same<dataType, double>::value)
+                                {
+                                    // field record is real
+                                    hostFieldDataBox(openPMDIdx)
+                                        = static_cast<float_X>(fieldData.get()[linearIdx] * meshRecord.unitSI())
+                                        / sim.unit.eField();
+                                }
                             }
 
                             /* If the transversal simulation window is smaller than the transversal DataBox extent,
                              * data at the chunk borders will be discarded. The maximum discarded value (relative to
                              * the maximum amplitude) will be logged.
                              */
-                            dataType maxE(0.0);
-                            dataType maxEDiscarded(0.0);
-                            dataType valE, valRight, valLeft;
+                            float_X maxE(0.0_X);
+                            float_X maxEDiscarded(0.0_X);
+                            float_X valE, valRight, valLeft;
                             bool discard = false;
                             for(uint32_t d = 0u; d < 3u; d++)
                             {

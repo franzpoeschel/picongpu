@@ -80,8 +80,10 @@ namespace picongpu
                         /** Datatype of the field record
                          *
                          * openPMD needs this information at compile time.
+                         * @attention: supported are float, double and std::complex<double>.
+                         * In case of complex input, the simulation uses only the real part.
                          */
-                        using dataType = float_64;
+                        using dataType = double;
 
                         //! Defining the propagation ( = time) and polarisation axes of the input data
                         static constexpr char const* polarisationAxisOpenPMD = "x";
