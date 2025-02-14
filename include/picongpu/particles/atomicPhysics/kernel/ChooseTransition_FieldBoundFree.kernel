@@ -73,7 +73,7 @@ namespace picongpu::particles::atomicPhysics::kernel
          * @param rngFactoryFloat factory for uniformly distributed random number generator, for float_X [0,1)
          * @param chargeStateBox deviceDataBox giving access to charge state property data
          * @param atomicStateBox deviceDataBox giving access to atomic state property data
-         * @param boundFreeTransitionDataBox deviceDataBox giving access to bound free transition data
+         * @param boundFreeTransitionBox deviceDataBox giving access to bound free transition data
          * @param numberTransitionsBox deviceDataBox giving access to the number of
          *  bound-free transitions for each atomic state
          * @param startIndexBox deviceDataBox giving access to the start index of each
@@ -106,7 +106,7 @@ namespace picongpu::particles::atomicPhysics::kernel
             T_AtomicStateDataDataBox const atomicStateBox,
             T_AtomicStateBoundFreeNumberTransitionsDataBox const numberTransitionsBox,
             T_AtomicStateBoundFreeStartIndexBlockDataBox const startIndexBox,
-            T_BoundFreeTransitionDataBox const boundFreeTransitionDataBox,
+            T_BoundFreeTransitionDataBox const boundFreeTransitionBox,
             T_TimeRemainingBox const timeRemainingBox,
             T_EFieldBox eFieldBox,
             T_RateCacheBox const rateCacheBox,
@@ -193,7 +193,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                         float_X const ionizationEnergy = DeltaEnergyTransition::get(
                             transitionCollectionIndex,
                             atomicStateBox,
-                            boundFreeTransitionDataBox,
+                            boundFreeTransitionBox,
                             ionizationPotentialDepression,
                             chargeStateBox);
 
@@ -212,7 +212,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                                     transitionCollectionIndex,
                                     chargeStateBox,
                                     atomicStateBox,
-                                    boundFreeTransitionDataBox);
+                                    boundFreeTransitionBox);
 
                             if constexpr(picongpu::atomicPhysics::debug::kernel::chooseTransition::
                                              CHECK_FOR_INFINITE_FIELD_IONIZATION_RATES)

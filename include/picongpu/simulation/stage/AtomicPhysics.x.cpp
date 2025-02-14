@@ -249,7 +249,7 @@ namespace picongpu::simulation::stage
             template<typename T_FoundUnboundIonField>
             HINLINE static void resetFoundUnboundIon(T_FoundUnboundIonField& foundUnboundIonField)
             {
-                foundUnboundIonField.getDeviceBuffer().setValue(0._X);
+                foundUnboundIonField.getDeviceBuffer().setValue(static_cast<uint32_t>(false));
             };
 
             //! reset SharedResourcesOverSubscribedField on device side
