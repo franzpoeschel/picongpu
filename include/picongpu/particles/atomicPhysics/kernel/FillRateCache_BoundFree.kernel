@@ -232,8 +232,11 @@ namespace picongpu::particles::atomicPhysics::kernel
                     {
                         uint32_t const transitionCollectionIndex = offset + transitionID;
 
-                        auto const transitionRate
-                            = atomicPhysics::rateCalculation::BoundFreeFieldTransitionRates<T_ADKLaserPolarization>::
+                        // 1/unit_time
+                        constexpr auto rateLimit = InstantTransitionRateLimit::get<float_64>();
+
+                        auto const transitionRate = pmacc::math::min(
+                            atomicPhysics::rateCalculation::BoundFreeFieldTransitionRates<T_ADKLaserPolarization>::
                                 template maximumRateADKFieldIonization<float_X>(
                                     minEFieldNormSuperCell,
                                     maxEFieldNormSuperCell,
@@ -241,7 +244,8 @@ namespace picongpu::particles::atomicPhysics::kernel
                                     transitionCollectionIndex,
                                     chargeStateDataDataBox,
                                     atomicStateDataDataBox,
-                                    boundFreeTransitionDataBox);
+                                    boundFreeTransitionDataBox),
+                            rateLimit);
 
                         if(transitionRate > 0._X)
                         {
