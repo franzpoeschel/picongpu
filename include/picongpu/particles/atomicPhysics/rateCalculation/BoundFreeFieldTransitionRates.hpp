@@ -22,6 +22,7 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/particles/atomicPhysics/ConvertEnum.hpp"
 #include "picongpu/particles/atomicPhysics/DeltaEnergyTransition.hpp"
+#include "picongpu/particles/atomicPhysics/FieldEnergy.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ADKLaserPolarization.hpp"
 #include "picongpu/particles/atomicPhysics/stateRepresentation/ConfigNumber.hpp"
 
@@ -59,6 +60,7 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
              * @param boundBoundTransitionDataBox access to bound-bound transition data
              */
             HDINLINE RateFormulaVariables(
+                float_X const ionizationEnergy,
                 float_X const ionizationPotentialDepression,
                 uint32_t const transitionCollectionIndex,
                 T_ChargeStateDataBox const chargeStateDataBox,
@@ -70,14 +72,6 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
                     chargeStateDataBox,
                     atomicStateDataBox,
                     boundFreeTransitionDataBox);
-
-                // Hartree
-                float_X const ionizationEnergy = picongpu::sim.si.conv().eV2auEnergy(DeltaEnergyTransition::get(
-                    transitionCollectionIndex,
-                    atomicStateDataBox,
-                    boundFreeTransitionDataBox,
-                    ionizationPotentialDepression,
-                    chargeStateDataBox));
 
                 nEff = BoundFreeFieldTransitionRates::effectivePrincipalQuantumNumber(Z, ionizationEnergy);
             }
@@ -199,11 +193,23 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             T_AtomicStateDataBox const atomicStateDataBox,
             T_BoundFreeTransitionDataBox const boundFreeTransitionDataBox)
         {
-            if(eFieldNorm == 0._X)
+            // unit_energy
+            float_X const eFieldEnergy = FieldEnergy::getEFieldEnergy(eFieldNorm * eFieldNorm);
+
+            // eV
+            float_X const ionizationEnergy = DeltaEnergyTransition::get(
+                transitionCollectionIndex,
+                atomicStateDataBox,
+                boundFreeTransitionDataBox,
+                ionizationPotentialDepression,
+                chargeStateDataBox);
+
+            if((eFieldNorm == 0._X) || (eFieldEnergy < picongpu::sim.pic.conv().eV2Joule(ionizationEnergy)))
                 return static_cast<T_ReturnType>(0.);
 
             auto const v
                 = RateFormulaVariables<T_ChargeStateDataBox, T_AtomicStateDataBox, T_BoundFreeTransitionDataBox>(
+                    picongpu::sim.si.conv().eV2auEnergy(ionizationEnergy),
                     ionizationPotentialDepression,
                     transitionCollectionIndex,
                     chargeStateDataBox,
@@ -246,11 +252,23 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             T_AtomicStateDataBox const atomicStateDataBox,
             T_BoundFreeTransitionDataBox const boundFreeTransitionDataBox)
         {
-            if(maxEFieldNorm == 0._X)
+            // unit_energy
+            float_X const maxEFieldEnergy = FieldEnergy::getEFieldEnergy(maxEFieldNorm * maxEFieldNorm);
+
+            // eV
+            float_X const ionizationEnergy = DeltaEnergyTransition::get(
+                transitionCollectionIndex,
+                atomicStateDataBox,
+                boundFreeTransitionDataBox,
+                ionizationPotentialDepression,
+                chargeStateDataBox);
+
+            if((maxEFieldNorm == 0._X) || (maxEFieldEnergy < picongpu::sim.pic.conv().eV2Joule(ionizationEnergy)))
                 return static_cast<T_ReturnType>(0.);
 
             auto const v
                 = RateFormulaVariables<T_ChargeStateDataBox, T_AtomicStateDataBox, T_BoundFreeTransitionDataBox>(
+                    picongpu::sim.si.conv().eV2auEnergy(ionizationEnergy),
                     ionizationPotentialDepression,
                     transitionCollectionIndex,
                     chargeStateDataBox,
