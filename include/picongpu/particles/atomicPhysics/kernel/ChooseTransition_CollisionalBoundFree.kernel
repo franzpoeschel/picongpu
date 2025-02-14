@@ -200,6 +200,20 @@ namespace picongpu::particles::atomicPhysics::kernel
                     // compare to cumulative sum of normalized transition rates to find choosen transition
                     constexpr uint32_t numberBins = T_Histogram::numberBins;
 
+                    // 1/unit_time
+                    auto const stateTotalLossrate = rateCache.rate(
+                        u32(s_enums::ChooseTransitionGroup::collisionalBoundFreeUpward),
+                        atomicStateCollectionIndex);
+
+                    if(stateTotalLossrate == 0._X)
+                    {
+                        ion[processClass_] = u8(s_enums::ProcessClass::noChange);
+                        // no need to set ion[transitionIndex_] since already uniquely known by processClass = noChange
+                        // no-change transitions are not bin based therefore we don't set a bin, old values are ignored
+                        ion[accepted_] = true;
+                        return;
+                    }
+
                     float_X cumSum = 0._X;
                     for(uint32_t transitionID = 0u; transitionID < numberTransitions; ++transitionID)
                     {
@@ -223,10 +237,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                                         atomicStateDataDataBox,
                                         transitionDataBox);
 
-                            cumSum += rateTransition
-                                / rateCache.rate(
-                                    u32(s_enums::ChooseTransitionGroup::collisionalBoundFreeUpward),
-                                    atomicStateCollectionIndex);
+                            cumSum += rateTransition / stateTotalLossrate;
 
                             // inclusive limit, to make sure that r==1 is assigned a transition
                             if(r <= cumSum)

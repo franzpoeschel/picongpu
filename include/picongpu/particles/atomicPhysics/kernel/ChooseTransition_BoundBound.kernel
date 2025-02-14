@@ -219,6 +219,19 @@ namespace picongpu::particles::atomicPhysics::kernel
                     // get random number
                     float_X const r = rngGeneratorFloat();
 
+                    // 1/unit_time
+                    auto const stateTotalLossRate
+                        = rateCache.rate(u32(chooseTransitionGroup), atomicStateCollectionIndex);
+
+                    if(stateTotalLossRate == 0._X)
+                    {
+                        ion[processClass_] = u8(s_enums::ProcessClass::noChange);
+                        // no need to set ion[transitionIndex_] since already uniquely known by processClass = noChange
+                        // no-change transitions are not bin based therefore we don't set a bin, old values are ignored
+                        ion[accepted_] = true;
+                        return;
+                    }
+
                     // compare to cumulative sum of normalized transition rates to find choosen transition
                     float_X cumSum = 0._X;
                     for(uint32_t transitionID = 0u; transitionID < numberTransitions; ++transitionID)
@@ -245,8 +258,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                                         atomicStateDataDataBox,
                                         transitionDataBox);
 
-                                cumSum += rateTransition
-                                    / rateCache.rate(u32(chooseTransitionGroup), atomicStateCollectionIndex);
+                                cumSum += rateTransition / stateTotalLossRate;
 
                                 // debug only
                                 if constexpr(picongpu::atomicPhysics::debug::kernel::chooseTransition::
@@ -296,8 +308,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                                     atomicStateDataDataBox,
                                     transitionDataBox);
 
-                            cumSum += rateTransition
-                                / rateCache.rate(u32(chooseTransitionGroup), atomicStateCollectionIndex);
+                            cumSum += rateTransition / stateTotalLossRate;
 
                             // debug only
                             if constexpr(picongpu::atomicPhysics::debug::kernel::chooseTransition::
