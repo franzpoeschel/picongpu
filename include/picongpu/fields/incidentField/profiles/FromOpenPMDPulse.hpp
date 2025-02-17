@@ -181,7 +181,8 @@ namespace picongpu
                     {
                         //! Unitless parameters type
                         using Params = FromOpenPMDPulseUnitless<T_Params>;
-                        using dataType = typename Params::dataType; // field record data type
+                        //! field record data type
+                        using dataType = typename Params::dataType;
 
                         //! FromOpenPMD pulse E functor
                         using Functor = FromOpenPMDPulseFunctorIncidentE<T_Params>;
@@ -289,9 +290,6 @@ namespace picongpu
 
                             // field data
                             bufferFieldData = std::make_shared<pmacc::HostDeviceBuffer<float_X, 3u>>(extentOpenPMD);
-                            // das Problem ist hier wenn komplex!!
-                            // error: Type conversion during chunk loading not yet implemented! Data: CDOUBLE; Load as:
-                            // UNDEFINED', terminating
                             auto fieldData = std::shared_ptr<dataType>{nullptr};
                             fieldData = meshRecord.loadChunk<dataType>();
 
