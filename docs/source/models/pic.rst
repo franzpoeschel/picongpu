@@ -71,7 +71,7 @@ This results in a staggered grid arrangement, where the electric and magnetic fi
 
 The basic PIC cycle, representing a single simulation time step :math:`(n \to n + 1)`, comprises four consecutive steps, which are computed for all macroparticles involved in the simulation:
 
-#. *Field to particle:* The fields :math:`\mathbf{E}^n`, :math:`\mathbf{B}^n` are interpolated onto the particle position math:`\mathbf{x}^n` with help of the assignment function :math:`W`.
+#. *Field to particle:* The fields :math:`\mathbf{E}^n`, :math:`\mathbf{B}^n` are interpolated onto the particle position :math:`\mathbf{x}^n` with help of the assignment function :math:`W`.
 #. *Particle push:* By integrating the equation of motion obtained from the Lorentz force acting on the macroparticle, its change in position :math:`\mathbf{x}` and velocity :math:`\mathbf{u} = \gamma \mathbf{v}` is obtained:
 
    .. math::
