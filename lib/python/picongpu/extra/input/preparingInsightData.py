@@ -9,6 +9,7 @@ import numpy as np
 import h5py
 from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import curve_fit
+import scipy.constants as const
 
 """
 ATTENTION!
@@ -29,7 +30,7 @@ the PIConGPU initialization procedure (coding- and time wise).
 """
 
 # please correct if other units than mm and fs are used!
-c = 2.99792e-4  # speed of light in mm/fs
+c = const.c * 1e-12  # speed of light in mm/fs
 
 
 def gauss2D(xy, amp, x0, y0, w):
@@ -742,7 +743,9 @@ class PrepRoutines:
 
         print("field data size: %.1f GB" % (np.prod(self.Et.shape) * 8 * 10**-9))  # assumes datatype double
 
-    def save_to_openPMD(self, outputpath, outputname, energy, pol="y", crop_x=0, crop_y=0, crop_t=0):
+    def save_to_openPMD(
+        self, outputpath, outputname, energy, pol="y", crop_x=0, crop_y=0, crop_t_neg=0, crop_t_pos=0, is_complex=False
+    ):
         """
         Save the field data in time domain to an openPMD file. This output will be used for the
         FromOpenPMDPulse profile.
@@ -762,16 +765,38 @@ class PrepRoutines:
         energy: beam energy in Joule. Is used to determine the correct amplitude in the time domain.
                 For that, the approximation z = c*t is used, which holds only for tau << zR/c!
         pol: polarisation direction, either "x" or "y". Default is "y" (the long axis).
-        crop_x/y/t: if the field data chunk is too big, one can crop the borders from both sides by the length
-                    given with these values (same unit as the corresponding scales). Default is 0.
+        crop_x/y: if the field data chunk is too big, one can crop the spatial extent from both sides by this
+                  length (in mm). Default is 0.
+        crop_t_pos/neg: if the field data chunk is too big, one can crop the temporal extent by this value
+                  (in fs). Default is 0.
+        is_complex: whether Et should be stored as complex-valued (np.complex64). Default is False (i.e. only
+                    the real part of Et is written to openPMD)
         """
         assert pol == "x" or pol == "y", "Oops, invalid polarisation direction!"
         idx_x = int(crop_x / self.dx + 0.5)
         idx_y = int(crop_y / self.dy + 0.5)
-        idx_t = int(crop_t / self.dt + 0.5)
+        idx_t_neg = int(crop_t_neg / self.dt + 0.5)
+        idx_t_pos = int(crop_t_pos / self.dt + 0.5)
         Nx, Ny, Nt = np.shape(self.Et)
-        # we only need the real part of the field
-        E_save = np.array(np.real(self.Et[idx_y : Ny - idx_y, idx_x : Nx - idx_x, idx_t : Nt - idx_t]))
+
+        if is_complex:
+            # store the complete complex field as np.complex64
+            # info: openPMD does not support np.complex128 yet
+            E_save = np.array(
+                self.Et[idx_y : Ny - idx_y, idx_x : Nx - idx_x, idx_t_neg : Nt - idx_t_pos], dtype=np.complex64
+            )
+            I_sum = np.sum(np.real(E_save) ** 2)
+        else:
+            # we only need the real part of the field
+            E_save = np.array(
+                np.real(self.Et[idx_y : Ny - idx_y, idx_x : Nx - idx_x, idx_t_neg : Nt - idx_t_pos]), dtype=np.float64
+            )
+            I_sum = np.sum(E_save**2)
+
+        # if the field was cropped, look how much pulse energy was discarded
+        if crop_x > 0 or crop_y > 0 or crop_t_neg > 0 or crop_t_pos > 0:
+            I_sum_orig = np.sum(np.real(self.Et))
+            print(f"Discarded pulse energy due to smaller window: {(1-I_sum/I_sum_orig):.2%}")
 
         series = openpmd.Series(outputpath + outputname, openpmd.Access.create)
         ite = series.iterations[0]  # use the 0th iteration
@@ -813,7 +838,7 @@ class PrepRoutines:
         # B_z = -+ i/w * d/d_trans E_pol; but neglectable since B_z << B_trans
         # 1st sign for pol = "x", 2nd for "y"
         dV = self.dx * self.dy * self.dt * c * 10**-9  # m**3
-        W = dV * 8.854e-12 * np.sum(E_save**2)
+        W = dV * const.epsilon_0 * I_sum
         # correct the value if working with an applied aperture
         if self.is_masked:
             energy *= self.field_ratio
@@ -834,6 +859,4 @@ class PrepRoutines:
 
         del series
 
-        print(
-            "data successfully saved, field data size: %.f MB" % (np.prod(E_save.shape) * 8 * 10**-6)
-        )  # assumes datatype double
+        print("data successfully saved, field data size: %.f MB" % (np.prod(E_save.shape) * 8 * 10**-6))
