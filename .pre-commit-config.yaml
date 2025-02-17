@@ -39,7 +39,7 @@ repos:
   hooks:
       - id: enforce-ascii
         types_or: [file]
-        exclude_types: [rst, tex, tsv, jupyter, markdown]
+        exclude_types: [rst, tex, tsv, jupyter, markdown, svg]
         exclude: .zenodo.json
 - repo: local
   hooks:
