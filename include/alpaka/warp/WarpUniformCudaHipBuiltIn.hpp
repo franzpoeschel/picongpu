@@ -5,7 +5,7 @@
 #pragma once
 
 #include "alpaka/core/BoostPredef.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/warp/Traits.hpp"
 
 #include <cstdint>
@@ -15,7 +15,7 @@
 namespace alpaka::warp
 {
     //! The GPU CUDA/HIP warp.
-    class WarpUniformCudaHipBuiltIn : public concepts::Implements<ConceptWarp, WarpUniformCudaHipBuiltIn>
+    class WarpUniformCudaHipBuiltIn : public interface::Implements<ConceptWarp, WarpUniformCudaHipBuiltIn>
     {
     };
 

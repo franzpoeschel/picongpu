@@ -59,7 +59,7 @@ struct FillBufferKernel
 // Instead, a single accelerator is selected once from the active accelerators and the kernels are executed with the
 // selected accelerator only. If you use the example as the starting point for your project, you can rename the
 // example() function to main() and move the accelerator tag to the function body.
-template<typename TAccTag>
+template<alpaka::concepts::Tag TAccTag>
 auto example(TAccTag const&) -> int
 {
     // Define the index domain
@@ -239,6 +239,8 @@ auto example(TAccTag const&) -> int
 
 auto main() -> int
 {
+    std::cout << "Check enabled accelerator tags:" << std::endl;
+    alpaka::printTagNames<alpaka::EnabledAccTags>();
     // Execute the example once for each enabled accelerator.
     // If you would like to execute it for a single accelerator only you can use the following code.
     //  \code{.cpp}

@@ -31,7 +31,7 @@
 
 // Implementation details.
 #include "alpaka/acc/Tag.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/dev/DevCpu.hpp"
 
 #include <memory>
@@ -69,7 +69,7 @@ namespace alpaka
         , public rand::RandStdLib
 #    endif
         , public warp::WarpSingleThread
-        , public concepts::Implements<ConceptAcc, AccCpuSerial<TDim, TIdx>>
+        , public interface::Implements<ConceptAcc, AccCpuSerial<TDim, TIdx>>
     {
         static_assert(
             sizeof(TIdx) >= sizeof(int),

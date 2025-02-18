@@ -6,9 +6,9 @@
 #pragma once
 
 #include "alpaka/core/CallbackThread.hpp"
-#include "alpaka/core/Concepts.hpp"
 #include "alpaka/core/Cuda.hpp"
 #include "alpaka/core/Hip.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/dev/Traits.hpp"
 #include "alpaka/event/Traits.hpp"
 #include "alpaka/meta/DependentFalseType.hpp"
@@ -91,9 +91,9 @@ namespace alpaka
         //! The CUDA/HIP RT queue.
         template<typename TApi, bool TBlocking>
         class QueueUniformCudaHipRt
-            : public concepts::Implements<ConceptCurrentThreadWaitFor, QueueUniformCudaHipRt<TApi, TBlocking>>
-            , public concepts::Implements<ConceptQueue, QueueUniformCudaHipRt<TApi, TBlocking>>
-            , public concepts::Implements<ConceptGetDev, QueueUniformCudaHipRt<TApi, TBlocking>>
+            : public interface::Implements<ConceptCurrentThreadWaitFor, QueueUniformCudaHipRt<TApi, TBlocking>>
+            , public interface::Implements<ConceptQueue, QueueUniformCudaHipRt<TApi, TBlocking>>
+            , public interface::Implements<ConceptGetDev, QueueUniformCudaHipRt<TApi, TBlocking>>
         {
         public:
             ALPAKA_FN_HOST QueueUniformCudaHipRt(DevUniformCudaHipRt<TApi> const& dev)

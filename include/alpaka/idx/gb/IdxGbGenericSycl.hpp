@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/core/Sycl.hpp"
 #include "alpaka/idx/Traits.hpp"
@@ -18,7 +18,7 @@ namespace alpaka::gb
 {
     //! The SYCL accelerator ND index provider.
     template<typename TDim, typename TIdx>
-    class IdxGbGenericSycl : public concepts::Implements<ConceptIdxGb, IdxGbGenericSycl<TDim, TIdx>>
+    class IdxGbGenericSycl : public interface::Implements<ConceptIdxGb, IdxGbGenericSycl<TDim, TIdx>>
     {
     public:
         using IdxGbBase = IdxGbGenericSycl;

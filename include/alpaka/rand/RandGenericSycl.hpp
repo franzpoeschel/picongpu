@@ -5,7 +5,7 @@
 #pragma once
 
 #include "alpaka/core/BoostPredef.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/dev/DevGenericSycl.hpp"
 #include "alpaka/rand/Traits.hpp"
 
@@ -36,7 +36,7 @@ namespace alpaka::rand
 {
     //! The SYCL rand implementation.
     template<typename TDim>
-    struct RandGenericSycl : concepts::Implements<ConceptRand, RandGenericSycl<TDim>>
+    struct RandGenericSycl : interface::Implements<ConceptRand, RandGenericSycl<TDim>>
     {
         explicit RandGenericSycl(sycl::nd_item<TDim::value> my_item) : m_item_rand{my_item}
         {

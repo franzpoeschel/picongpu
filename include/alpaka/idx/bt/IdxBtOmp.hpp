@@ -5,7 +5,7 @@
 #pragma once
 
 #include "alpaka/core/Assert.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/idx/MapIdx.hpp"
 #include "alpaka/idx/Traits.hpp"
@@ -22,7 +22,7 @@ namespace alpaka
     {
         //! The OpenMP accelerator index provider.
         template<typename TDim, typename TIdx>
-        class IdxBtOmp : public concepts::Implements<ConceptIdxBt, IdxBtOmp<TDim, TIdx>>
+        class IdxBtOmp : public interface::Implements<ConceptIdxBt, IdxBtOmp<TDim, TIdx>>
         {
         };
     } // namespace bt
