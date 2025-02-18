@@ -1,6 +1,10 @@
 Cheatsheet
 ==========
 
+.. raw:: pdf
+
+   Spacer 0,1
+
 .. only:: html
 
    Download pdf version :download:`here <../../cheatsheet/cheatsheet.pdf>`
@@ -17,10 +21,6 @@ General
 
      #include <alpaka/alpaka.hpp>
      using namespace alpaka;
-
-.. raw:: pdf
-
-   Spacer 0,5
 
 Accelerator, Platform and Device
 --------------------------------
@@ -39,16 +39,8 @@ Define accelerator type (CUDA, OpenMP,etc.)
   AcceleratorType:
      .. code-block:: c++
 
-	AccGpuCudaRt,
-	AccGpuHipRt,
-	AccCpuSycl,
-	AccFpgaSyclIntel,
-	AccGpuSyclIntel,
-	AccCpuOmp2Blocks,
-	AccCpuOmp2Threads,
-	AccCpuTbbBlocks,
-	AccCpuThreads,
-	AccCpuSerial
+	AccGpuCudaRt, AccGpuHipRt, AccCpuSycl, AccFpgaSyclIntel, AccGpuSyclIntel, AccCpuOmp2Blocks,
+	AccCpuOmp2Threads, AccCpuTbbBlocks, AccCpuThreads, AccCpuSerial
 
 
 Create platform and select a device by index
@@ -69,8 +61,7 @@ Create a queue for a device
   Property:
      .. code-block:: c++
 
-	Blocking
-	NonBlocking
+	Blocking, NonBlocking
 
 Put a task for execution
   .. code-block:: c++
@@ -117,17 +108,18 @@ Allocate a buffer in host memory
   .. code-block:: c++
 
      // Use alpaka vector as a static array for the extents
-     alpaka::Vec<Dim, Idx> extent = value;
+     Vec<DimInt<1>, Idx> extent = value;
+     Vec<DimInt<2>, Idx> extent = {valueY, valueX};
+
      // Allocate memory for the alpaka buffer, which is a dynamic array
-     using BufHost = alpaka::Buf<DevHost, DataType, Dim, Idx>;
+     using BufHost = Buf<DevHost, DataType, Dim, Idx>;
      BufHost bufHost = allocBuf<DataType, Idx>(devHost, extent);
 
 Create a view to host memory represented by a pointer
   .. code-block:: c++
 
-     using Dim = alpaka::DimInt<1u>;
      // Create an alpaka vector which is a static array
-     alpaka::Vec<Dim, Idx> extent = size;
+     Vec<Dim, Idx> extent = size;
      DataType* ptr = ...;
      auto hostView = createView(devHost, ptr, extent);
 
@@ -146,20 +138,20 @@ Create a view to host std::array
 Get a raw pointer to a buffer or view initialization, etc.
   .. code-block:: c++
 
-     DataType* raw = view::getPtrNative(bufHost);
-     DataType* rawViewPtr = view::getPtrNative(hostView);
+     DataType* raw = view::getPtrNative(hostBufOrView);
 
-Get the pitches (memory in bytes to the next element in the buffer along the pitch dimension) of a buffer
+Get the pitches of a buffer or view
   .. code-block:: c++
 
-     auto pitchBufAcc = alpaka::getPitchesInBytes(bufAcc)
-     auto pitchViewAcc = alpaka::getPitchesInBytes(viewAcc)
+     // memory in bytes to the next element in the buffer/view along the pitch dimension
+     auto pitchBufOrViewAcc = getPitchesInBytes(accBufOrView)
 
 Get a mdspan to a buffer or view initialization, etc.
   .. code-block:: c++
 
-     auto bufMdSpan = alpaka::experimental::getMdSpan(bufAcc)
-     auto viewMdSpan = alpaka::experimental::getMdSpan(viewAcc)
+     auto bufOrViewMdSpan = experimental::getMdSpan(bufOrViewAcc)
+     auto value = bufOrViewMdSpan(y,x); // access 2D mdspan
+     bufOrViewMdSpan(y,x) = value; // assign item to 2D mdspan
 
 Allocate a buffer in device memory
   .. code-block:: c++
@@ -169,7 +161,7 @@ Allocate a buffer in device memory
 Enqueue a memory copy from host to device
   .. code-block:: c++
 
-     // arguments can be also alpaka::View instances instead of alpaka::Buf
+     // arguments can be also View instances instead of Buf
      memcpy(queue, bufDevice, bufHost, extent);
 
 Enqueue a memory copy from device to host
@@ -203,12 +195,8 @@ Automatically select a valid kernel launch configuration
      auto autoWorkDiv = getValidWorkDiv(
        kernelCfg,
        device,
-       heatEqKernel,
-       pCurrAcc,
-       pNextAcc,
-       numNodesX,
-       dx,
-       dt);
+       kernel,
+       kernelParams...);
 
 Manually set a kernel launch configuration
   .. code-block:: c++
@@ -218,10 +206,7 @@ Manually set a kernel launch configuration
      Vec<Dim, Idx> const elementsPerThread = vectorValue;
 
      using WorkDiv = WorkDivMembers<Dim, Idx>;
-     auto manualWorkDiv = WorkDiv{
-       blocksPerGrid,
-       threadsPerBlock,
-       elementsPerThread};
+     auto manualWorkDiv = WorkDiv{blocksPerGrid, threadsPerBlock, elementsPerThread};
 
 Instantiate a kernel (does not launch it yet)
   .. code-block:: c++
@@ -233,7 +218,7 @@ acc parameter of the kernel is provided automatically, does not need to be speci
 Get information about the kernel from the device (size, maxThreadsPerBlock, sharedMemSize, registers, etc.)
   .. code-block:: c++
 
-     auto kernelFunctionAttributes = alpaka::getFunctionAttributes<Acc>(devAcc, kernel, parameters...);
+     auto kernelFunctionAttributes = getFunctionAttributes<Acc>(devAcc, kernel, parameters...);
 
 
 Put the kernel for execution
@@ -276,7 +261,7 @@ Linearize multi-dimensional vectors
 More generally, index multi-dimensional vectors with a different dimensionality
   .. code-block:: c++
 
-     auto idxND = alpaka::mapIdx<N>(idxMD, extentMD);
+     auto idxND = mapIdx<N>(idxMD, extentMD);
 
 .. raw:: pdf
 

@@ -6,7 +6,7 @@
 
 #include "alpaka/block/shared/dyn/Traits.hpp"
 #include "alpaka/core/BoostPredef.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 
 #include <cstddef>
 #include <type_traits>
@@ -17,7 +17,7 @@ namespace alpaka
 {
     //! The GPU CUDA/HIP block shared memory allocator.
     class BlockSharedMemDynUniformCudaHipBuiltIn
-        : public concepts::Implements<ConceptBlockSharedDyn, BlockSharedMemDynUniformCudaHipBuiltIn>
+        : public interface::Implements<ConceptBlockSharedDyn, BlockSharedMemDynUniformCudaHipBuiltIn>
     {
     };
 

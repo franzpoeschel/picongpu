@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/idx/MapIdx.hpp"
 #include "alpaka/idx/Traits.hpp"
@@ -17,7 +17,7 @@ namespace alpaka
     {
         //! General ND index provider based on a linear index.
         template<typename TDim, typename TIdx>
-        class IdxGbLinear : public concepts::Implements<ConceptIdxGb, IdxGbLinear<TDim, TIdx>>
+        class IdxGbLinear : public interface::Implements<ConceptIdxGb, IdxGbLinear<TDim, TIdx>>
         {
         public:
             IdxGbLinear(TIdx const& teamOffset = static_cast<TIdx>(0u)) : m_gridBlockIdx(teamOffset)

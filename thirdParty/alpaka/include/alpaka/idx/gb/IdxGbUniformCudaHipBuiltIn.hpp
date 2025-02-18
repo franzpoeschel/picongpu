@@ -6,9 +6,9 @@
 #pragma once
 
 #include "alpaka/core/BoostPredef.hpp"
-#include "alpaka/core/Concepts.hpp"
 #include "alpaka/core/Cuda.hpp"
 #include "alpaka/core/Hip.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/idx/Traits.hpp"
 #include "alpaka/vec/Vec.hpp"
@@ -22,7 +22,7 @@ namespace alpaka
         //! The CUDA/HIP accelerator ND index provider.
         template<typename TDim, typename TIdx>
         class IdxGbUniformCudaHipBuiltIn
-            : public concepts::Implements<ConceptIdxGb, IdxGbUniformCudaHipBuiltIn<TDim, TIdx>>
+            : public interface::Implements<ConceptIdxGb, IdxGbUniformCudaHipBuiltIn<TDim, TIdx>>
         {
         };
     } // namespace gb

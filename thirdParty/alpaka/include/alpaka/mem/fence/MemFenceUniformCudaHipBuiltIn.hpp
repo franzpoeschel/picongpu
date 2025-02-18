@@ -5,7 +5,7 @@
 #pragma once
 
 #include "alpaka/core/BoostPredef.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/mem/fence/Traits.hpp"
 
 #if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
@@ -13,7 +13,7 @@
 namespace alpaka
 {
     //! The GPU CUDA/HIP memory fence.
-    class MemFenceUniformCudaHipBuiltIn : public concepts::Implements<ConceptMemFence, MemFenceUniformCudaHipBuiltIn>
+    class MemFenceUniformCudaHipBuiltIn : public interface::Implements<ConceptMemFence, MemFenceUniformCudaHipBuiltIn>
     {
     };
 

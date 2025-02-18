@@ -50,7 +50,7 @@ then
     BOOST_BASE_NAME=$(echo -n ${ALPAKA_CI_BOOST_BRANCH} | tr "." "_" | tr "-" "_")
     BOOST_BASE_VERSION=$(echo -n ${ALPAKA_CI_BOOST_BRANCH} | sed 's/boost-//')
     BOOST_TAR_FILE_NAME="${BOOST_BASE_NAME}.tar.gz"
-    BOOST_DOWNLOAD_LINK="https://boostorg.jfrog.io/artifactory/main/release/${BOOST_BASE_VERSION}/source/${BOOST_TAR_FILE_NAME}"
+    BOOST_DOWNLOAD_LINK="https://archives.boost.io/release/${BOOST_BASE_VERSION}/source/${BOOST_TAR_FILE_NAME}"
     rm -rf ${BOOST_ROOT}
     travis_retry wget -q ${BOOST_DOWNLOAD_LINK}
     tar -xf "$BOOST_TAR_FILE_NAME"
@@ -163,7 +163,7 @@ then
     fi
     if [ "$ALPAKA_CI_OS_NAME" = "Linux" ]
     then
-        ALPAKA_BOOST_B2_CXXFLAGS+=" -std=c++17"
+        ALPAKA_BOOST_B2_CXXFLAGS+=" -std=c++20"
     fi
     ALPAKA_BOOST_B2+=" --with-atomic"
 

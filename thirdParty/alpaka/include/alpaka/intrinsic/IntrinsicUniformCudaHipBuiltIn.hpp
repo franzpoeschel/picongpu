@@ -5,7 +5,7 @@
 #pragma once
 
 #include "alpaka/core/BoostPredef.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/intrinsic/Traits.hpp"
 
 #if defined(ALPAKA_ACC_GPU_CUDA_ENABLED) || defined(ALPAKA_ACC_GPU_HIP_ENABLED)
@@ -14,7 +14,7 @@ namespace alpaka
 {
     //! The GPU CUDA/HIP intrinsic.
     class IntrinsicUniformCudaHipBuiltIn
-        : public concepts::Implements<ConceptIntrinsic, IntrinsicUniformCudaHipBuiltIn>
+        : public interface::Implements<ConceptIntrinsic, IntrinsicUniformCudaHipBuiltIn>
     {
     };
 
@@ -36,7 +36,8 @@ namespace alpaka
             __device__ static auto popcount(IntrinsicUniformCudaHipBuiltIn const& /*intrinsic*/, std::uint32_t value)
                 -> std::int32_t
             {
-#        if BOOST_COMP_CLANG && BOOST_LANG_CUDA
+                // clang as CUDA compiler change the interface to unsigned values for clang >=18
+#        if BOOST_COMP_CLANG && BOOST_LANG_CUDA && BOOST_COMP_CLANG < BOOST_VERSION_NUMBER(18, 0, 0)
                 return __popc(static_cast<int>(value));
 #        else
                 return static_cast<std::int32_t>(__popc(static_cast<unsigned int>(value)));
@@ -46,7 +47,8 @@ namespace alpaka
             __device__ static auto popcount(IntrinsicUniformCudaHipBuiltIn const& /*intrinsic*/, std::uint64_t value)
                 -> std::int32_t
             {
-#        if BOOST_COMP_CLANG && BOOST_LANG_CUDA
+                // clang as CUDA compiler change the interface to unsigned values for clang >=18
+#        if BOOST_COMP_CLANG && BOOST_LANG_CUDA && BOOST_COMP_CLANG < BOOST_VERSION_NUMBER(18, 0, 0)
                 return __popcll(static_cast<long long>(value));
 #        else
                 return static_cast<std::int32_t>(__popcll(static_cast<unsigned long long>(value)));

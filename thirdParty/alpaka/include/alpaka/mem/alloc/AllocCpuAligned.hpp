@@ -6,7 +6,7 @@
 
 #include "alpaka/core/AlignedAlloc.hpp"
 #include "alpaka/core/Common.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/dev/cpu/SysInfo.hpp"
 #include "alpaka/mem/alloc/Traits.hpp"
 
@@ -18,7 +18,7 @@ namespace alpaka
     //!
     //! \tparam TAlignment An integral constant containing the alignment.
     template<typename TAlignment>
-    class AllocCpuAligned : public concepts::Implements<ConceptMemAlloc, AllocCpuAligned<TAlignment>>
+    class AllocCpuAligned : public interface::Implements<ConceptMemAlloc, AllocCpuAligned<TAlignment>>
     {
     };
 

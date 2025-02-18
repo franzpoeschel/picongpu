@@ -5,7 +5,7 @@
 #pragma once
 
 #include "alpaka/core/Common.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 
 #include <type_traits>
 
@@ -35,7 +35,7 @@ namespace alpaka
     template<typename TBlockSync>
     ALPAKA_FN_ACC auto syncBlockThreads(TBlockSync const& blockSync) -> void
     {
-        using ImplementationBase = concepts::ImplementationBase<ConceptBlockSync, TBlockSync>;
+        using ImplementationBase = interface::ImplementationBase<ConceptBlockSync, TBlockSync>;
         trait::SyncBlockThreads<ImplementationBase>::syncBlockThreads(blockSync);
     }
 
@@ -99,7 +99,7 @@ namespace alpaka
     template<typename TOp, typename TBlockSync>
     ALPAKA_FN_ACC auto syncBlockThreadsPredicate(TBlockSync const& blockSync, int predicate) -> int
     {
-        using ImplementationBase = concepts::ImplementationBase<ConceptBlockSync, TBlockSync>;
+        using ImplementationBase = interface::ImplementationBase<ConceptBlockSync, TBlockSync>;
         return trait::SyncBlockThreadsPredicate<TOp, ImplementationBase>::syncBlockThreadsPredicate(
             blockSync,
             predicate);

@@ -57,6 +57,20 @@ function(alpaka_set_compiler_options scope type name)
     endif()
 endfunction()
 
+# Check if compiler supports required C++ standard.
+#
+# language - can be CXX, HIP or CUDA
+# min_cxx_standard - C++ standard which is the minimum requirement
+function(checkCompilerCXXSupport language min_cxx_standard)
+    string(TOUPPER "${language}" language_upper_case)
+    string(TOLOWER "${language}" language_lower_case)
+
+    if(NOT "${language_lower_case}_std_${min_cxx_standard}" IN_LIST CMAKE_${language_upper_case}_COMPILE_FEATURES)
+        message(FATAL_ERROR "The ${language_upper_case} compiler does not support C++ ${min_cxx_standard}. \
+        Please upgrade your compiler or use alpaka 1.2 which supports C++17.")
+    endif()
+endfunction()
+
 # HIP and platform selection and warning about unsupported features
 option(alpaka_ACC_GPU_HIP_ENABLE "Enable the HIP back-end (all other back-ends must be disabled)" OFF)
 option(alpaka_ACC_GPU_HIP_ONLY_MODE "Only back-ends using HIP can be enabled in this mode." OFF) # HIP only runs without other back-ends
@@ -114,14 +128,22 @@ endif()
 set(alpaka_DEBUG "0" CACHE STRING "Debug level")
 set_property(CACHE alpaka_DEBUG PROPERTY STRINGS "0;1;2")
 
-set(alpaka_CXX_STANDARD_DEFAULT "17")
+# minimum required C++ standard
+set(alpaka_MIN_CXX_STANDARD "20")
+set(alpaka_CXX_STANDARD_DEFAULT "20")
 # Check whether alpaka_CXX_STANDARD has already been defined as a non-cached variable.
 if(DEFINED alpaka_CXX_STANDARD)
     set(alpaka_CXX_STANDARD_DEFAULT ${alpaka_CXX_STANDARD})
 endif()
 
 set(alpaka_CXX_STANDARD ${alpaka_CXX_STANDARD_DEFAULT} CACHE STRING "C++ standard version")
-set_property(CACHE alpaka_CXX_STANDARD PROPERTY STRINGS "17;20")
+set_property(CACHE alpaka_CXX_STANDARD PROPERTY STRINGS "20")
+
+if(${alpaka_CXX_STANDARD} VERSION_LESS ${alpaka_MIN_CXX_STANDARD})
+    message(FATAL_ERROR "The alpaka_CXX_STANDARD standard must be at least C++${alpaka_MIN_CXX_STANDARD}")
+endif()
+
+checkCompilerCXXSupport(CXX ${alpaka_MIN_CXX_STANDARD})
 
 if(NOT TARGET alpaka)
     add_library(alpaka INTERFACE)
@@ -215,7 +237,7 @@ if(${alpaka_DEBUG} GREATER 1)
 endif()
 
 find_package(Boost ${_alpaka_BOOST_MIN_VER} REQUIRED
-             OPTIONAL_COMPONENTS atomic)
+        OPTIONAL_COMPONENTS atomic)
 
 target_link_libraries(alpaka INTERFACE Boost::headers)
 
@@ -406,6 +428,7 @@ if(alpaka_ACC_GPU_CUDA_ENABLE)
         endif()
 
         enable_language(CUDA)
+        checkCompilerCXXSupport(CUDA ${alpaka_MIN_CXX_STANDARD})
 
         if(DEFINED _CLANG_CUDA_VERSION)
             message(DEBUG "Workaround: reset variables for clang as cuda compiler -std=c++98 fix")
@@ -468,10 +491,6 @@ if(alpaka_ACC_GPU_CUDA_ENABLE)
         elseif(CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA")
             message(STATUS "nvcc is used as CUDA compiler")
 
-            if(alpaka_CXX_STANDARD GREATER_EQUAL 20 AND CMAKE_VERSION VERSION_LESS "3.25.0")
-                message(FATAL_ERROR "CMake 3.24 and older does not support C++20 for nvcc")
-            endif()
-
             # nvcc sets no linux/__linux macros on OpenPOWER linux
             # nvidia bug id: 2448610
             if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -483,7 +502,7 @@ if(alpaka_ACC_GPU_CUDA_ENABLE)
             if(alpaka_CUDA_EXPT_EXTENDED_LAMBDA STREQUAL ON)
                 alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--extended-lambda>")
             endif()
-            # This is mandatory because with C++17 many standard library functions we rely on are constexpr (std::min, std::multiplies, ...)
+            # This is mandatory because with C++20 many standard library functions we rely on are constexpr (std::min, std::multiplies, ...)
             alpaka_set_compiler_options(DEVICE target alpaka "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--expt-relaxed-constexpr>")
 
             # CMake automatically sets '-g' in debug mode
@@ -583,6 +602,8 @@ if(alpaka_ACC_GPU_HIP_ENABLE)
 
         set(_alpaka_HIP_MIN_VER 5.1)
         set(_alpaka_HIP_MAX_VER 6.2)
+
+        checkCompilerCXXSupport(HIP ${alpaka_MIN_CXX_STANDARD})
 
         # construct hip version only with major and minor level
         # cannot use hip_VERSION because of the patch level
@@ -852,9 +873,15 @@ if(TARGET alpaka)
     # the alpaka library itself
     # SYSTEM voids showing warnings produced by alpaka when used in user applications.
     if(BUILD_TESTING)
-        target_include_directories(alpaka INTERFACE ${_alpaka_INCLUDE_DIRECTORY})
+        target_include_directories(alpaka
+          INTERFACE
+            $<BUILD_INTERFACE:${_alpaka_INCLUDE_DIRECTORY}>
+            $<INSTALL_INTERFACE:include>)
     else()
-        target_include_directories(alpaka SYSTEM INTERFACE ${_alpaka_INCLUDE_DIRECTORY})
+        target_include_directories(alpaka
+          SYSTEM INTERFACE
+            $<BUILD_INTERFACE:${_alpaka_INCLUDE_DIRECTORY}>
+            $<INSTALL_INTERFACE:include>)
     endif()
 
     if(${alpaka_DEBUG} GREATER 1)
@@ -930,19 +957,10 @@ endif()
 
 if (NOT alpaka_USE_MDSPAN STREQUAL "OFF")
     if (MSVC AND (alpaka_CXX_STANDARD LESS 20))
-        message(WARNING "std::mdspan on MSVC requires C++20. Please enable C++20 via alpaka_CXX_STANDARD. Use of std::mdspan has been disabled.")
-        set(alpaka_USE_MDSPAN "OFF" CACHE STRING "Use std::mdspan with alpaka" FORCE)
+        message(FATAL_ERROR "std::mdspan on MSVC requires C++20. Please enable C++20 via alpaka_CXX_STANDARD. Use of std::mdspan has been disabled.")
     endif ()
 
-    if (alpaka_ACC_GPU_CUDA_ENABLE AND (CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA") AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
-        # this issue actually only occurs when the host compiler (not the CXX compiler) is clang, but cmake does not let us query the host compiler id
-        # see: https://gitlab.kitware.com/cmake/cmake/-/issues/20901
-        message(WARNING "std::mdspan does not work with nvcc and clang as host compiler. Use of std::mdspan has been disabled.")
-        set(alpaka_USE_MDSPAN "OFF" CACHE STRING "Use std::mdspan with alpaka" FORCE)
-    endif ()
-
-    if (alpaka_ACC_GPU_CUDA_ENABLE AND (NOT alpaka_CUDA_EXPT_EXTENDED_LAMBDA STREQUAL ON))
-        message(WARNING "std::mdspan requires nvcc's extended lambdas. Use of std::mdspan has been disabled.")
-        set(alpaka_USE_MDSPAN "OFF" CACHE STRING "Use std::mdspan with alpaka" FORCE)
+    if (alpaka_ACC_GPU_CUDA_ENABLE AND CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA" AND (NOT alpaka_CUDA_EXPT_EXTENDED_LAMBDA STREQUAL ON))
+        message(FATAL_ERROR "std::mdspan requires nvcc's extended lambdas.")
     endif()
 endif()

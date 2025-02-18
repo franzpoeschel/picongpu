@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/mem/fence/Traits.hpp"
 
 #ifdef ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLED
@@ -16,7 +16,7 @@
 namespace alpaka
 {
     //! The CPU OpenMP 2.0 block memory fence.
-    class MemFenceOmp2Threads : public concepts::Implements<ConceptMemFence, MemFenceOmp2Threads>
+    class MemFenceOmp2Threads : public interface::Implements<ConceptMemFence, MemFenceOmp2Threads>
     {
     };
 

@@ -6,7 +6,7 @@
 ################################################################################
 # Required CMake version
 
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.25)
 
 cmake_policy(SET CMP0091 NEW)
 
@@ -25,7 +25,7 @@ string(REGEX MATCH "([0-9]+)" alpaka_VERSION_PATCH  ${alpaka_VERSION_PATCH_HPP})
 set(PACKAGE_VERSION "${alpaka_VERSION_MAJOR}.${alpaka_VERSION_MINOR}.${alpaka_VERSION_PATCH}")
 
 project(alpaka VERSION      ${alpaka_VERSION_MAJOR}.${alpaka_VERSION_MINOR}.${alpaka_VERSION_PATCH}
-               DESCRIPTION  "The alpaka library is a header-only C++17 abstraction library for accelerator development."
+               DESCRIPTION  "The alpaka library is a header-only C++20 abstraction library for accelerator development."
                HOMEPAGE_URL "https://github.com/alpaka-group/alpaka"
                LANGUAGES    CXX)
 
@@ -162,8 +162,9 @@ endif()
 ################################################################################
 # Installation.
 
+option(alpaka_INSTALL "install alpaka even if used as project dependency" OFF)
 # Do not install if alpaka is used as a CMake subdirectory
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR alpaka_INSTALL)
     include(CMakePackageConfigHelpers)
     include(GNUInstallDirs)
 
@@ -204,4 +205,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
             DESTINATION "${_alpaka_INSTALL_CMAKEDIR}")
     install(DIRECTORY "${_alpaka_ROOT_DIR}/cmake/tests"
             DESTINATION "${_alpaka_INSTALL_CMAKEDIR}")
+
+    install(TARGETS alpaka EXPORT alpakaTargets)
+    install(EXPORT alpakaTargets DESTINATION "${_alpaka_INSTALL_CMAKEDIR}" NAMESPACE alpaka::)
 endif()

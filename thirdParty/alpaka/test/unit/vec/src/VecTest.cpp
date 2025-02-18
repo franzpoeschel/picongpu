@@ -10,6 +10,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <numeric>
+#include <tuple>
 #include <utility>
 
 namespace
@@ -176,7 +177,14 @@ TEST_CASE("basicVecTraits", "[vec]")
     }
 
     {
-        constexpr alpaka::Vec<Dim, Idx> vec3(static_cast<Idx>(47u), static_cast<Idx>(8u), static_cast<Idx>(3u));
+        using Vec3 = alpaka::Vec<Dim, Idx>;
+        constexpr Vec3 vec3(static_cast<Idx>(47u), static_cast<Idx>(8u), static_cast<Idx>(3u));
+
+        // alpaka::Vec::dim
+        {
+            STATIC_REQUIRE(vec3.dim() == 3);
+            STATIC_REQUIRE(Vec3::dim() == 3);
+        }
 
         // alpaka::Vec operator +
         {
@@ -469,7 +477,13 @@ TEST_CASE("accessByNameConstexpr", "[vec]")
     STATIC_REQUIRE(v4.w() == 4);
 }
 
-TEMPLATE_TEST_CASE("Vec generator constructor", "[vec]", std::size_t, int, unsigned, float, double)
+// TODO(SimeonEhrig): if C++ 20 is minimum requirement, remove `using`
+// replace it with `TEMPLATE_TEST_CASE("Vec generator constructor", "[vec]", std::size_t, int, unsigned, float,
+// double)`
+// missing feature: parameter of a variadic macro is a C++20 extension
+using VecGeneratorTestTypes = std::tuple<std::size_t, int, unsigned, float, double>;
+
+TEMPLATE_LIST_TEST_CASE("Vec generator constructor", "[vec]", VecGeneratorTestTypes)
 {
     // Define a generator function
     auto generator = [](auto index) { return static_cast<TestType>(index.value + 1); };
