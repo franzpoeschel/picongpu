@@ -206,11 +206,11 @@ namespace picongpu
              * observation directions for 2D virtual detector field
              * with its center pointing toward the +y direction (for theta=0, phi=0)
              * with observation angles ranging from
-             * theta = [angle_theta_start : angle_theta_end]
-             * phi   = [angle_phi_start   : angle_phi_end  ]
+             * theta = [thetaMin : thetaMax]
+             * phi   = [phiMin   : phiMax  ]
              * Every observation_id_extern index moves the phi angle from its
              * start value toward its end value until the observation_id_extern
-             * reaches N_split. After that the theta angle moves further from its
+             * reaches nPhi. After that the theta angle moves further from its
              * start value towards its end value while phi is reset to its start
              * value.
              *
