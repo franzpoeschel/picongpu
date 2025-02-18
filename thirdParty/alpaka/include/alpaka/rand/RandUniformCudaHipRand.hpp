@@ -5,9 +5,9 @@
 #pragma once
 
 #include "alpaka/core/BoostPredef.hpp"
-#include "alpaka/core/Concepts.hpp"
 #include "alpaka/core/Cuda.hpp"
 #include "alpaka/core/Hip.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/dev/DevUniformCudaHipRt.hpp"
 #include "alpaka/rand/Traits.hpp"
 
@@ -38,7 +38,7 @@ namespace alpaka::rand
 {
     //! The CUDA/HIP rand implementation.
     template<typename TApi>
-    class RandUniformCudaHipRand : public concepts::Implements<ConceptRand, RandUniformCudaHipRand<TApi>>
+    class RandUniformCudaHipRand : public interface::Implements<ConceptRand, RandUniformCudaHipRand<TApi>>
     {
     };
 

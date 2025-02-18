@@ -15,7 +15,7 @@ from alpaka_globals import *  # pylint: disable=wildcard-import,unused-wildcard-
 from util import print_warn, exit_error
 
 JOB_COMPILE_ONLY = "compile_only_job"
-JOB_RUNTIME = "runtime_job_gpu"
+JOB_GPU_RUNTIME = "runtime_job_gpu"
 JOB_CPU_RUNTIME = "runtime_job_cpu"
 JOB_ROCM_RUNTIME = "rocm_runtime_job"
 JOB_NVCC_GCC_RUNTIME = "nvcc_gcc_runtime_job"
@@ -26,7 +26,7 @@ JOB_UNKNOWN = "unknowm_job_type"
 
 WAVE_GROUP_NAMES = [
     JOB_COMPILE_ONLY,
-    JOB_RUNTIME,
+    JOB_GPU_RUNTIME,
     JOB_CPU_RUNTIME,
     # can be enabled again, if fine granular scheduling is required
     # JOB_ROCM_RUNTIME,
@@ -345,10 +345,18 @@ def job_variables(job: Dict[str, Tuple[str, str]]) -> Dict[str, str]:
         variables["ALPAKA_CI_STDLIB"] = "libstdc++"
         variables["CMAKE_CUDA_ARCHITECTURES"] = job[SM_LEVEL][VERSION]
         variables["ALPAKA_CI_CUDA_VERSION"] = job[ALPAKA_ACC_GPU_CUDA_ENABLE][VERSION]
+        variables["alpaka_RELOCATABLE_DEVICE_CODE"] = "OFF"
+        variables["alpaka_CUDA_SHOW_REGISTER"] = "OFF"
+        variables["alpaka_CUDA_KEEP_FILES"] = "OFF"
+        variables["alpaka_CUDA_EXPT_EXTENDED_LAMBDA"] = "OFF"
 
     if job[DEVICE_COMPILER][NAME] == NVCC:
         # general configuration, if nvcc is the CUDA compiler
         variables["ALPAKA_CI_CUDA_COMPILER"] = "nvcc"
+
+        # MdSpan requires alpaka_CUDA_EXPT_EXTENDED_LAMBDA
+        if job[MDSPAN][VERSION] == ON_VER:
+            variables["alpaka_CUDA_EXPT_EXTENDED_LAMBDA"] = "ON"
 
         # configuration, if GCC is the CUDA host compiler
         if job[HOST_COMPILER][NAME] == GCC:
@@ -376,6 +384,8 @@ def job_variables(job: Dict[str, Tuple[str, str]]) -> Dict[str, str]:
         elif job[DEVICE_COMPILER][VERSION] == "2024.1":
             variables["ALPAKA_CI_CLANG_VER"] = "18"
         elif job[DEVICE_COMPILER][VERSION] == "2024.2":
+            variables["ALPAKA_CI_CLANG_VER"] = "19"
+        elif job[DEVICE_COMPILER][VERSION] == "2025.0":
             variables["ALPAKA_CI_CLANG_VER"] = "19"
         variables["ALPAKA_CI_STDLIB"] = "libstdc++"
         variables["ALPAKA_CI_ONEAPI_VERSION"] = job[DEVICE_COMPILER][VERSION]
@@ -444,6 +454,9 @@ def global_variables() -> Dict[str, str]:
     variables["ALPAKA_CI_CUDA_DIR"] = "$HOME/cuda"
     variables["ALPAKA_CI_HIP_ROOT_DIR"] = "$HOME/hip"
     variables["alpaka_ENABLE_WERROR"] = "ON"
+    # TODO(SimeonEhrig): Implement algorithm which select for each backend one
+    # job and set alpaka_DEBUG=2
+    variables["alpaka_DEBUG"] = 0
 
     return variables
 
@@ -481,6 +494,7 @@ def create_job(job: Dict[str, Tuple[str, str]], container_version: float, gitlab
     job_yaml["image"] = job_image(job, container_version, gitlab_images)
     job_yaml["variables"] = job_variables(job)
     job_yaml["script"] = [
+        "source ./script/set_default_env_vars.sh",
         "source ./script/gitlabci/print_env.sh",
         "source ./script/gitlab_ci_run.sh",
     ]
@@ -543,19 +557,19 @@ def distribute_to_waves(
             sorted_groups[JOB_CPU_RUNTIME].append(job)
         elif job_name.startswith("linux_hipcc"):
             # sorted_groups[JOB_ROCM_RUNTIME].append(job)
-            sorted_groups[JOB_RUNTIME].append(job)
+            sorted_groups[JOB_GPU_RUNTIME].append(job)
         elif job_name.startswith("linux_nvcc") and "gcc" in job_name:
             # sorted_groups[JOB_NVCC_GCC_RUNTIME].append(job)
-            sorted_groups[JOB_RUNTIME].append(job)
+            sorted_groups[JOB_GPU_RUNTIME].append(job)
         elif job_name.startswith("linux_nvcc") and "clang" in job_name:
             # sorted_groups[JOB_NVCC_CLANG_RUNTIME].append(job)
-            sorted_groups[JOB_RUNTIME].append(job)
+            sorted_groups[JOB_GPU_RUNTIME].append(job)
         elif job_name.startswith("linux_clang-cuda"):
             # sorted_groups[JOB_CLANG_CUDA_RUNTIME].append(job)
-            sorted_groups[JOB_RUNTIME].append(job)
+            sorted_groups[JOB_GPU_RUNTIME].append(job)
         elif job_name.startswith("linux_icpx"):
             # sorted_groups[JOB_ICPX_RUNTIME].append(job)
-            sorted_groups[JOB_RUNTIME].append(job)
+            sorted_groups[JOB_CPU_RUNTIME].append(job)
         else:
             sorted_groups[JOB_UNKNOWN].append(job)
 
@@ -600,7 +614,7 @@ def write_job_yaml(
         # If there is no CI job, create a dummy job.
         # This can happen if the filter filters out all jobs.
         number_of_jobs = 0
-        for wave_name in WAVE_GROUP_NAMES:
+        for wave_name in job_matrix.keys():
             number_of_jobs += len(job_matrix[wave_name])
 
         if number_of_jobs == 0:
@@ -618,7 +632,7 @@ def write_job_yaml(
 
         stages: Dict[str, List[str]] = {"stages": []}
 
-        for wave_name in WAVE_GROUP_NAMES:
+        for wave_name in job_matrix.keys():
             # setup all stages
             for stage_number in range(len(job_matrix[wave_name])):
                 stages["stages"].append(f"{wave_name}-stage{stage_number}")
@@ -640,7 +654,7 @@ def write_job_yaml(
             job_base_yaml = yaml.load(file, yaml.loader.SafeLoader)
         yaml.dump(job_base_yaml, output_file)
 
-        for wave_name in WAVE_GROUP_NAMES:
+        for wave_name in job_matrix.keys():
             # Writes each job separately to the file.
             # If all jobs would be collected first in dict, the order would be not guarantied.
             for stage_number, wave in enumerate(job_matrix[wave_name]):

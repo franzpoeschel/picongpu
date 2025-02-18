@@ -49,9 +49,7 @@ def alpaka_post_filter(row: List) -> bool:
     # https://github.com/alpaka-group/alpaka/issues/639
     if row_check_name(row, DEVICE_COMPILER, "==", CLANG_CUDA) and (
         row_check_backend_version(row, ALPAKA_ACC_CPU_B_OMP2_T_SEQ_ENABLE, "==", ON_VER)
-        or row_check_backend_version(
-            row, ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE, "==", ON_VER
-        )
+        or row_check_backend_version(row, ALPAKA_ACC_CPU_B_SEQ_T_OMP2_ENABLE, "==", ON_VER)
     ):
         return False
 
@@ -84,7 +82,7 @@ def alpaka_post_filter(row: List) -> bool:
     ):
         return False
 
-     # g++-12 is not available on the Ubuntu 20.04 ppa's
+    # g++-12 is not available on the Ubuntu 20.04 ppa's
     if (
         row_check_name(row, HOST_COMPILER, "==", GCC)
         and row_check_version(row, HOST_COMPILER, "==", "12")
@@ -101,5 +99,47 @@ def alpaka_post_filter(row: List) -> bool:
         and row_check_version(row, UBUNTU, "==", "20.04")
     ):
         return False
+
+    # Clang-CUDA 18 only supports up to CUDA SDK 12.1
+    # if (
+    #     row_check_name(row, DEVICE_COMPILER, "==", CLANG_CUDA)
+    #     and row_check_version(row, DEVICE_COMPILER, "==", "18")
+    #     and row_check_backend_version(row, ALPAKA_ACC_GPU_CUDA_ENABLE, ">", "12.1")
+    # ):
+    #     return False
+
+    # TODO(SimeonEhrig): disable Clang 18 and 19 as Clang-CUDA because of
+    # several bugs will be fixed in alpaka 2.0.0
+    if (
+        row_check_name(row, DEVICE_COMPILER, "==", CLANG_CUDA)
+        and (
+            row_check_version(row, DEVICE_COMPILER, "==", "18")
+            or row_check_version(row, DEVICE_COMPILER, "==", "19")
+        )
+        and row_check_backend_version(row, ALPAKA_ACC_GPU_CUDA_ENABLE, "!=", OFF_VER)
+    ):
+        return False
+
+    if row_check_name(row, DEVICE_COMPILER, "==", NVCC) and row_check_name(
+        row, HOST_COMPILER, "==", CLANG
+    ):
+        # nvcc 12.5 is the minimum requirement for host compiler Clang 18
+        if row_check_version(row, HOST_COMPILER, "==", "18") and row_check_version(
+            row, DEVICE_COMPILER, "<=", "12.5"
+        ):
+            return False
+
+        # no released nvcc version supports Clang 19 yet (latest release was CUDA 12.6)
+        if row_check_version(row, HOST_COMPILER, "==", "19") and row_check_version(
+            row, DEVICE_COMPILER, "<=", "12.6"
+        ):
+            return False
+
+    # the SYCL backends needs to be enabled if the icpx compiler is used
+    if row_check_name(row, DEVICE_COMPILER, "==", ICPX):
+        if is_in_row(row, BACKENDS) and (
+            (ALPAKA_ACC_SYCL_ENABLE, ON_VER) not in row[param_map[BACKENDS]]
+        ):
+            return False
 
     return True

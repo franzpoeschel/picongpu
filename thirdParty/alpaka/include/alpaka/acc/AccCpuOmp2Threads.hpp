@@ -32,7 +32,7 @@
 // Implementation details.
 #include "alpaka/acc/Tag.hpp"
 #include "alpaka/core/ClipCast.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/dev/DevCpu.hpp"
 
 #include <limits>
@@ -76,7 +76,7 @@ namespace alpaka
         , public rand::RandStdLib
 #    endif
         , public warp::WarpSingleThread
-        , public concepts::Implements<ConceptAcc, AccCpuOmp2Threads<TDim, TIdx>>
+        , public interface::Implements<ConceptAcc, AccCpuOmp2Threads<TDim, TIdx>>
     {
         static_assert(
             sizeof(TIdx) >= sizeof(int),

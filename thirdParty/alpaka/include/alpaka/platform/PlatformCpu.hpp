@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/dev/DevCpu.hpp"
 #include "alpaka/platform/Traits.hpp"
 
@@ -14,7 +14,7 @@
 namespace alpaka
 {
     //! The CPU device platform.
-    struct PlatformCpu : concepts::Implements<ConceptPlatform, PlatformCpu>
+    struct PlatformCpu : interface::Implements<ConceptPlatform, PlatformCpu>
     {
 #if defined(BOOST_COMP_GNUC) && BOOST_COMP_GNUC >= BOOST_VERSION_NUMBER(11, 0, 0)                                     \
     && BOOST_COMP_GNUC < BOOST_VERSION_NUMBER(12, 0, 0)

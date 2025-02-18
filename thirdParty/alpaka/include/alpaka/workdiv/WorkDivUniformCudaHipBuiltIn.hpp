@@ -5,9 +5,9 @@
 #pragma once
 
 #include "alpaka/core/BoostPredef.hpp"
-#include "alpaka/core/Concepts.hpp"
 #include "alpaka/core/Cuda.hpp"
 #include "alpaka/core/Hip.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/idx/Traits.hpp"
 #include "alpaka/vec/Vec.hpp"
 #include "alpaka/workdiv/Traits.hpp"
@@ -19,7 +19,7 @@ namespace alpaka
     //! The GPU CUDA/HIP accelerator work division.
     template<typename TDim, typename TIdx>
     class WorkDivUniformCudaHipBuiltIn
-        : public concepts::Implements<ConceptWorkDiv, WorkDivUniformCudaHipBuiltIn<TDim, TIdx>>
+        : public interface::Implements<ConceptWorkDiv, WorkDivUniformCudaHipBuiltIn<TDim, TIdx>>
     {
     public:
         ALPAKA_FN_HOST_ACC WorkDivUniformCudaHipBuiltIn(Vec<TDim, TIdx> const& threadElemExtent)

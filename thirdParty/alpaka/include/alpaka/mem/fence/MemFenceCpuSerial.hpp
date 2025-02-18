@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/mem/fence/Traits.hpp"
 
 #include <atomic>
@@ -12,7 +12,7 @@
 namespace alpaka
 {
     //! The serial CPU memory fence.
-    class MemFenceCpuSerial : public concepts::Implements<ConceptMemFence, MemFenceCpuSerial>
+    class MemFenceCpuSerial : public interface::Implements<ConceptMemFence, MemFenceCpuSerial>
     {
     };
 

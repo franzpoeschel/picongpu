@@ -47,6 +47,7 @@ then
         then
             choco uninstall cmake.install
             choco install cmake.install --no-progress --version ${ALPAKA_CI_CMAKE_VER}
+            cmake --version
         fi
     fi
 fi

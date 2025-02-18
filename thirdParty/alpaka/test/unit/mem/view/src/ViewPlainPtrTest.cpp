@@ -13,6 +13,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 
 #include <numeric>
+#include <tuple>
 #include <type_traits>
 
 #if BOOST_COMP_GNUC
@@ -109,7 +110,13 @@ TEMPLATE_LIST_TEST_CASE("viewPlainPtrOperatorTest", "[memView]", alpaka::test::T
     alpaka::test::testViewPlainPtrOperators<TestType, float>();
 }
 
-TEMPLATE_TEST_CASE("createView", "[memView]", (std::array<float, 4>), std::vector<float>)
+// TODO(SimeonEhrig): if C++ 20 is minimum requirement, remove `using`
+// replace it with `TEMPLATE_TEST_CASE("Vec generator constructor", "[vec]", std::size_t, int, unsigned, float,
+// double)`
+// missing feature: parameter of a variadic macro is a C++20 extension
+using CreateViewTestTypes = std::tuple<std::array<float, 4>, std::vector<float>>;
+
+TEMPLATE_LIST_TEST_CASE("createView", "[memView]", CreateViewTestTypes)
 {
     using Dev = alpaka::DevCpu;
     auto const platform = alpaka::PlatformCpu{};

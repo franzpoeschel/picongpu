@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "alpaka/core/Concepts.hpp"
 #include "alpaka/core/Cuda.hpp"
 #include "alpaka/core/Hip.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/dev/DevUniformCudaHipRt.hpp"
 #include "alpaka/dev/Traits.hpp"
 #include "alpaka/event/Traits.hpp"
@@ -82,8 +82,8 @@ namespace alpaka
     //! The CUDA/HIP RT device event.
     template<typename TApi>
     class EventUniformCudaHipRt final
-        : public concepts::Implements<ConceptCurrentThreadWaitFor, EventUniformCudaHipRt<TApi>>
-        , public concepts::Implements<ConceptGetDev, EventUniformCudaHipRt<TApi>>
+        : public interface::Implements<ConceptCurrentThreadWaitFor, EventUniformCudaHipRt<TApi>>
+        , public interface::Implements<ConceptGetDev, EventUniformCudaHipRt<TApi>>
     {
     public:
         ALPAKA_FN_HOST EventUniformCudaHipRt(DevUniformCudaHipRt<TApi> const& dev, bool bBusyWait = true)

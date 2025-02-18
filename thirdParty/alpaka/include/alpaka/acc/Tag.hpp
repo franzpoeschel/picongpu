@@ -7,10 +7,18 @@
 #include "alpaka/core/BoostPredef.hpp"
 
 #include <iostream>
+#include <tuple>
 #include <type_traits>
 
+namespace alpaka
+{
+    struct InterfaceTag
+    {
+    };
+} // namespace alpaka
+
 #define CREATE_ACC_TAG(tag_name)                                                                                      \
-    struct tag_name                                                                                                   \
+    struct tag_name : public alpaka::InterfaceTag                                                                     \
     {                                                                                                                 \
         static std::string get_name()                                                                                 \
         {                                                                                                             \
@@ -32,12 +40,24 @@ namespace alpaka
     CREATE_ACC_TAG(TagGpuHipRt);
     CREATE_ACC_TAG(TagGpuSyclIntel);
 
+    namespace concepts
+    {
+        template<typename T>
+        concept Tag = requires {
+            {
+                T::get_name()
+            } -> std::same_as<std::string>;
+            requires std::default_initializable<T>;
+            requires std::derived_from<T, alpaka::InterfaceTag>;
+        };
+    } // namespace concepts
+
     namespace trait
     {
         template<typename TAcc>
         struct AccToTag;
 
-        template<typename TTag, typename TDim, typename TIdx>
+        template<concepts::Tag TTag, typename TDim, typename TIdx>
         struct TagToAcc;
     } // namespace trait
 
@@ -50,10 +70,10 @@ namespace alpaka
     //! \tparam TTag alpaka tag type
     //! \tparam TDim dimension of the mapped acc type
     //! \tparam TIdx index type of the mapped acc type
-    template<typename TTag, typename TDim, typename TIdx>
+    template<concepts::Tag TTag, typename TDim, typename TIdx>
     using TagToAcc = typename trait::TagToAcc<TTag, TDim, TIdx>::type;
 
-    template<typename TAcc, typename... TTag>
+    template<typename TAcc, concepts::Tag... TTag>
     inline constexpr bool accMatchesTags = (std::is_same_v<alpaka::AccToTag<TAcc>, TTag> || ...);
 
     //! list of all available tags
@@ -69,4 +89,28 @@ namespace alpaka
         alpaka::TagFpgaSyclIntel,
         alpaka::TagGpuSyclIntel>;
 
+    //!  \brief Function to print the names of each tag in the given tuple of tags
+    //!  \tparam TTuple is the type of the tuple of tags
+    template<typename TTuple>
+    void printTagNames()
+    {
+        // Check if the tuple is empty using std::tuple_size_v
+        if(std::tuple_size_v<TTuple> == 0)
+        {
+            std::cout << "No Tags!";
+        }
+        else
+        {
+            std::cout << "Tags: ";
+            // Print tags with comma in between
+            std::apply(
+                [](auto... args)
+                {
+                    auto index = std::tuple_size_v<TTuple>;
+                    ((std::cout << args.get_name() << (--index > 0u ? "," : "")), ...);
+                },
+                TTuple{});
+        }
+        std::cout << std::endl;
+    }
 } // namespace alpaka

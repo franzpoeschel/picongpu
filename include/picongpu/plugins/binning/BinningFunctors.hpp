@@ -61,8 +61,8 @@ namespace picongpu
                             = (
                                    [&]
                                    {
-                                       auto [isValid, binIdx] = tupleArgs.second.getBinIdx(domainInfo, worker, particle);
-                                       binsDataspace[tupleArgs.first] = binIdx;
+                                       auto [isValid, binIdx] = pmacc::memory::tuple::get<1>(tupleArgs).getBinIdx(domainInfo, worker, particle);
+                                       binsDataspace[pmacc::memory::tuple::get<0>(tupleArgs)] = binIdx;
                                        return isValid;
                                    }()
                                && ...);

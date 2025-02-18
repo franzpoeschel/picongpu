@@ -5,7 +5,7 @@
 #pragma once
 
 #include "alpaka/core/Assert.hpp"
-#include "alpaka/core/Concepts.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/core/Positioning.hpp"
 #include "alpaka/idx/Traits.hpp"
 #include "alpaka/vec/Vec.hpp"
@@ -21,7 +21,7 @@ namespace alpaka
     {
         //! The threads accelerator index provider.
         template<typename TDim, typename TIdx>
-        class IdxBtRefThreadIdMap : public concepts::Implements<ConceptIdxBt, IdxBtRefThreadIdMap<TDim, TIdx>>
+        class IdxBtRefThreadIdMap : public interface::Implements<ConceptIdxBt, IdxBtRefThreadIdMap<TDim, TIdx>>
         {
         public:
             using ThreadIdToIdxMap = std::map<std::thread::id, Vec<TDim, TIdx>>;

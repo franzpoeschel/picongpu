@@ -6,8 +6,8 @@
 
 #include "alpaka/acc/AccDevProps.hpp"
 #include "alpaka/core/Common.hpp"
-#include "alpaka/core/Concepts.hpp"
 #include "alpaka/core/DemangleTypeNames.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/dev/Traits.hpp"
 #include "alpaka/dim/Traits.hpp"
 #include "alpaka/idx/Traits.hpp"
@@ -27,7 +27,7 @@ namespace alpaka
 
     //! True if TAcc is an accelerator, i.e. if it implements the ConceptAcc concept.
     template<typename TAcc>
-    inline constexpr bool isAccelerator = concepts::ImplementsConcept<ConceptAcc, TAcc>::value;
+    inline constexpr bool isAccelerator = interface::ImplementsInterface<ConceptAcc, TAcc>::value;
 
     //! The accelerator traits.
     namespace trait
@@ -89,7 +89,7 @@ namespace alpaka
     template<typename TAcc, typename TDev>
     ALPAKA_FN_HOST auto getAccDevProps(TDev const& dev) -> AccDevProps<Dim<TAcc>, Idx<TAcc>>
     {
-        using ImplementationBase = concepts::ImplementationBase<ConceptAcc, TAcc>;
+        using ImplementationBase = interface::ImplementationBase<ConceptAcc, TAcc>;
         return trait::GetAccDevProps<ImplementationBase>::getAccDevProps(dev);
     }
 
@@ -105,7 +105,7 @@ namespace alpaka
     namespace trait
     {
         template<typename TAcc, typename TProperty>
-        struct QueueType<TAcc, TProperty, std::enable_if_t<concepts::ImplementsConcept<ConceptAcc, TAcc>::value>>
+        struct QueueType<TAcc, TProperty, std::enable_if_t<interface::ImplementsInterface<ConceptAcc, TAcc>::value>>
         {
             using type = typename QueueType<typename alpaka::trait::PlatformType<TAcc>::type, TProperty>::type;
         };

@@ -34,7 +34,10 @@
 
 #pragma once
 
+#include "pmacc/attribute/FunctionSpecifier.hpp"
+
 #include <alpaka/core/BoostPredef.hpp>
+#include <alpaka/core/Common.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -73,13 +76,15 @@ namespace pmacc
             {
                 template<typename U, typename... Us>
                     requires(!std::same_as<std::remove_cvref_t<U>, Tuple> && sizeof...(Us) == sizeof...(Ts))
-                constexpr Tuple(U&& u, Us&&... us) noexcept : head(std::forward<U>(u)), tail(std::forward<Us>(us)...)
+                HDINLINE constexpr Tuple(U&& u, Us&&... us) noexcept
+                    : head(std::forward<U>(u))
+                    , tail(std::forward<Us>(us)...)
                 {
                 }
-                constexpr Tuple(const Tuple&) noexcept = default;
-                constexpr Tuple(Tuple&&) noexcept = default;
-                constexpr Tuple& operator=(const Tuple&) noexcept = default;
-                constexpr Tuple& operator=(Tuple&&) noexcept = default;
+                HDINLINE constexpr Tuple(const Tuple&) noexcept = default;
+                HDINLINE constexpr Tuple(Tuple&&) noexcept = default;
+                HDINLINE constexpr Tuple& operator=(const Tuple&) noexcept = default;
+                HDINLINE constexpr Tuple& operator=(Tuple&&) noexcept = default;
 
                 T head;
                 Tuple<Ts...> tail;
@@ -103,7 +108,7 @@ namespace pmacc
             /// @param t The tuple from which to extract the element.
             /// @return The extracted element by reference.
             template<size_t k, typename T, typename... Ts>
-            constexpr decltype(auto) get(Tuple<T, Ts...>& t)
+            HDINLINE constexpr decltype(auto) get(Tuple<T, Ts...>& t)
             {
                 if constexpr(k == 0)
                 {
@@ -117,7 +122,7 @@ namespace pmacc
 
             /// Const version of `get`
             template<size_t k, typename T, typename... Ts>
-            constexpr decltype(auto) get(const Tuple<T, Ts...>& t)
+            HDINLINE constexpr decltype(auto) get(const Tuple<T, Ts...>& t)
             {
                 if constexpr(k == 0)
                 {
@@ -135,7 +140,7 @@ namespace pmacc
             /// @param args The arguments to construct the tuple.
             /// @return A tuple containing the provided arguments.
             template<typename... Args>
-            constexpr auto make_tuple(Args&&... args)
+            HDINLINE constexpr auto make_tuple(Args&&... args)
             {
                 return Tuple<std::remove_cvref_t<Args>...>(std::forward<Args>(args)...);
             }
@@ -146,7 +151,7 @@ namespace pmacc
             /// @param args Zero or more arguments to construct the tuple.
             /// @return A tuple of forwarding references to the provided arguments.
             template<typename... Args>
-            constexpr auto forward_as_tuple(Args&&... args)
+            HDINLINE constexpr auto forward_as_tuple(Args&&... args)
             {
                 return Tuple<Args&&...>(std::forward<Args>(args)...);
             }
@@ -157,7 +162,7 @@ namespace pmacc
             /// @param args Variables to create the tuple of references from.
             /// @return Tuple<Args&...> A tuple of references to the provided variables.
             template<typename... Args>
-            constexpr auto tie(Args&... args)
+            HDINLINE constexpr auto tie(Args&... args)
             {
                 return Tuple<Args&...>(args...);
             }
@@ -168,7 +173,7 @@ namespace pmacc
             /// @param args Variables to create the tuple of references from.
             /// @return Tuple<Args&...> A tuple of references to the provided const variables.
             template<typename... Args>
-            constexpr auto tie(const Args&... args)
+            HDINLINE constexpr auto tie(const Args&... args)
             {
                 return Tuple<const Args&...>(args...);
             }
@@ -191,7 +196,7 @@ namespace pmacc
             constexpr std::size_t tuple_size_v = tuple_size<T>::value;
 
             template<typename Tuple, typename T, std::size_t... Is>
-            constexpr auto append_base(Tuple&& t, T&& a, std::index_sequence<Is...>)
+            HDINLINE constexpr auto append_base(Tuple&& t, T&& a, std::index_sequence<Is...>)
             {
                 return make_tuple(get<Is>(std::forward<Tuple>(t))..., std::forward<T>(a));
             }
@@ -203,13 +208,13 @@ namespace pmacc
             /// @param a The new element to add.
             /// @return A new tuple containing all elements from the original tuple followed by the new element.
             template<typename... Args, typename T>
-            constexpr auto append(Tuple<Args...>& t, T&& a)
+            HDINLINE constexpr auto append(Tuple<Args...>& t, T&& a)
             {
                 return append_base(t, std::forward<T>(a), std::make_index_sequence<sizeof...(Args)>{});
             }
 
             template<typename... Args1, typename... Args2, std::size_t... Is1, std::size_t... Is2>
-            constexpr auto append_base(
+            HDINLINE constexpr auto append_base(
                 Tuple<Args1...>& t1,
                 Tuple<Args2...>& t2,
                 std::index_sequence<Is1...>,
@@ -225,7 +230,7 @@ namespace pmacc
             /// @param t2 The second tuple to append.
             /// @return A new tuple that contains all elements from both input tuples.
             template<typename... Args1, typename... Args2>
-            constexpr auto append(Tuple<Args1...>& t1, Tuple<Args2...>& t2)
+            HDINLINE constexpr auto append(Tuple<Args1...>& t1, Tuple<Args2...>& t2)
             {
                 return append_base(
                     t1,

@@ -6,16 +6,16 @@
 #pragma once
 
 #include "alpaka/core/ApiCudaRt.hpp"
-#include "alpaka/core/Concepts.hpp"
 #include "alpaka/core/Cuda.hpp"
 #include "alpaka/core/Hip.hpp"
+#include "alpaka/core/Interface.hpp"
 #include "alpaka/dev/Traits.hpp"
 #include "alpaka/dev/common/QueueRegistry.hpp"
 #include "alpaka/mem/buf/Traits.hpp"
 #include "alpaka/platform/Traits.hpp"
 #include "alpaka/queue/Properties.hpp"
 #include "alpaka/queue/Traits.hpp"
-#include "alpaka/queue/cuda_hip/QueueUniformCudaHipRt.hpp"
+#include "alpaka/queue/cuda-hip/QueueUniformCudaHipRt.hpp"
 #include "alpaka/traits/Traits.hpp"
 #include "alpaka/wait/Traits.hpp"
 
@@ -54,8 +54,8 @@ namespace alpaka
     //! The CUDA/HIP RT device handle.
     template<typename TApi>
     class DevUniformCudaHipRt
-        : public concepts::Implements<ConceptCurrentThreadWaitFor, DevUniformCudaHipRt<TApi>>
-        , public concepts::Implements<ConceptDev, DevUniformCudaHipRt<TApi>>
+        : public interface::Implements<ConceptCurrentThreadWaitFor, DevUniformCudaHipRt<TApi>>
+        , public interface::Implements<ConceptDev, DevUniformCudaHipRt<TApi>>
     {
         friend struct trait::GetDevByIdx<PlatformUniformCudaHipRt<TApi>>;
 
