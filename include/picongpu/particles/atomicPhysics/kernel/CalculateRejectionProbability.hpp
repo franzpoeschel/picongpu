@@ -20,6 +20,7 @@
 #pragma once
 
 #include "picongpu/defines.hpp"
+#include "picongpu/particles/atomicPhysics/FieldEnergy.hpp"
 
 #include <cstdint>
 
@@ -94,16 +95,8 @@ namespace picongpu::particles::atomicPhysics::kernel
                 = pmacc::math::mapToND(picongpu::SuperCellSize::toRT(), static_cast<int>(linearCellIndex));
             VectorIdx const cellIndex = localCellIndex + superCellCellOffset;
 
-            /* unit: unit_charge^2 * unit_time^2 / (unit_mass * unit_length^3)
-             *  * unit_length^3
-             * = unit_charge^2 * unit_time^2 / unit_mass */
-            constexpr float_X eps0HalfTimesCellVolume
-                = (picongpu::sim.pic.getEps0() / 2._X) * picongpu::sim.pic.getCellSize().productOfComponents();
-
-            /* unit: unit_charge^2 * unit_time^2 / unit_mass * ((unit_mass * unit_length)/(unit_time^2 *
-             * unit_charge))^2 = unit_charge^2 * unit_time^2 * unit_mass^2 * unit_length^2 / (unit_mass * unit_time^4 *
-             * unit_charge^2) = unit_mass * unit_length^2/ (unit_time^2 * unit_length) = unit_energy */
-            float_X const eFieldEnergy = eps0HalfTimesCellVolume * pmacc::math::l2norm2(eFieldBox(cellIndex));
+            // unit_energy
+            float_X const eFieldEnergy = FieldEnergy::getEFieldEnergy(pmacc::math::l2norm2(eFieldBox(cellIndex)));
 
             // unit: eV * 1 = eV * unit_energy/unit_energy = (ev / unit_energy) * unit_energy = unit_energy
             float_X const eFieldEnergyUse
