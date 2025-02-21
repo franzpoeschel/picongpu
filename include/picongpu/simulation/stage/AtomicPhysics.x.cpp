@@ -554,7 +554,7 @@ namespace picongpu::simulation::stage
 
                 // pressure ionization loop, ends when no ion in unbound state anymore
                 bool foundUnbound = true;
-                do
+                while(foundUnbound)
                 {
                     resetFoundUnboundIon(foundUnboundIonField);
                     calculateIPDInput(mappingDesc, currentStep);
@@ -571,7 +571,6 @@ namespace picongpu::simulation::stage
                         linearizedFoundUnboundIonBox,
                         fieldGridLayoutFoundUnbound.productOfComponents()));
                 } // end pressure ionization loop
-                while(foundUnbound);
             }
 
             template<typename T_DeviceReduce>
@@ -591,8 +590,8 @@ namespace picongpu::simulation::stage
                     = *dc.get<OverSubscribedField>("SharedResourcesOverSubscribedField");
 
                 // instant Transition loop, ends when no ion in state with instant transition anymore
-                bool foundInstantTransitionIon;
-                do
+                bool foundInstantTransitionIon = true;
+                while(foundInstantTransitionIon)
                 {
                     resetFoundUnboundIon(foundUnboundIonField);
                     chooseInstantTransition(mappingDesc, currentStep);
@@ -613,7 +612,7 @@ namespace picongpu::simulation::stage
                             mappingDesc,
                             perSuperCellSharedResourcesOverSubscribedField,
                             deviceLocalReduce);
-                    } // end remove over subscription loop
+                    }
 
                     updateIonAtomicState(mappingDesc);
                     spawnIonizationElectrons(mappingDesc, currentStep);
@@ -628,7 +627,6 @@ namespace picongpu::simulation::stage
                         linearizedFoundUnboundIonBox,
                         fieldGridLayoutFoundUnbound.productOfComponents()));
                 } // end instant transition loop
-                while(foundInstantTransitionIon);
             }
 
             HINLINE static void updateTimeRemaining(picongpu::MappingDesc const& mappingDesc)
