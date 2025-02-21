@@ -426,13 +426,13 @@ namespace picongpu
                     }
 
                     // @todo combine this and the MPI_Gather above to a single gather for better scaling
-                    uint64_t numRounds[mpiSize];
+                    std::vector<uint64_t> numRounds(mpiSize);
 
                     MPI_CHECK(MPI_Allgather(
                         &requiredDumpRounds,
                         1,
                         MPI_UNSIGNED_LONG_LONG,
-                        numRounds,
+                        numRounds.data(),
                         1,
                         MPI_UNSIGNED_LONG_LONG,
                         gc.getCommunicator().getMPIComm()));
