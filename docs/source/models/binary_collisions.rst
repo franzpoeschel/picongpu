@@ -44,6 +44,10 @@ To enable collisions between the Ions and Electrons with a constant coulomb loga
 
 .. code:: c++
 
+   #pragma once
+
+   #include "picongpu/particles/collision/collision.def"
+
    namespace picongpu
    {
        namespace particles
