@@ -761,12 +761,14 @@ class PrepRoutines:
 
         Arguments:
         outputpath: path to the openPMD file
-        outputname: name of the output file, e.g. "insightData%T.h5"
+        outputname: name of the output file, e.g. "insightData%T.bp5"
         energy: beam energy in Joule. Is used to determine the correct amplitude in the time domain.
                 For that, the approximation z = c*t is used, which holds only for tau << zR/c!
         pol: polarisation direction, either "x" or "y". Default is "y" (the long axis).
         crop_x/y: if the field data chunk is too big, one can crop the spatial extent from both sides by this
-                  length (in mm). Default is 0.
+                  length (in mm). Default is 0. For 2D simulation input, it is recommended to minimize the extent
+                  of the omitted transverse axis to >= 2, centered around the field slice which shall serve as
+                  simulation input, to reduce GPU memory occuppance.
         crop_t_pos/neg: if the field data chunk is too big, one can crop the temporal extent by this value
                   (in fs). Default is 0.
         is_complex: whether Et should be stored as complex-valued (np.complex64). Default is False (i.e. only
@@ -785,18 +787,18 @@ class PrepRoutines:
             E_save = np.array(
                 self.Et[idx_y : Ny - idx_y, idx_x : Nx - idx_x, idx_t_neg : Nt - idx_t_pos], dtype=np.complex64
             )
-            I_sum = np.sum(np.real(E_save) ** 2)
+            I_sum_crop = np.sum(np.real(E_save) ** 2)
         else:
             # we only need the real part of the field
             E_save = np.array(
                 np.real(self.Et[idx_y : Ny - idx_y, idx_x : Nx - idx_x, idx_t_neg : Nt - idx_t_pos]), dtype=np.float64
             )
-            I_sum = np.sum(E_save**2)
+            I_sum_crop = np.sum(E_save**2)
 
         # if the field was cropped, look how much pulse energy was discarded
+        I_sum = np.sum(np.real(self.Et))
         if crop_x > 0 or crop_y > 0 or crop_t_neg > 0 or crop_t_pos > 0:
-            I_sum_orig = np.sum(np.real(self.Et))
-            print(f"Discarded pulse energy due to smaller window: {(1-I_sum/I_sum_orig):.2%}")
+            print(f"Discarded pulse energy due to smaller window: {(1-I_sum_crop/I_sum):.2%}")
 
         series = openpmd.Series(outputpath + outputname, openpmd.Access.create)
         ite = series.iterations[0]  # use the 0th iteration

@@ -1,4 +1,4 @@
-/* Copyright 2024-2024 Fabia Dietrich
+/* Copyright 2024-2025 Fabia Dietrich
  *
  * This file is part of PIConGPU.
  *
@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if(ENABLE_OPENPMD == 1) && (SIMDIM == DIM3)
+#if(ENABLE_OPENPMD == 1)
 
 #    pragma once
 
@@ -42,14 +42,21 @@ namespace picongpu
                          * saving the resulting E-field chunk to openPMD.
                          *
                          * This field chunk will be stored at timestep 0 of the simulation on every used device, which
-                         * is why one has to increase the reserved GPU memory size in memory.param. Otherwise, the
-                         * simulation could run into memory issues.
+                         * is why one has to increase the reserved GPU memory size in memory.param by about the size of
+                         * the openPMD file. Otherwise, the simulation will run into memory issues.
+                         *
+                         * For 2D simulations, the input still has to be 3D. Then, only the central slice parallel to
+                         * propagation and polarisation direction of the input field will be used in the simulation.
+                         * To reduce GPU memory occupancy, it is recommended to trim the extent of the omitted
+                         * transverse axis to a minimum (but still including the slice that shall feed the simulation).
+                         * In case of working with INSIGHT data, this can be achieved during the data pre-procession
+                         * with 'preparingInsightData.py' with the parameters 'crop_x' or 'crop_y'.
                          *
                          * It is recommended to use a full path to make it independent of how PIConGPU is launched.
                          * Relative paths require consistency to the current directory when PIConGPU is started
                          * with tbg and the standard .tpl files, relative to the resulting simOutput directory.
                          */
-                        static constexpr char const* filename = "/path/to/file%T.h5";
+                        static constexpr char const* filename = "/path/to/file%T.bp5";
 
                         /** Iteration inside the file (where the whole field is stored in, not related to the current
                          * simulation time iteration)
