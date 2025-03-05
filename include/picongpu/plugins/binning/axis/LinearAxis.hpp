@@ -218,7 +218,7 @@ namespace picongpu
             {
                 static_assert(
                     std::is_same_v<typename T_FunctorDescription::QuantityType, T_Attribute>,
-                    "Access functor return type and range type shuold be the same");
+                    "Access functor return type and range type should be the same");
                 /** this is doing an implicit conversion to T_attribute for min, max and scaling */
                 return LinearAxis<T_Attribute, typename T_FunctorDescription::FunctorType>(
                     axSplit,
