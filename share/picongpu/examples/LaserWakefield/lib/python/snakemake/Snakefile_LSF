@@ -77,13 +77,13 @@ rule simulate:
             bsub {input}/tbg/submit.start > simulated/job_id_{params.name}.txt
         fi
 
-        job_id=$(cut -c 6-12 simulated/job_id_{params.name}.txt)
+        job_id=$(cut -d'<' -f2 simulated/job_id_{params.name}.txt | cut -d'>' -f1)
         status=$(bjobs -noheader -o stat:4 $job_id)
 
         # if job isn't running or pending -> restart job
         if ! [[ "$status" == "PEND" || "$status" == "RUN " ]]; then
             bsub {input}/tbg/submit.start >  simulated/job_id_{params.name}.txt
-            job_id=$(cut -c 6-12 simulated/job_id_{params.name}.txt)
+            job_id=$(cut -d'<' -f2 simulated/job_id_{params.name}.txt | cut -d'>' -f1)
             status=$(bjobs -noheader -o stat:4 $job_id)
         fi
         # wait till job is finished
