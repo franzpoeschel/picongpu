@@ -38,7 +38,6 @@ Variable                       Meaning
 :math:`\omega`                 The circular frequency of the radiation that is observed.
 :math:`h(\vec{r}, \vec{p})`     Normalized phasespace distribution of electrons
 :math:`g(\vec{p})`             Normalized momentum distribution of electrons
-:math:`g(\vec{p})`             Normalized momentum distribution of electrons
 :math:`\vec{k}`                Wavevector of electrons
 :math:`\vec{v}`                Velocity vector of electrons
 :math:`u`                      Normalized momentum of electrons :math:`\beta \gamma`
@@ -58,9 +57,9 @@ The plugin is available as soon as the :ref:`openPMD API <install-dependencies>`
 .param files
 ^^^^^^^^^^^^
 
-In order to setup the transition radiation plugin, the :ref:`transitionRadiation.param <usage-params-plugins>` has to be configured **and** the radiating particles need to have the attributes ``weighting``, ``momentum``, ``location``, and ``transitionRadiationMask`` (which can be added in :ref:`speciesDefinition.param <usage-params-core>`) as well as the flags ``massRatio`` and ``chargeRatio``.
+In order to setup the transition radiation plugin, the :ref:`transitionRadiation.param <usage-params-plugins>` has to be configured **and** the radiating particles need to have the attributes ``weighting``, ``momentum``, ``position``, and ``transitionRadiationMask`` (which can be added in :ref:`speciesDefinition.param <usage-params-core>`) as well as the flags ``massRatio`` and ``chargeRatio``.
 
-In *transitionRadiation.param*, the number of frequencies ``N_omega`` and observation directions ``N_theta`` and ``N_phi`` are defined.
+In *transitionRadiation.param*, the number of frequencies ``nOmega`` and observation directions ``nTheta`` and ``nPhi`` are defined.
 
 Frequency range
 """""""""""""""
@@ -70,57 +69,57 @@ The frequency range is set up by choosing a specific namespace that defines the 
 .. code:: cpp
 
    /* choose linear frequency range */
-   namespace radiation_frequencies = linear_frequencies;
+   namespace frequencies = linearFrequencies;
 
 Currently you can choose from the following setups for the frequency range:
 
 ============================= ==============================================================================================
 namespace                     Description
 ============================= ==============================================================================================
-``linear_frequencies``        linear frequency range from ``SI::omega_min`` to ``SI::omega_max`` with ``N_omega`` steps
-``log_frequencies``           logarithmic frequency range from ``SI::omega_min`` to ``SI::omega_max`` with ``N_omega`` steps
-``frequencies_from_list``     ``N_omega`` frequencies taken from a text file with location ``listLocation[]``
+``linearFrequencies``         linear frequency range from ``SI::omegaMin`` to ``SI::omegaMax`` with ``nOmega`` steps
+``logFrequencies``            logarithmic frequency range from ``SI::omegaMin`` to ``SI::omegaMax`` with ``nOmega`` steps
+``listFrequencies``           ``nOmega`` frequencies taken from a text file with location ``listLocation[]``
 ============================= ==============================================================================================
 
 
 
 All three options require variable definitions in the according namespaces as described below:
 
-For the **linear frequency** scale all definitions need to be in the ``picongpu::plugins::transitionRadiation::linear_frequencies`` namespace.
-The number of total sample frequencies ``N_omega`` need to be defined as ``constexpr unsigned int``.
-In the sub-namespace ``SI``, a minimal frequency ``omega_min`` and a maximum frequency ``omega_max`` need to be defined as ``constexpr float_64``.
+For the **linear frequency** scale all definitions need to be in the ``picongpu::plugins::transitionRadiation::linearFrequencies`` namespace.
+The number of total sample frequencies ``nOmega`` need to be defined as ``constexpr unsigned int``.
+In the sub-namespace ``SI``, a minimal frequency ``omegaMin`` and a maximum frequency ``omegaMax`` need to be defined as ``constexpr float_64``.
 
-For the **logarithmic frequency** scale all definitions need to be in the ``picongpu::plugins::transitionRadiation::log_frequencies`` namespace.
+For the **logarithmic frequency** scale all definitions need to be in the ``picongpu::plugins::transitionRadiation::logFrequencies`` namespace.
 Equivalently to the linear case, three variables need to be defined: 
-The number of total sample frequencies ``N_omega`` need to be defined as ``constexpr unsigned int``.
-In the sub-namespace ``SI``, a minimal frequency ``omega_min`` and a maximum frequency ``omega_max`` need to be defined as ``constexpr float_64``.
+The number of total sample frequencies ``nOmega`` need to be defined as ``constexpr unsigned int``.
+In the sub-namespace ``SI``, a minimal frequency ``omegaMin`` and a maximum frequency ``omegaMax`` need to be defined as ``constexpr float_64``.
 
-For the **file-based frequency** definition,  all definitions need to be in the ``picongpu::plugins::transitionRadiation::frequencies_from_list`` namespace.
-The number of total frequencies ``N_omega`` need to be defined as ``constexpr unsigned int``  and the path to the file containing the frequency values in units of :math:`[s^{-1}]` needs to be given as ``constexpr const char * listLocation = "/path/to/frequency_list";``.
-The frequency values in the file can be separated by newlines, spaces, tabs, or any other whitespace. The numbers should be given in such a way, that c++ standard ``std::ifstream`` can interpret the number e.g., as ``2.5344e+16``. 
+For the **file-based frequency** definition,  all definitions need to be in the ``picongpu::plugins::transitionRadiation::listFrequencies`` namespace.
+The number of total frequencies ``nOmega`` need to be defined as ``constexpr unsigned int``  and the path to the file containing the frequency values in units of :math:`[\mathrm{s}^{-1}]` needs to be given as ``constexpr char * listLocation = "/path/to/frequency_list";``.
+The frequency values in the file can be separated by newlines, spaces, tabs, or any other whitespace. The numbers should be given in such a way, that C++ standard ``std::ifstream`` can interpret the number e.g., as ``2.5344e+16``. 
 
 .. note::
 
-   Currently, the variable ``listLocation`` is required to be defined in the ``picongpu::plugins::transitionRadiation::frequencies_from_list`` namespace, even if ``frequencies_from_list`` is not used.
+   Currently, the variable ``listLocation`` is required to be defined in the ``picongpu::plugins::transitionRadiation::listFrequencies`` namespace, even if ``listFrequencies`` is not used.
    The string does not need to point to an existing file, as long as the file-based frequency definition is not used.
 
 
 Observation directions
 """"""""""""""""""""""
 
-The number of observation directions ``N_theta`` and the distribution of observation directions is defined in :ref:`transitionRadiation.param <usage-params-plugins>`.
+The number of observation directions ``nTheta`` and the distribution of observation directions is defined in :ref:`transitionRadiation.param <usage-params-plugins>`.
 There, the function ``observationDirection`` defines the observation directions.
 
-This function returns the x,y and z component of a **unit vector** pointing in the observation direction. 
+This function returns the x, y and z component of a **unit vector** pointing in the observation direction. 
 
 .. code:: cpp
 
-   DINLINE vector_64
-   observationDirection( int const observation_id_extern )
+   HDINLINE float3_X
+   observationDirection( const int observation_id_extern )
    {
        /* use the scalar index const int observation_id_extern to compute an 
-        * observation direction (x,y,y) */
-       return vector_64( x , y , z );
+        * observation direction (x,y,z) */
+       return float3_X( x , y , z );
    }
 
 .. note::
@@ -153,7 +152,7 @@ A shape can be selected by choosing one of the available namespaces:
 .. code:: cpp
 
    /* choosing the 3D CIC-like macro particle shape */
-   namespace radFormFactor = radFormFactor_CIC_3D;
+   namespace macroParticleFormFactor = radFormFactor_CIC_3D;
 
 
 ==================================== ===================================================================================================================
@@ -179,7 +178,7 @@ Gamma filter
 """"""""""""
 
 In order to consider the radiation only of particles with a gamma higher than a specific threshold.
-In order to do that, the radiating particle species needs the flag ``transitionRadiationMask`` (which is initialized as ``false``) which further needs to be manipulated, to set to true for specific (random) particles.
+In order to do that, the radiating particle species needs the flag ``transitionRadiationMask`` (which is initialized as ``false``) which further needs to be manipulated, to set to ``true`` for specific (random) particles.
 
 Using a filter functor as:
 
@@ -190,7 +189,7 @@ Using a filter functor as:
     >;
 
 (see TransitionRadiation example for details)
-sets the flag to true if a particle fulfills the gamma condition.
+sets the flag to ``true`` if a particle fulfills the gamma condition.
 
 .. note::
 
@@ -208,7 +207,7 @@ Command line option                        Description
 ========================================== ==============================================================================================================================
 ``--<species>_transRad.period``            Gives the number of time steps between which the radiation should be calculated.
 ``--<species>_transRad.foilPositionY``     Absolute position in SI units to put a virtual foil for calculating the transition radiation. See above for more information. Disabled = 0.0. Default: 0.0
-``--<species>_transRad.file``              File name to stodre transition radiation in. Default: transRad
+``--<species>_transRad.file``              File name to store transition radiation in. Default: transRad
 ``--<species>_transRad.ext``               Backend for openPMD output. Default: default that is used internally
 ``--<species>_transRad.datOutput``         Optional text file output in numpy-readable format. Enabled = 1. Default: 0
 ========================================== ==============================================================================================================================
@@ -229,15 +228,15 @@ as on accelerator.
 Output
 ^^^^^^
 Contains *ASCII* files in ``simOutput/transRad`` that have the total spectral intensity until the timestep specified by the filename.
-Each row gives data for one observation direction (same order as specified in the ``observer.py``).
+Each row gives data for one observation direction (same order as specified in the ``observationDirection`` function).
 The values for each frequency are separated by *tabs* and have the same order as specified in ``transitionRadiation.param``.
-The spectral intensity is stored in the units **[J s]**.
+The spectral intensity is stored in the units :math:`\mathrm{[Js]}`.
 
 Analysing tools
 ^^^^^^^^^^^^^^^^
 The ``transition_radiation_visualizer.py`` in ``lib/python/picongpu/extra/plugins/plot_mpl`` can be used to analyze the radiation data after the simulation.
-See ``transition-radiation_visualizer.py --help`` for more information.
-It only works, if the input frequency are on a divided logarithmically!
+See ``transition_radiation_visualizer.py --help`` for more information.
+It only works, if the input frequencies are divided logarithmically!
 
 Known Issues
 ^^^^^^^^^^^^
@@ -247,22 +246,26 @@ The output is currently only physically correct for electron passing through a m
 References
 ^^^^^^^^^^
 
-- *Theory of coherent transition radiation generated at a plasma-vacuum interface*
-   Schroeder, C. B. and Esarey, E. and van Tilborg, J. and Leemans, W. P.,
-   American Physical Society(2004),
-   https://link.aps.org/doi/10.1103/PhysRevE.69.016501
+.. [Schroeder2004]
+       Schroeder, C. B. and Esarey, E. and van Tilborg, J. and Leemans, W. P.,
+       *Theory of coherent transition radiation generated at a plasma-vacuum interface*,
+       American Physical Society (2004)
+       https://doi.org/10.1103/PhysRevE.69.016501
 
-- *Diagnostics for plasma-based electron accelerators*
-   Downer, M. C. and Zgadzaj, R. and Debus, A. and Schramm, U. and Kaluza, M. C.,
-   American Physical Society(2018),
-   https://link.aps.org/doi/10.1103/RevModPhys.90.035002
+.. [Downer2018]
+       Downer, M. C. and Zgadzaj, R. and Debus, A. and Schramm, U. and Kaluza, M. C.,
+       *Diagnostics for plasma-based electron accelerators*,
+       American Physical Society (2018),
+       https://doi.org/10.1103/RevModPhys.90.035002
 
-- *Synthetic characterization of ultrashort electron bunches using transition radiation*
-   Carstens, F.-O.,
-   Bachelor thesis on the transition radiation plugin,
-   https://doi.org/10.5281/zenodo.3469663
+.. [Carstens2019]
+       Carstens, F.-O.,
+       *Synthetic characterization of ultrashort electron bunches using transition radiation*,
+       Bachelor thesis on the transition radiation plugin (2019),
+       https://doi.org/10.5281/zenodo.3469663
 
-- *Quantitatively consistent computation of coherent and incoherent radiation in particle-in-cell codes — A general form factor formalism for macro-particles*
-   Pausch, R.,
-   Description for the effect of macro-particle shapes in particle-in-cell codes,
-   https://doi.org/10.1016/j.nima.2018.02.020
+.. [Pausch2018]
+       Pausch, R.,
+       *Quantitatively consistent computation of coherent and incoherent radiation in particle-in-cell codes — A general form factor formalism for macro-particles*,
+       Description for the effect of macro-particle shapes in particle-in-cell codes (2018),
+       https://doi.org/10.1016/j.nima.2018.02.020
