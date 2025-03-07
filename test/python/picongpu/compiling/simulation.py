@@ -59,6 +59,7 @@ class TestSimulation(unittest.TestCase):
         sim.custom_user_input = None
         sim.moving_window = None
         sim.solver = pypicongpu.solver.YeeSolver()
+        sim.plugins = "auto"
         sim.init_manager = pypicongpu.species.InitManager()
         return sim
 

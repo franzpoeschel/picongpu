@@ -6,13 +6,13 @@ License: GPLv3+
 """
 
 from .. import util
-from ..rendering import RenderedObject
+from .plugin import Plugin
 
 import typeguard
 
 
 @typeguard.typechecked
-class Auto(RenderedObject):
+class Auto(Plugin):
     """
     Class to provide output **without further configuration**.
 
@@ -27,6 +27,9 @@ class Auto(RenderedObject):
 
     period = util.build_typesafe_property(int)
     """period to print data at"""
+
+    def __init__(self):
+        pass
 
     def check(self) -> None:
         """

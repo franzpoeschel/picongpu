@@ -202,6 +202,7 @@ class RenderedObject:
         # to be checked against schema
         # note: load here, s.t. "not implemented error" is raised first
         serialized = self._get_serialized()
+
         RenderedObject.check_context_for_type(self.__class__, serialized)
         return serialized
 

@@ -47,22 +47,19 @@
             "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.species.initmanager.InitManager"
         },
         "output": {
-            "description": "configuration for all output profiles",
-            "type": "object",
-            "unevaluatedProperties": false,
-            "required": ["auto"],
-            "properties": {
-                "auto": {
-                    "anyOf": [
-                        {
-                            "type": "null"
-                        },
-                        {
-                            "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.auto.Auto"
-                        }
-                    ]
+            "description": "configuration of simulation output",
+            "anyOf": [
+                {
+                    "type": "null"
+                },
+                {
+                    "description": "list of plugins",
+                    "type": "array",
+                    "items": {
+                        "$ref":"https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.plugin.Plugin"
+                    }
                 }
-            }
+            ]
         },
         "customuserinput":{
             "anyOf": [
