@@ -27,8 +27,16 @@ class PhaseSpace(Plugin):
     def __init__(self):
         "do nothing"
 
+    def check(self):
+        if self.min_momentum >= self.max_momentum:
+            raise ValueError(
+                "PhaseSpace's min_momentum should be smaller than max_momentum. "
+                f"You gave: {self.min_momentum=} and {self.max_momentum=}."
+            )
+
     def _get_serialized(self) -> typing.Dict:
         """Return the serialized representation of the object."""
+        self.check()
         return {
             "species": self.species.get_rendering_context(),
             "period": self.period,
