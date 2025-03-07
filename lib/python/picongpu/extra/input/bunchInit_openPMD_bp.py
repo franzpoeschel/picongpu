@@ -189,6 +189,7 @@ class addParticles2Checkpoint:
         self.has_probeB = False
         self.has_momentumPrev1 = False
         self.has_id = False
+        self.has_transitionRadiationMask = False
 
         # extract data type for position
         self.dtype_position = self.f.iterations[self.timestep].particles[self.speciesName]["position"]["x"].dtype
@@ -237,6 +238,16 @@ class addParticles2Checkpoint:
                 self.f.iterations[self.timestep].particles[self.speciesName]["momentumPrev1"]["x"].dtype
             )
         self.print("contains momentumPrev1 =  {}".format(self.has_momentumPrev1))
+
+        if "transitionRadiationMask" in self.f.iterations[self.timestep].particles[self.speciesName]:
+            self.has_transitionRadiationMask = True
+            # type of transitionRadiationMask
+            self.dtype_transitionRadiationMask = (
+                self.f.iterations[self.timestep]
+                .particles[self.speciesName]["transitionRadiationMask"][opmd.Mesh_Record_Component.SCALAR]
+                .dtype
+            )
+        self.print("contains transitionRadiationMask =  {}".format(self.has_transitionRadiationMask))
 
         del self.f  # close checkpoint file
 
@@ -293,9 +304,13 @@ class addParticles2Checkpoint:
             self.id = np.arange(len(w), dtype=self.dtype_id)
 
         if self.has_momentumPrev1:
-            # give momentumPrev1 for all particles
+            # give momentumPrev1 for all particles ( used for radiation plugin )
             temp_zeros = np.zeros(len(w), dtype=self.dtype_momentumPrev1)
             self.momentumPrev1 = vec3D(temp_zeros, temp_zeros, temp_zeros)
+
+        if self.has_transitionRadiationMask:
+            # give every particle a transitionRadiationMask ( used for transition radiation plugin )
+            self.transitionRadiationMask = np.zeros(len(w), dtype=self.dtype_transitionRadiationMask)
 
     def makePatchMask(self):
         """
@@ -755,6 +770,14 @@ class pipe:
                 src["momentumPrev1"]["z"],
                 dest["momentumPrev1"]["z"],
                 self.particles.momentumPrev1.z,
+            )
+
+        if self.particles.has_transitionRadiationMask:
+            self.print("\twriting transitionRadiationMask")
+            self.write(
+                src["transitionRadiationMask"][opmd.Mesh_Record_Component.SCALAR],
+                dest["transitionRadiationMask"][opmd.Mesh_Record_Component.SCALAR],
+                self.particles.transitionRadiationMask,
             )
 
         # write own particle patches
