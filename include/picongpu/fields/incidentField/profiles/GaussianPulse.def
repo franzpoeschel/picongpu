@@ -37,9 +37,15 @@ namespace picongpu::fields::incidentField::profiles
              * W0_SI = FWHM_of_Intensity / sqrt{ 2* ln(2) }
              *                             [   1.17741    ]
              *
+             * AXIS_1 is directed according to POLARISATION_DIRECTION parameters.
+             * AXIS_2 is a cross product of the propagation direction and AXIS_1.
+             *
+             * For 2d simulations W0_AXIS_2_SI must be defined but its value has no effect.
+             *
              * unit: meter
              */
-            static constexpr float_64 W0_SI = 5.0e-6 / 1.17741;
+            static constexpr float_64 W0_AXIS_1_SI = 5.0e-6 / 1.17741;
+            static constexpr float_64 W0_AXIS_2_SI = W0_AXIS_1_SI;
 
             /** The laser pulse will be initialized PULSE_INIT times of the PULSE_DURATION after
              * TIME_DELAY_SI
@@ -78,7 +84,16 @@ namespace picongpu::fields::incidentField::profiles
                 auto gaussianMetadata = nlohmann::json::object();
 
                 // Adding units to Gaussian-specific parameters
-                gaussianMetadata["W0"] = {{"value", My::W0_SI}, {"unit", "m"}};
+                if constexpr(requires { My::W0_SI; })
+                {
+                    gaussianMetadata["W0_AXIS_1"] = {{"value", My::W0_SI}, {"unit", "m"}};
+                    gaussianMetadata["W0_AXIS_2"] = {{"value", My::W0_SI}, {"unit", "m"}};
+                }
+                else
+                {
+                    gaussianMetadata["W0_AXIS_1"] = {{"value", My::W0_AXIS_1_SI}, {"unit", "m"}};
+                    gaussianMetadata["W0_AXIS_2"] = {{"value", My::W0_AXIS_2_SI}, {"unit", "m"}};
+                }
                 gaussianMetadata["PULSE_INIT"] = {{"value", My::PULSE_INIT}, {"unit", "none"}};
                 gaussianMetadata["Mode number"] = {{"value", My::numModes}, {"unit", "none"}};
 
