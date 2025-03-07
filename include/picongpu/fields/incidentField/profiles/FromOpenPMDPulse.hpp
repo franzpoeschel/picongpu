@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if(ENABLE_OPENPMD == 1) && (SIMDIM == DIM3)
+#if(ENABLE_OPENPMD == 1)
 
 #    pragma once
 
@@ -54,7 +54,8 @@
  * - get rid of the 'wrong' transformation from time to space (z = c*t) of the
  *   longitudinal axis by using several iterations inside the openPMD file
  *   instead of just one
- * - allow 2D simulations
+ * - in 2D simulations, load only the necessary slice into the simulation, not
+ *   the whole 3D chunk, and provide the index of the used slice as user parameter
  */
 
 namespace picongpu
@@ -126,6 +127,14 @@ namespace picongpu
                         PMACC_CASSERT_MSG(
                             _error_laser_polarisation_direction_vector_must_be_orthogonal_to_propagation_direction____check_your_incidentField_param_file,
                             (dotPropagationPolarisation > -0.0001) && (dotPropagationPolarisation < 0.0001));
+
+                        // Check that z is not used as proopagation or polarisation direction in 2D simulations
+                        PMACC_CASSERT_MSG(
+                            _error_laser_propagation_direction_cannot_be_z_in_2D_simulations____check_your_incidentField_param_file,
+                            ((simDim == DIM2) && (DIR_Z > -0.0001) && (DIR_Z < 0.0001)) || (simDim == DIM3));
+                        PMACC_CASSERT_MSG(
+                            _error_laser_polarisation_direction_cannot_be_z_in_2D_simulations____check_your_incidentField_param_file,
+                            ((simDim == DIM2) && (POL_DIR_Z > -0.0001) && (POL_DIR_Z < 0.0001) || (simDim == DIM3)));
 
                         /** Time delay
                          *
@@ -507,11 +516,15 @@ namespace picongpu
                          */
                         HDINLINE float_X getValueE(floatD_X const& totalCellIdx) const
                         {
-                            auto const posPIC = totalCellIdx * sim.pic.getCellSize(); // position in simulation volume
+                            // position in simulation volume
+                            floatD_X const posPIC = totalCellIdx * sim.pic.getCellSize().shrink<simDim>();
 
                             DataSpace<3u> internalAxisIndex = getInternalAxisIndex();
 
-                            // check whether we are outside the field chunk extent
+                            /* Check whether we are outside the field chunk extent.
+                             * Omits d = 2 in the 2D case. There, internalAxisIndex[2] = 2 holds automatically, hence
+                             * d = 2 implies the second transverse direction, which is irrelevant in 2D simulations.
+                             */
                             for(uint32_t d = 0u; d < simDim; d++)
                             {
                                 // return zero if transversal simulation window exceeds chunk extent
@@ -544,9 +557,11 @@ namespace picongpu
                             float_X const transvAxisDirection
                                 = pmacc::math::cross(getDirection(), getPolarisationVector()).sumOfComponents();
 
-                            // find the position in the field data chunk corresponding to totalCellIdx and
-                            // timeOriginPIC
-                            float3_X idxClosestRaw; // raw = not yet rounded to integers
+                            /* Find the position index in the field data chunk corresponding to totalCellIdx and
+                             * timeOriginPIC. Raw = not yet rounded to integers.
+                             * Is 2D in 2D simulations and refers to the position on the 2D central slice in this case.
+                             */
+                            floatD_X idxClosestRaw;
 
                             for(uint32_t d = 0u; d < simDim; d++)
                             {
@@ -594,26 +609,47 @@ namespace picongpu
                          */
                         HDINLINE float_X linInterpol(
                             typename pmacc::Buffer<float_X, 3u>::DataBoxType const& dataBox,
-                            float3_X const& pos) const
+                            floatD_X const& pos) const
                         {
                             // find the index in the data box which is nearest to pos
-                            DataSpace<3u> const idxClosest
-                                = static_cast<pmacc::math::Vector<int, 3u>>(pos + float3_X::create(0.5_X));
-
-                            // the other 7 nearest neighbour indices still have to be found
-                            DataSpace<3u> idxShift; // shift to the other nearest neighbour indices
-                            DataSpace<3u> idxNext; // nearest neighbour index
-                            float3_X weight;
+                            DataSpace<3u> idxClosest;
                             for(uint32_t d = 0u; d < 3u; d++)
                             {
-                                if(idxClosest[d] == 0) // to avoid border problems
-                                    idxShift[d] = 1;
-                                else if(pos[d] - static_cast<float_X>(idxClosest[d]) <= 0.0_X)
-                                    idxShift[d] = -1;
+                                if(d == 2u and simDim == DIM2)
+                                    /* for 2D simulations, we only take the central slice of the field data parallel to
+                                     * propagation and polarisation direction. Hence, the index accessing the second
+                                     * transverse direction (d = 2) remains constant.
+                                     */
+                                    idxClosest[d] = static_cast<uint>(extentOpenPMDdataBox(d) / 2._X);
                                 else
-                                    idxShift[d] = 1;
+                                    // propagation and polarisation direction are treated normally
+                                    idxClosest[d] = static_cast<uint>(pos[d] + 0.5_X);
+                            }
+
+                            // the other 7 (in 3D) / 3 (in 2D) nearest neighbour indices still have to be found
+                            DataSpace<3u> idxShift; // shift from idxClosest to idxNext
+                            DataSpace<3u> idxNext; // nearest neighbour index
+                            float3_X weight;
+                            for(uint32_t d = 0u; d < simDim; d++)
+                            {
+                                // at the lower border of dataBox
+                                if(idxClosest[d] == 0u)
+                                    idxShift[d] = 1u;
+                                // inside dataBox (includes the upper border case)
+                                else if(pos[d] - static_cast<float_X>(idxClosest[d]) <= 0.0_X)
+                                    idxShift[d] = -1u;
+                                // inside dataBox
+                                else
+                                    idxShift[d] = 1u;
 
                                 weight[d] = pmacc::math::abs(static_cast<float_X>(idxClosest[d]) - pos[d]);
+                            }
+
+                            if constexpr(simDim == DIM2)
+                            {
+                                // stay at the central slice
+                                idxShift[2] = 0u;
+                                weight[2] = 0._X;
                             }
 
                             // linear interpolation routine
@@ -621,25 +657,31 @@ namespace picongpu
 
                             dataInterp
                                 += dataBox(idxClosest) * (float3_X::create(1.0_X) - weight).productOfComponents();
-                            for(uint32_t d = 0u; d < 3u; d++)
+                            for(uint32_t d = 0u; d < simDim; d++)
                             {
                                 idxNext = idxClosest;
-                                float3_X ones = float3_X::create(1.0_X);
+                                float3_X invertWeight = float3_X::create(1.0_X);
                                 idxNext[d] = idxClosest[d] + idxShift[d];
-                                ones[d] = 0.0_X;
-                                dataInterp -= dataBox(idxNext) * (ones - weight).productOfComponents();
-                                if(d == 2)
+                                invertWeight[d] = 0.0_X;
+                                dataInterp -= dataBox(idxNext) * (invertWeight - weight).productOfComponents();
+                                if constexpr(simDim == DIM3)
                                 {
-                                    idxNext[0] = idxClosest[0] + idxShift[0];
-                                    ones[0] = 0.0_X;
+                                    if(d == 2)
+                                    {
+                                        idxNext[0] = idxClosest[0] + idxShift[0];
+                                        invertWeight[0] = 0.0_X;
+                                    }
+                                    else
+                                    {
+                                        idxNext[d + 1] = idxClosest[d + 1] + idxShift[d + 1];
+                                        invertWeight[d + 1] = 0.0_X;
+                                    }
+                                    dataInterp += dataBox(idxNext) * (invertWeight - weight).productOfComponents();
                                 }
-                                else
-                                {
-                                    idxNext[d + 1] = idxClosest[d + 1] + idxShift[d + 1];
-                                    ones[d + 1] = 0.0_X;
-                                }
-                                dataInterp += dataBox(idxNext) * (ones - weight).productOfComponents();
                             }
+                            if constexpr(simDim == DIM2)
+                                // avoid the last summand being zero
+                                weight[2] = 1._X;
                             dataInterp += dataBox(idxClosest + idxShift) * weight.productOfComponents();
 
                             return dataInterp;
