@@ -118,9 +118,7 @@ pypicongpu_output_with_newlines="
             {{/png_axis}}
         {{/species_initmanager.species}}
     {{/typeID.auto}}
-    {{/data}}
 
-          {{#data}}
     {{#typeID.phasespace}}
           --{{{species.name}}}_phaseSpace.period {{{period}}}
           --{{{species.name}}}_phaseSpace.filter all
@@ -129,6 +127,15 @@ pypicongpu_output_with_newlines="
           --{{{species.name}}}_phaseSpace.min {{{min_momentum}}}
           --{{{species.name}}}_phaseSpace.max {{{max_momentum}}}
     {{/typeID.phasespace}}
+
+    {{#typeID.energyhistogram}}
+          --{{{species.name}}}_energyHistogram.period {{{period}}}
+          --{{{species.name}}}_energyHistogram.filter all
+          --{{{species.name}}}_energyHistogram.binCount {{{bin_count}}}
+          --{{{species.name}}}_energyHistogram.minEnergy {{{min_energy}}}
+          --{{{species.name}}}_energyHistogram.maxEnergy {{{max_energy}}}
+    {{/typeID.energyhistogram}}
+
     {{/data}}
   {{/output}}
 "

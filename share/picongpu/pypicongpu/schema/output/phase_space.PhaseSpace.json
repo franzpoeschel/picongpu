@@ -6,11 +6,9 @@
     "unevaluatedProperties": false,
     "required": ["species", "period", "spatial_coordinate", "momentum_coordinate","min_momentum","max_momentum"],
     "properties": {
-        "species":
-                {
+        "species":{
                     "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.species.species.Species"
-                }
-        ,
+        },
         "period": {
             "type": "integer",
             "minimum": 1,

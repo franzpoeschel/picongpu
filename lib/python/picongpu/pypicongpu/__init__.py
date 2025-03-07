@@ -5,6 +5,7 @@ internal representation of params to generate PIConGPU input files
 from .simulation import Simulation
 from .runner import Runner
 from .output.phase_space import PhaseSpace
+from .output.energy_histogram import EnergyHistogram
 
 from . import laser
 from . import grid
@@ -27,6 +28,7 @@ __all__ = [
     "grid",
     "customuserinput",
     "PhaseSpace",
+    "EnergyHistogram",
 ]
 
 # note: put down here b/c linter complains if imports are not at top

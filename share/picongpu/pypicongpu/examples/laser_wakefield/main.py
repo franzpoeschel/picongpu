@@ -110,8 +110,8 @@ else:
         ground_state_ionization_model_list=[adk_ionization_model, bsi_effectiveZ_ionization_model]
     )
 
-diagnostics_list = []
-diagnostics_list.append(
+#   diagnostics_list only takes one argument - not multiple, i.e. each diagnostic (like PhaseSpace and EnergyHistogram) should be a separate object.
+diagnostics_list = [
     picmi.PhaseSpace(
         species=electrons,
         period=100,
@@ -119,8 +119,9 @@ diagnostics_list.append(
         momentum_coordinate="py",
         min_momentum=-1.0,
         max_momentum=1.0,
-    )
-)
+    ),
+    picmi.EnergyHistogram(species=electrons, period=100, bin_count=1024, min_energy=0.0, max_energy=1000.0),
+]
 
 sim = picmi.Simulation(
     solver=solver,
@@ -176,18 +177,6 @@ if ADD_CUSTOM_INPUT:
             "png_plugin_folder_name": "pngElectronsYX",
         },
         "png plugin configuration",
-    )
-
-    output_configuration.addToCustomInput(
-        {
-            "energy_histogram_species_name": "electron",
-            "energy_histogram_period": 100,
-            "energy_histogram_bin_count": 1024,
-            "energy_histogram_min_energy": 0.0,
-            "energy_histogram_maxEnergy": 1000.0,
-            "energy_histogram_filter": "all",
-        },
-        "energy histogram plugin configuration",
     )
 
     output_configuration.addToCustomInput(

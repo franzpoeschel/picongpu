@@ -8,7 +8,6 @@ License: GPLv3+
 from ..pypicongpu.output.phase_space import PhaseSpace as PyPIConGPUPhaseSpace
 from ..pypicongpu.species.species import Species as PyPIConGPUSpecies
 
-
 from .species import Species as PICMISpecies
 
 import typeguard
