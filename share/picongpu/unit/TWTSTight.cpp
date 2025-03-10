@@ -1,4 +1,4 @@
-/* Copyright 2024-2024 Rene Widera, Alexander Debus
+/* Copyright 2024-2025 Rene Widera, Alexander Debus
  *
  * This file is part of PIConGPU.
  *
@@ -36,6 +36,7 @@
 #include <iostream>
 #include <limits>
 #include <string>
+#include <type_traits>
 #include <typeinfo>
 
 #include <catch2/catch_approx.hpp>
@@ -58,13 +59,14 @@ using namespace pmacc;
 template<typename T>
 static bool isApproxEqual(T const& a, T const& b, T const& epsilon)
 {
-    return a == Catch::Approx(b).margin(epsilon);
+    T const epsilonScaled = epsilon * math::max(math::abs(a), math::abs(b));
+    return a == Catch::Approx(b).margin(epsilonScaled);
 }
 
 template<typename T>
 static bool isApproxEqual(T const& a, T const& b)
 {
-    T const epsilon = std::numeric_limits<T>::epsilon() * max(abs(a), abs(b));
+    T const epsilon = std::numeric_limits<T>::epsilon() * math::max(math::abs(a), math::abs(b));
     return a == Catch::Approx(b).margin(epsilon);
 }
 
@@ -182,9 +184,9 @@ struct twtsTightNumberTest
         /* epsilon to compare to Mathematica implementation.
          * Note: Reduction of epsilon would require replacing complex-valued bessel function support in
          * PMacc with boost library calls that also work on device. */
-        const float_T epsilonAlgebra = float_T(5.0e-6);
+        const float_T epsilonAlgebra = std::is_same<float_T, float_64>::value ? float_T(5.0e-13) : float_T(5.0e-5);
         /* Epsilon to compare host implementation to device implementation */
-        const float_T epsilonHostDevice = float_T(1.0e-7);
+        const float_T epsilonHostDevice = std::is_same<float_T, float_64>::value ? float_T(5.0e-15) : float_T(5.0e-7);
         for(uint32_t i = 0; i < 3; i++)
         {
             CHECK(isApproxEqual(refEfieldT[i], res[i], epsilonAlgebra));
