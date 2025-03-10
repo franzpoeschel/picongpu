@@ -1,4 +1,4 @@
-/* Copyright 2014-2024 Alexander Debus
+/* Copyright 2014-2025 Alexander Debus
  *
  * This file is part of PIConGPU.
  *
@@ -58,8 +58,8 @@ namespace picongpu
                         DataSpace<simDim> const& halfSimSize,
                         float_64 const pulselength_SI,
                         float_64 const focus_y_SI,
-                        float_X const phi,
-                        float_X const beta_0) const;
+                        float_64 const phi,
+                        float_64 const beta_0) const;
                 };
 
                 template<>
@@ -69,8 +69,8 @@ namespace picongpu
                     DataSpace<simDim> const& halfSimSize,
                     float_64 const pulselength_SI,
                     float_64 const focus_y_SI,
-                    float_X const phi,
-                    float_X const beta_0) const
+                    float_64 const phi,
+                    float_64 const beta_0) const
                 {
                     if(auto_tdelay)
                     {
@@ -106,8 +106,8 @@ namespace picongpu
                     DataSpace<simDim> const& halfSimSize,
                     float_64 const pulselength_SI,
                     float_64 const focus_y_SI,
-                    float_X const phi,
-                    float_X const beta_0) const
+                    float_64 const phi,
+                    float_64 const beta_0) const
                 {
                     if(auto_tdelay)
                     {
@@ -143,8 +143,8 @@ namespace picongpu
                     DataSpace<T_Dim> const& halfSimSize,
                     float_64 const pulselength_SI,
                     float_64 const focus_y_SI,
-                    float_X const phi,
-                    float_X const beta_0)
+                    float_64 const phi,
+                    float_64 const beta_0)
                 {
                     return GetInitialTimeDelay<T_Dim>()(
                         auto_tdelay,
