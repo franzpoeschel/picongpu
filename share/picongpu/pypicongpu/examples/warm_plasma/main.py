@@ -6,6 +6,7 @@ License: GPLv3+
 """
 
 from picongpu import picmi
+from picongpu.picmi.diagnostics.timestepspec import TimeStepSpec
 
 OUTPUT_DIRECTORY_PATH = "warm_plasma"
 
@@ -42,7 +43,7 @@ sim = picmi.Simulation(
     solver=solver,
 )
 
-sim.add_diagnostic(picmi.output.Auto(period=100))
+sim.add_diagnostic(picmi.diagnostics.Auto(period=TimeStepSpec[::100]))
 
 layout = picmi.PseudoRandomLayout(n_macroparticles_per_cell=25)
 sim.add_species(electron, layout)

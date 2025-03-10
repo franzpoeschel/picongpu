@@ -5,6 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from picongpu.pypicongpu.output.timestepspec import TimeStepSpec
 from picongpu.pypicongpu.output import Auto
 
 import unittest
@@ -12,18 +13,6 @@ import typeguard
 
 
 class TestAuto(unittest.TestCase):
-    def test_empty(self):
-        """empty args handled correctly"""
-        a = Auto()
-        # unset args
-        with self.assertRaises(Exception):
-            a.check()
-
-        a.period = 1
-
-        # ok:
-        a.check()
-
     def test_types(self):
         """type safety is ensured"""
         a = Auto()
@@ -33,32 +22,13 @@ class TestAuto(unittest.TestCase):
             with self.assertRaises(typeguard.TypeCheckError):
                 a.period = invalid_periods
         # ok
-        a.period = 17
-
-    def test_period_invalid(self):
-        """period must be positive, non-zero integer"""
-        a = Auto()
-
-        invalid_periods = [-1, 0, -1273]
-        for invalid_period in invalid_periods:
-            with self.assertRaises(ValueError):
-                a.period = invalid_period
-                a.check()
-
-        # ok
-        a.period = 1
-        a.period = 2
+        a.period = TimeStepSpec([slice(0, None, 17)])
 
     def test_rendering(self):
         """data transformed to template-consumable version"""
         a = Auto()
-        a.period = 42
+        a.period = TimeStepSpec([slice(0, None, 17)])
 
         # normal rendering
         context = a.get_rendering_context()
-        self.assertEqual(42, context["period"])
-
-        # refuses to render if check does not pass
-        a.period = -1
-        with self.assertRaises(ValueError):
-            a.get_rendering_context()
+        self.assertEqual(17, context["period"]["specs"][0]["step"])

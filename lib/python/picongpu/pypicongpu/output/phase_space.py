@@ -9,6 +9,7 @@ from .. import util
 from ..species import Species
 
 from .plugin import Plugin
+from .timestepspec import TimeStepSpec
 
 import typeguard
 import typing
@@ -18,7 +19,7 @@ from typing import Literal
 @typeguard.typechecked
 class PhaseSpace(Plugin):
     species = util.build_typesafe_property(Species)
-    period = util.build_typesafe_property(int)
+    period = util.build_typesafe_property(TimeStepSpec)
     spatial_coordinate = util.build_typesafe_property(Literal["x", "y", "z"])
     momentum_coordinate = util.build_typesafe_property(Literal["px", "py", "pz"])
     min_momentum = util.build_typesafe_property(float)
@@ -39,7 +40,7 @@ class PhaseSpace(Plugin):
         self.check()
         return {
             "species": self.species.get_rendering_context(),
-            "period": self.period,
+            "period": self.period.get_rendering_context(),
             "spatial_coordinate": self.spatial_coordinate,
             "momentum_coordinate": self.momentum_coordinate,
             "min_momentum": self.min_momentum,

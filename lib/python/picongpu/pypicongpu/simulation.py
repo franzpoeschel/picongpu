@@ -15,6 +15,7 @@ from . import output
 from .rendering import RenderedObject
 from .customuserinput import InterfaceCustomUserInput
 from .output.plugin import Plugin
+from .output.timestepspec import TimeStepSpec
 
 import typing
 import typeguard
@@ -74,7 +75,7 @@ class Simulation(RenderedObject):
 
         if self.plugins == "auto":
             auto = output.Auto()
-            auto.period = max(1, int(self.time_steps / 100))
+            auto.period = TimeStepSpec([slice(0, None, max(1, int(self.time_steps / 100)))])
 
             return [auto.get_generic_plugin_rendering_context()]
         else:

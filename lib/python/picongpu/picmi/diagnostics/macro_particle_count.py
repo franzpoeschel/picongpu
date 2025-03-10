@@ -5,10 +5,13 @@ Authors: Masoud Afshari
 License: GPLv3+
 """
 
-from ..pypicongpu.output.macro_particle_count import MacroParticleCount as PyPIConGPUMacroParticleCount
-from ..pypicongpu.species.species import Species as PyPIConGPUSpecies
+from .timestepspec import TimeStepSpec
+from ...pypicongpu.output.macro_particle_count import (
+    MacroParticleCount as PyPIConGPUMacroParticleCount,
+)
+from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
 
-from .species import Species as PICMISpecies
+from ..species import Species as PICMISpecies
 
 import typeguard
 
@@ -35,20 +38,17 @@ class MacroParticleCount:
     """
 
     def check(self):
-        if self.period <= 0:
-            raise ValueError("Period must be > 0")
+        pass
 
-    def __init__(
-        self,
-        species: PICMISpecies,
-        period: int,
-    ):
+    def __init__(self, species: PICMISpecies, period: TimeStepSpec):
         self.species = species
         self.period = period
 
     def get_as_pypicongpu(
         self,
         dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies],
+        time_step_size,
+        num_steps,
     ) -> PyPIConGPUMacroParticleCount:
         self.check()
 
@@ -62,6 +62,6 @@ class MacroParticleCount:
 
         pypicongpu_macro_count = PyPIConGPUMacroParticleCount()
         pypicongpu_macro_count.species = pypicongpu_species
-        pypicongpu_macro_count.period = self.period
+        pypicongpu_macro_count.period = self.period.get_as_pypicongpu(time_step_size, num_steps)
 
         return pypicongpu_macro_count

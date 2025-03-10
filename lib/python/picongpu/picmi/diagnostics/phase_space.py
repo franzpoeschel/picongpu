@@ -5,10 +5,11 @@ Authors: Masoud Afshari
 License: GPLv3+
 """
 
-from ..pypicongpu.output.phase_space import PhaseSpace as PyPIConGPUPhaseSpace
-from ..pypicongpu.species.species import Species as PyPIConGPUSpecies
+from ...pypicongpu.output.phase_space import PhaseSpace as PyPIConGPUPhaseSpace
+from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
 
-from .species import Species as PICMISpecies
+from ..species import Species as PICMISpecies
+from .timestepspec import TimeStepSpec
 
 import typeguard
 from typing import Literal
@@ -27,8 +28,8 @@ class PhaseSpace:
     species: string
         Name of the particle species to track (e.g., "electron", "proton").
 
-    period: int
-        Number of simulation steps between consecutive outputs.
+    period: TimeStepSpec
+        Specify on which time steps the plugin should run.
         Unit: steps (simulation time steps).
 
     spatial_coordinate: string
@@ -50,15 +51,13 @@ class PhaseSpace:
     """
 
     def check(self):
-        if self.period <= 0:
-            raise ValueError("Period must be > 0")
         if self.min_momentum >= self.max_momentum:
             raise ValueError("min_momentum must be less than max_momentum")
 
     def __init__(
         self,
         species: PICMISpecies,
-        period: int,
+        period: TimeStepSpec,
         spatial_coordinate: Literal["x", "y", "z"],
         momentum_coordinate: Literal["px", "py", "pz"],
         min_momentum: float,
@@ -75,6 +74,8 @@ class PhaseSpace:
         # to get the corresponding PyPIConGPUSpecies instance for the given PICMISpecies.
         self,
         dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies],
+        time_step_size,
+        num_steps,
     ) -> PyPIConGPUPhaseSpace:
         self.check()
 
@@ -90,7 +91,7 @@ class PhaseSpace:
 
         pypicongpu_phase_space = PyPIConGPUPhaseSpace()
         pypicongpu_phase_space.species = pypicongpu_species
-        pypicongpu_phase_space.period = self.period
+        pypicongpu_phase_space.period = self.period.get_as_pypicongpu(time_step_size, num_steps)
         pypicongpu_phase_space.spatial_coordinate = self.spatial_coordinate
         pypicongpu_phase_space.momentum_coordinate = self.momentum_coordinate
         pypicongpu_phase_space.min_momentum = self.min_momentum
