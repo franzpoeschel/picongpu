@@ -429,7 +429,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         if self.max_steps is not None:
             s.time_steps = self.max_steps
         elif self.max_time is not None:
-            s.time_steps = self.max_time / self.time_step_size
+            s.time_steps = math.ceil(self.max_time / self.time_step_size)
         else:
             raise ValueError("runtime not specified (neither as step count nor max time)")
 
