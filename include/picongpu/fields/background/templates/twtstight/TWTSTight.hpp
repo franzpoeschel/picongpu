@@ -1,4 +1,4 @@
-/* Copyright 2014-2024 Alexander Debus, Axel Huebl, Sergei Bastrakov
+/* Copyright 2014-2025 Alexander Debus, Axel Huebl, Sergei Bastrakov
  *
  * This file is part of PIConGPU.
  *
@@ -90,8 +90,8 @@ namespace picongpu::templates::twtstight
     public:
         //! Helper method to define basic TWTS variables
         HDINLINE static std::array<float_T, 11u> defineBasicHelperVariables(
-            float_X const& phi,
-            float_X const& beta_0,
+            float_64 const& phi,
+            float_64 const& beta_0,
             float_64 const& wavelength_SI,
             float_64 const& pulselength_SI,
             float_64 const& w_x_SI);
@@ -120,12 +120,12 @@ namespace picongpu::templates::twtstight
          *  That is, for phi = 90 degree the laser propagates in the -z direction.
          * [rad]
          */
-        PMACC_ALIGN(phi, float_X const);
+        PMACC_ALIGN(phi, float_64 const);
         /** Takes value 1.0 for phi > 0 and -1.0 for phi < 0. */
         PMACC_ALIGN(phiPositive, float_X const);
         /** propagation speed of TWTS laser overlap
         normalized to the speed of light. [Default: beta0=1.0] */
-        PMACC_ALIGN(beta_0, float_X const);
+        PMACC_ALIGN(beta_0, float_64 const);
         /** If auto_tdelay=FALSE, then a user defined delay is used. [second] */
         PMACC_ALIGN(tdelay_user_SI, float_64 const);
         /** Make time step constant accessible to device. */
@@ -140,7 +140,7 @@ namespace picongpu::templates::twtstight
         PMACC_ALIGN(tdelay, float_64 const);
         /** Polarization of TWTS laser with respect to x-axis around propagation direction [rad, default = 0. *
          * (PI/180.)] */
-        PMACC_ALIGN(polAngle, float_X const);
+        PMACC_ALIGN(polAngle, float_64 const);
         /* imaginary unit I */
         PMACC_ALIGN(I, complex_T const);
         PMACC_ALIGN(basicTWTSHelperVariables, std::array<float_T, 11u> const);
@@ -172,11 +172,11 @@ namespace picongpu::templates::twtstight
             float_64 const wavelength_SI,
             float_64 const pulselength_SI,
             float_64 const w_x_SI,
-            float_X const phi = 90. * (PI / 180.),
-            float_X const beta_0 = 1.0,
+            float_64 const phi = 90. * (PI / 180.),
+            float_64 const beta_0 = 1.0,
             float_64 const tdelay_user_SI = 0.0,
             bool const auto_tdelay = true,
-            float_X const polAngle = 0. * (PI / 180.));
+            float_64 const polAngle = 0. * (PI / 180.));
 
         /** Specify your background field E(r, t) or B(r, t) here
          *

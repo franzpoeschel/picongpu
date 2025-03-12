@@ -1,4 +1,4 @@
-/* Copyright 2014-2024 Alexander Debus, Axel Huebl, Sergei Bastrakov
+/* Copyright 2014-2025 Alexander Debus, Axel Huebl, Sergei Bastrakov
  *
  * This file is part of PIConGPU.
  *
@@ -45,11 +45,11 @@ namespace picongpu::templates::twtstight
         float_64 const wavelength_SI,
         float_64 const pulselength_SI,
         float_64 const w_x_SI,
-        float_X const phi,
-        float_X const beta_0,
+        float_64 const phi,
+        float_64 const beta_0,
         float_64 const tdelay_user_SI,
         bool const auto_tdelay,
-        float_X const polAngle)
+        float_64 const polAngle)
         : halfSimSize(Environment<simDim>::get().SubGrid().getGlobalDomain().size / 2)
         , focus_y_SI(focus_y_SI)
         , wavelength_SI(wavelength_SI)
@@ -184,8 +184,8 @@ namespace picongpu::templates::twtstight
 
     template<typename T_Field>
     HDINLINE std::array<float_T, 11u> TWTSTight<T_Field>::defineBasicHelperVariables(
-        float_X const& phi,
-        float_X const& beta_0,
+        float_64 const& phi,
+        float_64 const& beta_0,
         float_64 const& wavelength_SI,
         float_64 const& pulselength_SI,
         float_64 const& w_x_SI)
@@ -274,8 +274,8 @@ namespace picongpu::templates::twtstight
         float_T const cotPhi = float_T(1.0) / tanPhi;
         float_T const sinPhi_2 = sinPhi * sinPhi;
         float_T const cosPhi_2 = cosPhi * cosPhi;
-        float_T const sinPolAngle = math::sin(polAngle);
-        float_T const cosPolAngle = math::cos(polAngle);
+        float_T const sinPolAngle = float_T(math::sin(polAngle));
+        float_T const cosPolAngle = float_T(math::cos(polAngle));
         float_T const sin2Phi = math::sin(float_T(2.0) * absPhi);
 
         return std::array<float_T, 7u>{tanPhi, cotPhi, sinPhi_2, cosPhi_2, sinPolAngle, cosPolAngle, sin2Phi};
