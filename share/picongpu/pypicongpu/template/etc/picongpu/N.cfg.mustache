@@ -1,5 +1,5 @@
 # Copyright 2013-2024 Axel Huebl, Rene Widera, Felix Schmitt, Franz Poeschel,
-#                     Hannes Tropegen, Brian Marre
+#                     Hannes Tropegen, Brian Marre, Masoud Afshari
 #
 # This file is part of PIConGPU.
 #
@@ -135,6 +135,10 @@ pypicongpu_output_with_newlines="
           --{{{species.name}}}_energyHistogram.minEnergy {{{min_energy}}}
           --{{{species.name}}}_energyHistogram.maxEnergy {{{max_energy}}}
     {{/typeID.energyhistogram}}
+
+    {{#typeID.macroparticlecount}}
+      --{{{species.name}}}_macroParticleCount.period {{{period}}}
+    {{/typeID.macroparticlecount}}
 
     {{/data}}
   {{/output}}

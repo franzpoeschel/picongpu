@@ -120,7 +120,17 @@ diagnostics_list = [
         min_momentum=-1.0,
         max_momentum=1.0,
     ),
-    picmi.EnergyHistogram(species=electrons, period=100, bin_count=1024, min_energy=0.0, max_energy=1000.0),
+    picmi.EnergyHistogram(
+        species=electrons,
+        period=100,
+        bin_count=1024,
+        min_energy=0.0,
+        max_energy=1000.0,
+    ),
+    picmi.MacroParticleCount(
+        species=electrons,
+        period=100,
+    ),
 ]
 
 sim = picmi.Simulation(
@@ -188,10 +198,6 @@ if ADD_CUSTOM_INPUT:
         "checkpoint configuration",
     )
 
-    output_configuration.addToCustomInput(
-        {"macro_particle_count_period": 100, "macro_particle_count_species_name": "electron"},
-        "macro particle count plugin configuration",
-    )
     sim.picongpu_add_custom_user_input(output_configuration)
 
 if __name__ == "__main__":
