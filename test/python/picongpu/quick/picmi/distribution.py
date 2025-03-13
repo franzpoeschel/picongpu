@@ -540,3 +540,117 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
         self.assertAlmostEqual(drift.direction_normalized[0], 0.9370354841199405)
         self.assertAlmostEqual(drift.direction_normalized[1], 0.34920746753855203)
         self.assertAlmostEqual(drift.direction_normalized[2], 0.004318114799291135)
+
+
+class TestPicmiCylyndricalDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
+    def _get_distribution(
+        self,
+        density=1.0,
+        center_position=(0.0, 0.0, 0.0),
+        radius=1.0,
+        cylinder_axis=(0.0, 1.0, 0.0),
+        exponential_pre_plasma_length=None,
+        exponential_pre_plasma_cutoff=None,
+    ):
+        return picmi.CylyndricalDistribution(
+            density=density,
+            center_position=center_position,
+            radius=radius,
+            cylinder_axis=cylinder_axis,
+            exponential_pre_plasma_length=exponential_pre_plasma_length,
+            exponential_pre_plasma_cutoff=exponential_pre_plasma_cutoff,
+        )
+
+    def test_full(self):
+        """full paramset"""
+        dist = self._get_distribution(
+            density=42.42,
+            center_position=(1.0, 2.0, 3.0),
+            radius=4.0,
+            cylinder_axis=(0.5, 0.5, 0.707),
+            exponential_pre_plasma_length=0.1,
+            exponential_pre_plasma_cutoff=0.2,
+        )
+        pypic = dist.get_as_pypicongpu()
+        self.assertTrue(isinstance(pypic, species.operation.densityprofile.Cylinder))
+        self.assertAlmostEqual(pypic.density_si, 42.42)
+        self.assertEqual(pypic.center_position_si, (1.0, 2.0, 3.0))
+        self.assertAlmostEqual(pypic.radius_si, 4.0)
+        self.assertEqual(pypic.cylinder_axis, (0.5, 0.5, 0.707))
+
+    def test_density_zero(self):
+        """density set to zero is not accepted"""
+        dist = self._get_distribution(density=0.0)
+        with self.assertRaisesRegex(ValueError, ".*density must be > 0.*"):
+            dist.get_as_pypicongpu().get_rendering_context()
+
+    def test_radius_zero(self):
+        """radius set to zero is not accepted"""
+        dist = self._get_distribution(radius=0.0)
+        with self.assertRaisesRegex(ValueError, ".*radius must be > 0.*"):
+            dist.get_as_pypicongpu().get_rendering_context()
+
+    def test_cutoff_zero(self):
+        """cutoff set to zero is accepted"""
+        dist = self._get_distribution(
+            exponential_pre_plasma_length=1.0,
+            exponential_pre_plasma_cutoff=0.0,
+        )
+        pypic = dist.get_as_pypicongpu()
+        # no error
+        self.assertAlmostEqual(pypic.density_si, 1.0)
+        self.assertAlmostEqual(pypic.radius_si, 1.0)
+
+    def test_cutoff_below_zero(self):
+        """cutoff below zero is not accepted (depends on ramp checks)"""
+        dist = self._get_distribution(
+            exponential_pre_plasma_length=1.0,
+            exponential_pre_plasma_cutoff=-0.5,
+        )
+        with self.assertRaisesRegex(ValueError, ".*PlasmaCutoff must be >=0.*"):
+            dist.get_as_pypicongpu().get_rendering_context()
+
+    def test_length_zero(self):
+        """length set to zero is not accepted"""
+        dist = self._get_distribution(
+            exponential_pre_plasma_length=0.0,
+            exponential_pre_plasma_cutoff=1.0,
+        )
+        with self.assertRaisesRegex(ValueError, ".*PlasmaLength must be >0.*"):
+            dist.get_as_pypicongpu().get_rendering_context()
+
+    def test_length_below_zero(self):
+        """length below zero is not accepted"""
+        dist = self._get_distribution(
+            exponential_pre_plasma_length=-1.0,
+            exponential_pre_plasma_cutoff=1.0,
+        )
+        with self.assertRaisesRegex(ValueError, ".*PlasmaLength must be >0.*"):
+            dist.get_as_pypicongpu().get_rendering_context()
+
+    def test_setting_noPrePlasma(self):
+        """must set either both cutoffs and length, or none"""
+        # only one set
+        dist = self._get_distribution(exponential_pre_plasma_length=1.0)
+        with self.assertRaisesRegex(
+            ValueError,
+            "either both exponential_pre_plasma_length and" " exponential_pre_plasma_cutoff must be set.*",
+        ):
+            dist.get_as_pypicongpu().get_rendering_context()
+
+        # partial other way
+        dist = self._get_distribution(exponential_pre_plasma_cutoff=1.0)
+        with self.assertRaisesRegex(
+            ValueError,
+            "either both exponential_pre_plasma_length and" " exponential_pre_plasma_cutoff must be set.*",
+        ):
+            dist.get_as_pypicongpu().get_rendering_context()
+
+    def test_mandatory(self):
+        """check that mandatory must be given"""
+        with self.assertRaises(Exception):
+            picmi.CylyndricalDistribution().get_as_pypicongpu()
+
+        # minimal valid
+        dist = self._get_distribution()
+        dist.get_as_pypicongpu()

@@ -238,6 +238,45 @@ namespace picongpu
         /* definition of sphere profile with flanks */
         using SphereFlanks = SphereFlanksImpl<SphereFlanksParam>;
 
+        struct CylyndricalParam
+        {
+            /** Position of the center of the cylinder
+             * x, y, z coordinates
+             * unit: meter
+             */
+            static constexpr float3_64 centerPosition_SI{8.0 - 6, 8.0 - 6, 1.0e-5};
+
+            /** Cylinder axis
+             * Vector pointing in the direction of the cylinder axis
+             * does not need to be normalized
+             * x, y, z coordinates
+             * unit: none
+             */
+            static constexpr float3_X jetAxis{0.0_X, 0.0_X, 1.0_X};
+
+            /** Radius of the cylinder
+             * unit: meter
+             */
+            static constexpr float_64 radius_SI = 2.2e-6;
+
+            //! factor to multiply BASE_DENSITY_SI by to get density
+            static constexpr float_X densityFactor = static_cast<float_X>(1.0_X);
+
+            // Preplasma:
+            //! Scale length of the exponential preplasma ramp
+            static constexpr float_64 prePlasmaLength_SI = 1.0e-8;
+
+            /** Prelasma ramp length
+             * Distance from the surface of the cylinder (reduced radius) to the point where the preplasma
+             * will be cut of and set to zero.
+             * unit: meter
+             */
+            static constexpr float_64 prePlasmaCutoff_SI = 7.0e-8;
+        };
+
+        /* definition of cylyndrical profile */
+        using Cylyndrical = CylyndricalImpl<CylyndricalParam>;
+
         /* definition of checkerboard density profile with particles every fourth cell in all directions */
         using EveryFourthCell = EveryNthCellImpl<mCT::UInt32<4, 4, 4>>;
 
@@ -293,6 +332,7 @@ namespace picongpu
             //! Default value to be used for cells with no corresponding file value
             static constexpr float_X defaultDensity = 0.0_X;
         };
+
 
 #if (ENABLE_OPENPMD == 1)
         //! Definition of density-from-file profile

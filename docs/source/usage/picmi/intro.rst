@@ -198,6 +198,37 @@ Parameters/Methods prefixed with ``picongpu_`` are PIConGPU-exclusive.
 
     If neither is set a warning is printed prompting for either of the options above.
 
+  **Density distribution**
+  In addition to the standard `picmi` distribution options we also support the following:
+  - ``CylyndricalDistribution``:
+    .. code=block::
+      picmi.CylyndricalDistribution(
+        *,
+        rms_velocity: Tuple[float, float, float] = (0, 0, 0),
+        directed_velocity: Tuple[float, float, float] = (0, 0, 0),
+        fill_in: bool = True,
+        density: float,
+        center_position: tuple[float, float, float],
+        radius: float,
+        cylinder_axis: tuple[float, float, float],
+        exponential_pre_plasma_length: float | None,
+        exponential_pre_plasma_cutoff: float | None,
+        lower_bound: Union[Tuple[float, float, float], Tuple[NoneType, NoneType, NoneType]] = (None, None, None),
+        upper_bound: Union[Tuple[float, float, float], Tuple[NoneType, NoneType, NoneType]] = (None, None, None),
+      ) -> None
+      Docstring:     
+      Describes a cylyndrical density distribution of particles with gaussian up-ramp
+      with a constant density region in between. It can have an arbitrary orientation
+      and position in space.
+      Will create the following profile:
+        n = density if r < reduced_radius
+        n is 0 or follows the exponential ramp if r > reduced_radius
+        n is 0 if r > reduced_radius + prePlasmaCutoff
+        the reduced_radius is equal = @f[\sqrt{R^2 -L^2} -L @f] 
+        with R - cylinder_radius and L - prePlasmaLength (scale length of the ramp)
+        the reduced radius ensures mass conservation
+
+    
 Ionization:
 ^^^^^^^^^^^
 The PIConGPU PICMI interface currently supports the configuration of ionization only through a picongpu specific PICMI extension, not the in the PICMI standard defined interface, due to the lack of standardization of ionization algorithm names in the PICMI standard.

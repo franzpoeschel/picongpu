@@ -51,7 +51,7 @@ class TestDensityProfile(unittest.TestCase):
         self.assertEqual(context["data"], uniform._get_serialized())
 
         # contains information on all types
-        self.assertEqual(context["typeID"], {"uniform": True, "foil": False, "gaussian": False})
+        self.assertEqual(context["typeID"], {"uniform": True, "foil": False, "gaussian": False, "cylinder": False})
 
         # is actually validated against "DensityProfile" schema
         RenderedObject._schemas_loaded = False
