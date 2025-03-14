@@ -76,7 +76,7 @@ namespace picongpu
 
         enum class PositionPrecision
         {
-            // Returns the cell index in which the particle
+            // Returns the cell index of the particle
             Cell,
             // Returns the position of the particle as the cell index + the position of the particle inside the cell
             // [0,1) This value is a floating point number of cells
