@@ -7,6 +7,7 @@ License: GPLv3+
 
 from ..rendering import RenderedObject
 
+
 import typeguard
 
 
@@ -72,8 +73,9 @@ class Plugin(RenderedObject):
         # import here to avoid circular inclusion
         from .auto import Auto
         from .phase_space import PhaseSpace
+        from .energy_histogram import EnergyHistogram
 
-        template_name_by_type = {Auto: "auto", PhaseSpace: "phasespace"}
+        template_name_by_type = {Auto: "auto", PhaseSpace: "phasespace", EnergyHistogram: "energyhistogram"}
         if self.__class__ not in template_name_by_type:
             raise RuntimeError("unkown type: {}".format(self.__class__))
 
