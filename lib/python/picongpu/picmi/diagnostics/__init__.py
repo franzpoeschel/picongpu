@@ -1,20 +1,22 @@
 """
 This file is part of PIConGPU.
 Copyright 2024 PIConGPU contributors
-Authors: Julian Lenz
+Authors: Julian Lenz,
 License: GPLv3+
 """
 
-from .timestepspec import TimeStepSpec
+from .auto import Auto
 from .phase_space import PhaseSpace
 from .energy_histogram import EnergyHistogram
 from .macro_particle_count import MacroParticleCount
-from .auto import Auto
+from .png import Png
+from .timestepspec import TimeStepSpec
 
 __all__ = [
+    "Auto",
     "PhaseSpace",
     "EnergyHistogram",
     "MacroParticleCount",
-    "Auto",
+    "Png",
     "TimeStepSpec",
 ]

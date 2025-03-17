@@ -7,6 +7,7 @@ from .runner import Runner
 from .output.phase_space import PhaseSpace
 from .output.energy_histogram import EnergyHistogram
 from .output.macro_particle_count import MacroParticleCount
+from .output.png import Png
 
 from . import laser
 from . import grid
@@ -31,6 +32,7 @@ __all__ = [
     "PhaseSpace",
     "EnergyHistogram",
     "MacroParticleCount",
+    "Png",
 ]
 
 # note: put down here b/c linter complains if imports are not at top

@@ -9,6 +9,7 @@ from .gaussian_laser import GaussianLaser
 from .species import Species
 from .layout import PseudoRandomLayout
 from . import constants
+
 from . import diagnostics
 
 from .distribution import FoilDistribution, UniformDistribution, GaussianDistribution

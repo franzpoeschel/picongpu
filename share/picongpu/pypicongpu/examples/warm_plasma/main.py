@@ -45,6 +45,7 @@ sim = picmi.Simulation(
 
 sim.add_diagnostic(picmi.diagnostics.Auto(period=TimeStepSpec[::100]))
 
+
 layout = picmi.PseudoRandomLayout(n_macroparticles_per_cell=25)
 sim.add_species(electron, layout)
 

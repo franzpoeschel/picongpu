@@ -5,13 +5,12 @@ Authors: Pawel Ordyna
 License: GPLv3+
 """
 
-from .timestepspec import TimeStepSpec
+
 from ...pypicongpu.output.auto import Auto as PyPIConGPUAuto
 from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
 
-
 from ..species import Species as PICMISpecies
-
+from .timestepspec import TimeStepSpec
 
 import typeguard
 
