@@ -10,6 +10,7 @@ from .layout import PseudoRandomLayout
 from . import constants
 from .phase_space import PhaseSpace
 from .energy_histogram import EnergyHistogram
+from .macro_particle_count import MacroParticleCount
 
 from .distribution import FoilDistribution, UniformDistribution, GaussianDistribution
 from .interaction import Interaction
@@ -42,6 +43,7 @@ __all__ = [
     "Interaction",
     "PhaseSpace",
     "EnergyHistogram",
+    "MacroParticleCount",
 ]
 
 

@@ -74,8 +74,14 @@ class Plugin(RenderedObject):
         from .auto import Auto
         from .phase_space import PhaseSpace
         from .energy_histogram import EnergyHistogram
+        from .macro_particle_count import MacroParticleCount
 
-        template_name_by_type = {Auto: "auto", PhaseSpace: "phasespace", EnergyHistogram: "energyhistogram"}
+        template_name_by_type = {
+            Auto: "auto",
+            PhaseSpace: "phasespace",
+            EnergyHistogram: "energyhistogram",
+            MacroParticleCount: "macroparticlecount",
+        }
         if self.__class__ not in template_name_by_type:
             raise RuntimeError("unkown type: {}".format(self.__class__))
 
