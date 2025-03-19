@@ -19,15 +19,14 @@
 
 #pragma once
 
-#include "picongpu/defines.hpp"
+#include "picongpu/particles/param.hpp"
 #include "picongpu/plugins/binning/binnerPlugin.hpp"
 
 namespace picongpu
 {
     namespace plugins::binning
     {
-        void binningExample(BinningCreator& binningCreator);
-
+        // Please refer to readthedocs for example binning setups and to learn how to define your own binning setup
         inline void getBinning(BinningCreator& binningCreator)
         {
             /// USER CODE GOES BELOW
@@ -35,147 +34,5 @@ namespace picongpu
             /// USER CODE ENDS HERE
         }
 
-        inline void binningExample(BinningCreator& binningCreator)
-        {
-            /**
-             * define axes here
-             */
-
-            /// Axis 1
-            // Define Functor
-            auto getPositionY
-                = [] ALPAKA_FN_ACC(auto const& domainInfo, auto const& worker, auto const& particle) -> int
-            {
-                auto posBin = getParticlePosition<DomainOrigin::TOTAL>(domainInfo, particle);
-                return posBin[1];
-            };
-
-            // Create Functor Description
-            auto cellPositionYDescription = createFunctorDescription<int>(getPositionY, "position_axisY");
-
-            // Create Axis Splitting
-            auto domain_size = Environment<simDim>::get().SubGrid().getGlobalDomain().size;
-            auto rangeY = axis::Range{0, domain_size[1]};
-            auto cellY_splitting = axis::AxisSplitting(rangeY, domain_size[1]);
-
-            // Create Axis
-            auto ax_y = axis::createLinear(cellY_splitting, cellPositionYDescription);
-
-            /// Axis 2
-            // Define Functor
-            auto getMomentumY
-                = [] ALPAKA_FN_ACC(auto const& domainInfo, auto const& worker, auto const& particle) -> float_X
-            { return particle[momentum_][1] / particle[weighting_]; };
-
-            // Define units
-            std::array<double, numUnits> momentumDimension{};
-            momentumDimension[SIBaseUnits::length] = 1.0;
-            momentumDimension[SIBaseUnits::mass] = 1.0;
-            momentumDimension[SIBaseUnits::time] = -1.0;
-
-            // Create Functor Description
-            auto momentumYDescription
-                = createFunctorDescription<float_X>(getMomentumY, "momentum_axis", momentumDimension);
-
-            // Create Axis Splitting
-            float_X momentum_range = 2.73092402064e-22;
-
-            // Create Axis
-            auto ax_py = axis::createLinear(
-                axis::AxisSplitting(axis::Range{-1._X * momentum_range, 1._X * momentum_range}, 937),
-                momentumYDescription);
-
-            /// Axis 3
-            // Define Functor
-            auto getTimeStep
-                = [] ALPAKA_FN_ACC(auto const& domainInfo, auto const& worker, auto const& particle) -> uint32_t
-            { return domainInfo.currentStep; };
-
-            // Create Functor Description
-            auto timeStepDescription = createFunctorDescription<uint32_t>(getTimeStep, "time_axis");
-
-            // Create Axis
-            auto ax_timeStep
-                = axis::createLinear(axis::AxisSplitting(axis::Range<uint32_t>{0, 2000}, 2000), timeStepDescription);
-
-
-            // Bring the axes together in a tuple
-            auto axisTuple = createTuple(ax_y, ax_py);
-
-            /**
-             * Define the species to do binning over here
-             * create object from type
-             */
-            auto electronsObj = PMACC_CSTRING("e"){};
-
-            /**
-             * Optionally pass a particle filter to be used for this
-             * Simply a particle predicate functor
-             */
-            auto allParticles
-                = [] ALPAKA_FN_ACC(auto const& domainInfo, auto const& worker, auto const& particle) -> bool
-            { return true; };
-
-            // type is void if species doesn't exist
-            using speciesExists = typename pmacc::particles::meta::FindByNameOrType_t<
-                VectorAllSpecies,
-                decltype(electronsObj),
-                pmacc::errorHandlerPolicies::ReturnType<void>>;
-
-            // Check if species exists before compiling
-            if constexpr(!std::is_same_v<void, speciesExists>)
-            {
-                // Bring the species together in a tuple
-                auto speciesTuple = createSpeciesTuple(FilteredSpecies{electronsObj, allParticles});
-
-                /**
-                 * Define deposited quantity here
-                 */
-                auto getParticleChargeDensity = [] ALPAKA_FN_ACC(auto const& worker, auto const& particle) -> float_X
-                {
-                    const float_X charge = picongpu::traits::attribute::getCharge(particle[weighting_], particle);
-                    const float_X particleChargeDensity
-                        = precisionCast<float_X>(charge / sim.pic.getCellSize().productOfComponents());
-                    return particleChargeDensity;
-                };
-
-                std::array<double, numUnits> depositedUnits{}; // Tell user the 7 dimensional format
-                depositedUnits[SIBaseUnits::length] = -3.0;
-                depositedUnits[SIBaseUnits::electricCurrent] = 1.0;
-                depositedUnits[SIBaseUnits::time] = 1.0;
-
-                // @todo enforce functor return type is same as createFunctorDescription template type
-                auto chargeDepositionData
-                    = createFunctorDescription<float_X>(getParticleChargeDensity, "ChargeDensity", depositedUnits);
-
-
-                auto getParticleCount
-                    = [] ALPAKA_FN_ACC(auto const& worker, auto const& particle) -> float_X { return 1.0; };
-                auto getCounts = createFunctorDescription<float_X>(getParticleCount, "Counts");
-
-
-                /**
-                 * Gives access to series, iteration and mesh to the user
-                 * the iteration is already initialized as ```series.writeIterations()[currentStep];```
-                 * Please dont use the series to do funky stuff with the iteration, unless you know what you are
-                 * doing
-                 * This is called before any other mesh data is written to openPMD
-                 * Make sure to capture by copy only, as the objects in this file are not kept alive
-                 */
-                auto writeOpenPMD =
-                    [ax_py](::openPMD::Series& series, ::openPMD::Iteration& iteration, ::openPMD::Mesh& mesh) -> void
-                { mesh.setAttribute("p_nbins", ax_py.getNBins()); };
-
-                binningCreator
-                    .addBinner("chargeDensityBinning", axisTuple, speciesTuple, chargeDepositionData, writeOpenPMD)
-                    .setNotifyPeriod("1:500")
-                    .setJsonCfg(R"({"hdf5":{"dataset":{"chunks":"auto"}}})")
-                    .setOpenPMDExtension("h5");
-
-                binningCreator.addBinner("particleBinning", createTuple(ax_timeStep, ax_py), speciesTuple, getCounts)
-                    .setDumpPeriod(2000)
-                    .setNormalizeByBinVolume(false);
-            }
-        }
     } // namespace plugins::binning
 } // namespace picongpu

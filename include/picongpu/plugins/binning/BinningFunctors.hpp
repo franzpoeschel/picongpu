@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "picongpu/plugins/binning/Axis.hpp"
-#include "picongpu/plugins/binning/BinningData.hpp"
 #include "picongpu/plugins/binning/DomainInfo.hpp"
 #include "picongpu/plugins/binning/utility.hpp"
 
@@ -45,7 +43,8 @@ namespace picongpu
                 T_HistBox histBox,
                 T_DepositionFunctor const& quantityFunctor,
                 auto const& axes,
-                DomainInfo const& domainInfo,
+                DomainInfo<BinningType::Particle> const& domainInfo,
+                auto const& userFunctorData,
                 DataSpace<T_nAxes> const& extents,
                 auto const& particle) const
             {
@@ -59,12 +58,16 @@ namespace picongpu
                         // This assumes n_bins and getBinIdx exist
                         validIdx
                             = (
-                                   [&]
+                                   [&](auto const& tupleArg)
                                    {
-                                       auto [isValid, binIdx] = pmacc::memory::tuple::get<1>(tupleArgs).getBinIdx(domainInfo, worker, particle);
-                                       binsDataspace[pmacc::memory::tuple::get<0>(tupleArgs)] = binIdx;
-                                       return isValid;
-                                   }()
+                                        auto [isValid, binIdx] = binning::apply(
+                                            [&](auto const&... extraUserData)
+                                            { return pmacc::memory::tuple::get<1>(tupleArg).getBinIdx(worker, domainInfo, particle, extraUserData...); },
+                                            userFunctorData);
+
+                                        binsDataspace[pmacc::memory::tuple::get<0>(tupleArg)] = binIdx;
+                                        return isValid;
+                                   }(tupleArgs)
                                && ...);
                     },
                     axes);
@@ -72,7 +75,10 @@ namespace picongpu
                 if(validIdx)
                 {
                     auto const idxOneD = pmacc::math::linearize(extents, binsDataspace);
-                    DepositionType depositVal = quantityFunctor(worker, particle);
+                    DepositionType depositVal = binning::apply(
+                        [&](auto const&... extraUserData)
+                        { return quantityFunctor(worker, domainInfo, particle, extraUserData...); },
+                        userFunctorData);
                     alpaka::atomicAdd(worker.getAcc(), &(histBox[idxOneD]), depositVal, ::alpaka::hierarchy::Blocks{});
                 }
             }
@@ -96,6 +102,7 @@ namespace picongpu
                 auto const& axisTuple,
                 T_DepositionFunctor const& quantityFunctor,
                 DataSpace<T_nAxes> const& extents,
+                auto const& userFunctorData,
                 auto const& filter,
                 uint32_t const currentStep,
                 T_Mapping const& mapper) const
@@ -106,7 +113,8 @@ namespace picongpu
                 /**
                  * Init the Domain info, here because of the possibility of a moving window
                  */
-                auto const domainInfo = DomainInfo{currentStep, globalOffset, localOffset, physicalSuperCellIdx};
+                auto const domainInfo
+                    = DomainInfo<BinningType::Particle>{currentStep, globalOffset, localOffset, physicalSuperCellIdx};
 
                 auto const functorParticle = FunctorParticle{};
 
@@ -120,7 +128,7 @@ namespace picongpu
                 forEachParticle(
                     [&](auto const& lockstepWorker, auto& particle)
                     {
-                        if(filter(domainInfo, worker, particle))
+                        if(filter(worker, domainInfo, particle))
                         {
                             functorParticle(
                                 lockstepWorker,
@@ -128,6 +136,7 @@ namespace picongpu
                                 quantityFunctor,
                                 axisTuple,
                                 domainInfo,
+                                userFunctorData,
                                 extents,
                                 particle);
                         }
@@ -181,6 +190,7 @@ namespace picongpu
                 T_AxisTuple const& axisTuple,
                 T_DepositionFunctor const& quantityFunctor,
                 DataSpace<T_nAxes> const& extents,
+                auto const& userFunctorData,
                 auto const& filter,
                 uint32_t const currentStep,
                 pmacc::DataSpace<simDim> const& beginCellIdxLocal,
@@ -192,7 +202,8 @@ namespace picongpu
                 // supercell index relative to the border origin
                 auto const physicalSuperCellIdx = superCellIdx - mapper.getGuardingSuperCells();
 
-                auto const domainInfo = DomainInfo{currentStep, globalOffset, localOffset, physicalSuperCellIdx};
+                auto const domainInfo
+                    = DomainInfo<BinningType::Particle>{currentStep, globalOffset, localOffset, physicalSuperCellIdx};
                 auto const functorParticle = FunctorParticle{};
 
                 auto forEachParticle
@@ -205,7 +216,7 @@ namespace picongpu
                 forEachParticle(
                     [&](auto const& lockstepWorker, auto& particle)
                     {
-                        if(filter(domainInfo, worker, particle))
+                        if(filter(worker, domainInfo, particle))
                         {
                             // Check if it fits the internal cells range
                             auto const cellInSuperCell = pmacc::math::mapToND(
@@ -221,6 +232,7 @@ namespace picongpu
                                     quantityFunctor,
                                     axisTuple,
                                     domainInfo,
+                                    userFunctorData,
                                     extents,
                                     particle);
                             }

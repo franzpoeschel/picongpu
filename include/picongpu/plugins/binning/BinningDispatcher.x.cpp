@@ -19,12 +19,17 @@
 
 #if(ENABLE_OPENPMD == 1)
 
-#    include "picongpu/param/binningSetup.param"
-#    include "picongpu/particles/filter/filter.hpp"
-#    include "picongpu/particles/param.hpp"
+// clang-format off
+#include "picongpu/particles/param.hpp"
+#include "picongpu/particles/filter/filter.hpp"
+// clang-format on
+
 #    include "picongpu/plugins/ISimulationPlugin.hpp"
 #    include "picongpu/plugins/PluginRegistry.hpp"
 #    include "picongpu/plugins/binning/BinningCreator.hpp"
+
+#    include <pmacc/Environment.hpp>
+#    include <pmacc/pluginSystem/IPlugin.hpp>
 
 #    include <boost/program_options.hpp>
 #    include <boost/program_options/options_description.hpp>
@@ -33,6 +38,10 @@
 #    include <memory>
 #    include <string>
 #    include <vector>
+
+// clang-format off
+#include "picongpu/param/binningSetup.param"
+// clang-format on
 
 namespace picongpu
 {
