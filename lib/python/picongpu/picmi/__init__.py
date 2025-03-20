@@ -11,6 +11,7 @@ from . import constants
 from .phase_space import PhaseSpace
 from .energy_histogram import EnergyHistogram
 from .macro_particle_count import MacroParticleCount
+from . import output
 
 from .distribution import FoilDistribution, UniformDistribution, GaussianDistribution
 from .interaction import Interaction
@@ -44,6 +45,7 @@ __all__ = [
     "PhaseSpace",
     "EnergyHistogram",
     "MacroParticleCount",
+    "output",
 ]
 
 
