@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Brian Marre
+/* Copyright 2023-2025 Brian Marre
  *
  * This file is part of PIConGPU.
  *
@@ -207,10 +207,7 @@ namespace picongpu::particles::atomicPhysics::kernel
 
                     if(stateTotalLossrate == 0._X)
                     {
-                        ion[processClass_] = u8(s_enums::ProcessClass::noChange);
-                        // no need to set ion[transitionIndex_] since already uniquely known by processClass = noChange
-                        // no-change transitions are not bin based therefore we don't set a bin, old values are ignored
-                        ion[accepted_] = true;
+                        setNoChangeTransition(ion);
                         return;
                     }
 
@@ -262,20 +259,6 @@ namespace picongpu::particles::atomicPhysics::kernel
                         startIndexTransitionBlock + numberTransitions - 1u,
                         numberBins - 1u);
                 });
-        }
-
-        //! update ion with selected transition data
-        template<typename T_Ion>
-        HDINLINE static void updateIon(
-            T_Ion& ion,
-            uint8_t selectedProcessClass,
-            uint32_t selectedTransitionIndex,
-            uint32_t selectedBinIndex)
-        {
-            ion[processClass_] = selectedProcessClass;
-            ion[transitionIndex_] = selectedTransitionIndex;
-            ion[binIndex_] = selectedBinIndex;
-            ion[accepted_] = true;
         }
     };
 } // namespace picongpu::particles::atomicPhysics::kernel
