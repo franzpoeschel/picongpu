@@ -978,7 +978,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 auto rngProvider = dc.get<RNGProvider>(RNGProvider::getName());
                 auto const name = rngProvider->getName();
 
-                ::openPMD::Iteration iteration = params->openPMDSeries->writeIterations()[restartStep];
+                ::openPMD::Iteration iteration = params->openPMDSeries->iterations[restartStep];
                 ::openPMD::Mesh mesh = iteration.meshes[name];
                 ::openPMD::MeshRecordComponent mrc = mesh[::openPMD::RecordComponent::SCALAR];
 
