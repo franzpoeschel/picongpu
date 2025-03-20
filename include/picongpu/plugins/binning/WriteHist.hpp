@@ -131,9 +131,13 @@ namespace picongpu
                  * Write the histogram
                  */
                 ::openPMD::Mesh mesh = iteration.meshes["Binning"];
+                ::openPMD::MeshRecordComponent record = mesh[::openPMD::RecordComponent::SCALAR];
 
                 // Call the user defined OpenPMD
-                binningData.writeOpenPMDFunctor(series, iteration, mesh);
+                if(binningData.writeOpenPMDFunctor)
+                {
+                    binningData.writeOpenPMDFunctor(series, iteration, mesh);
+                }
 
                 mesh.setGeometry(::openPMD::Mesh::Geometry::cartesian);
                 mesh.setDataOrder(::openPMD::Mesh::DataOrder::C);
@@ -164,8 +168,6 @@ namespace picongpu
                 {
                     mesh.setUnitDimension(makeOpenPMDUnitMap(binningData.depositionData.units)); // charge density
                 }
-
-                ::openPMD::MeshRecordComponent record = mesh[::openPMD::RecordComponent::SCALAR];
 
                 /*
                  * The value represents an aggregation over one cell, so any value is correct for the mesh position.
