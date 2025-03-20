@@ -85,20 +85,6 @@ namespace picongpu
             LOCAL
         };
 
-        template<>
-        class DomainInfo<BinningType::Particle> : public DomainInfoBase
-        {
-        public:
-            HDINLINE DomainInfo(
-                uint32_t simStep,
-                pmacc::DataSpace<simDim> gOffset,
-                pmacc::DataSpace<simDim> lOffset,
-                pmacc::DataSpace<simDim> physicalSuperCellIdx)
-                : DomainInfoBase(simStep, gOffset, lOffset, physicalSuperCellIdx)
-            {
-            }
-        };
-
         enum class PositionPrecision
         {
             // Returns the cell index of the particle
@@ -130,6 +116,69 @@ namespace picongpu
              * Integral value if PositionPrecision is Cell and floating point if PositionPrecision is SubCell.
              */
             Cell
+        };
+
+        template<>
+        class DomainInfo<BinningType::Field> : public DomainInfoBase
+        {
+        public:
+            pmacc::DataSpace<simDim> localCellIdx;
+            HDINLINE DomainInfo(
+                uint32_t simStep,
+                pmacc::DataSpace<simDim> gOffset,
+                pmacc::DataSpace<simDim> lOffset,
+                pmacc::DataSpace<simDim> physicalSuperCellIdx,
+                pmacc::DataSpace<simDim> localCellIndex)
+                : DomainInfoBase(simStep, gOffset, lOffset, physicalSuperCellIdx)
+                , localCellIdx{localCellIndex}
+            {
+            }
+
+            // returns the cell position
+            // passed Can also return in SI units if CellUnits::SI is specified
+            template<DomainOrigin T_Origin, PositionUnits T_Units = PositionUnits::Cell>
+            ALPAKA_FN_ACC auto getCellPosition() const
+            {
+                auto relative_cellpos = blockCellOffset;
+
+                if constexpr(T_Origin == DomainOrigin::GLOBAL)
+                {
+                    relative_cellpos = relative_cellpos + localOffset;
+                }
+                if constexpr(T_Origin == DomainOrigin::TOTAL)
+                {
+                    relative_cellpos = relative_cellpos + globalOffset;
+                }
+
+                auto pos = localCellIdx + relative_cellpos;
+
+                if constexpr(T_Units == PositionUnits::SI)
+                {
+                    return precisionCast<typename std::decay_t<decltype(sim.si.getCellSize())>::type>(pos)
+                        * sim.si.getCellSize().shrink<simDim>();
+                }
+                if constexpr(T_Units == PositionUnits::PIC)
+                {
+                    return precisionCast<typename std::decay_t<decltype(sim.pic.getCellSize())>::type>(pos)
+                        * sim.pic.getCellSize().shrink<simDim>();
+                }
+
+                return pos;
+            }
+        };
+
+        template<>
+        class DomainInfo<BinningType::Particle> : public DomainInfoBase
+        {
+        public:
+            HDINLINE DomainInfo(
+                uint32_t simStep,
+                pmacc::DataSpace<simDim> gOffset,
+                pmacc::DataSpace<simDim> lOffset,
+                pmacc::DataSpace<simDim> physicalSuperCellIdx)
+                : DomainInfoBase(simStep, gOffset, lOffset, physicalSuperCellIdx)
+            {
+            }
         };
 
         /**

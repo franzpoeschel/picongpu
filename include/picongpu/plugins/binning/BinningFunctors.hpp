@@ -242,5 +242,141 @@ namespace picongpu
         };
 
 
+        struct FunctorCell
+        {
+            using result_type = void;
+
+            DINLINE FunctorCell() = default;
+
+            template<typename T_HistBox, typename T_DepositionFunctor, uint32_t T_nAxes>
+            DINLINE void operator()(
+                auto const& worker,
+                T_HistBox histBox,
+                T_DepositionFunctor const& quantityFunctor,
+                auto const& axes,
+                auto const& userFunctorData,
+                DomainInfo<BinningType::Field> const& domainInfo,
+                DataSpace<T_nAxes> const& extents) const
+            {
+                using DepositionType = typename T_HistBox::ValueType;
+
+                auto binsDataspace = pmacc::DataSpace<T_nAxes>{};
+                bool validIdx = true;
+
+                binning::applyEnumerate(
+                    [&](auto const&... tupleArgs)
+                    {
+                        // This assumes n_bins and getBinIdx exist
+                        validIdx
+                            = (
+                                [&](auto const& tupleArg)                                   {
+                                       if constexpr (pmacc::memory::tuple::tuple_size_v<decltype(userFunctorData)> > 0) {
+                                           auto [isValid, binIdx] = binning::apply(
+                                               [&](auto const&... userFunctorData)
+                                               { return pmacc::memory::tuple::get<1>(tupleArg).getBinIdx(worker, domainInfo, userFunctorData...); },
+                                               userFunctorData);
+                                           binsDataspace[pmacc::memory::tuple::get<0>(tupleArg)] = binIdx;
+                                           return isValid;
+                                       }
+                                       else{
+                                           auto [isValid, binIdx] = pmacc::memory::tuple::get<1>(tupleArg).getBinIdx(worker, domainInfo);
+                                           binsDataspace[pmacc::memory::tuple::get<0>(tupleArg)] = binIdx;
+                                           return isValid;
+
+                                       }
+                                   }(tupleArgs)
+                               && ...);
+                    },
+                    axes);
+
+                if(validIdx)
+                {
+                    auto const idxOneD = pmacc::math::linearize(extents, binsDataspace);
+                    if constexpr(pmacc::memory::tuple::tuple_size_v < decltype(userFunctorData) >> 0)
+                    {
+                        DepositionType depositVal = binning::apply(
+                            [&](auto const&... userFunctorData)
+                            { return quantityFunctor(worker, domainInfo, userFunctorData...); },
+                            userFunctorData);
+                        alpaka::atomicAdd(
+                            worker.getAcc(),
+                            &(histBox[idxOneD]),
+                            depositVal,
+                            ::alpaka::hierarchy::Blocks{});
+                    }
+                    else
+                    {
+                        DepositionType depositVal = quantityFunctor(worker, domainInfo);
+
+                        alpaka::atomicAdd(
+                            worker.getAcc(),
+                            &(histBox[idxOneD]),
+                            depositVal,
+                            ::alpaka::hierarchy::Blocks{});
+                    }
+                }
+            }
+        };
+
+        struct FieldBinningKernel
+        {
+            using result_type = void;
+
+            HDINLINE FieldBinningKernel() = default;
+
+            template<typename T_HistBox, typename T_DepositionFunctor, typename T_Mapping, uint32_t T_nAxes>
+            DINLINE void operator()(
+                auto const& worker,
+                T_HistBox binningBox,
+                pmacc::DataSpace<simDim> const& localOffset,
+                pmacc::DataSpace<simDim> const& globalOffset,
+                auto const& axisTuple,
+                auto const& userFunctorData,
+                T_DepositionFunctor const& quantityFunctor,
+                DataSpace<T_nAxes> const& extents,
+                uint32_t const currentStep,
+                T_Mapping const& mapper) const
+            {
+                using SuperCellSize = typename T_Mapping::SuperCellSize;
+                constexpr uint32_t cellsPerSupercell = pmacc::math::CT::volume<SuperCellSize>::type::value;
+
+                DataSpace<simDim> const superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
+                // supercell index relative to the border origin
+                auto const physicalSuperCellIdx = superCellIdx - mapper.getGuardingSuperCells();
+
+                using SuperCellSize = typename T_Mapping::SuperCellSize;
+
+                auto const functorCell = FunctorCell{};
+
+                // each cell in a supercell is handled as a virtual worker
+                auto forEachCell = lockstep::makeForEach<cellsPerSupercell>(worker);
+
+                forEachCell(
+                    [&](int32_t const linearCellIdx)
+                    {
+                        auto const localCellIndex
+                            = pmacc::math::mapToND(picongpu::SuperCellSize::toRT(), static_cast<int>(linearCellIdx));
+                        /**
+                         * Init the Domain info, here because of the possibility of a moving window
+                         */
+                        auto const domainInfo = DomainInfo<BinningType::Field>{
+                            currentStep,
+                            globalOffset,
+                            localOffset,
+                            physicalSuperCellIdx,
+                            localCellIndex};
+
+                        functorCell(
+                            worker,
+                            binningBox,
+                            quantityFunctor,
+                            axisTuple,
+                            userFunctorData,
+                            domainInfo,
+                            extents);
+                    });
+            }
+        };
+
     } // namespace plugins::binning
 } // namespace picongpu
