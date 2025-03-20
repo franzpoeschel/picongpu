@@ -100,5 +100,13 @@ namespace picongpu
             return std::make_tuple(std::forward<Args>(args)...);
         }
 
+        template<template<typename...> typename TypeTemplate, typename... Args>
+        auto make_unique(Args&&... args)
+        {
+            auto ptr = new TypeTemplate(std::forward<Args>(args)...);
+            return std::unique_ptr<std::remove_cvref_t<decltype(*ptr)>>(ptr);
+        }
+
+
     } // namespace plugins::binning
 } // namespace picongpu

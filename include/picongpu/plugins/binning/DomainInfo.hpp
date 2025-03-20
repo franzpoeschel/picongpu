@@ -20,9 +20,11 @@
 #pragma once
 
 #include "picongpu/defines.hpp"
+#include "picongpu/simulation_types.hpp"
 
 #include <pmacc/dimensions/DataSpace.hpp>
 #include <pmacc/math/vector/Vector.hpp>
+#include <pmacc/particles/Identifier.hpp>
 
 #include <cstdint>
 
@@ -30,12 +32,18 @@ namespace picongpu
 {
     namespace plugins::binning
     {
+        enum class BinningType
+        {
+            Field,
+            Particle
+        };
+
         /**
          * @brief Provides knowledge of the simulation domain to the user
          * Names and concept are described at
          * https://github.com/ComputationalRadiationPhysics/picongpu/wiki/PIConGPU-domain-definitions
          */
-        class DomainInfo
+        class DomainInfoBase
         {
         public:
             /** Current simulation timestep */
@@ -50,11 +58,11 @@ namespace picongpu
             /**
              * @param physicalSuperCellIdx supercell index relative to the border origin
              */
-            DINLINE DomainInfo(
+            HDINLINE DomainInfoBase(
                 uint32_t simStep,
                 pmacc::DataSpace<simDim> gOffset,
                 pmacc::DataSpace<simDim> lOffset,
-                DataSpace<simDim> physicalSuperCellIdx)
+                pmacc::DataSpace<simDim> physicalSuperCellIdx)
                 : currentStep{simStep}
                 , globalOffset{gOffset}
                 , localOffset{lOffset}
@@ -62,6 +70,9 @@ namespace picongpu
                 blockCellOffset = physicalSuperCellIdx * SuperCellSize::toRT();
             }
         };
+
+        template<BinningType T_Binning>
+        class DomainInfo;
 
         enum class DomainOrigin
         {
@@ -72,6 +83,20 @@ namespace picongpu
             GLOBAL,
             // origin of the current ("my") GPU, no guards
             LOCAL
+        };
+
+        template<>
+        class DomainInfo<BinningType::Particle> : public DomainInfoBase
+        {
+        public:
+            HDINLINE DomainInfo(
+                uint32_t simStep,
+                pmacc::DataSpace<simDim> gOffset,
+                pmacc::DataSpace<simDim> lOffset,
+                pmacc::DataSpace<simDim> physicalSuperCellIdx)
+                : DomainInfoBase(simStep, gOffset, lOffset, physicalSuperCellIdx)
+            {
+            }
         };
 
         enum class PositionPrecision
@@ -122,7 +147,9 @@ namespace picongpu
             DomainOrigin T_Origin,
             PositionPrecision T_Precision = PositionPrecision::Cell,
             PositionUnits T_Units = PositionUnits::Cell>
-        ALPAKA_FN_ACC auto getParticlePosition(DomainInfo const& domainInfo, auto const& particle)
+        ALPAKA_FN_ACC auto getParticlePosition(
+            DomainInfo<BinningType::Particle> const& domainInfo,
+            auto const& particle)
             -> pmacc::math::Vector<
                 typename std::conditional_t<
                     T_Units == PositionUnits::SI,

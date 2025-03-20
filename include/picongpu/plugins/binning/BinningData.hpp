@@ -21,14 +21,14 @@
 
 #if(ENABLE_OPENPMD == 1)
 
-#    include "picongpu/plugins/binning/Axis.hpp"
 #    include "picongpu/plugins/common/openPMDDefaultExtension.hpp"
+
+#    include <pmacc/dimensions/DataSpace.hpp>
 
 #    include <cstdint>
 #    include <functional>
 #    include <string>
 #    include <tuple>
-#    include <vector>
 
 #    include <openPMD/Series.hpp>
 
@@ -49,10 +49,9 @@ namespace picongpu
             Leaving = 1 << 1
         };
 
-        template<typename T_AxisTuple, typename T_SpeciesTuple, typename T_DepositionData>
-        struct BinningData
+        template<typename Child, typename T_AxisTuple, typename T_DepositionData, typename T_Extras>
+        struct BinningDataBase
         {
-        public:
             using DepositionFunctorType = typename T_DepositionData::FunctorType;
             using DepositedQuantityType = typename T_DepositionData::QuantityType;
             // @todo infer type from functor
@@ -60,37 +59,34 @@ namespace picongpu
 
             std::string binnerOutputName;
             T_AxisTuple axisTuple;
-            T_SpeciesTuple speciesTuple;
             T_DepositionData depositionData;
-            std::function<void(::openPMD::Series& series, ::openPMD::Iteration& iteration, ::openPMD::Mesh& mesh)>
-                writeOpenPMDFunctor;
-            DataSpace<std::tuple_size_v<T_AxisTuple>> axisExtentsND;
+            T_Extras extraData;
+            pmacc::DataSpace<std::tuple_size_v<T_AxisTuple>> axisExtentsND;
 
             /* Optional parameters not initialized by constructor.
-             * Use the return value of addBinner() to modify them if needed. */
+             * Use the return value of add...Binner() to modify them if needed. */
+            std::function<void()> hostHook = [] {};
             bool timeAveraging = true;
             bool normalizeByBinVolume = true;
             std::string notifyPeriod = "1";
             uint32_t dumpPeriod = 0u;
-            uint32_t particleRegion{ParticleRegion::Bounded};
 
             std::string openPMDInfix = "_%06T.";
             std::string openPMDExtension = openPMD::getDefaultExtension();
+            std::function<void(::openPMD::Series& series, ::openPMD::Iteration& iteration, ::openPMD::Mesh& mesh)>
+                writeOpenPMDFunctor = std::function<
+                    void(::openPMD::Series& series, ::openPMD::Iteration& iteration, ::openPMD::Mesh& mesh)>();
+            std::string openPMDJsonCfg = "{}";
 
-            std::string jsonCfg = "{}";
-
-            BinningData(
+            BinningDataBase(
                 std::string const& binnerName,
                 T_AxisTuple const& axes,
-                T_SpeciesTuple const& species,
                 T_DepositionData const& depositData,
-                std::function<void(::openPMD::Series& series, ::openPMD::Iteration& iteration, ::openPMD::Mesh& mesh)>
-                    writeOpenPMD)
+                T_Extras const& extraData)
                 : binnerOutputName{binnerName}
                 , axisTuple{axes}
-                , speciesTuple{species}
                 , depositionData{depositData}
-                , writeOpenPMDFunctor{writeOpenPMD}
+                , extraData{extraData}
             {
                 std::apply(
                     [&](auto const&... tupleArgs)
@@ -107,54 +103,112 @@ namespace picongpu
                 return std::tuple_size_v<T_AxisTuple>;
             }
 
-            /** @brief Time average the accumulated data when doing the dump. Defaults to true. */
-            BinningData& setTimeAveraging(bool timeAv)
+            // safely cast this to child
+            Child& interpretAsChild()
             {
-                this->timeAveraging = timeAv;
-                return *this;
-            }
-            /** @brief Defaults to true */
-            BinningData& setNormalizeByBinVolume(bool normalize)
-            {
-                this->normalizeByBinVolume = normalize;
-                return *this;
-            }
-            /** @brief The periodicity of the output. Defaults to 1 */
-            BinningData& setNotifyPeriod(std::string notify)
-            {
-                this->notifyPeriod = std::move(notify);
-                return *this;
-            }
-            /** @brief The number of notify steps to accumulate over. Dump at the end. Defaults to 1. */
-            BinningData& setDumpPeriod(uint32_t dumpXNotifys)
-            {
-                this->dumpPeriod = dumpXNotifys;
-                return *this;
-            }
-            BinningData& setOpenPMDExtension(std::string extension)
-            {
-                this->openPMDExtension = std::move(extension);
-                return *this;
-            }
-            BinningData& setOpenPMDInfix(std::string infix)
-            {
-                this->openPMDInfix = std::move(infix);
-                return *this;
+                return *static_cast<Child*>(this);
             }
 
-            BinningData& setJsonCfg(std::string cfg)
+            /** @brief Time average the accumulated data when doing the dump. Defaults to true. */
+            Child& setTimeAveraging(bool timeAv)
             {
-                this->jsonCfg = std::move(cfg);
-                return *this;
+                this->timeAveraging = timeAv;
+                return interpretAsChild();
             }
+            /** @brief Defaults to true */
+            Child& setNormalizeByBinVolume(bool normalize)
+            {
+                this->normalizeByBinVolume = normalize;
+                return interpretAsChild();
+            }
+            /** @brief The periodicity of the output. Defaults to 1 */
+            Child& setNotifyPeriod(std::string notify)
+            {
+                this->notifyPeriod = std::move(notify);
+                return interpretAsChild();
+            }
+            /** @brief The number of notify steps to accumulate over. Dump at the end. Defaults to 1. */
+            Child& setDumpPeriod(uint32_t dumpXNotifys)
+            {
+                this->dumpPeriod = dumpXNotifys;
+                return interpretAsChild();
+            }
+
+            /** @brief The periodicity of the output. Defaults to 1 */
+            Child& setOpenPMDExtension(std::string extension)
+            {
+                this->openPMDExtension = std::move(extension);
+                return interpretAsChild();
+            }
+
+            /** @brief The periodicity of the output. Defaults to 1 */
+            Child& setOpenPMDInfix(std::string infix)
+            {
+                this->openPMDInfix = std::move(infix);
+                return interpretAsChild();
+            }
+
+            /** @brief The periodicity of the output. Defaults to 1 */
+            Child& setOpenPMDWriteFunctor(
+                std::function<void(::openPMD::Series& series, ::openPMD::Iteration& iteration, ::openPMD::Mesh& mesh)>
+                    writeOpenPMDFunctor)
+            {
+                this->writeOpenPMDFunctor = std::move(writeOpenPMDFunctor);
+                return interpretAsChild();
+            }
+
+            /** @brief The periodicity of the output. Defaults to 1 */
+            Child& setOpenPMDJsonCfg(std::string cfg)
+            {
+                this->openPMDJsonCfg = std::move(cfg);
+                return interpretAsChild();
+            }
+
+            /** @brief A hook to execute code at every notify, before binning is done
+             * A potential use is to fill fieldTmp
+             */
+            Child& setHostSideHook(std::function<void()> hookFunc)
+            {
+                this->hostHook = std::move(hookFunc);
+                return interpretAsChild();
+            }
+        };
+
+
+        template<typename T_AxisTuple, typename T_SpeciesTuple, typename T_DepositionData, typename T_Extras>
+        struct ParticleBinningData
+            : public BinningDataBase<
+                  ParticleBinningData<T_AxisTuple, T_SpeciesTuple, T_DepositionData, T_Extras>,
+                  T_AxisTuple,
+                  T_DepositionData,
+                  T_Extras>
+        {
+            T_SpeciesTuple speciesTuple;
+            uint32_t particleRegion{ParticleRegion::Bounded};
+
+            ParticleBinningData(
+                std::string const& binnerName,
+                T_AxisTuple const& axes,
+                T_SpeciesTuple const& species,
+                T_DepositionData const& depositData,
+                T_Extras const& extraData)
+                : BinningDataBase<ParticleBinningData, T_AxisTuple, T_DepositionData, T_Extras>(
+                    binnerName,
+                    axes,
+                    depositData,
+                    extraData)
+                , speciesTuple{species}
+            {
+            }
+
             // enable a region in the bitmask
-            BinningData& enableRegion(ParticleRegion const region)
+            ParticleBinningData& enableRegion(ParticleRegion const region)
             {
                 particleRegion = particleRegion | region;
                 return *this;
             }
             // disable a region in the bitmask
-            BinningData& disableRegion(ParticleRegion const region)
+            ParticleBinningData& disableRegion(ParticleRegion const region)
             {
                 particleRegion = particleRegion & ~region;
                 return *this;
@@ -165,7 +219,7 @@ namespace picongpu
                 return (particleRegion & region) != 0;
             }
         };
-    }; // namespace plugins::binning
+    } // namespace plugins::binning
 } // namespace picongpu
 
 #endif
