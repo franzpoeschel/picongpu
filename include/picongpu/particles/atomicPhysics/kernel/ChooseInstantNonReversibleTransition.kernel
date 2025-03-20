@@ -346,12 +346,12 @@ namespace picongpu::particles::atomicPhysics::kernel
                     }
 
                     // last resort for numerical rounding induced overflows
-                    ion[processClass_] = u8(s_enums::ProcessClass::fieldIonization);
-                    ion[transitionIndex_] = startIndexTransitionBlock + numberTransitions - u32(1u);
                     /* field ionizations are not bin based therefore we do not set a bin, and old values are
                      * ignored */
-                    // we set the accepted flag to allow easy resource use accounting in a later kernel call
-                    ion[accepted_] = true;
+                    updateIon(
+                        ion,
+                        u8(s_enums::ProcessClass::fieldIonization),
+                        startIndexTransitionBlock + numberTransitions - u32(1u));
                 });
 
             alpaka::atomicOr(

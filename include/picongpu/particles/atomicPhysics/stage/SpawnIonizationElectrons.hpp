@@ -42,7 +42,10 @@ namespace picongpu::particles::atomicPhysics::stage
 {
     namespace enums = picongpu::particles::atomicPhysics::enums;
 
-    template<typename T_IonSpecies>
+    /** spawn ionization electrons due to atomic physics from all ion
+     *
+     */
+    template<typename T_IonSpecies, typename T_checkForAccepted>
     struct SpawnIonizationElectrons
     {
         // might be alias, from here on out no more
@@ -82,8 +85,11 @@ namespace picongpu::particles::atomicPhysics::stage
             //      bound-free based transitions
             if constexpr(AtomicDataType::switchElectronicIonization || AtomicDataType::switchFieldIonization)
             {
-                using SpawnElectrons_BoundFree = picongpu::particles::atomicPhysics::kernel::
-                    SpawnIonizationMacroElectronsKernel<IPDModel, enums::ProcessClassGroup::boundFreeBased>;
+                using SpawnElectrons_BoundFree
+                    = picongpu::particles::atomicPhysics::kernel::SpawnIonizationMacroElectronsKernel<
+                        IPDModel,
+                        enums::ProcessClassGroup::boundFreeBased,
+                        T_checkForAccepted::value>;
 
                 // spawn ionization electrons for bound-free based processes
                 PMACC_LOCKSTEP_KERNEL(SpawnElectrons_BoundFree())
@@ -101,8 +107,11 @@ namespace picongpu::particles::atomicPhysics::stage
             //      autonomous based transitions
             if constexpr(AtomicDataType::switchAutonomousIonization)
             {
-                using SpawnElectrons_Autonomous = picongpu::particles::atomicPhysics::kernel::
-                    SpawnIonizationMacroElectronsKernel<IPDModel, enums::ProcessClassGroup::autonomousBased>;
+                using SpawnElectrons_Autonomous
+                    = picongpu::particles::atomicPhysics::kernel::SpawnIonizationMacroElectronsKernel<
+                        IPDModel,
+                        enums::ProcessClassGroup::autonomousBased,
+                        T_checkForAccepted::value>;
 
                 RngFactoryFloat rngFactory = RngFactoryFloat{currentStep};
 

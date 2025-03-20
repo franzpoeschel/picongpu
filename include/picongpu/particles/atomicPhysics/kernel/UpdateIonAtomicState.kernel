@@ -97,9 +97,9 @@ namespace picongpu::particles::atomicPhysics::kernel
                     uint32_t const transitionIndex = ion[transitionIndex_];
                     uint8_t const processClass = ion[processClass_];
 
-                    bool const acceptedProcessClassTransition = (processClass != u8(T_ProcessClass));
+                    bool const acceptedProcessClassTransition = (processClass == u8(T_ProcessClass));
 
-                    // skip ions without accepted instant transition
+                    // skip ions without accepted process class transition
                     if(!accepted || !acceptedProcessClassTransition)
                         return;
 

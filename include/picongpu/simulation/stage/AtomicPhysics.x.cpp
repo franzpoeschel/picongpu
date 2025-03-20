@@ -64,6 +64,7 @@
 
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 // debug only
 #include "picongpu/particles/atomicPhysics/debug/TestRateCalculation.hpp"
@@ -503,7 +504,10 @@ namespace picongpu::simulation::stage
                 ForEachIonSpeciesRecordChanges{}(mappingDesc);
             }
 
-            //! update atomic state of all ions having accepted an instant transition
+            /** update atomic state of all ions having accepted an instant transition
+             *
+             * @attention currently only updates field ionization transitions
+             */
             HINLINE static void updateIonAtomicState(picongpu::MappingDesc const& mappingDesc)
             {
                 using ForEachIonSpeciesUpdateAtomicState = pmacc::meta::ForEach<
@@ -512,16 +516,18 @@ namespace picongpu::simulation::stage
                 ForEachIonSpeciesUpdateAtomicState{}(mappingDesc);
             }
 
+            template<typename T_checkForAccepted>
             HINLINE static void spawnIonizationElectrons(
                 picongpu::MappingDesc const& mappingDesc,
                 uint32_t const currentStep)
             {
                 using ForEachIonSpeciesSpawnIonizationElectrons = pmacc::meta::ForEach<
                     AtomicPhysicsIonSpecies,
-                    particles::atomicPhysics::stage::SpawnIonizationElectrons<boost::mpl::_1>>;
+                    particles::atomicPhysics::stage::SpawnIonizationElectrons<boost::mpl::_1, T_checkForAccepted>>;
                 ForEachIonSpeciesSpawnIonizationElectrons{}(mappingDesc, currentStep);
             }
 
+            //! @attention assumes that all macro ions' choose a transition have been updated
             HINLINE static void updateElectrons(picongpu::MappingDesc const& mappingDesc, uint32_t const currentStep)
             {
                 /** @note DecelerateElectrons must be called before SpawnIonizationElectrons such that we only
@@ -531,7 +537,8 @@ namespace picongpu::simulation::stage
                     particles::atomicPhysics::stage::DecelerateElectrons<boost::mpl::_1>>;
                 ForEachElectronSpeciesDecelerateElectrons{}(mappingDesc);
 
-                spawnIonizationElectrons(mappingDesc, currentStep);
+                /// @details all ions choose a transition -> no need to check that
+                spawnIonizationElectrons</*checkForAccepted*/ std::false_type>(mappingDesc, currentStep);
             }
 
             HINLINE static void updateElectricField(picongpu::MappingDesc const& mappingDesc)
@@ -614,9 +621,11 @@ namespace picongpu::simulation::stage
                             deviceLocalReduce);
                     }
 
-                    updateIonAtomicState(mappingDesc);
-                    spawnIonizationElectrons(mappingDesc, currentStep);
+                    /// @todo skip everything below this point if no instant transition ion found, Brian Marre, 2025
 
+                    updateIonAtomicState(mappingDesc);
+                    /// @details also resets accepted macro ion attribute
+                    spawnIonizationElectrons</*checkForAccepted*/ std::true_type>(mappingDesc, currentStep);
                     updateElectricField(mappingDesc);
 
                     auto linearizedFoundUnboundIonBox = LinearizedBox<FoundUnboundField>(

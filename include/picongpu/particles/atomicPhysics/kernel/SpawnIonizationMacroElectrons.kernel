@@ -53,7 +53,10 @@ namespace picongpu::particles::atomicPhysics::kernel
      *
      * @attention T_ProcessClassGroup must be either boundFreeBased, or autonomousBased!
      */
-    template<typename T_IPDModel, picongpu::particles::atomicPhysics::enums::ProcessClassGroup T_ProcessClassGroup>
+    template<
+        typename T_IPDModel,
+        picongpu::particles::atomicPhysics::enums::ProcessClassGroup T_ProcessClassGroup,
+        bool T_checkForAccepted>
     struct SpawnIonizationMacroElectronsKernel
     {
         template<typename T_TransitionDataBox, typename T_IonBox, typename T_IonizationElectronBox>
@@ -181,17 +184,27 @@ namespace picongpu::particles::atomicPhysics::kernel
                         uint32_t const idx,
                         uint8_t& numberIonizationElectrons)
                     {
-                        auto const ion = ionFrame[idx];
+                        auto ion = ionFrame[idx];
 
-                        // slot not occupied or not bound-free transition based ionizing process
-                        if(
-                            // slot is not occupied
-                            !static_cast<bool>(ion[multiMask_])
-                            // no bound-free based ionizing process
-                            || !(s_enums::IsProcess<T_ProcessClassGroup>::check(ion[processClass_])))
+                        bool const slotOccupied = static_cast<bool>(ion[multiMask_]);
+                        bool const ionProcessClassInProcessClassGroup
+                            = s_enums::IsProcess<T_ProcessClassGroup>::check(ion[processClass_]);
+                        if(!slotOccupied || !ionProcessClassInProcessClassGroup)
                         {
                             numberIonizationElectrons = u8(0u);
                             return;
+                        }
+
+                        if constexpr(T_checkForAccepted)
+                        {
+                            bool const isAccepted = ion[accepted_];
+                            if(!isAccepted)
+                            {
+                                numberIonizationElectrons = u8(0u);
+                                return;
+                            }
+                            // mark ion as processed to avoid later kernel calls to process it again
+                            ion[accepted_] = false;
                         }
 
                         uint32_t const transitionCollectionIndex = ion[transitionIndex_];
