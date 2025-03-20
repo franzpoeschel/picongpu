@@ -120,6 +120,12 @@ namespace picongpu
              */
             SI,
             /**
+             * @brief Returns the position in PIC units.
+             * @note Converting the particle positions to PIC might be dangerous, especially with respect to the total
+             * origin, as floating point numbers lose precision as the distance from the origin increases.
+             */
+            PIC,
+            /**
              * @brief Returns the position as the number of cells.
              * Integral value if PositionPrecision is Cell and floating point if PositionPrecision is SubCell.
              */
@@ -151,13 +157,16 @@ namespace picongpu
             DomainInfo<BinningType::Particle> const& domainInfo,
             auto const& particle)
             -> pmacc::math::Vector<
-                typename std::conditional_t<
+                std::conditional_t<
                     T_Units == PositionUnits::SI,
-                    typename std::decay_t<decltype(sim.pic.getCellSize())>::type,
+                    typename std::decay_t<decltype(sim.si.getCellSize())>::type,
                     std::conditional_t<
-                        T_Precision == PositionPrecision::SubCell,
-                        typename std::decay_t<decltype(particle[position_])>::type,
-                        int>>,
+                        T_Units == PositionUnits::PIC,
+                        typename std::decay_t<decltype(sim.pic.getCellSize())>::type,
+                        std::conditional_t<
+                            T_Precision == PositionPrecision::SubCell,
+                            typename std::decay_t<decltype(particle[position_])>::type,
+                            int>>>,
                 simDim>
         {
             int const linearCellIdx = particle[localCellIdx_];
@@ -178,18 +187,30 @@ namespace picongpu
                     + particle[position_];
                 if constexpr(T_Units == PositionUnits::SI)
                 {
+                    auto cellSize = sim.si.getCellSize().shrink<simDim>();
+                    return precisionCast<typename std::decay_t<decltype(cellSize)>::type>(pos) * cellSize;
+                }
+                else if constexpr(T_Units == PositionUnits::PIC)
+                {
                     auto cellSize = sim.pic.getCellSize().shrink<simDim>();
                     return precisionCast<typename std::decay_t<decltype(cellSize)>::type>(pos) * cellSize;
                 }
+
                 return pos;
             }
             else
             {
                 if constexpr(T_Units == PositionUnits::SI)
                 {
+                    auto cellSize = sim.si.getCellSize().shrink<simDim>();
+                    return precisionCast<typename std::decay_t<decltype(cellSize)>::type>(relative_cellpos) * cellSize;
+                }
+                if constexpr(T_Units == PositionUnits::PIC)
+                {
                     auto cellSize = sim.pic.getCellSize().shrink<simDim>();
                     return precisionCast<typename std::decay_t<decltype(cellSize)>::type>(relative_cellpos) * cellSize;
                 }
+
                 return relative_cellpos;
             }
 
