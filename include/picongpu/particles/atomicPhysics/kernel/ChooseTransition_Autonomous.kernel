@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Brian Marre
+/* Copyright 2023-2025 Brian Marre
  *
  * This file is part of PIConGPU.
  *
@@ -26,6 +26,7 @@
 #include "picongpu/particles/atomicPhysics/enums/ProcessClass.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ProcessClassGroup.hpp"
 #include "picongpu/particles/atomicPhysics/enums/TransitionOrderingFor.hpp"
+#include "picongpu/particles/atomicPhysics/kernel/UpdateIon.hpp"
 
 #include <pmacc/particles/algorithm/ForEach.hpp>
 #include <pmacc/static_assert.hpp>
@@ -157,15 +158,22 @@ namespace picongpu::particles::atomicPhysics::kernel
                     // get random number
                     float_X const r = rngGeneratorFloat();
 
-                    // compare to cumulative sum of normalized transition rates to find choosen transition
+                    auto const stateTotalLossRate = rateCache.rate(
+                        u32(s_enums::ChooseTransitionGroup::autonomousDownward),
+                        atomicStateCollectionIndex);
 
+                    if(stateTotalLossRate == 0._X)
+                    {
+                        setNoChangeTransition(ion);
+                        return;
+                    }
+
+                    // compare to cumulative sum of normalized transition rates to find choosen transition
                     float_X cumSum = 0._X;
                     for(uint32_t transitionID = 0u; transitionID < numberTransitionsDown; ++transitionID)
                     {
-                        cumSum += transitionDataBox.rate(transitionID + startIndexTransitionBlock)
-                            / rateCache.rate(
-                                u32(s_enums::ChooseTransitionGroup::autonomousDownward),
-                                atomicStateCollectionIndex);
+                        cumSum
+                            += transitionDataBox.rate(transitionID + startIndexTransitionBlock) / stateTotalLossRate;
 
                         // inclusive limit, to make sure that r==1 is assigned a transition
                         if(r <= cumSum)
@@ -184,15 +192,6 @@ namespace picongpu::particles::atomicPhysics::kernel
                         u8(s_enums::ProcessClass::autonomousIonization),
                         startIndexTransitionBlock + numberTransitionsDown - 1u);
                 });
-        }
-
-        template<typename T_Ion>
-        HDINLINE static void updateIon(T_Ion& ion, uint8_t selectedProcessClass, uint32_t selectedTransitionIndex)
-        {
-            ion[processClass_] = selectedProcessClass;
-            ion[transitionIndex_] = selectedTransitionIndex;
-            // autonomous does not require binIndex
-            ion[accepted_] = true;
         }
     };
 } // namespace picongpu::particles::atomicPhysics::kernel

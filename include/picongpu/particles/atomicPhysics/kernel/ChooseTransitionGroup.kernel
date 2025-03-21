@@ -25,7 +25,7 @@
 #include "picongpu/algorithms/FieldToParticleInterpolation.hpp"
 #include "picongpu/particles/atomicPhysics/ConvertEnum.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ChooseTransitionGroup.hpp"
-#include "picongpu/particles/atomicPhysics/enums/ProcessClass.hpp"
+#include "picongpu/particles/atomicPhysics/kernel/UpdateIon.hpp"
 #include "picongpu/particles/shapes.hpp"
 
 #include <pmacc/particles/algorithm/ForEach.hpp>
@@ -175,10 +175,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                     // definition of time step guarantees that cumSum is always <= 1
                     if(r >= cumSum)
                     {
-                        ion[processClass_] = u8(s_enums::ProcessClass::noChange);
-                        // no need to set ion[transitionIndex_] since already uniquely known by processClass = noChange
-                        //  and accepted_ = true prevents it being worked on by ChooseTransitionKernels
-                        ion[accepted_] = true;
+                        setNoChangeTransition(ion);
                     }
                 });
         }

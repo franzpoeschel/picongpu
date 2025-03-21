@@ -30,6 +30,7 @@
 #include "picongpu/particles/atomicPhysics/enums/ADKLaserPolarization.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ProcessClass.hpp"
 #include "picongpu/particles/atomicPhysics/enums/TransitionDirection.hpp"
+#include "picongpu/particles/atomicPhysics/kernel/UpdateIon.hpp"
 #include "picongpu/particles/atomicPhysics/rateCalculation/BoundFreeFieldTransitionRates.hpp"
 
 #include <pmacc/lockstep/ForEach.hpp>
@@ -290,12 +291,8 @@ namespace picongpu::particles::atomicPhysics::kernel
                         if(r <= cumSum)
                         {
                             // found chosen transition
-                            ion[processClass_] = u8(s_enums::ProcessClass::fieldIonization);
-                            ion[transitionIndex_] = transitionCollectionIndex;
-                            /* field ionizations are not bin based therefore we do not set a bin, and old values are
-                             * ignored */
-                            // we set the accepted flag to allow easy resource use accounting in a later kernel call
-                            ion[accepted_] = true;
+                            // field ionizations are not collisional we therefore use the non bin variant
+                            updateIon(ion, u8(s_enums::ProcessClass::fieldIonization), transitionCollectionIndex);
                             return;
                         }
                     }

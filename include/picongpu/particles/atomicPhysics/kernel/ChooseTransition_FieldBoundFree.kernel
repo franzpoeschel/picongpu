@@ -1,4 +1,4 @@
-/* Copyright 2024-2024 Brian Marre
+/* Copyright 2024-2025 Brian Marre
  *
  * This file is part of PIConGPU.
  *
@@ -167,6 +167,17 @@ namespace picongpu::particles::atomicPhysics::kernel
                     // get random number
                     float_X const r = rngGeneratorFloat();
 
+                    // 1/unit_time
+                    auto const stateTotalLossRate = rateCache.rate(
+                        u32(s_enums::ChooseTransitionGroup::fieldBoundFreeUpward),
+                        atomicStateCollectionIndex);
+
+                    if(stateTotalLossRate == 0._X)
+                    {
+                        setNoChangeTransition(ion);
+                        return;
+                    }
+
                     float_X cumSum = 0._X;
                     for(uint32_t transitionID = 0u; transitionID < numberTransitions; ++transitionID)
                     {
@@ -189,30 +200,22 @@ namespace picongpu::particles::atomicPhysics::kernel
                                 printf("atomicPhysics ERROR: encountered infinite transition rate in non instant "
                                        "transition ion");
 
-                        cumSum += rateTransition
-                            / rateCache.rate(
-                                u32(s_enums::ChooseTransitionGroup::fieldBoundFreeUpward),
-                                atomicStateCollectionIndex);
+                        cumSum += rateTransition / stateTotalLossRate;
 
                         // inclusive limit, to make sure that r==1 is assigned a transition
                         if(r <= cumSum)
                         {
                             // found chosen transition
-                            ion[processClass_] = u8(s_enums::ProcessClass::fieldIonization);
-                            ion[transitionIndex_] = transitionCollectionIndex;
-                            // field ionizations are not bin based therefore we do not set a bin, and old values are
-                            // ignored
-                            ion[accepted_] = true;
+
+                            // field ionizations are not bin based therefore use non-collision version
+                            updateIon(ion, u8(s_enums::ProcessClass::fieldIonization), transitionCollectionIndex);
                             return;
                         }
                     }
 
                     /* ADK rate for particle cell E-Field below superCell maximum ADK rate
                      * -> need to do noChange Transition for correct division into other channels. */
-                    ion[processClass_] = u8(s_enums::ProcessClass::noChange);
-                    // no need to set ion[transitionIndex_] since already uniquely known by processClass = noChange
-                    // no-change transitions are not bin based therefore we don't set a bin, old values are ignored
-                    ion[accepted_] = true;
+                    setNoChangeTransition(ion);
                 });
         }
     };
