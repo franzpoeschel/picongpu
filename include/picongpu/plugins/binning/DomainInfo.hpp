@@ -213,8 +213,6 @@ namespace picongpu
 
                 return relative_cellpos;
             }
-
-            return relative_cellpos;
         }
     } // namespace plugins::binning
 } // namespace picongpu
