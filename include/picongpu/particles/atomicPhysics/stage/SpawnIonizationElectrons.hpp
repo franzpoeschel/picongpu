@@ -42,8 +42,11 @@ namespace picongpu::particles::atomicPhysics::stage
 {
     namespace enums = picongpu::particles::atomicPhysics::enums;
 
-    /** spawn ionization electrons due to atomic physics from all ion
+    /** spawn ionization electrons for all macro ions that choose ionizing atomic physics processes
      *
+     * @tparam T_checkForAccepted false =^= process all macro ions independent of their accepted_ attribute value,
+     *  true =^= only process macro particles that are marked as accepted_==true and reset their accepted_ attribute to
+     *  false afterwards
      */
     template<typename T_IonSpecies, typename T_checkForAccepted>
     struct SpawnIonizationElectrons

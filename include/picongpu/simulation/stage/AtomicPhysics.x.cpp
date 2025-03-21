@@ -580,6 +580,11 @@ namespace picongpu::simulation::stage
                 } // end pressure ionization loop
             }
 
+            /** apply all instant transition effects to macro ions
+             *
+             * @attention assumes that accepted macro ion attribute has been previously reset
+             * @details resets the accepted macro ion attribute of all particles after finish
+             */
             template<typename T_DeviceReduce>
             HINLINE static void applyInstantTransitions(
                 picongpu::MappingDesc const& mappingDesc,
@@ -691,12 +696,11 @@ namespace picongpu::simulation::stage
                 bool isSubSteppingComplete = false;
                 while(!isSubSteppingComplete)
                 {
-                    resetAcceptedStatus(mappingDesc);
-                    resetElectronEnergyHistogram();
                     debugForceConstantElectronTemperature(currentStep);
                     applyIPDIonization(mappingDesc, currentStep, deviceLocalReduce);
-                    applyInstantTransitions(mappingDesc, currentStep, deviceLocalReduce);
                     resetAcceptedStatus(mappingDesc);
+                    applyInstantTransitions(mappingDesc, currentStep, deviceLocalReduce);
+                    resetElectronEnergyHistogram();
                     binElectronsToEnergyHistogram(mappingDesc);
                     resetTimeStep(mappingDesc);
                     resetRateCache();
