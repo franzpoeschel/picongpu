@@ -200,9 +200,9 @@ namespace picongpu::particles::atomicPhysics::kernel
                         // unit: 1/unit_time
                         float_X rateTransition = 0._X;
 
-                        bool const isPossibleTransition
+                        bool const enoughEnergyForTransition
                             = (weight * picongpu::sim.pic.conv().eV2Joule(ionizationEnergy) <= eFieldEnergy);
-                        if(isPossibleTransition)
+                        if(enoughEnergyForTransition)
                         {
                             rateTransition = atomicPhysics::rateCalculation::
                                 BoundFreeFieldTransitionRates<T_ADKLaserPolarization>::template rateADKFieldIonization<
