@@ -95,7 +95,7 @@ For fields with extra data:
 
 Domain Info
 """""""""""
-Enables the user to find the location of the particle or field (in cells) in the simulation domain. Contains
+Enables the user to find the location of the particle or field in the simulation domain. Contains
 
 For particle binning, the ``DomainInfo`` class contains:
 
@@ -109,9 +109,9 @@ For field binning, the ``DomainInfo`` class additionally contains:
 
 The global and local offsets can be understood by looking at the `PIConGPU domain definitions <https://github.com/ComputationalRadiationPhysics/picongpu/wiki/PIConGPU-domain-definitions>`_.
 
-For particle binning, the particle position is obtained at cell center precision by default. To get sub-cell precision or SI units, use optional template parameters with ``getParticlePosition<DomainOrigin, PositionPrecision, PositionUnits>``.
+For particle binning, the particle position is obtained at cell precision by default. To get sub-cell precision or SI units, use optional template parameters with ``getParticlePosition<DomainOrigin, PositionPrecision, PositionUnits>``.
 
-For field binning, the field ``DomainInfo`` additionally holds the localCellIndex in the supercell and has a method to ``getCellIndex<DomainOrigin, PositionUnits>`` to get the current cell index being binned relative to an origin (global, total, local).
+For field binning, the field ``DomainInfo`` additionally holds the localCellIndex in the supercell and has a method to ``getCellIndex<DomainOrigin, PositionUnits>`` to get the current cell index being binned relative to an origin (global, total, local). To get the exact position of the fields inside the cell, relative to the cell index, use the FieldPosition trait.
 
 
 Dimensionality and units

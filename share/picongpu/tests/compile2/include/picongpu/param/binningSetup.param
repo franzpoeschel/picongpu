@@ -187,7 +187,7 @@ namespace picongpu
                 = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, auto const& field1, auto const& field2)
                 -> float_X
             {
-                auto fieldValue = field1(domainInfo.template getCellPosition<DomainOrigin::TOTAL>());
+                auto fieldValue = field1(domainInfo.template getCellIndex<DomainOrigin::TOTAL>());
                 auto squaredSum = fieldValue.x() * fieldValue.x() + fieldValue.y() * fieldValue.y()
                     + fieldValue.z() * fieldValue.z();
                 return squaredSum;

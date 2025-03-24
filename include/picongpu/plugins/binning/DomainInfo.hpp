@@ -134,10 +134,10 @@ namespace picongpu
             {
             }
 
-            // returns the cell position
+            // returns the cell index. To get the exact position of the fields, use the fieldPosition trait
             // passed Can also return in SI units if CellUnits::SI is specified
             template<DomainOrigin T_Origin, PositionUnits T_Units = PositionUnits::Cell>
-            ALPAKA_FN_ACC auto getCellPosition() const
+            ALPAKA_FN_ACC auto getCellIndex() const
             {
                 auto relative_cellpos = blockCellOffset;
 
