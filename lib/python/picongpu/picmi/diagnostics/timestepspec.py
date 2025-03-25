@@ -5,19 +5,19 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
-from enum import StrEnum, auto
+from enum import Enum
 from math import ceil
 
 from ...pypicongpu.output import TimeStepSpec as PyPIConGPUTimeStepSpec
 
 
-class TimeStepUnits(StrEnum):
+class TimeStepUnits(Enum):
     """
     Units allowed in TimeStepSpec.
     """
 
-    STEPS = auto()
-    SECONDS = auto()
+    STEPS = "steps"
+    SECONDS = "seconds"
 
     @classmethod
     def _missing_(cls, value):
