@@ -124,7 +124,7 @@ namespace picongpu
                 }
 
                 ::openPMD::Series& series = *params->openPMDSeries;
-                ::openPMD::Container<::openPMD::Mesh>& meshes = series.iterations[currentStep].meshes;
+                ::openPMD::Container<::openPMD::Mesh>& meshes = series.iterations[currentStep].open().meshes;
 
                 auto destBox = field.getHostBuffer().getDataBox();
                 for(uint32_t n = 0; n < numComponents; ++n)

@@ -85,7 +85,8 @@ namespace picongpu
                 GridController<simDim>& gc = Environment<simDim>::get().GridController();
 
                 ::openPMD::Series& series = *params->openPMDSeries;
-                ::openPMD::Container<::openPMD::ParticleSpecies>& particles = series.iterations[currentStep].particles;
+                ::openPMD::Container<::openPMD::ParticleSpecies>& particles
+                    = series.iterations[currentStep].open().particles;
                 ::openPMD::ParticleSpecies particleSpecies = particles[speciesName];
 
                 const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();

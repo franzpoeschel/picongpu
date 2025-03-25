@@ -249,7 +249,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
             plugins::multi::Option<std::string> jsonRestartConfig
                 = {"jsonRestart",
                    "advanced (backend) configuration for openPMD in JSON format (used when reading from a checkpoint)",
-                   "{}"};
+                   R"({"defer_iteration_parsing": true})"};
 
             plugins::multi::Option<std::string> dataPreparationStrategy
                 = {"dataPreparationStrategy",
@@ -644,11 +644,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 jsonMatcher = AbstractJsonMatcher::construct(jsonConfigString, communicator);
             }
 
-            log<picLog::INPUT_OUTPUT>("openPMD: global JSON config: %1%") % jsonMatcher->getDefault();
-            if(jsonRestartParams != "{}")
-            {
-                log<picLog::INPUT_OUTPUT>("openPMD: global JSON restart config: %1%") % jsonRestartParams;
-            }
+            log<picLog::INPUT_OUTPUT>("openPMD: global JSON output config: %1%") % jsonMatcher->getDefault();
+            log<picLog::INPUT_OUTPUT>("openPMD: global JSON restart config: %1%") % jsonRestartParams;
 
             {
                 if(dataPreparationStrategyString == "adios" || dataPreparationStrategyString == "doubleBuffer")
@@ -978,7 +975,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 auto rngProvider = dc.get<RNGProvider>(RNGProvider::getName());
                 auto const name = rngProvider->getName();
 
-                ::openPMD::Iteration iteration = params->openPMDSeries->iterations[restartStep];
+                ::openPMD::Iteration iteration = params->openPMDSeries->iterations[restartStep].open();
                 ::openPMD::Mesh mesh = iteration.meshes[name];
                 ::openPMD::MeshRecordComponent mrc = mesh[::openPMD::RecordComponent::SCALAR];
 
@@ -1307,7 +1304,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
 
                 checkIOFileVersionRestartCompatibility(mThreadParams.openPMDSeries);
 
-                ::openPMD::Iteration iteration = mThreadParams.openPMDSeries->iterations[restartStep];
+                ::openPMD::Iteration iteration = mThreadParams.openPMDSeries->iterations[restartStep].open();
 
                 /* load number of slides to initialize MovingWindow */
                 log<picLog::INPUT_OUTPUT>("openPMD: (begin) read attr (%1% available)") % iteration.numAttributes();
