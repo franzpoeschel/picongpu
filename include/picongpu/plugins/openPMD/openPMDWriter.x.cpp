@@ -1010,7 +1010,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                     rawPtr,
                     asStandardVector<VecUInt64, ::openPMD::Offset>(recordOffsetDims),
                     asStandardVector<VecUInt64, ::openPMD::Extent>(recordLocalSizeDims));
-                params->openPMDSeries->flush();
+                iteration.seriesFlush();
                 // Copy data to device
                 rngProvider->syncToDevice();
             }

@@ -102,12 +102,12 @@ namespace picongpu
 
                 auto numRanks = gc.getGlobalSize();
 
-                size_t patchIdx = getPatchIdx(params, series, particleSpecies, numRanks);
+                size_t patchIdx = getPatchIdx(params, particleSpecies, numRanks);
 
                 std::shared_ptr<uint64_t> fullParticlesInfoShared
                     = particleSpecies.particlePatches["numParticles"][::openPMD::RecordComponent::SCALAR]
                           .load<uint64_t>();
-                series.flush();
+                particles.seriesFlush();
                 uint64_t* fullParticlesInfo = fullParticlesInfoShared.get();
 
                 /* Run a prefix sum over the numParticles[0] element in
@@ -200,7 +200,6 @@ namespace picongpu
              */
             HINLINE size_t getPatchIdx(
                 ThreadParams* params,
-                ::openPMD::Series& series,
                 ::openPMD::ParticleSpecies particleSpecies,
                 size_t numRanks)
             {
@@ -216,7 +215,7 @@ namespace picongpu
                         = particleSpecies.particlePatches["offset"][name_lookup[d]].load<uint64_t>();
                     std::shared_ptr<uint64_t> patchExtentsInfoShared
                         = particleSpecies.particlePatches["extent"][name_lookup[d]].load<uint64_t>();
-                    series.flush();
+                    particleSpecies.seriesFlush();
                     for(size_t i = 0; i < numRanks; ++i)
                     {
                         offsets[i][d] = patchOffsetsInfoShared.get()[i];

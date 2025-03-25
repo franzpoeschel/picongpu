@@ -159,7 +159,7 @@ namespace picongpu
                     std::shared_ptr<float_X> field_container = rc.loadChunk<float_X>(start, count);
 
                     /* start a blocking read of all scheduled variables */
-                    series.flush();
+                    meshes.seriesFlush();
 
 
                     int const elementCount = local_domain_size.productOfComponents();
