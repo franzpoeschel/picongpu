@@ -145,7 +145,7 @@ class TimeStepSpec(metaclass=_TimeStepSpecMeta):
 
     def __add__(self, other):
         if not (isinstance(other, TimeStepSpec)):
-            raise TypeError("unsupported operand type(s) for +: TimeStepSpec and {type(other)}")
+            raise TypeError(f"unsupported operand type(s) for +: TimeStepSpec and {type(other)}")
         ts = TimeStepSpec(
             *self.specs,
             *other.specs,
@@ -158,6 +158,8 @@ class TimeStepSpec(metaclass=_TimeStepSpecMeta):
         return ts
 
     def _transform_to_steps(self, specs_in_seconds, time_step_size):
+        if time_step_size <= 0:
+            raise ValueError(f"Time step size must be strictly positive. You gave {time_step_size}.")
         return tuple(
             slice(
                 int(spec.start / time_step_size if spec.start is not None else 0),

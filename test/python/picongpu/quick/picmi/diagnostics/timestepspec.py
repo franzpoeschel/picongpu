@@ -208,6 +208,10 @@ class TestTimeStepSpec(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unknown unit in TimeStepSpec."):
             TimeStepSpec[:]("meters")
 
+    def test_raises_on_negative_time_step_size(self):
+        with self.assertRaisesRegex(ValueError, "Time step size must be strictly positive."):
+            TimeStepSpec[:]("seconds").get_as_pypicongpu(-1.0, 10)
+
     def test_rounding_in_unit_conversion(self):
         # Values are chosen to be sufficiently misaligned such that all special cases are triggered.
         time_step_size = 0.3333
