@@ -208,7 +208,7 @@ Use the **Interaction** interface
 - **Interaction**
   picongpu specific configuration of PIC-algorithm extensions.
 
-    - ``__init__(ground_state_ionizaion_model_list= <list of ionization models>)``
+    - ``__init__(ground_state_ionization_model_list= <list of ionization models>)``
 
 Output
 ^^^^^^

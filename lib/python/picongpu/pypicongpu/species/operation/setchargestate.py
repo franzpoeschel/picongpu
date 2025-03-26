@@ -1,7 +1,7 @@
 """
 This file is part of PIConGPU.
 Copyright 2021-2024 PIConGPU contributors
-Authors: Hannes Troepgen, Brian Edward Marre
+Authors: Hannes Troepgen, Brian Edward Marre, Masoud Afshari
 License: GPLv3+
 """
 
@@ -26,7 +26,7 @@ class SetChargeState(Operation):
     """species which will have boundElectrons set"""
 
     charge_state = util.build_typesafe_property(int)
-    """number of bound electrons to set"""
+    """initial ion charge state"""
 
     def __init__(self):
         pass
