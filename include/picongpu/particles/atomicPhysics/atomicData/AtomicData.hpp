@@ -1576,9 +1576,9 @@ namespace picongpu::particles::atomicPhysics::atomicData
             // fill ipdIonizationStateDataBuffer
             if(fileIPDIonizationData.empty())
             {
-                std::cout
-                    << "no user provided presssure ioniation state file, using automatic pressure ionization states"
-                    << std::endl;
+                std::cout << "[atomicPhysics Note]: no user provided IPD ionization state file, using automatic "
+                             "IPD ionization states"
+                          << std::endl;
                 fillIPDIonizationDataAuto();
             }
             else
