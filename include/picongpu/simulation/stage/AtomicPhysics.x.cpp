@@ -24,6 +24,7 @@
 #include "picongpu/particles/atomicPhysics/AtomicPhysicsSuperCellFields.hpp"
 #include "picongpu/particles/atomicPhysics/ParticleType.hpp"
 #include "picongpu/particles/atomicPhysics/SetTemperature.hpp"
+#include "picongpu/particles/atomicPhysics/debug/param.hpp"
 #include "picongpu/particles/atomicPhysics/debug/stage/DumpAllIonsToConsole.hpp"
 #include "picongpu/particles/atomicPhysics/debug/stage/DumpRateCacheToConsole.hpp"
 #include "picongpu/particles/atomicPhysics/debug/stage/DumpSuperCellDataToConsole.hpp"
@@ -793,6 +794,12 @@ namespace picongpu::simulation::stage
             loadAtomicInputData(dc);
             picongpu::particles::atomicPhysics::AtomicPhysicsSuperCellFields::create(dc, mappingDesc);
             picongpu::atomicPhysics::IPDModel::createHelperFields(dc, mappingDesc);
+        }
+        if constexpr(picongpu::atomicPhysics::debug::scFlyComparison::FORCE_CONSTANT_ELECTRON_TEMPERATURE)
+        {
+            std::cout << "[atomicPhysics WARNING]: forcing a constant electron temperature of "
+                      << picongpu::atomicPhysics::debug::scFlyComparison::TemperatureParam::temperature
+                      << " keV, per user direction." << std::endl;
         }
 
         if constexpr(picongpu::atomicPhysics::debug::rateCalculation::RUN_UNIT_TESTS)
