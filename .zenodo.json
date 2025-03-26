@@ -1,288 +1,288 @@
 {
-  "creators":[
+  "creators": [
     {
-      "affiliation":"ELI-NP",
-      "name":"Berceanu, Andrei"
+      "affiliation": "ELI-NP",
+      "name": "Berceanu, Andrei"
     },
     {
-      "affiliation":"HZDR, TU-Dresden",
-      "name":"Carstens, Finn-Ole"
+      "affiliation": "HZDR, TU-Dresden",
+      "name": "Carstens, Finn-Ole"
     },
     {
-      "affiliation":"HZDR",
-      "name":"Debus, Alexander",
-      "orcid":"0000-0002-3844-3697"
+      "affiliation": "HZDR",
+      "name": "Debus, Alexander",
+      "orcid": "0000-0002-3844-3697"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Dietrich, Fabia"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Dietrich, Fabia"
     },
     {
-      "affiliation":"CASUS, HZDR",
-      "name":"Ehrig, Simeon",
-      "orcid":"0000-0002-8218-3116"
+      "affiliation": "CASUS, HZDR",
+      "name": "Ehrig, Simeon",
+      "orcid": "0000-0002-8218-3116"
     },
     {
-      "affiliation":"HZDR",
-      "name":"Ermakov, Sergey Konstantin"
+      "affiliation": "HZDR",
+      "name": "Ermakov, Sergey Konstantin"
     },
     {
-      "name":"Marre, Brian Edward",
-      "affiliation":"HZDR, TU Dresden",
-      "orcid":"0009-0005-6873-8292"
+      "name": "Marre, Brian Edward",
+      "affiliation": "HZDR, TU Dresden",
+      "orcid": "0009-0005-6873-8292"
     },
     {
-      "name":"Lenz, Julian",
-      "affiliation":"CASUS, HZDR",
-      "orcid":"0000-0001-5250-0005"
+      "name": "Lenz, Julian",
+      "affiliation": "CASUS, HZDR",
+      "orcid": "0000-0001-5250-0005"
     },
     {
-      "affiliation":"HZDR",
-      "name":"Lehmann, Max"
+      "affiliation": "HZDR",
+      "name": "Lehmann, Max"
     },
     {
-      "affiliation":"CASUS, HZDR",
-      "name":"Afshari, Masoud",
-      "orcid":"0000-0003-4486-9683"
+      "affiliation": "CASUS, HZDR",
+      "name": "Afshari, Masoud",
+      "orcid": "0000-0003-4486-9683"
     },
     {
-      "affiliation":"CASUS, HZDR",
-      "name":"Narwal, Tapish",
-      "orcid":"0000-0002-5726-2330"
+      "affiliation": "CASUS, HZDR",
+      "name": "Narwal, Tapish",
+      "orcid": "0000-0002-5726-2330"
     },
     {
-      "name":"Ordyna, Paweł",
-      "affiliation":"HZDR, TU Dresden"
+      "name": "Ordyna, Paweł",
+      "affiliation": "HZDR, TU Dresden"
     },
     {
-      "affiliation":"HZDR",
-      "name":"Pausch, Richard",
-      "orcid":"0000-0001-7990-9564"
+      "affiliation": "HZDR",
+      "name": "Pausch, Richard",
+      "orcid": "0000-0001-7990-9564"
     },
     {
-      "name":"Poeschel, Franz",
-      "affiliation":"CASUS, HZDR",
-      "orcid":"0000-0001-7042-5088"
+      "name": "Poeschel, Franz",
+      "affiliation": "CASUS, HZDR",
+      "orcid": "0000-0001-7042-5088"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Sprenger, Lennert"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Sprenger, Lennert"
     },
     {
-      "affiliation":"CASUS, HZDR",
-      "name":"Steiniger, Klaus",
-      "orcid":"0000-0001-8965-1149"
+      "affiliation": "CASUS, HZDR",
+      "name": "Steiniger, Klaus",
+      "orcid": "0000-0001-8965-1149"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Tiebel, Jessica"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Tiebel, Jessica"
     },
     {
-      "affiliation":"HZDR",
-      "name":"Widera, René",
-      "orcid":"0000-0003-1642-0459"
+      "affiliation": "HZDR",
+      "name": "Widera, René",
+      "orcid": "0000-0003-1642-0459"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Wolf, Hannes"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Wolf, Hannes"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Wrobel, Nico"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Wrobel, Nico"
     }
   ],
-  "contributors":[
+  "contributors": [
     {
-      "affiliation":"LOA",
-      "name":"Andriyash, Igor",
-      "type":"Other"
+      "affiliation": "LOA",
+      "name": "Andriyash, Igor",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR",
-      "name":"Bastrakova, Kseniia",
-      "type":"Other"
+      "affiliation": "HZDR",
+      "name": "Bastrakova, Kseniia",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR",
-      "name":"Bastrakov, Sergei",
-      "orcid":"0000-0003-3396-6154",
-      "type":"Other"
+      "affiliation": "HZDR",
+      "name": "Bastrakov, Sergei",
+      "orcid": "0000-0003-3396-6154",
+      "type": "Other"
     },
     {
-      "affiliation":"University Jena",
-      "name":"Bifeng, Lei",
-      "type":"Other"
+      "affiliation": "University Jena",
+      "name": "Bifeng, Lei",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Burau, Heiko",
-      "type":"Other"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Burau, Heiko",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, CASUS",
-      "name":"Bussmann, Michael",
-      "orcid":"0000-0002-8258-3881",
-      "type":"Other"
+      "affiliation": "HZDR, CASUS",
+      "name": "Bussmann, Michael",
+      "orcid": "0000-0002-8258-3881",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU-Dresden",
-      "name":"Eckert, Carlchristian",
-      "type":"Other"
+      "affiliation": "HZDR, TU-Dresden",
+      "name": "Eckert, Carlchristian",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Voß, Mika Soren",
-      "type":"Other"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Voß, Mika Soren",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Garten, Marco",
-      "orcid":"0000-0001-6994-2475",
-      "type":"Other"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Garten, Marco",
+      "orcid": "0000-0001-6994-2475",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU-Dresden",
-      "name":"Göthel, Ilja",
-      "type":"Other"
+      "affiliation": "HZDR, TU-Dresden",
+      "name": "Göthel, Ilja",
+      "type": "Other"
     },
     {
-      "name":"Gruber, Bernhard Manfred",
-      "affiliation":"CASUS, HZDR, CERN",
-      "orcid":"0000-0001-7848-1690",
-      "type":"Other"
+      "name": "Gruber, Bernhard Manfred",
+      "affiliation": "CASUS, HZDR, CERN",
+      "orcid": "0000-0001-7848-1690",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Grund, Alexander",
-      "orcid":"0000-0002-7196-8452",
-      "type":"Other"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Grund, Alexander",
+      "orcid": "0000-0002-7196-8452",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU-Dresden",
-      "name":"Hahn, Sebastian",
-      "type":"Other"
+      "affiliation": "HZDR, TU-Dresden",
+      "name": "Hahn, Sebastian",
+      "type": "Other"
     },
     {
-      "affiliation":"TU-Dresden",
-      "name":"Hoehnig, Wolfgang",
-      "type":"Other"
+      "affiliation": "TU-Dresden",
+      "name": "Hoehnig, Wolfgang",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU Dresden, LBNL",
-      "name":"Huebl, Axel",
-      "orcid":"0000-0003-1943-7141",
-      "type":"Other"
+      "affiliation": "HZDR, TU Dresden, LBNL",
+      "name": "Huebl, Axel",
+      "orcid": "0000-0003-1943-7141",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR",
-      "name":"Kelling, Jeffrey",
-      "orcid":"0000-0003-1761-2591",
-      "type":"Other"
+      "affiliation": "HZDR",
+      "name": "Kelling, Jeffrey",
+      "orcid": "0000-0003-1761-2591",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU-Dresden",
-      "name":"Knespel, Maximilian",
-      "type":"Other"
+      "affiliation": "HZDR, TU-Dresden",
+      "name": "Knespel, Maximilian",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Lebedev, Anton",
-      "type":"Other"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Lebedev, Anton",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Matthes, Alexander",
-      "orcid":"0000-0002-6702-2015",
-      "type":"Other"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Matthes, Alexander",
+      "orcid": "0000-0002-6702-2015",
+      "type": "Other"
     },
     {
-      "name":"Meyer, Felix",
-      "affiliation":"HZDR, TU Dresden",
-      "type":"Other"
+      "name": "Meyer, Felix",
+      "affiliation": "HZDR, TU Dresden",
+      "type": "Other"
     },
     {
-      "affiliation":"ELI-NP",
-      "name":"Ong, Jian Fuh",
-      "type":"Other"
+      "affiliation": "ELI-NP",
+      "name": "Ong, Jian Fuh",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Prinz, Nils",
-      "type":"Other"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Prinz, Nils",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Rudat, Sophie",
-      "type":"Other"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Rudat, Sophie",
+      "type": "Other"
     },
     {
-      "affiliation":"TU-Dresden",
-      "name":"Schmitt, Felix",
-      "type":"Other"
+      "affiliation": "TU-Dresden",
+      "name": "Schmitt, Felix",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU-Dresden",
-      "name":"Schneider, Benjamin",
-      "type":"Other"
+      "affiliation": "HZDR, TU-Dresden",
+      "name": "Schneider, Benjamin",
+      "type": "Other"
     },
     {
-      "affiliation":"TU-Dresden",
-      "name":"Schumann, Conrad",
-      "type":"Other"
+      "affiliation": "TU-Dresden",
+      "name": "Schumann, Conrad",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR",
-      "name":"Starke, Sebastian",
-      "type":"Other"
+      "affiliation": "HZDR",
+      "name": "Starke, Sebastian",
+      "type": "Other"
     },
     {
-      "name":"Stephan, Jan",
-      "affiliation":"CASUS, HZDR, TU Dresden",
-      "orcid":"0000-0001-7839-4386",
-      "type":"Other"
+      "name": "Stephan, Jan",
+      "affiliation": "CASUS, HZDR, TU Dresden",
+      "orcid": "0000-0001-7839-4386",
+      "type": "Other"
     },
     {
-      "name":"Thévenet, Maxence",
-      "affiliation":"Desy",
-      "type":"Other"
+      "name": "Thévenet, Maxence",
+      "affiliation": "Desy",
+      "type": "Other"
     },
     {
-      "affiliation":"University Jena",
-      "name":"Tietze, Stefan",
-      "type":"Other"
+      "affiliation": "University Jena",
+      "name": "Tietze, Stefan",
+      "type": "Other"
     },
     {
-      "name":"Trojok, Jakob",
-      "affiliation":"HZDR, TU Dresden",
-      "type":"Other"
+      "name": "Trojok, Jakob",
+      "affiliation": "HZDR, TU Dresden",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU Dresden",
-      "name":"Tröpgen, Hannes",
-      "type":"Other"
+      "affiliation": "HZDR, TU Dresden",
+      "name": "Tröpgen, Hannes",
+      "type": "Other"
     },
     {
-      "name":"Wang, Manhui",
-      "affiliation":"University of Liverpool",
-      "type":"Other"
+      "name": "Wang, Manhui",
+      "affiliation": "University of Liverpool",
+      "type": "Other"
     },
     {
-      "affiliation":"TU-Dresden",
-      "name":"Winkler, Frank",
-      "type":"Other"
+      "affiliation": "TU-Dresden",
+      "name": "Winkler, Frank",
+      "type": "Other"
     },
     {
-      "affiliation":"LogMeIn, Inc.",
-      "name":"Worpitz, Benjamin",
-      "type":"Other"
+      "affiliation": "LogMeIn, Inc.",
+      "name": "Worpitz, Benjamin",
+      "type": "Other"
     },
     {
-      "affiliation":"HZDR, TU-Dresden",
-      "name":"Zenker, Erik",
-      "type":"Other"
+      "affiliation": "HZDR, TU-Dresden",
+      "name": "Zenker, Erik",
+      "type": "Other"
     }
   ],
-  "keywords":[
+  "keywords": [
     "PIConGPU",
     "CUDA",
     "OpenMP",
@@ -292,12 +292,12 @@
     "HIP",
     "C++"
   ],
-  "language":"eng",
-  "access_right":"open",
-  "license":{
-    "id":"GPL-3.0"
+  "language": "eng",
+  "access_right": "open",
+  "license": {
+    "id": "GPL-3.0"
   },
-  "references":[
+  "references": [
     "L. V. Keldysh (1965). Ionization in the field of a strong electromagnetic wave.",
     "D. Bauer and P. Mulser (1999). Exact field ionization rates in the barrier-suppression regime from numerical time-dependent Schrödinger-equation calculations. DOI:10.1103/PhysRevA.59.569",
     "R. Pausch et al. (2014). How to test and verify radiation diagnostics simulations within particle-in-cell frameworks. DOI:10.1016/j.nima.2013.10.073",
