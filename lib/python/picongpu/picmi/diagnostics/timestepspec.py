@@ -5,13 +5,31 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
-from enum import Enum
+from enum import Enum, EnumMeta
 from math import ceil
 
 from ...pypicongpu.output import TimeStepSpec as PyPIConGPUTimeStepSpec
 
 
-class TimeStepUnits(Enum):
+class CustomStrEnumMeta(EnumMeta):
+    """
+    This class provides some functionality of 3.12 StrEnum,
+    namely its __contains__() method.
+
+    You can safely remove this and inherit directly from StrEnum
+    once we switched to 3.12.
+    """
+
+    def __contains__(cls, val):
+        try:
+            cls(val)
+        except ValueError:
+            return False
+        else:
+            return True
+
+
+class TimeStepUnits(Enum, metaclass=CustomStrEnumMeta):
     """
     Units allowed in TimeStepSpec.
     """
