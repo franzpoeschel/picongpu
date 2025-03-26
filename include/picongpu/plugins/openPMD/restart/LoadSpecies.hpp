@@ -198,10 +198,8 @@ namespace picongpu
              *
              * @return index of the particle patch within the openPMD data
              */
-            HINLINE size_t getPatchIdx(
-                ThreadParams* params,
-                ::openPMD::ParticleSpecies particleSpecies,
-                size_t numRanks)
+            HINLINE size_t
+            getPatchIdx(ThreadParams* params, ::openPMD::ParticleSpecies particleSpecies, size_t numRanks)
             {
                 const std::string name_lookup[] = {"x", "y", "z"};
 
