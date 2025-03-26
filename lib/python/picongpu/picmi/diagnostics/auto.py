@@ -5,6 +5,7 @@ Authors: Pawel Ordyna
 License: GPLv3+
 """
 
+from .timestepspec import TimeStepSpec
 from ...pypicongpu.output.auto import Auto as PyPIConGPUAuto
 from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
 
@@ -13,11 +14,10 @@ from ..species import Species as PICMISpecies
 
 
 import typeguard
-import pydantic
 
 
 @typeguard.typechecked
-class Auto(pydantic.BaseModel):
+class Auto:
     """
     Specifies the parameters for the Auto output.
 
@@ -28,20 +28,23 @@ class Auto(pydantic.BaseModel):
         Unit: steps (simulation time steps).
     """
 
-    period: int
+    period: TimeStepSpec
     """Number of simulation steps between consecutive outputs. Unit: steps (simulation time steps)."""
 
+    def __init__(self, period: TimeStepSpec) -> None:
+        self.period = period
+
     def check(self):
-        if self.period <= 0:
-            raise ValueError("Period must be > 0")
+        pass
 
     def get_as_pypicongpu(
         self,
         # not used here, but needed for the interface
         dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies],
+        time_step_size,
+        num_steps,
     ) -> PyPIConGPUAuto:
         self.check()
-
         pypicongpu_auto = PyPIConGPUAuto()
-        pypicongpu_auto.period = self.period
+        pypicongpu_auto.period = self.period.get_as_pypicongpu(time_step_size, num_steps)
         return pypicongpu_auto

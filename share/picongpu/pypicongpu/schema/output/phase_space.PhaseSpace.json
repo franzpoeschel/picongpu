@@ -10,9 +10,7 @@
                     "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.species.species.Species"
         },
         "period": {
-            "type": "integer",
-            "minimum": 1,
-            "description": "Time period for phase space output."
+            "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.timestepspec.TimeStepSpec"
         },
         "spatial_coordinate": {
             "type": "string",

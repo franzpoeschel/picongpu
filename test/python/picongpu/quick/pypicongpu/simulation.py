@@ -184,7 +184,7 @@ class TestSimulation(unittest.TestCase):
         self.assertEqual(2, context["grid"]["cell_size"]["y"])
         self.assertEqual(None, context["laser"])
         self.assertEqual(self.s.init_manager.get_rendering_context(), context["species_initmanager"])
-        self.assertEqual(1, context["output"][0]["data"]["period"])
+        self.assertEqual(1, context["output"][0]["data"]["period"]["specs"][0]["step"])
 
         self.assertNotEqual([], context["species_initmanager"]["species"])
         self.assertNotEqual([], context["species_initmanager"]["operations"])
@@ -207,7 +207,10 @@ class TestSimulation(unittest.TestCase):
         """period is always at least one"""
         for time_steps in [1, 17, 99]:
             self.s.time_steps = time_steps
-            self.assertEqual(1, self.s.get_rendering_context()["output"][0]["data"]["period"])
+            self.assertEqual(
+                1,
+                self.s.get_rendering_context()["output"][0]["data"]["period"]["specs"][0]["step"],
+            )
 
     def test_custom_input_pass_thru(self):
         i = customuserinput.CustomUserInput()
@@ -217,8 +220,15 @@ class TestSimulation(unittest.TestCase):
 
         self.s.custom_user_input = [i]
 
-        renderingContextGoodResult = {"test_data_1": 1, "test_data_2": 2, "tags": ["tag_1", "tag_2"]}
-        self.assertEqual(renderingContextGoodResult, self.s.get_rendering_context()["customuserinput"])
+        renderingContextGoodResult = {
+            "test_data_1": 1,
+            "test_data_2": 2,
+            "tags": ["tag_1", "tag_2"],
+        }
+        self.assertEqual(
+            renderingContextGoodResult,
+            self.s.get_rendering_context()["customuserinput"],
+        )
 
     def test_combination_of_several_custom_inputs(self):
         i_1 = customuserinput.CustomUserInput()
@@ -229,8 +239,15 @@ class TestSimulation(unittest.TestCase):
 
         self.s.custom_user_input = [i_1, i_2]
 
-        renderingContextGoodResult = {"test_data_1": 1, "test_data_2": 2, "tags": ["tag_1", "tag_2"]}
-        self.assertEqual(renderingContextGoodResult, self.s.get_rendering_context()["customuserinput"])
+        renderingContextGoodResult = {
+            "test_data_1": 1,
+            "test_data_2": 2,
+            "tags": ["tag_1", "tag_2"],
+        }
+        self.assertEqual(
+            renderingContextGoodResult,
+            self.s.get_rendering_context()["customuserinput"],
+        )
 
     def test_duplicated_tag_over_different_custom_inputs(self):
         i_1 = customuserinput.CustomUserInput()

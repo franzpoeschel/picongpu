@@ -5,3 +5,4 @@ from .layout import *  # pyflakes.ignore
 from .distribution import *  # pyflakes.ignore
 from .gaussian_laser import *  # pyflakes.ignore
 from .grid import *  # pyflakes.ignore
+from .diagnostics import *  # pyflakes.ignore

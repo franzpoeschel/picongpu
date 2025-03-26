@@ -305,7 +305,14 @@ class Simulation(picmistandard.PICMI_Simulation):
         self,
     ) -> tuple[
         dict[Species, pypicongpu.species.Species],
-        dict[Species, None | dict[IonizationModel, pypicongpu.species.constant.ionizationmodel.IonizationModel]],
+        dict[
+            Species,
+            None
+            | dict[
+                IonizationModel,
+                pypicongpu.species.constant.ionizationmodel.IonizationModel,
+            ],
+        ],
     ]:
         """
         get mappping of PICMI species to PyPIConGPU species and mapping of of simulation
@@ -328,7 +335,12 @@ class Simulation(picmistandard.PICMI_Simulation):
         self,
         pypicongpu_by_picmi_species: dict[Species, pypicongpu.species.Species],
         ionization_model_conversion_by_species: dict[
-            Species, None | dict[IonizationModel, pypicongpu.species.constant.ionizationmodel.IonizationModel]
+            Species,
+            None
+            | dict[
+                IonizationModel,
+                pypicongpu.species.constant.ionizationmodel.IonizationModel,
+            ],
         ],
     ) -> None:
         """
@@ -342,7 +354,9 @@ class Simulation(picmistandard.PICMI_Simulation):
                 pypicongpu_by_picmi_species, ionization_model_conversion_by_species
             )
 
-    def __get_init_manager(self) -> tuple[InitManager, typing.Dict[Species, pypicongpu.species.Species]]:
+    def __get_init_manager(
+        self,
+    ) -> tuple[InitManager, typing.Dict[Species, pypicongpu.species.Species]]:
         """
         create & fill an Initmanager
 
@@ -378,7 +392,9 @@ class Simulation(picmistandard.PICMI_Simulation):
         return initmgr, pypicongpu_by_picmi_species
 
     def write_input_file(
-        self, file_name: str, pypicongpu_simulation: typing.Optional[pypicongpu.simulation.Simulation] = None
+        self,
+        file_name: str,
+        pypicongpu_simulation: typing.Optional[pypicongpu.simulation.Simulation] = None,
     ) -> None:
         """
         generate input data set for picongpu
@@ -459,10 +475,10 @@ class Simulation(picmistandard.PICMI_Simulation):
 
         s.init_manager, pypicongpu_by_picmi_species = self.__get_init_manager()
 
-        plugins = []
-        for entry in self.diagnostics:
-            plugins.append(entry.get_as_pypicongpu(pypicongpu_by_picmi_species))
-        s.plugins = plugins
+        s.plugins = [
+            entry.get_as_pypicongpu(pypicongpu_by_picmi_species, self.time_step_size, self.max_steps)
+            for entry in self.diagnostics
+        ]
 
         # set typical ppc if not set explicitly by user
         if self.picongpu_typical_ppc is None:

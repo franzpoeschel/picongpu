@@ -5,6 +5,7 @@ Authors: Masoud Afshari
 License: GPLv3+
 """
 
+from .timestepspec import TimeStepSpec
 from .. import util
 from ..species import Species
 
@@ -17,7 +18,7 @@ import typing
 @typeguard.typechecked
 class MacroParticleCount(Plugin):
     species = util.build_typesafe_property(Species)
-    period = util.build_typesafe_property(int)
+    period = util.build_typesafe_property(TimeStepSpec)
 
     def __init__(self):
         "do nothing"
@@ -26,5 +27,5 @@ class MacroParticleCount(Plugin):
         """Return the serialized representation of the object."""
         return {
             "species": self.species.get_rendering_context(),
-            "period": self.period,
+            "period": self.period.get_rendering_context(),
         }

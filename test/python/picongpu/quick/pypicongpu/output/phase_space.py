@@ -5,6 +5,7 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
+from picongpu.pypicongpu.output.timestepspec import TimeStepSpec
 from picongpu.pypicongpu.output import PhaseSpace
 from picongpu.pypicongpu.species import Species
 from picongpu.pypicongpu.species.attribute import Position, Momentum
@@ -30,7 +31,7 @@ class TestPhaseSpace(unittest.TestCase):
             ps._get_serialized()
 
         ps.species = create_species()
-        ps.period = 1
+        ps.period = TimeStepSpec([slice(0, None, 17)])
         ps.spatial_coordinate = "x"
         ps.momentum_coordinate = "px"
         ps.min_momentum = 0.0
@@ -75,31 +76,17 @@ class TestPhaseSpace(unittest.TestCase):
 
         # ok
         ps.species = create_species()
-        ps.period = 17
+        ps.period = TimeStepSpec([slice(0, None, 17)])
         ps.spatial_coordinate = "x"
         ps.momentum_coordinate = "px"
         ps.min_momentum = 0.0
         ps.max_momentum = 1.0
 
-    def test_period_invalid(self):
-        """period must be positive, non-zero integer"""
-        ps = PhaseSpace()
-
-        invalid_periods = [-1, 0, -1273]
-        for invalid_period in invalid_periods:
-            with self.assertRaises(Exception):
-                ps.period = invalid_period
-                ps._get_serialized()
-
-        # ok
-        ps.period = 1
-        ps.period = 2
-
     def test_rendering(self):
         """data transformed to template-consumable version"""
         ps = PhaseSpace()
         ps.species = create_species()
-        ps.period = 42
+        ps.period = TimeStepSpec([slice(0, None, 42)])
         ps.spatial_coordinate = "x"
         ps.momentum_coordinate = "px"
         ps.min_momentum = 0.0
@@ -107,7 +94,7 @@ class TestPhaseSpace(unittest.TestCase):
 
         # normal rendering
         context = ps.get_rendering_context()
-        self.assertEqual(42, context["period"])
+        self.assertEqual(42, context["period"]["specs"][0]["step"])
         self.assertEqual("x", context["spatial_coordinate"])
         self.assertEqual("px", context["momentum_coordinate"])
         self.assertEqual(0.0, context["min_momentum"])
@@ -122,7 +109,7 @@ class TestPhaseSpace(unittest.TestCase):
         """min_momentum and max_momentum values are valid"""
         ps = PhaseSpace()
         ps.species = create_species()
-        ps.period = 1
+        ps.period = TimeStepSpec([slice(0, None, 1)])
         ps.spatial_coordinate = "x"
         ps.momentum_coordinate = "px"
 

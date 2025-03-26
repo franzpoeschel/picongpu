@@ -5,11 +5,14 @@ Authors: Masoud Afshari
 License: GPLv3+
 """
 
-from ..pypicongpu.output.energy_histogram import EnergyHistogram as PyPIConGPUEnergyHistogram
-from ..pypicongpu.species.species import Species as PyPIConGPUSpecies
+from .timestepspec import TimeStepSpec
+from ...pypicongpu.output.energy_histogram import (
+    EnergyHistogram as PyPIConGPUEnergyHistogram,
+)
+from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
 
 
-from .species import Species as PICMISpecies
+from ..species import Species as PICMISpecies
 
 import typeguard
 
@@ -51,8 +54,6 @@ class EnergyHistogram:
     """
 
     def check(self):
-        if self.period <= 0:
-            raise ValueError("Period must be > 0")
         if self.min_energy >= self.max_energy:
             raise ValueError("min_energy must be less than max_energy")
         if self.bin_count <= 0:
@@ -61,7 +62,7 @@ class EnergyHistogram:
     def __init__(
         self,
         species: PICMISpecies,
-        period: int,
+        period: TimeStepSpec,
         bin_count: int,
         min_energy: float,
         max_energy: float,
@@ -76,6 +77,8 @@ class EnergyHistogram:
         # to get the corresponding PyPIConGPUSpecies instance for the given PICMISpecies.
         self,
         dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies],
+        time_step_size,
+        num_steps,
     ) -> PyPIConGPUEnergyHistogram:
         self.check()
 
@@ -90,7 +93,7 @@ class EnergyHistogram:
 
         pypicongpu_energy_histogram = PyPIConGPUEnergyHistogram()
         pypicongpu_energy_histogram.species = pypicongpu_species
-        pypicongpu_energy_histogram.period = self.period
+        pypicongpu_energy_histogram.period = self.period.get_as_pypicongpu(time_step_size, num_steps)
         pypicongpu_energy_histogram.bin_count = self.bin_count
         pypicongpu_energy_histogram.min_energy = self.min_energy
         pypicongpu_energy_histogram.max_energy = self.max_energy

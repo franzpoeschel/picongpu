@@ -74,7 +74,7 @@ TBG_steps="{{{time_steps}}}"
 # only use charge conservation if solver is yee AND using cuda backend
 if [[ "Yee" = "{{{solver.name}}}" ]] && [[ "$PIC_BACKEND" =~ ^cuda(:.+)?$ ]]
 then
-    USED_CHARGE_CONSERVATION_FLAGS="--chargeConservation.period {{{data.period}}}"
+    USED_CHARGE_CONSERVATION_FLAGS="--chargeConservation.period {{#data.period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/data.period.specs}}"
 else
     USED_CHARGE_CONSERVATION_FLAGS=""
 fi
@@ -94,24 +94,24 @@ pypicongpu_output_with_newlines="
       {{#data}}
     {{#typeID.auto}}
 
-        --fields_energy.period {{{period}}}
-        --sumcurr.period {{{period}}}
+        --fields_energy.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
+        --sumcurr.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
         $USED_CHARGE_CONSERVATION_FLAGS
 
         {{#species_initmanager.species}}
-            --{{{name}}}_macroParticlesCount.period {{{period}}}
+            --{{{name}}}_macroParticlesCount.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
 
-            --{{{name}}}_energy.period {{{period}}}
+            --{{{name}}}_energy.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
             --{{{name}}}_energy.filter all
 
-            --{{{name}}}_energyHistogram.period {{{period}}}
+            --{{{name}}}_energyHistogram.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
             --{{{name}}}_energyHistogram.filter all
             --{{{name}}}_energyHistogram.binCount 1024
             --{{{name}}}_energyHistogram.minEnergy 0
             --{{{name}}}_energyHistogram.maxEnergy 256000
 
             {{#png_axis}}
-                --{{{name}}}_png.period {{{period}}}
+                --{{{name}}}_png.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
                 --{{{name}}}_png.axis {{{axis}}}
                 --{{{name}}}_png.slicePoint 0.5
                 --{{{name}}}_png.folder png_{{{name}}}_{{{axis}}}
@@ -120,7 +120,7 @@ pypicongpu_output_with_newlines="
     {{/typeID.auto}}
 
     {{#typeID.phasespace}}
-          --{{{species.name}}}_phaseSpace.period {{{period}}}
+          --{{{species.name}}}_phaseSpace.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
           --{{{species.name}}}_phaseSpace.filter all
           --{{{species.name}}}_phaseSpace.space {{{spatial_coordinate}}}
           --{{{species.name}}}_phaseSpace.momentum {{{momentum_coordinate}}}
@@ -129,7 +129,7 @@ pypicongpu_output_with_newlines="
     {{/typeID.phasespace}}
 
     {{#typeID.energyhistogram}}
-          --{{{species.name}}}_energyHistogram.period {{{period}}}
+          --{{{species.name}}}_energyHistogram.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
           --{{{species.name}}}_energyHistogram.filter all
           --{{{species.name}}}_energyHistogram.binCount {{{bin_count}}}
           --{{{species.name}}}_energyHistogram.minEnergy {{{min_energy}}}
@@ -137,7 +137,7 @@ pypicongpu_output_with_newlines="
     {{/typeID.energyhistogram}}
 
     {{#typeID.macroparticlecount}}
-      --{{{species.name}}}_macroParticleCount.period {{{period}}}
+      --{{{species.name}}}_macroParticlesCount.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
     {{/typeID.macroparticlecount}}
 
     {{/data}}

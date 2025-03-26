@@ -5,6 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre, Richard Pausch
 License: GPLv3+
 """
 
+from .timestepspec import TimeStepSpec
 from .. import util
 from .plugin import Plugin
 
@@ -25,7 +26,7 @@ class Auto(Plugin):
     create a separate class.
     """
 
-    period = util.build_typesafe_property(int)
+    period = util.build_typesafe_property(TimeStepSpec)
     """period to print data at"""
 
     def __init__(self):
@@ -34,20 +35,13 @@ class Auto(Plugin):
     def check(self) -> None:
         """
         validate attributes
-
-        if ok pass silently, otherwise raises error
-
-        :raises ValueError: period is non-negative integer
-        :raises ValueError: species_names contains empty string
-        :raises ValueError: species_names contains non-unique name
         """
-        if 1 > self.period:
-            raise ValueError("period must be non-negative integer")
+        pass
 
     def _get_serialized(self) -> dict:
         self.check()
         return {
-            "period": self.period,
+            "period": self.period.get_rendering_context(),
             # helper to avoid repeating code
             "png_axis": [
                 {"axis": "yx"},
