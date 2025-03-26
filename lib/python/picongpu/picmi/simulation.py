@@ -475,10 +475,10 @@ class Simulation(picmistandard.PICMI_Simulation):
 
         s.init_manager, pypicongpu_by_picmi_species = self.__get_init_manager()
 
-        plugins = []
-        for entry in self.diagnostics:
-            plugins.append(entry.get_as_pypicongpu(pypicongpu_by_picmi_species, self.time_step_size, self.max_steps))
-        s.plugins = plugins
+        s.plugins = [
+            entry.get_as_pypicongpu(pypicongpu_by_picmi_species, self.time_step_size, self.max_steps)
+            for entry in self.diagnostics
+        ]
 
         # set typical ppc if not set explicitly by user
         if self.picongpu_typical_ppc is None:
