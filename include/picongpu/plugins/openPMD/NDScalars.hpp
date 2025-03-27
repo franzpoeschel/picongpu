@@ -164,7 +164,7 @@ namespace picongpu
                 auto datasetName = baseName + "/" + group + "/" + dataset;
                 ::openPMD::Series& series = *params.openPMDSeries;
                 ::openPMD::MeshRecordComponent mrc
-                    = series.iterations[currentStep].meshes[baseName + "_" + group][dataset];
+                    = series.iterations[currentStep].open().meshes[baseName + "_" + group][dataset];
                 auto ndim = mrc.getDimensionality();
                 if(ndim != simDim)
                 {
@@ -188,7 +188,7 @@ namespace picongpu
 
                 std::shared_ptr<T_Scalar> readValue = mrc.loadChunk<T_Scalar>(start, count);
 
-                series.flush();
+                mrc.seriesFlush();
 
                 *value = *readValue;
 

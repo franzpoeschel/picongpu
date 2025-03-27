@@ -124,7 +124,7 @@ namespace picongpu
                 }
 
                 ::openPMD::Series& series = *params->openPMDSeries;
-                ::openPMD::Container<::openPMD::Mesh>& meshes = series.iterations[currentStep].meshes;
+                ::openPMD::Container<::openPMD::Mesh>& meshes = series.iterations[currentStep].open().meshes;
 
                 auto destBox = field.getHostBuffer().getDataBox();
                 for(uint32_t n = 0; n < numComponents; ++n)
@@ -159,7 +159,7 @@ namespace picongpu
                     std::shared_ptr<float_X> field_container = rc.loadChunk<float_X>(start, count);
 
                     /* start a blocking read of all scheduled variables */
-                    series.flush();
+                    meshes.seriesFlush();
 
 
                     int const elementCount = local_domain_size.productOfComponents();
