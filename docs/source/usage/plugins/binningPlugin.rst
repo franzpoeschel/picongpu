@@ -45,9 +45,15 @@ A functor description is created using createFunctorDescription.
 
 Functor
 ^^^^^^^
+
+The functor is run on the GPU and constitutes the means by which the user can execute code on device while binning. This may be used to calculate the deposited quantity or to calculate the axis values.
+
 The functor needs to follow the signature shown below. This provides the user access to the particle or field object and with information about the :ref:`domain <usage/plugins/binningPlugin:Domain Info>`.
 
 The return type is defined by the user.
+
+The first two arguments are always the worker and the domainInfo. For particle binning this is followed by the particle object, and for field binning this is followed by the field object (if any). If extra data is passed, this is also passed as arguments.
+It is the responsibility of the user to ensure that their functors have an appropriate number and types of arguments to match the provided tuples. A few examples are shown below.
 
 For particles:
 
@@ -69,7 +75,7 @@ For particles with two extra data paramters:
 		return myParameter;
 	};
 
-For fields:
+For one field:
 
 .. code-block:: c++
 
@@ -79,7 +85,7 @@ For fields:
 		return myParameter;
 	};
 
-For fields with extra data:
+For two fields with one extra data parameter:
 
 .. code-block:: c++
 
@@ -102,16 +108,11 @@ For particle binning, the ``DomainInfo`` class contains:
 .. doxygenclass:: picongpu::plugins::binning::DomainInfoBase
 	:members:
 
-For field binning, the ``DomainInfo`` class additionally contains:
-
-.. doxygenclass:: picongpu::plugins::binning::DomainInfo< BinningType::Field >
-	:members:
-
 The global and local offsets can be understood by looking at the `PIConGPU domain definitions <https://github.com/ComputationalRadiationPhysics/picongpu/wiki/PIConGPU-domain-definitions>`_.
 
 For particle binning, the particle position is obtained at cell precision by default. To get sub-cell precision or SI units, use optional template parameters with ``getParticlePosition<DomainOrigin, PositionPrecision, PositionUnits>``.
 
-For field binning, the field ``DomainInfo`` additionally holds the localCellIndex in the supercell and has a method to ``getCellIndex<DomainOrigin, PositionUnits>`` to get the current cell index being binned relative to an origin (global, total, local). To get the exact position of the fields inside the cell, relative to the cell index, use the FieldPosition trait.
+For field binning, the field ``DomainInfo`` additionally holds the localCellIndex in the supercell and has a method to ``getCellIndex<DomainOrigin, PositionUnits>`` to get the current cell index being binned relative to an origin (global, total, local). To get the exact position of the fields inside the cell, relative to the cell index, use the ``FieldPosition`` trait.
 
 
 Dimensionality and units
@@ -120,12 +121,11 @@ Users can specify the units of their functor output using a 7 dimensional array.
 The dimensional base quantities are defined in ``SIBaseUnits_t`` following the international system of quantities (ISQ).
 If no units are given, the quantity is assumed to be dimensionless.
 
-.. code-block:: c++
-
-	std::array<double, numUnits> momentumDimension{};
-	momentumDimension[SIBaseUnits::length] = 1.0;
-	momentumDimension[SIBaseUnits::mass] = 1.0;
-	momentumDimension[SIBaseUnits::time] = -1.0;
+.. literalinclude:: ../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
+   :language: c++
+   :start-after: doc-include-start: units
+   :end-before: doc-include-end: units
+   :dedent:
 
 .. doxygenenum:: picongpu::SIBaseUnits::SIBaseUnits_t
 
@@ -189,16 +189,11 @@ Species can be instances of a species type or a particle species name as a PMACC
 Optionally, users can specify a filter to be used with the species. This is a predicate functor, i.e. it is a functor with a signature as described above and which returns a boolean. If the filter returns true it means the particle is included in the binning.
 They can then create a FilteredSpecies object which contains the species and the filter.
 
-.. code-block:: c++
-
-	auto myFilter = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, auto const& particle) -> bool
-	{
-		bool binningEnabled = true;
-		// fn body
-		return binningEnabled;
-	};
-
-	auto fitleredElectrons = FilteredSpecies{electronsObj, myFilter};
+.. literalinclude:: ../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
+   :language: c++
+   :start-after: doc-include-start: filter
+   :end-before: doc-include-end: filter
+   :dedent:
 
 .. note::
 
@@ -210,12 +205,11 @@ Fields
 PIConGPU fields which should be used in field binning.
 Fields can be instances of a field type. For example,
 
-.. code-block:: c++
-
-	DataConnector& dc = Environment<>::get().DataConnector();
-	auto fieldsTuple = createTuple(
-	dc.get<FieldB>(FieldB::getName())->getDeviceDataBox(),
-	dc.get<FieldTmp>(FieldTmp::getUniqueId(0))->getDeviceDataBox());
+.. literalinclude:: ../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
+   :language: c++
+   :start-after: doc-include-start: fieldTuple
+   :end-before: doc-include-end: fieldTuple
+   :dedent:
 
 Fields are passed to addFieldBinner in the form of a tuple. This is just a collection of field objects and is of arbitrary size.
 Users can make a fields tuple by using the ``createTuple()`` function and passing in the objects as arguments.
@@ -236,23 +230,8 @@ The signature of quantity functors is
 Extra Data
 ----------
 Users can pass extra data to the functors if additional information is required by the kernels to do binning.
-	This extra data is created using the `createTuple()` function and then passed into the binning creator.
-Extra data is passed to ``addParticleBinner`` or ``addFieldBinner`` functions in the form of a tuple. This tuple is just a collection of objects and is of arbitrary size.
+Extra data is passed to ``binningCreator``'s ``addParticleBinner`` or ``addFieldBinner`` functions in the form of a tuple. This tuple is just a collection of objects and is of arbitrary size.
 Users can make a tuple of the extra data by using the ``createTuple()`` function and passing in the objects as arguments.
-
-For example, to pass extra data to a particle binner:
-
-.. code-block:: c++
-
-	auto extraData = createTuple(extraData1, extraData2);
-	addParticleBinner(axisTuple, speciesTuple, depositionFunctor, extraData);
-
-Similarly, for a field binner:
-
-.. code-block:: c++
-
-	auto extraData = createTuple(extraData1, extraData2);
-	addFieldBinner(axisTuple, fieldsTuple, depositionFunctor, extraData);
 
 .. note::
 
@@ -436,4 +415,4 @@ References
 More examples of binning plugin usage
 =====================================
 
-Further examples of the binning plugin can be found in the ``binningSetup.param`` associated with the atomic physics example and the ``compile2`` test.
+Further examples of the binning plugin can be found in the atomic physics example at ``share/picongpu/examples/AtomicPhysics/include/picongpu/param/binningSetup.param`` and the ``share/picongpu/tests/compile2`` test.

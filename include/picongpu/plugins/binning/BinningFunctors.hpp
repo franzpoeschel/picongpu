@@ -86,11 +86,11 @@ namespace picongpu
 
         /** Creates a histogram based on axis and quantity description
          */
-        struct BinningFunctor
+        struct ParticleBinningKernel
         {
             using result_type = void;
 
-            HINLINE BinningFunctor() = default;
+            HINLINE ParticleBinningKernel() = default;
 
             template<typename T_HistBox, typename T_DepositionFunctor, typename T_Mapping, uint32_t T_nAxes>
             DINLINE void operator()(
@@ -167,11 +167,11 @@ namespace picongpu
             }
         } // namespace detail
 
-        struct BinningFunctorLeaving
+        struct LeavingParticleBinningKernel
         {
             using result_type = void;
 
-            HINLINE BinningFunctorLeaving() = default;
+            HINLINE LeavingParticleBinningKernel() = default;
 
             template<
                 typename T_Worker,
@@ -269,21 +269,13 @@ namespace picongpu
                         // This assumes n_bins and getBinIdx exist
                         validIdx
                             = (
-                                [&](auto const& tupleArg)                                   {
-                                       if constexpr (pmacc::memory::tuple::tuple_size_v<decltype(userFunctorData)> > 0) {
-                                           auto [isValid, binIdx] = binning::apply(
-                                               [&](auto const&... userFunctorData)
-                                               { return pmacc::memory::tuple::get<1>(tupleArg).getBinIdx(worker, domainInfo, userFunctorData...); },
-                                               userFunctorData);
-                                           binsDataspace[pmacc::memory::tuple::get<0>(tupleArg)] = binIdx;
-                                           return isValid;
-                                       }
-                                       else{
-                                           auto [isValid, binIdx] = pmacc::memory::tuple::get<1>(tupleArg).getBinIdx(worker, domainInfo);
-                                           binsDataspace[pmacc::memory::tuple::get<0>(tupleArg)] = binIdx;
-                                           return isValid;
-
-                                       }
+                                [&](auto const& tupleArg){
+                                    auto [isValid, binIdx] = binning::apply(
+                                        [&](auto const&... userFunctorData)
+                                        { return pmacc::memory::tuple::get<1>(tupleArg).getBinIdx(worker, domainInfo, userFunctorData...); },
+                                        userFunctorData);
+                                    binsDataspace[pmacc::memory::tuple::get<0>(tupleArg)] = binIdx;
+                                    return isValid;
                                    }(tupleArgs)
                                && ...);
                     },
@@ -292,28 +284,11 @@ namespace picongpu
                 if(validIdx)
                 {
                     auto const idxOneD = pmacc::math::linearize(extents, binsDataspace);
-                    if constexpr(pmacc::memory::tuple::tuple_size_v < decltype(userFunctorData) >> 0)
-                    {
-                        DepositionType depositVal = binning::apply(
-                            [&](auto const&... userFunctorData)
-                            { return quantityFunctor(worker, domainInfo, userFunctorData...); },
-                            userFunctorData);
-                        alpaka::atomicAdd(
-                            worker.getAcc(),
-                            &(histBox[idxOneD]),
-                            depositVal,
-                            ::alpaka::hierarchy::Blocks{});
-                    }
-                    else
-                    {
-                        DepositionType depositVal = quantityFunctor(worker, domainInfo);
-
-                        alpaka::atomicAdd(
-                            worker.getAcc(),
-                            &(histBox[idxOneD]),
-                            depositVal,
-                            ::alpaka::hierarchy::Blocks{});
-                    }
+                    DepositionType depositVal = binning::apply(
+                        [&](auto const&... userFunctorData)
+                        { return quantityFunctor(worker, domainInfo, userFunctorData...); },
+                        userFunctorData);
+                    alpaka::atomicAdd(worker.getAcc(), &(histBox[idxOneD]), depositVal, ::alpaka::hierarchy::Blocks{});
                 }
             }
         };

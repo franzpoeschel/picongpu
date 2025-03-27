@@ -70,53 +70,31 @@ namespace picongpu
 
                 auto const functorBlock = FieldBinningKernel{};
 
-                if constexpr(std::tuple_size_v < decltype(this->binningData.extraData) >> 0)
-                {
-                    auto const userFunctorData = std::apply(
-                        [&](auto&&... fields)
-                        {
-                            return std::apply(
-                                [&](auto&&... extras)
-                                {
-                                    return pmacc::memory::tuple::make_tuple(
-                                        std::forward<decltype(fields)>(fields)...,
-                                        std::forward<decltype(extras)>(extras)...);
-                                },
-                                this->binningData.extraData);
-                        },
-                        this->binningData.fieldsTuple);
+                auto const userFunctorData = std::apply(
+                    [&](auto&&... fields)
+                    {
+                        return std::apply(
+                            [&](auto&&... extras)
+                            {
+                                return pmacc::memory::tuple::make_tuple(
+                                    std::forward<decltype(fields)>(fields)...,
+                                    std::forward<decltype(extras)>(extras)...);
+                            },
+                            this->binningData.extraData);
+                    },
+                    this->binningData.fieldsTuple);
 
-                    PMACC_LOCKSTEP_KERNEL(functorBlock)
-                        .config(mapper.getGridDim(), SuperCellSize{})(
-                            binningBox,
-                            localOffset,
-                            globalOffset,
-                            axisKernels,
-                            userFunctorData,
-                            this->binningData.depositionData.functor,
-                            this->binningData.axisExtentsND,
-                            currentStep,
-                            mapper);
-                }
-                else
-                {
-                    auto const fields = std::apply(
-                        [&](auto&&... args)
-                        { return pmacc::memory::tuple::make_tuple(std::forward<decltype(args)>(args)...); },
-                        this->binningData.fieldsTuple);
-
-                    PMACC_LOCKSTEP_KERNEL(functorBlock)
-                        .config(mapper.getGridDim(), SuperCellSize{})(
-                            binningBox,
-                            localOffset,
-                            globalOffset,
-                            axisKernels,
-                            fields,
-                            this->binningData.depositionData.functor,
-                            this->binningData.axisExtentsND,
-                            currentStep,
-                            mapper);
-                }
+                PMACC_LOCKSTEP_KERNEL(functorBlock)
+                    .config(mapper.getGridDim(), SuperCellSize{})(
+                        binningBox,
+                        localOffset,
+                        globalOffset,
+                        axisKernels,
+                        userFunctorData,
+                        this->binningData.depositionData.functor,
+                        this->binningData.axisExtentsND,
+                        currentStep,
+                        mapper);
             }
         };
 
