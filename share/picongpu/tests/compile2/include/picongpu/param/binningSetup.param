@@ -28,12 +28,15 @@ namespace picongpu
 {
     namespace plugins::binning
     {
+        void fieldBinningExample(BinningCreator& binningCreator);
+
         void particleBinningExample(BinningCreator& binningCreator);
 
         inline void getBinning(BinningCreator& binningCreator)
         {
             /// USER CODE GOES BELOW
             particleBinningExample(binningCreator);
+            fieldBinningExample(binningCreator);
             /// USER CODE ENDS HERE
         }
 
@@ -69,11 +72,13 @@ namespace picongpu
                 = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, auto const& particle) -> float_X
             { return particle[momentum_][1] / particle[weighting_]; };
 
+            // #doc-include-start : units
             // Define units
             std::array<double, numUnits> momentumDimension{};
             momentumDimension[SIBaseUnits::length] = 1.0;
             momentumDimension[SIBaseUnits::mass] = 1.0;
             momentumDimension[SIBaseUnits::time] = -1.0;
+            // #doc-include-end : units
 
             // Create Functor Description
             auto momentumYDescription
@@ -110,6 +115,7 @@ namespace picongpu
              */
             auto electronsObj = PMACC_CSTRING("e"){};
 
+            // #doc-include-start : filter
             /**
              * Optionally pass a particle filter to be used for this
              * Simply a particle predicate functor
@@ -118,8 +124,11 @@ namespace picongpu
                 = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, auto const& particle) -> bool
             { return true; };
 
+            auto filteredElectrons = FilteredSpecies{electronsObj, allParticles};
+            // #doc-include-end : filter
+
             // Bring the species together in a tuple
-            auto speciesTuple = createSpeciesTuple(FilteredSpecies{electronsObj, allParticles});
+            auto speciesTuple = createSpeciesTuple(filteredElectrons);
 
             /**
              * Define deposited quantity here
@@ -172,5 +181,85 @@ namespace picongpu
                 .setDumpPeriod(2000)
                 .setNormalizeByBinVolume(false);
         }
+
+        inline void fieldBinningExample(BinningCreator& binningCreator)
+        {
+            /**
+             * define axes here
+             */
+
+            /// Axis 1
+            // Define Functor
+            auto getSquaredFieldAmplitude
+                = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, auto const& field1, auto const& field2)
+                -> float_X
+            {
+                auto fieldValue = field1(domainInfo.template getCellIndex<DomainOrigin::TOTAL>());
+                auto squaredSum = fieldValue.x() * fieldValue.x() + fieldValue.y() * fieldValue.y()
+                    + fieldValue.z() * fieldValue.z();
+                return squaredSum;
+            };
+
+            // Create Functor Description
+            auto fieldDescription
+                = createFunctorDescription<float_X>(getSquaredFieldAmplitude, "Field Amplitude Squared");
+
+            // Create Axis Splitting
+            auto fieldRange = axis::Range{0._X, 100._X};
+            auto fieldSplitting = axis::AxisSplitting(fieldRange, 100);
+
+            // Create Axis
+            auto ax_sqAmp = axis::createLinear(fieldSplitting, fieldDescription);
+
+            /// Axis 2
+            // Define Functor
+            auto getTimeStep
+                = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, auto const& field1, auto const& field2)
+                -> uint32_t { return domainInfo.currentStep; };
+
+            // Create Functor Description
+            auto timeStepDescription = createFunctorDescription<uint32_t>(getTimeStep, "time_axis");
+
+            // Create Axis
+            auto ax_timeStep = axis::createLinear(axis::AxisSplitting<uint32_t>{{0, 2000}, 2000}, timeStepDescription);
+
+            // Bring the axes together in a tuple
+            auto axisTuple = createTuple(ax_sqAmp, ax_timeStep);
+
+            // #doc-include-start : fieldTuple
+            // Bring the fields together in a tuple
+            DataConnector& dc = Environment<>::get().DataConnector();
+            auto fieldsTuple = createTuple(
+                dc.get<FieldB>(FieldB::getName())->getDeviceDataBox(),
+                dc.get<FieldTmp>(FieldTmp::getUniqueId(0))->getDeviceDataBox());
+            // #doc-include-end : fieldTuple
+
+            /**
+             * Define deposited quantity here
+             */
+            auto getFieldX
+                = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, auto const& field1, auto const& field2)
+                -> float_X { return field1(domainInfo.localCellIdx).x(); };
+
+            std::array<double, numUnits> depositedUnits{}; // Tell user the 7 dimensional format
+            depositedUnits[SIBaseUnits::length] = -3.0;
+            depositedUnits[SIBaseUnits::electricCurrent] = 1.0;
+            depositedUnits[SIBaseUnits::time] = 1.0;
+
+            // @todo enforce functor return type is same as createFunctorDescription template type
+            auto fieldX = createFunctorDescription<float_X>(getFieldX, "FieldX", depositedUnits);
+
+            /** A hook that is called on every notify.
+             *  Can be used to fill fields
+             */
+            auto fillFieldsHook = []() -> void {
+
+            };
+
+            binningCreator.addFieldBinner("chargeDensityBinning", axisTuple, fieldsTuple, fieldX)
+                .setNotifyPeriod("1:500")
+                .setHostSideHook(fillFieldsHook);
+        }
+
     } // namespace plugins::binning
 } // namespace picongpu

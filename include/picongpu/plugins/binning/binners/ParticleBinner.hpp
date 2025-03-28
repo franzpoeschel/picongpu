@@ -119,7 +119,7 @@ namespace picongpu
                     [&](auto&&... extras)
                     { return pmacc::memory::tuple::make_tuple(std::forward<decltype(extras)>(extras)...); },
                     this->binningData.extraData);
-                auto const functorBlock = BinningFunctor{};
+                auto const functorBlock = ParticleBinningKernel{};
 
                 PMACC_LOCKSTEP_KERNEL(functorBlock)
                     .config(mapper.getGridDim(), particlesBox)(
@@ -183,7 +183,7 @@ namespace picongpu
                             { return pmacc::memory::tuple::make_tuple(std::forward<decltype(extras)>(extras)...); },
                             binner->binningData.extraData);
 
-                        auto const functorLeaving = BinningFunctorLeaving{};
+                        auto const functorLeaving = LeavingParticleBinningKernel{};
 
                         PMACC_LOCKSTEP_KERNEL(functorLeaving)
                             .config(mapper.getGridDim(), particlesBox)(

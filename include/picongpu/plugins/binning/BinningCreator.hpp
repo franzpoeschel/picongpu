@@ -22,7 +22,9 @@
 #if(ENABLE_OPENPMD == 1)
 
 #    include "picongpu/plugins/binning/BinningData.hpp"
+#    include "picongpu/plugins/binning/binners/FieldBinner.hpp"
 #    include "picongpu/plugins/binning/binners/ParticleBinner.hpp"
+#    include "picongpu/plugins/binning/utility.hpp"
 
 #    include <functional>
 #    include <memory>
@@ -87,6 +89,48 @@ namespace picongpu
                     depositionData,
                     extraData);
                 auto binner = binning::make_unique<ParticleBinner>(bd, cellDescription);
+                auto& res = binner->binningData;
+                binnerVector.emplace_back(std::move(binner));
+                return res;
+            }
+
+            /**
+             * Creates a field binner from user input and adds it to the vector of all binners
+             *
+             * The Field binner will bin field quantities to create histograms on a grid defined by axes.
+             * The results will be written to openPMD files.
+             *
+             * @param binnerOutputName filename and dataset name for openPMD output. Must be unique to avoid overwrites
+             * during data dumps and undefined behaviour during restarts.
+             * @param axisTupleObject tuple holding the axes. Each element in the tuple describes an axis for binning.
+             * @param fieldsTupleObject tuple holding the fields to bin. Each element specifies a field to be
+             * included in the binning.
+             * @param depositionData functor description of the deposited quantity.  Defines which field property to
+             * bin.
+             * @param extraData tuple holding extra data to be passed to the binner. Can be used for optional
+             * configurations.
+             * @return FieldBinningData& reference to the created FieldBinningData object.
+             *         This can be used to further configure the binning setup if needed.
+             */
+            template<
+                typename TAxisTuple,
+                typename TFieldsTuple,
+                typename TDepositionData,
+                typename T_Extras = std::tuple<>>
+            auto& addFieldBinner(
+                std::string const& binnerOutputName,
+                TAxisTuple const& axisTupleObject,
+                TFieldsTuple const& fieldsTupleObject,
+                TDepositionData const& depositionData,
+                T_Extras const& extraData = {})
+            {
+                auto bd = FieldBinningData(
+                    binnerOutputName,
+                    axisTupleObject,
+                    fieldsTupleObject,
+                    depositionData,
+                    extraData);
+                auto binner = binning::make_unique<FieldBinner>(bd, cellDescription);
                 auto& res = binner->binningData;
                 binnerVector.emplace_back(std::move(binner));
                 return res;

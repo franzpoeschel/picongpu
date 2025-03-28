@@ -219,6 +219,33 @@ namespace picongpu
                 return (particleRegion & region) != 0;
             }
         };
+
+        template<typename T_AxisTuple, typename T_FieldsTuple, typename T_DepositionData, typename T_Extras>
+        struct FieldBinningData
+            : public BinningDataBase<
+                  FieldBinningData<T_AxisTuple, T_FieldsTuple, T_DepositionData, T_Extras>,
+                  T_AxisTuple,
+                  T_DepositionData,
+                  T_Extras>
+        {
+            T_FieldsTuple fieldsTuple;
+
+            FieldBinningData(
+                std::string const& binnerName,
+                T_AxisTuple const& axes,
+                T_FieldsTuple const& fields,
+                T_DepositionData const& depositData,
+                T_Extras const& extraData)
+                : BinningDataBase<FieldBinningData, T_AxisTuple, T_DepositionData, T_Extras>(
+                    binnerName,
+                    axes,
+                    depositData,
+                    extraData)
+                , fieldsTuple{fields}
+            {
+            }
+        };
+
     } // namespace plugins::binning
 } // namespace picongpu
 
