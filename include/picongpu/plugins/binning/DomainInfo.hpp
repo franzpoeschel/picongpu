@@ -147,7 +147,7 @@ namespace picongpu
                 }
                 if constexpr(T_Origin == DomainOrigin::TOTAL)
                 {
-                    relative_cellpos = relative_cellpos + globalOffset;
+                    relative_cellpos = relative_cellpos + localOffset + globalOffset;
                 }
 
                 auto pos = localCellIdx + relative_cellpos;
@@ -228,7 +228,7 @@ namespace picongpu
             }
             if constexpr(T_Origin == DomainOrigin::TOTAL)
             {
-                relative_cellpos = relative_cellpos + domainInfo.globalOffset;
+                relative_cellpos = relative_cellpos + domainInfo.localOffset + domainInfo.globalOffset;
             }
             if constexpr(T_Precision == PositionPrecision::SubCell)
             {
