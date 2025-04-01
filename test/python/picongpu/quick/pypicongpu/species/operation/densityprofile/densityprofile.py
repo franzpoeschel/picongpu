@@ -26,16 +26,6 @@ class TestDensityProfile(unittest.TestCase):
         def __init__(self):
             pass
 
-    def test_abstract(self):
-        """density profile is abstract"""
-        with self.assertRaises(NotImplementedError):
-            DensityProfile()
-
-        # also, check() is not implemented
-        dummy = self.DummyCheckNotImplemented()
-        with self.assertRaises(NotImplementedError):
-            dummy.check()
-
     def test_rendering_not_implemented(self):
         """rendering method is defined, but not implemented"""
         dummy = self.DummyCheckNotImplemented()
@@ -53,29 +43,29 @@ class TestDensityProfile(unittest.TestCase):
         RenderedObject._schemas_loaded = False
         RenderedObject._registry = referencing.Registry()
 
-        context = uniform.get_generic_profile_rendering_context()
+        context = uniform.get_rendering_context()
 
         # schemas now loaded
         self.assertTrue(RenderedObject._schemas_loaded)
 
-        self.assertEqual(context["data"], uniform.get_rendering_context())
+        self.assertEqual(context["data"], uniform._get_serialized())
 
         # contains information on all types
-        self.assertEqual(context["type"], {"uniform": True, "foil": False, "gaussian": False})
+        self.assertEqual(context["typeID"], {"uniform": True, "foil": False, "gaussian": False})
 
         # is actually validated against "DensityProfile" schema
         RenderedObject._schemas_loaded = False
         schema = RenderedObject._get_schema_from_class(DensityProfile)
 
         # check 1: schema actually enforce existance of all keys
-        self.assertTrue("uniform" in schema["properties"]["type"]["required"])
+        self.assertTrue("uniform" in schema["properties"]["typeID"]["required"])
         # TODO: copy line above for more types
 
         # check 1b: all keys that are available for the "type" dict are
         # required
         self.assertEqual(
-            set(schema["properties"]["type"]["required"]),
-            set(schema["properties"]["type"]["properties"].keys()),
+            set(schema["properties"]["typeID"]["required"]),
+            set(schema["properties"]["typeID"]["properties"].keys()),
         )
 
         # check 2: break the schema, schema rejects everything now
@@ -83,4 +73,4 @@ class TestDensityProfile(unittest.TestCase):
         with self.assertRaises(referencing.exceptions.NoSuchResource):
             # schema now rejects everything
             # -> must also reject previously correct context
-            uniform.get_generic_profile_rendering_context()
+            uniform.get_rendering_context()
