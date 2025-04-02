@@ -30,7 +30,6 @@
 
 #include <boost/mpl/vector.hpp>
 
-
 namespace picongpu
 {
     /** FieldTmp output (calculated at runtime) *******************************

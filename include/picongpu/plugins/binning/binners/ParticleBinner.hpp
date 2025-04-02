@@ -20,7 +20,7 @@
 #pragma once
 
 // required becuase the definition of Binner is conditionally included
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/plugins/binning/BinningData.hpp"
 #    include "picongpu/plugins/binning/BinningFunctors.hpp"
@@ -34,7 +34,6 @@
 
 #    include <cstdint>
 
-
 namespace picongpu
 {
     namespace plugins::binning
@@ -47,7 +46,6 @@ namespace picongpu
             {
             }
 
-
             /**
              * onParticleLeave is called every time step whenever particles leave, it is independent of the notify
              * period. onParticleLeave isnt called for timestep 0, whereas notify is. Even though it is called every
@@ -55,7 +53,7 @@ namespace picongpu
              * leaving particles, use notify starting from 1 if you use time averaging, otherwise you have an extra
              * accumulate count at 0, when notify is called but onParticleLeave isnt.
              */
-            void onParticleLeave(const std::string& speciesName, int32_t const direction) override
+            void onParticleLeave(std::string const& speciesName, int32_t const direction) override
             {
                 if(this->binningData.notifyPeriod.empty())
                     return;

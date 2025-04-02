@@ -44,7 +44,6 @@
 #define DX 4 // GRID SPACING
 #define DT 1 // TIME STEP - STABLE IF DT < (DX * DX) / (4 * THERMAL_DIFFUSIVITY)
 
-
 template<typename T_Gather, typename T_GridBuffer>
 inline auto createPng(uint32_t currentStep, T_Gather& gather, std::unique_ptr<T_GridBuffer> const& gridBuffer)
 {
@@ -53,7 +52,7 @@ inline auto createPng(uint32_t currentStep, T_Gather& gather, std::unique_ptr<T_
      */
     if(gather->isParticipating())
     {
-        const pmacc::SubGrid<DIM2>& subGrid = pmacc::Environment<DIM2>::get().SubGrid();
+        pmacc::SubGrid<DIM2> const& subGrid = pmacc::Environment<DIM2>::get().SubGrid();
         auto bufferLayout = gridBuffer->getGridLayout();
         auto localDataExtents = bufferLayout.sizeWithoutGuardND();
         auto view = std::make_unique<pmacc::DeviceBuffer<float, DIM2>>(
@@ -75,17 +74,17 @@ inline auto createPng(uint32_t currentStep, T_Gather& gather, std::unique_ptr<T_
 
 auto main(int argc, char** argv) -> int
 {
-    const auto devices = pmacc::DataSpace<DIM2>::create(NUM_DEVICES_PER_DIM);
-    const auto periodic = pmacc::DataSpace<DIM2>::create(0);
+    auto const devices = pmacc::DataSpace<DIM2>::create(NUM_DEVICES_PER_DIM);
+    auto const periodic = pmacc::DataSpace<DIM2>::create(0);
     pmacc::Environment<DIM2>::get().initDevices(devices, periodic);
 
     /** define a gloabl grid */
-    const pmacc::DataSpace<DIM2> gridSize{256u, 256u};
+    pmacc::DataSpace<DIM2> const gridSize{256u, 256u};
 
     auto& gc = pmacc::Environment<DIM2>::get().GridController();
 
     /** device local grid size */
-    const pmacc::DataSpace<DIM2> localGridSize{gridSize / devices};
+    pmacc::DataSpace<DIM2> const localGridSize{gridSize / devices};
 
     pmacc::Environment<DIM2>::get().initGrids(gridSize, localGridSize, gc.getPosition() * localGridSize);
 
@@ -93,7 +92,7 @@ auto main(int argc, char** argv) -> int
      *  position, and size information, as offset of local position wrt global
      *  position
      */
-    const auto& subGrid = pmacc::Environment<DIM2>::get().SubGrid();
+    auto const& subGrid = pmacc::Environment<DIM2>::get().SubGrid();
 
     /** define mapping description, this defines the supercell size */
     using MappingDesc = pmacc::MappingDescription<DIM2, pmacc::math::CT::Int<16, 16>>;

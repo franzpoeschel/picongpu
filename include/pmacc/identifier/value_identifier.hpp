@@ -31,7 +31,6 @@
 
 #include <string>
 
-
 namespace pmacc::particles::identifier
 {
     /** copy value from the source particle
@@ -141,8 +140,7 @@ namespace pmacc::particles::identifier
         name, using type = in_type;                                                                                   \
                                                                                                                       \
         template<typename T_Identifier, typename T_SrcParticleType>                                                   \
-        constexpr type copyValue(T_Identifier const idName, T_SrcParticleType const& srcParticle) const               \
-        {                                                                                                             \
+        constexpr type copyValue(T_Identifier const idName, T_SrcParticleType const& srcParticle) const {             \
             auto const func = PMACC_REMOVE_BRACKETS copyFunctor;                                                      \
             return func(idName, srcParticle);                                                                         \
         } template<typename T_Worker, typename T_Identifier, typename T_SrcParticleType>                              \
@@ -150,13 +148,11 @@ namespace pmacc::particles::identifier
             T_Worker const& worker,                                                                                   \
             IdGenerator& idGen,                                                                                       \
             T_Identifier const idName,                                                                                \
-            T_SrcParticleType const& srcParticle) const                                                               \
-        {                                                                                                             \
+            T_SrcParticleType const& srcParticle) const {                                                             \
             auto const func = PMACC_REMOVE_BRACKETS deriveFunctor;                                                    \
             return func(worker, idGen, idName, srcParticle);                                                          \
         } template<typename T_Worker>                                                                                 \
-        constexpr type initValue(T_Worker const& worker, IdGenerator& idGen) const                                    \
-        {                                                                                                             \
+        constexpr type initValue(T_Worker const& worker, IdGenerator& idGen) const {                                  \
             auto const func = PMACC_REMOVE_BRACKETS initFunctor;                                                      \
             return func(worker, idGen);                                                                               \
         } static std::string getName() { return std::string(#name); })
@@ -172,15 +168,17 @@ namespace pmacc::particles::identifier
 #define value_identifier(in_type, name, ...)                                                                          \
     identifier(                                                                                                       \
         name, using type = in_type; template<typename T_Identifier, typename T_SrcParticleType>                       \
-        constexpr type copyValue(T_Identifier const idName, T_SrcParticleType const& srcParticle) const               \
-        { return srcParticle[idName]; } template<typename T_Worker>                                                   \
-        constexpr type initValue(T_Worker const&, IdGenerator&) const                                                 \
-        { return getValue(); } template<typename T_Worker, typename T_Identifier, typename T_SrcParticleType>         \
-        constexpr type deriveValue(                                                                                   \
-            T_Worker const& worker,                                                                                   \
-            IdGenerator& idGen,                                                                                       \
-            T_Identifier const idName,                                                                                \
-            T_SrcParticleType const& srcParticle) const {                                                             \
-            return pmacc::particles::identifier::CallCopyOrInit{}(worker, idGen, idName, srcParticle);                \
-        } static constexpr type getValue() { return __VA_ARGS__; } static std::string getName()                       \
-        { return std::string(#name); })
+        constexpr type copyValue(T_Identifier const idName, T_SrcParticleType const& srcParticle)                     \
+            const { return srcParticle[idName]; } template<typename T_Worker>                                         \
+            constexpr type initValue(T_Worker const&, IdGenerator&) const {                                           \
+                return getValue();                                                                                    \
+            } template<typename T_Worker, typename T_Identifier, typename T_SrcParticleType>                          \
+            constexpr type deriveValue(                                                                               \
+                T_Worker const& worker,                                                                               \
+                IdGenerator& idGen,                                                                                   \
+                T_Identifier const idName,                                                                            \
+                T_SrcParticleType const& srcParticle) const {                                                         \
+                return pmacc::particles::identifier::CallCopyOrInit{}(worker, idGen, idName, srcParticle);            \
+            } static constexpr type getValue() { return __VA_ARGS__; } static std::string getName() {                 \
+                return std::string(#name);                                                                            \
+            })

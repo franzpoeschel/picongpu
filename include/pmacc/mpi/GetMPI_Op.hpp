@@ -31,5 +31,5 @@ namespace pmacc
     {
         template<class Functor>
         MPI_Op getMPI_Op();
-    }
+    } // namespace mpi
 } // namespace pmacc

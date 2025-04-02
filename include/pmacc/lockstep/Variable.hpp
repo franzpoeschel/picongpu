@@ -101,6 +101,7 @@ namespace pmacc
             {
                 return BaseArray::operator[](idx.getWorkerElemIdx());
             }
+
             /** @} */
         };
 

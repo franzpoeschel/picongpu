@@ -35,7 +35,7 @@
  * The implementation uses the "paired, sliding arg list" trick
  * explained in https://codecraft.co/2014/11/25/variadic-macros-tricks/
  */
-#if(BOOST_PP_VARIADICS == 1)
+#if (BOOST_PP_VARIADICS == 1)
 #    define PMACC_PP_VARIADIC_SIZE_I(                                                                                 \
         e0,                                                                                                           \
         e1,                                                                                                           \

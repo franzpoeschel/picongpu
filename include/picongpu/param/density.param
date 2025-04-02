@@ -105,7 +105,6 @@ namespace picongpu
         /* definition of homogenous profile */
         using Homogenous = HomogenousImpl;
 
-
         /** parameter for `LinearExponential` profile
          *
          * @verbatim
@@ -158,7 +157,6 @@ namespace picongpu
         /* definition of gas with linear start slop and exponential end slope */
         using LinearExponential = LinearExponentialImpl<LinearExponentialParam>;
 
-
         struct GaussianCloudParam
         {
             /** Profile Formula:
@@ -189,7 +187,6 @@ namespace picongpu
 
         /* definition of cloud profile */
         using GaussianCloud = GaussianCloudImpl<GaussianCloudParam>;
-
 
         /** The profile consists out of the composition of 3 1D profiles
          *  with the scheme: exponential increasing flank, constant sphere,
@@ -297,7 +294,7 @@ namespace picongpu
             static constexpr float_X defaultDensity = 0.0_X;
         };
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
         //! Definition of density-from-file profile
         using FromOpenPMD = FromOpenPMDImpl<FromOpenPMDParam>;
 #endif
@@ -313,9 +310,9 @@ namespace picongpu
              *
              * @return float_X density [normalized to 1.0]
              */
-            HDINLINE float_X operator()(const floatD_64& position_SI, const float3_64& cellSize_SI)
+            HDINLINE float_X operator()(floatD_64 const& position_SI, float3_64 const& cellSize_SI)
             {
-                const float_64 y(position_SI.y() * 1000.0); // m -> mm
+                float_64 const y(position_SI.y() * 1000.0); // m -> mm
                 // const uint64_t y_cell_id( uint64_t(position_SI.y() / cellSize_SI[1]) );
 
                 /* triangle function example

@@ -31,7 +31,6 @@
 #include <array>
 #include <stdexcept>
 
-
 namespace picongpu
 {
     /** adjust domain sizes

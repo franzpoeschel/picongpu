@@ -39,7 +39,6 @@ namespace picongpu
 
             } // namespace acc
 
-
             /** Set the in cell position
              *
              * The position of the particle is chosen depending of the number of

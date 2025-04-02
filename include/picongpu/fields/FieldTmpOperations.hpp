@@ -69,7 +69,7 @@ namespace picongpu
         auto fieldTmpBox = fieldTmp.getDeviceDataBox();
         FrameSolver solver;
         using ParticleFilter = typename Filter ::template apply<ParticlesClass>::type;
-        const uint32_t currentStep = Environment<>::get().SimulationDescription().getCurrentStep();
+        uint32_t const currentStep = Environment<>::get().SimulationDescription().getCurrentStep();
 
         DataConnector& dc = Environment<>::get().DataConnector();
         auto idProvider = dc.get<IdProvider>("globalId");
@@ -101,7 +101,7 @@ namespace picongpu
         auto mapper = makeAreaMapper<AREA>(cellDescription);
 
         auto fieldTmpBox = fieldTmp.getDeviceDataBox();
-        const auto modifyingBox = modifyingField.getGridBuffer().getDeviceBuffer().getDataBox();
+        auto const modifyingBox = modifyingField.getGridBuffer().getDeviceBuffer().getDataBox();
 
         using Kernel = ModifyByFieldKernel<T_ModifyingOperation, MappingDesc::SuperCellSize>;
         PMACC_LOCKSTEP_KERNEL(Kernel{}).config(

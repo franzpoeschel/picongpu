@@ -20,7 +20,7 @@
 // required for SIMDIM definition
 #include "picongpu/defines.hpp"
 
-#if(SIMDIM == DIM3 && PIC_ENABLE_FFTW3 == 1 && ENABLE_OPENPMD == 1)
+#if (SIMDIM == DIM3 && PIC_ENABLE_FFTW3 == 1 && ENABLE_OPENPMD == 1)
 
 // clang-format of
 #    include "picongpu/param/shadowgraphy.param"
@@ -48,7 +48,6 @@
 #    include <openPMD/openPMD.hpp>
 #    include <stdio.h>
 
-
 namespace picongpu
 {
     using complex_64 = alpaka::Complex<float_64>;
@@ -58,6 +57,7 @@ namespace picongpu
         namespace shadowgraphy
         {
             namespace po = boost::program_options;
+
             class Shadowgraphy : public plugins::multi::IInstance
             {
             private:
@@ -102,7 +102,6 @@ namespace picongpu
                            "optional output: E and B fields in (kx, ky, omega) Fourier space, 1==enabled",
                            0};
 
-
                     ///! method used by plugin controller to get --help description
                     void registerHelp(
                         boost::program_options::options_description& desc,
@@ -123,7 +122,6 @@ namespace picongpu
                         std::string const& masterPrefix = std::string{}) override
                     {
                     }
-
 
                     void validateOptions() override
                     {
@@ -221,19 +219,20 @@ namespace picongpu
                     int lastStep = startStep + adjustedDuration;
 
                     std::string internalNotifyPeriod = std::to_string(startStep) + ":" + std::to_string(lastStep) + ":"
-                        + std::to_string(params::tRes);
+                                                       + std::to_string(params::tRes);
 
                     Environment<>::get().PluginConnector().setNotificationPeriod(this, internalNotifyPeriod);
 
-                    const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                    SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
                     auto globalDomain = subGrid.getGlobalDomain();
                     auto globalPlaneExtent = globalDomain.size[plane];
                     auto localDomain = subGrid.getLocalDomain();
 
                     auto globalPlaneIdx = globalPlaneExtent * slicePoint;
 
-                    auto isPlaneInLocalDomain = globalPlaneIdx >= localDomain.offset[plane]
-                        && globalPlaneIdx < localDomain.offset[plane] + localDomain.size[plane];
+                    auto isPlaneInLocalDomain
+                        = globalPlaneIdx >= localDomain.offset[plane]
+                          && globalPlaneIdx < localDomain.offset[plane] + localDomain.size[plane];
                     if(isPlaneInLocalDomain)
                         localPlaneIdx = globalPlaneIdx - localDomain.offset[plane];
 
@@ -362,7 +361,7 @@ namespace picongpu
                 auto getGlobalSlice(std::shared_ptr<T_Buffer> inputFieldBuffer, int cellIdxZ) const
                     -> std::shared_ptr<HostBuffer<float2_X, DIM2>>
                 {
-                    const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                    SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
 
                     auto localDomainOffset = subGrid.getLocalDomain().offset.shrink<DIM2>(0);
                     auto globalDomainSliceSize = subGrid.getGlobalDomain().size.shrink<DIM2>(0);
@@ -491,15 +490,17 @@ namespace picongpu
                     meshNeg.setGridGlobalOffset(
                         std::vector<double>{static_cast<double>(helper->getOmegaIndex(0)), 0.0, 0.0});
                     meshNeg.setGridUnitSI(1.0);
-                    meshNeg.setAxisLabels(std::vector<std::string>{
-                        "Spatial x index",
-                        "Spatial y index",
-                        "Fourier transform frequency index"});
-                    meshNeg.setUnitDimension(std::map<::openPMD::UnitDimension, double>{
-                        {::openPMD::UnitDimension::L, 1.0},
-                        {::openPMD::UnitDimension::M, 1.0},
-                        {::openPMD::UnitDimension::T, -3.0},
-                        {::openPMD::UnitDimension::I, -1.0}});
+                    meshNeg.setAxisLabels(
+                        std::vector<std::string>{
+                            "Spatial x index",
+                            "Spatial y index",
+                            "Fourier transform frequency index"});
+                    meshNeg.setUnitDimension(
+                        std::map<::openPMD::UnitDimension, double>{
+                            {::openPMD::UnitDimension::L, 1.0},
+                            {::openPMD::UnitDimension::M, 1.0},
+                            {::openPMD::UnitDimension::T, -3.0},
+                            {::openPMD::UnitDimension::I, -1.0}});
 
                     // Reshape abstract MeshRecordComponent
                     ::openPMD::Datatype datatype = ::openPMD::determineDatatype<std::complex<float_64>>();
@@ -529,20 +530,23 @@ namespace picongpu
                     meshPos.setGeometry(::openPMD::Mesh::Geometry::cartesian);
                     meshPos.setDataOrder(::openPMD::Mesh::DataOrder::C);
                     meshPos.setGridSpacing(std::vector<double>{1.0, 1.0, 1.0});
-                    meshPos.setGridGlobalOffset(std::vector<double>{
-                        static_cast<double>(helper->getOmegaIndex(helper->getNumOmegas() / 2)),
-                        0.0,
-                        0.0});
+                    meshPos.setGridGlobalOffset(
+                        std::vector<double>{
+                            static_cast<double>(helper->getOmegaIndex(helper->getNumOmegas() / 2)),
+                            0.0,
+                            0.0});
                     meshPos.setGridUnitSI(1.0);
-                    meshPos.setAxisLabels(std::vector<std::string>{
-                        "Spatial x index",
-                        "Spatial y index",
-                        "Fourier transform frequency index"});
-                    meshPos.setUnitDimension(std::map<::openPMD::UnitDimension, double>{
-                        {::openPMD::UnitDimension::L, 1.0},
-                        {::openPMD::UnitDimension::M, 1.0},
-                        {::openPMD::UnitDimension::T, -3.0},
-                        {::openPMD::UnitDimension::I, -1.0}});
+                    meshPos.setAxisLabels(
+                        std::vector<std::string>{
+                            "Spatial x index",
+                            "Spatial y index",
+                            "Fourier transform frequency index"});
+                    meshPos.setUnitDimension(
+                        std::map<::openPMD::UnitDimension, double>{
+                            {::openPMD::UnitDimension::L, 1.0},
+                            {::openPMD::UnitDimension::M, 1.0},
+                            {::openPMD::UnitDimension::T, -3.0},
+                            {::openPMD::UnitDimension::I, -1.0}});
                     for(int i = 1; i < 8; i += 2)
                     {
                         std::string dir = helper->dataLabelsFieldComponent(i);

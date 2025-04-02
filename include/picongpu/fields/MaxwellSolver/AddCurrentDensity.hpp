@@ -32,7 +32,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu::fields::maxwellSolver
 {
     /** Functor to smooth current density and add it to the electric field

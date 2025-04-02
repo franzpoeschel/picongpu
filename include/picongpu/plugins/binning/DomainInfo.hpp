@@ -123,6 +123,7 @@ namespace picongpu
         {
         public:
             pmacc::DataSpace<simDim> localCellIdx;
+
             HDINLINE DomainInfo(
                 uint32_t simStep,
                 pmacc::DataSpace<simDim> gOffset,
@@ -155,12 +156,12 @@ namespace picongpu
                 if constexpr(T_Units == PositionUnits::SI)
                 {
                     return precisionCast<typename std::decay_t<decltype(sim.si.getCellSize())>::type>(pos)
-                        * sim.si.getCellSize().shrink<simDim>();
+                           * sim.si.getCellSize().shrink<simDim>();
                 }
                 if constexpr(T_Units == PositionUnits::PIC)
                 {
                     return precisionCast<typename std::decay_t<decltype(sim.pic.getCellSize())>::type>(pos)
-                        * sim.pic.getCellSize().shrink<simDim>();
+                           * sim.pic.getCellSize().shrink<simDim>();
                 }
 
                 return pos;
@@ -233,7 +234,7 @@ namespace picongpu
             if constexpr(T_Precision == PositionPrecision::SubCell)
             {
                 auto pos = precisionCast<typename std::decay_t<decltype(particle[position_])>::type>(relative_cellpos)
-                    + particle[position_];
+                           + particle[position_];
                 if constexpr(T_Units == PositionUnits::SI)
                 {
                     auto cellSize = sim.si.getCellSize().shrink<simDim>();

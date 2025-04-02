@@ -29,7 +29,6 @@
 
 #include <pmacc/math/vector/compile-time/Vector.hpp>
 
-
 namespace picongpu
 {
     namespace fields
@@ -147,9 +146,11 @@ namespace picongpu
                         constexpr uint32_t dir2 = (dir0 + 2) % 3;
                         float_64 const stepRatio
                             = sim.pic.getCellSize()[dir0] / (sim.pic.getSpeedOfLight() * sim.pic.getDt());
-                        float_64 const coeff = stepRatio
-                            * math::sin(pmacc::math::Pi<float_64>::halfValue * float_64(sim.pic.getSpeedOfLight())
-                                        * float_64(sim.pic.getDt()) / float_64(sim.pic.getCellSize()[dir0]));
+                        float_64 const coeff
+                            = stepRatio
+                              * math::sin(
+                                  pmacc::math::Pi<float_64>::halfValue * float_64(sim.pic.getSpeedOfLight())
+                                  * float_64(sim.pic.getDt()) / float_64(sim.pic.getCellSize()[dir0]));
                         auto const delta = static_cast<float_X>(0.25 * (1.0 - coeff * coeff));
                         // for 2D the betas corresponding to z are 0
                         float_64 const stepRatio1

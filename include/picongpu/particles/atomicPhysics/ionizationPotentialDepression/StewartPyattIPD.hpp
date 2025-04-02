@@ -215,9 +215,10 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
             // sim.unit.charge()^(-2)
             //  * sim.unit.time()^(-2) * sim.unit.length()^3 * sim.unit.mass()^1 = eV * sim.unit.length()
             // eV * sim.unit.length()
-            constexpr float_X constFactor = eV * static_cast<float_X>(T_atomicNumber)
-                * pmacc::math::cPow(picongpu::sim.pic.getElectronCharge(), 2u)
-                / (4._X * static_cast<float_X>(picongpu::PI) * picongpu::sim.pic.getEps0());
+            constexpr float_X constFactor
+                = eV * static_cast<float_X>(T_atomicNumber)
+                  * pmacc::math::cPow(picongpu::sim.pic.getElectronCharge(), 2u)
+                  / (4._X * static_cast<float_X>(picongpu::PI) * picongpu::sim.pic.getEps0());
 
             // eV, not weighted
             float_X const temperatureTimesk_Boltzman = temperatureEnergyBox(superCellFieldIdx);
@@ -233,7 +234,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
 
             // eV, not weighted
             return temperatureTimesk_Boltzman * (math::pow(((3 * zStar + 1) * K + 1), 2._X / 3._X) - 1._X)
-                / (2._X * (zStar + 1._X));
+                   / (2._X * (zStar + 1._X));
         }
 
         template<typename T_Kernel, uint32_t T_chunkSize, typename... T_KernelInput>

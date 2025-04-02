@@ -25,7 +25,6 @@
 #include <cstdlib>
 #include <iostream>
 
-
 namespace picongpu
 {
     struct WindowHeader

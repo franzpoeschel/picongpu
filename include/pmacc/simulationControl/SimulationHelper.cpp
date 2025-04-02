@@ -47,7 +47,6 @@
 #include <thread>
 #include <vector>
 
-
 namespace pmacc
 {
     template<unsigned DIM>
@@ -173,7 +172,6 @@ namespace pmacc
             roundAvg = 0.0; // clear round avg timer
         }
     }
-
 
     template<unsigned DIM>
     void SimulationHelper<DIM>::startSimulation()
@@ -328,7 +326,6 @@ namespace pmacc
         // clang-format on
     }
 
-
     template<unsigned DIM>
     void SimulationHelper<DIM>::pluginLoad()
     {
@@ -345,7 +342,6 @@ namespace pmacc
         if(tryRestart)
             restartRequested = true;
     }
-
 
     template<unsigned DIM>
     void SimulationHelper<DIM>::checkSignals(uint32_t const currentStep)
@@ -436,7 +432,6 @@ namespace pmacc
         }
     }
 
-
     template<unsigned DIM>
     void SimulationHelper<DIM>::calcProgress()
     {
@@ -449,12 +444,11 @@ namespace pmacc
             showProgressAnyStep = 1;
     }
 
-
     template<unsigned DIM>
-    void SimulationHelper<DIM>::writeCheckpointStep(const uint32_t checkpointStep)
+    void SimulationHelper<DIM>::writeCheckpointStep(uint32_t const checkpointStep)
     {
         std::ofstream file;
-        const std::string checkpointMasterFile = checkpointDirectory + std::string("/") + CHECKPOINT_MASTER_FILE;
+        std::string const checkpointMasterFile = checkpointDirectory + std::string("/") + CHECKPOINT_MASTER_FILE;
 
         file.open(checkpointMasterFile.c_str(), std::ofstream::app);
 
@@ -470,7 +464,7 @@ namespace pmacc
     {
         std::vector<uint32_t> checkpoints;
 
-        const std::string checkpointMasterFile
+        std::string const checkpointMasterFile
             = this->restartDirectory + std::string("/") + this->CHECKPOINT_MASTER_FILE;
 
         if(!stdfs::exists(checkpointMasterFile))

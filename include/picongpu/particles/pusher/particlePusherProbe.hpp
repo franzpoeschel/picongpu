@@ -60,8 +60,8 @@ namespace picongpu
                 uint32_t const currentStep)
             {
                 T_ValueFunctor valueFunctor;
-                const auto bField = functorBField(pos);
-                const auto eField = functorEField(pos);
+                auto const bField = functorBField(pos);
+                auto const eField = functorEField(pos);
 
                 // update probe field if particle contains required attributes
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeB>::type::value)
@@ -102,10 +102,10 @@ namespace picongpu
                 uint32_t const)
             {
                 T_ValueFunctor valueFunctor;
-                const auto bField = functorBField(pos);
+                auto const bField = functorBField(pos);
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeB>::type::value)
                     valueFunctor(particle[probeB_], bField);
-                const auto eField = functorEField(pos);
+                auto const eField = functorEField(pos);
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeE>::type::value)
                     valueFunctor(particle[probeE_], eField);
             }

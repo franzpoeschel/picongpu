@@ -30,7 +30,6 @@
 #include <set>
 #include <string>
 
-
 namespace pmacc
 {
     /**
@@ -60,7 +59,6 @@ namespace pmacc
             myId = globalId++;
             PMACC_ASSERT(myId > 0);
         }
-
 
         ~ITask() override = default;
 

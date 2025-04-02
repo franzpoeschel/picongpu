@@ -29,7 +29,6 @@
 
 #include "picongpu/particles/densityProfiles/profiles.def"
 
-
 namespace picongpu
 {
     namespace densityProfiles
@@ -44,7 +43,7 @@ namespace picongpu
              *
              * @return float_X density [normalized to 1.0]
              */
-            HDINLINE float_X operator()(const floatD_64& position_SI, const float3_64& cellSize_SI)
+            HDINLINE float_X operator()(floatD_64 const& position_SI, float3_64 const& cellSize_SI)
             {
                 // Old value of previous TWEAC scenarios was: 2.0
                 constexpr float_64 REL_DENSITY_HIGH = 2.0;

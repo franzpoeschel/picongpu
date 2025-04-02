@@ -23,10 +23,9 @@
 
 #include <alpaka/warp/Traits.hpp>
 
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
 
 #    include "pmacc/types.hpp"
-
 
 namespace pmacc
 {
@@ -37,7 +36,7 @@ namespace pmacc
  * id is in range [0,WAPRSIZE-1]
  * required PTX ISA >=1.3
  */
-#    if(__CUDA_ARCH__ >= 130)
+#    if (__CUDA_ARCH__ >= 130)
         DINLINE uint32_t getLaneId()
         {
             uint32_t id;
@@ -52,7 +51,7 @@ namespace pmacc
 #    endif
 
 
-#    if(__CUDA_ARCH__ >= 300 || BOOST_COMP_HIP)
+#    if (__CUDA_ARCH__ >= 300 || BOOST_COMP_HIP)
 
         /** broadcast data within a warp without using shared memory
          *
@@ -74,7 +73,6 @@ namespace pmacc
         {
             return std::disjunction_v<std::is_same<T, T_TypeList>...>;
         }
-
 
         /** fallback for not natively supported types
          *
@@ -102,7 +100,7 @@ namespace pmacc
         /* clang as cuda compiler does not support 64 bit warp shfl.
          * For AMD GPUs 64bit shufl will be provided by HIP.
          */
-#        if(!BOOST_COMP_CLANG_CUDA)
+#        if (!BOOST_COMP_CLANG_CUDA)
             ,
             double,
             unsigned long,
@@ -124,7 +122,7 @@ namespace pmacc
                 /* we can not use alpaka warp shfl because it assumes that all threads of the warp participating in the
                  * call
                  */
-#        if(BOOST_COMP_HIP)
+#        if (BOOST_COMP_HIP)
                 return __shfl(data, srcLaneId);
 #        else
                 return __shfl_sync(mask, data, srcLaneId);

@@ -26,7 +26,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace fields
@@ -48,7 +47,7 @@ namespace picongpu
                      */
                     NoneImpl(MappingDesc const cellDescription) : AbsorberImpl(Absorber::Kind::None, cellDescription)
                     {
-                        const DataSpace<DIM3> isPeriodicBoundary
+                        DataSpace<DIM3> const isPeriodicBoundary
                             = Environment<simDim>::get().EnvironmentController().getCommunicator().getPeriodic();
                         bool areAllBoundariesPeriodic = true;
                         for(uint32_t axis = 0u; axis < simDim; axis++)

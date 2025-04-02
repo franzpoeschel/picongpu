@@ -203,6 +203,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
             typename ConfigNumber::DataType,
             T_TransitionOrdering>;
         //@}
+
     private:
         // pointers to storage
         // charge state data
@@ -250,7 +251,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
         uint32_t m_numberBoundFreeTransitions = 0u;
         uint32_t m_numberAutonomousTransitions = 0u;
 
-        const std::string m_speciesName;
+        std::string const m_speciesName;
 
         //! try to open file, otherwise throw error
         HINLINE static std::ifstream openFile(std::string const fileName, std::string const fileContent)
@@ -527,7 +528,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
                     continue;
                 }
 
-                const S_AutonomousTransitionTuple item = std::make_tuple(rate, stateLower, stateUpper);
+                S_AutonomousTransitionTuple const item = std::make_tuple(rate, stateLower, stateUpper);
 
                 autonomousTransitions.push_back(item);
                 m_numberAutonomousTransitions++;
@@ -671,8 +672,9 @@ namespace picongpu::particles::atomicPhysics::atomicData
         {
             // check correct number of entries
             if(ipdIonizationStateList.size() != m_numberAtomicStates)
-                throw std::runtime_error("atomicPhysics ERROR: number of pressure ionization states does not match "
-                                         "number of atomic states");
+                throw std::runtime_error(
+                    "atomicPhysics ERROR: number of pressure ionization states does not match "
+                    "number of atomic states");
 
             typename std::list<S_IPDIonizationStateTuple>::iterator iter = ipdIonizationStateList.begin();
 
@@ -694,7 +696,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
                 {
                     std::string errorMessage = "atomicPhysics ERROR: mismatch between atomic state columns of atomic "
                                                "state input and pressure ionization input in element "
-                        + std::to_string(collectionIndexAtomicState);
+                                               + std::to_string(collectionIndexAtomicState);
                     throw std::runtime_error(errorMessage);
                 }
                 //@}
@@ -926,8 +928,8 @@ namespace picongpu::particles::atomicPhysics::atomicData
                         = startIndexBlockHostBox.startIndexBlockTransitionsUp(collectionIndexAtomicState);
 
                     // init with first transition
-                    TypeValue lowestAbsoluteDeltaEnergy
-                        = math::abs(picongpu::particles::atomicPhysics::DeltaEnergyTransition::get(
+                    TypeValue lowestAbsoluteDeltaEnergy = math::abs(
+                        picongpu::particles::atomicPhysics::DeltaEnergyTransition::get(
                             startIndexBlock,
                             atomicStateHostBox,
                             transitionHostBox,
@@ -940,8 +942,8 @@ namespace picongpu::particles::atomicPhysics::atomicData
                     for(CollectionIdx i = 1u; i < static_cast<CollectionIdx>(numberBoundFreeTransitions); ++i)
                     {
                         // no guarantee that delta Energy > 0, therefore we search for lowest abs(DeltaEnergy)
-                        TypeValue deltaEnergy
-                            = math::abs(picongpu::particles::atomicPhysics::DeltaEnergyTransition::get(
+                        TypeValue deltaEnergy = math::abs(
+                            picongpu::particles::atomicPhysics::DeltaEnergyTransition::get(
                                 startIndexBlock + i,
                                 atomicStateHostBox,
                                 transitionHostBox,
@@ -1041,7 +1043,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
         ALPAKA_FN_HOST void storeListToBuffer(
             std::list<T_Tuple>& list,
             T_DataBox hostBox,
-            const T_AdditionalData... additionalData)
+            T_AdditionalData const... additionalData)
         {
             typename std::list<T_Tuple>::iterator iter = list.begin();
 
@@ -1110,7 +1112,6 @@ namespace picongpu::particles::atomicPhysics::atomicData
 
             chargeStateOrgaDataBuffer->hostToDevice();
         }
-
 
         /** fill the upward atomic state orga buffers for a transition group
          *

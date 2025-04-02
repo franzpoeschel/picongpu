@@ -26,7 +26,6 @@
 #include <memory>
 #include <string>
 
-
 namespace picongpu
 {
     namespace fields

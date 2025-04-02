@@ -108,9 +108,9 @@ namespace pmacc::math
         T_Type const& arg) /* return type is required for the compiler to detect host, device                         \
                             * function qualifier correctly                                                            \
                             */                                                                                        \
-        ->decltype(alpaka::core::declval<alpaka::math::trait::alpakaMathTrait<                                        \
-                       alpaka::interface::ImplementationBase<alpakaMathConcept, accOrMathImpl>,                       \
-                       T_Type>>()(detail::getConcept<accOrMathImpl, alpakaMathConcept>(), arg))                       \
+        -> decltype(alpaka::core::declval<alpaka::math::trait::alpakaMathTrait<                                       \
+                        alpaka::interface::ImplementationBase<alpakaMathConcept, accOrMathImpl>,                      \
+                        T_Type>>()(detail::getConcept<accOrMathImpl, alpakaMathConcept>(), arg))                      \
     {                                                                                                                 \
         return alpaka::math::trait::alpakaMathTrait<                                                                  \
             alpaka::interface::ImplementationBase<alpakaMathConcept, accOrMathImpl>,                                  \
@@ -133,10 +133,10 @@ namespace pmacc::math
         T_Type2 const& arg2) /* return type is required for the compiler to detect host, device                       \
                               * function qualifier correctly                                                          \
                               */                                                                                      \
-        ->decltype(alpaka::core::declval<alpaka::math::trait::alpakaMathTrait<                                        \
-                       alpaka::interface::ImplementationBase<alpakaMathConcept, accOrMathImpl>,                       \
-                       T_Type1,                                                                                       \
-                       T_Type2>>()(detail::getConcept<accOrMathImpl, alpakaMathConcept>(), arg1, arg2))               \
+        -> decltype(alpaka::core::declval<alpaka::math::trait::alpakaMathTrait<                                       \
+                        alpaka::interface::ImplementationBase<alpakaMathConcept, accOrMathImpl>,                      \
+                        T_Type1,                                                                                      \
+                        T_Type2>>()(detail::getConcept<accOrMathImpl, alpakaMathConcept>(), arg1, arg2))              \
     {                                                                                                                 \
         return alpaka::math::trait::alpakaMathTrait<                                                                  \
             alpaka::interface::ImplementationBase<alpakaMathConcept, accOrMathImpl>,                                  \

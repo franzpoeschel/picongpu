@@ -31,21 +31,21 @@ namespace picongpu
         static constexpr bool InfluenceParticlePusher = true;
 
         /* We use this to calculate your SI input back to our unit system */
-        PMACC_ALIGN(m_unitField, const float3_64);
+        PMACC_ALIGN(m_unitField, float3_64 const);
 
-        HINLINE FieldBackgroundE(const float3_64 unitField) : m_unitField(unitField)
+        HINLINE FieldBackgroundE(float3_64 const unitField) : m_unitField(unitField)
         {
         }
 
-        HDINLINE FieldBackgroundE(const FieldBackgroundE&) = default;
+        HDINLINE FieldBackgroundE(FieldBackgroundE const&) = default;
 
         /** Specify your background field E(r,t) here
          *
          * @param cellIdx The total cell id counted from the start at t = 0
          * @param currentStep The current time step */
         HDINLINE float3_X operator()(
-            const DataSpace<simDim>& /*cellIdx*/,
-            const uint32_t /*currentStep*/
+            DataSpace<simDim> const& /*cellIdx*/,
+            uint32_t const /*currentStep*/
         ) const
         {
             /* specify your E-Field in V/m and convert to PIConGPU units */
@@ -60,21 +60,21 @@ namespace picongpu
         static constexpr bool InfluenceParticlePusher = true;
 
         /* We use this to calculate your SI input back to our unit system */
-        PMACC_ALIGN(m_unitField, const float3_64);
+        PMACC_ALIGN(m_unitField, float3_64 const);
 
-        HINLINE FieldBackgroundB(const float3_64 unitField) : m_unitField(unitField)
+        HINLINE FieldBackgroundB(float3_64 const unitField) : m_unitField(unitField)
         {
         }
 
-        HDINLINE FieldBackgroundB(const FieldBackgroundB&) = default;
+        HDINLINE FieldBackgroundB(FieldBackgroundB const&) = default;
 
         /** Specify your background field B(r,t) here
          *
          * @param cellIdx The total cell id counted from the start at t=0
          * @param currentStep The current time step */
         HDINLINE float3_X operator()(
-            const DataSpace<simDim>& /*cellIdx*/,
-            const uint32_t /*currentStep*/
+            DataSpace<simDim> const& /*cellIdx*/,
+            uint32_t const /*currentStep*/
         ) const
         {
             /* specify your B-Field in T and convert to PIConGPU units */
@@ -89,21 +89,21 @@ namespace picongpu
         static constexpr bool activated = false;
 
         /* We use this to calculate your SI input back to our unit system */
-        PMACC_ALIGN(m_unitField, const float3_64);
+        PMACC_ALIGN(m_unitField, float3_64 const);
 
-        HINLINE FieldBackgroundJ(const float3_64 unitField) : m_unitField(unitField)
+        HINLINE FieldBackgroundJ(float3_64 const unitField) : m_unitField(unitField)
         {
         }
 
-        HDINLINE FieldBackgroundJ(const FieldBackgroundJ&) = default;
+        HDINLINE FieldBackgroundJ(FieldBackgroundJ const&) = default;
 
         /** Specify your background field J(r,t) here
          *
          * @param cellIdx The total cell id counted from the start at t=0
          * @param currentStep The current time step */
         HDINLINE float3_X operator()(
-            const DataSpace<simDim>& /*cellIdx*/,
-            const uint32_t /*currentStep*/
+            DataSpace<simDim> const& /*cellIdx*/,
+            uint32_t const /*currentStep*/
         ) const
         {
             /* specify your J-Field in A/m^2 and convert to PIConGPU units */

@@ -61,22 +61,20 @@ namespace picongpu
                 constexpr unsigned int N_omega = 2048; // number of frequencies
             } // namespace log_frequencies
 
-
             namespace frequencies_from_list
             {
                 /** path to text file with frequencies */
-                constexpr const char* listLocation = "/path/to/frequency.list";
+                constexpr char const* listLocation = "/path/to/frequency.list";
                 constexpr unsigned int N_omega = 2048; // number of frequencies
             } // namespace frequencies_from_list
 
 
             namespace radiation_frequencies = linear_frequencies;
 
-
             namespace radiationNyquist
             {
                 constexpr float_32 NyquistFactor = 0.5;
-            }
+            } // namespace radiationNyquist
 
             ///////////////////////////////////////////////////
 
@@ -95,24 +93,31 @@ namespace picongpu
             namespace radFormFactor_CIC_3D
             {
             }
+
             namespace radFormFactor_TSC_3D
             {
             }
+
             namespace radFormFactor_PCS_3D
             {
             }
+
             namespace radFormFactor_CIC_1Dy
             {
             }
+
             namespace radFormFactor_Gauss_spherical
             {
             }
+
             namespace radFormFactor_Gauss_cell
             {
             }
+
             namespace radFormFactor_incoherent
             {
             }
+
             namespace radFormFactor_coherent
             {
             }
@@ -121,7 +126,6 @@ namespace picongpu
 #    define PARAM_RADFORMFACTOR radFormFactor_Gauss_spherical
 #endif
             namespace radFormFactor = PARAM_RADFORMFACTOR;
-
 
             ///////////////////////////////////////////////////////////
 
@@ -147,7 +151,6 @@ namespace picongpu
                         particle[picongpu::radiationMask_] = true;
                 }
             };
-
 
             /* filter to enable radiation for electrons
              *
@@ -176,15 +179,19 @@ namespace picongpu
             namespace radWindowFunctionTriangle
             {
             }
+
             namespace radWindowFunctionHamming
             {
             }
+
             namespace radWindowFunctionTriplett
             {
             }
+
             namespace radWindowFunctionGauss
             {
             }
+
             namespace radWindowFunctionNone
             {
             }

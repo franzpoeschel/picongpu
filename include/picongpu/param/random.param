@@ -30,7 +30,6 @@
 
 #include <pmacc/random/methods/methods.hpp>
 
-
 namespace picongpu
 {
     namespace random

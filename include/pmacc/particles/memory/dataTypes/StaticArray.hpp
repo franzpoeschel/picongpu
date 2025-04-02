@@ -25,7 +25,6 @@
 
 #include <cstdint>
 
-
 namespace pmacc
 {
     template<typename T_Type, typename T_size>
@@ -40,13 +39,13 @@ namespace pmacc
 
     public:
         HDINLINE
-        Type& operator[](const int idx)
+        Type& operator[](int const idx)
         {
             return data[idx];
         }
 
         HDINLINE
-        const Type& operator[](const int idx) const
+        Type const& operator[](int const idx) const
         {
             return data[idx];
         }

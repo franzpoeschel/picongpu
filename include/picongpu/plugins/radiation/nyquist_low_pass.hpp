@@ -25,7 +25,6 @@
 #include "picongpu/plugins/radiation/param.hpp"
 #include "picongpu/plugins/radiation/particle.hpp"
 
-
 namespace picongpu
 {
     namespace plugins
@@ -43,7 +42,7 @@ namespace picongpu
                  * so that all Amplitudes for higher frequencies can be ignored.
                  * The Nyquist factor value is set in radiation.param.
                  **/
-                HDINLINE NyquistLowPass(const vector_64& n, const Particle& particle)
+                HDINLINE NyquistLowPass(vector_64 const& n, Particle const& particle)
                 {
                     auto const omegaNyquist = (PI - 0.01) / (sim.pic.getDt() * OneMinusBetaTimesN()(n, particle));
                     threshold = static_cast<float_X>(omegaNyquist * radiationNyquist::NyquistFactor);
@@ -53,7 +52,7 @@ namespace picongpu
                 HDINLINE NyquistLowPass() = default;
 
                 //! Checks if frequency omega is below the threshold
-                HDINLINE bool check(const float_X omega) const
+                HDINLINE bool check(float_X const omega) const
                 {
                     return omega < threshold;
                 }

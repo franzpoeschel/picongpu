@@ -24,7 +24,6 @@
 #include <ostream>
 #include <string>
 
-
 namespace picongpu
 {
     /** Collect software dependencies of PIConGPU

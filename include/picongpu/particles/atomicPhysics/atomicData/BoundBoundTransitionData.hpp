@@ -115,9 +115,9 @@ namespace picongpu::particles::atomicPhysics::atomicData
             typename S_TransitionDataBox::BoxCollectionIndex boxUpperStateCollectionIndex,
             uint32_t numberTransitions)
             : TransitionDataBox<T_Number, T_Value, T_CollectionIndex>(
-                boxLowerStateCollectionIndex,
-                boxUpperStateCollectionIndex,
-                numberTransitions)
+                  boxLowerStateCollectionIndex,
+                  boxUpperStateCollectionIndex,
+                  numberTransitions)
             , m_boxCollisionalOscillatorStrength(boxCollisionalOscillatorStrength)
             , m_boxAbsorptionOscillatorStrength(boxAbsorptionOscillatorStrength)
             , m_boxCxin1(boxCxin1)

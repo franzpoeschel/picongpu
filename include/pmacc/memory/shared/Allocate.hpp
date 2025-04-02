@@ -26,7 +26,6 @@
 #include "pmacc/memory/Array.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     namespace memory

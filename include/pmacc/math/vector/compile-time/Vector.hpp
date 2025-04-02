@@ -100,11 +100,13 @@ namespace pmacc
                 {
                     return RT_type(This::x::value);
                 }
+
                 template<uint32_t T_deferDim = dim, std::enable_if_t<T_deferDim == 2u, int> = 0>
                 static constexpr RT_type toRT()
                 {
                     return RT_type(This::x::value, This::y::value);
                 }
+
                 template<uint32_t T_deferDim = dim, std::enable_if_t<T_deferDim == 3u, int> = 0>
                 static constexpr RT_type toRT()
                 {
@@ -136,8 +138,7 @@ namespace pmacc
                 typename T_TypeA1,
                 typename T_TypeB0,
                 typename T_TypeB1,
-                template<typename...>
-                typename T_BinaryOperator>
+                template<typename...> typename T_BinaryOperator>
             struct applyOperator<CT::Vector<T_TypeA0, T_TypeA1>, CT::Vector<T_TypeB0, T_TypeB1>, T_BinaryOperator>
             {
                 using OpResult0 = T_BinaryOperator<T_TypeA0, T_TypeB0>;
@@ -152,8 +153,7 @@ namespace pmacc
                 typename T_TypeB0,
                 typename T_TypeB1,
                 typename T_TypeB2,
-                template<typename...>
-                typename T_BinaryOperator>
+                template<typename...> typename T_BinaryOperator>
             struct applyOperator<
                 CT::Vector<T_TypeA0, T_TypeA1, T_TypeA2>,
                 CT::Vector<T_TypeB0, T_TypeB1, T_TypeB2>,
@@ -201,7 +201,6 @@ namespace pmacc
                 using type =
                     typename applyOperator<typename Lhs::vector_type, typename Rhs::vector_type, mp_max>::type;
             };
-
 
             /** get element with maximum value
              *
@@ -337,8 +336,8 @@ namespace pmacc
             template<typename T_Vec, typename T_ComponentPos, typename T_Value>
             struct AssignIfInRange
             {
-                using type = mp_if_c
-                    < T_ComponentPos::value<T_Vec::dim, typename Assign<T_Vec, T_ComponentPos, T_Value>::type, T_Vec>;
+                using type = mp_if_c < T_ComponentPos::
+                                 value<T_Vec::dim, typename Assign<T_Vec, T_ComponentPos, T_Value>::type, T_Vec>;
             };
 
             //________________________At_c____________________________

@@ -22,7 +22,7 @@
 // required for SIMDIM definition
 #include "picongpu/defines.hpp"
 
-#if(SIMDIM == DIM3 && PIC_ENABLE_FFTW3 == 1 && ENABLE_OPENPMD == 1)
+#if (SIMDIM == DIM3 && PIC_ENABLE_FFTW3 == 1 && ENABLE_OPENPMD == 1)
 
 #    include "picongpu/simulation/control/Window.hpp"
 
@@ -133,7 +133,7 @@ namespace picongpu
 
                     propagationDistance = focusPos;
 
-                    const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                    SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
                     pmacc::math::Size_t<simDim> globalGridSize = subGrid.getGlobalDomain().size;
 
                     pmacc::GridController<simDim>& con = pmacc::Environment<simDim>::get().GridController();
@@ -165,7 +165,7 @@ namespace picongpu
                     {
                         int const cellsUntilIntegrationPlane = slicePoint * globalGridSize[2];
                         slidingWindowCorrection = cellsUntilIntegrationPlane * sim.si.getCellSize().z()
-                            + pluginNumT * dt * float_64(sim.si.getSpeedOfLight());
+                                                  + pluginNumT * dt * float_64(sim.si.getSpeedOfLight());
                     }
                     else
                     {
@@ -195,7 +195,7 @@ namespace picongpu
                     // The total domain indices of the integration slice are constant, because the screen is not
                     // co-propagating with the moving window
                     yTotalMinIndex = yTotalOffset + yGlobalOffset
-                        + math::floor(slidingWindowCorrection / sim.si.getCellSize().y());
+                                     + math::floor(slidingWindowCorrection / sim.si.getCellSize().y());
 
                     // Initialization of storage arrays
                     ExOmega = vec3c(pluginNumX, vec2c(pluginNumY, vec1c(numOmegas)));
@@ -210,7 +210,6 @@ namespace picongpu
 
                     shadowgram = vec2r(pluginNumX, vec1r(pluginNumY));
                 }
-
 
                 /** Compute cross product of a field
                  *
@@ -284,7 +283,7 @@ namespace picongpu
                             // Transform the total coordinates of the fixed shadowgraphy screen to the global
                             // coordinates of the field-buffers
                             int const simJ = fields::absorber::NUM_CELLS[1][0] + yTotalMinIndex
-                                - currentSlideCount * cellsPerGpuY + j * params::yRes;
+                                             - currentSlideCount * cellsPerGpuY + j * params::yRes;
 
                             float_64 const wf
                                 = masks::positionWf(i, j, pluginNumX, pluginNumY) * masks::timeWf(t, duration);
@@ -526,7 +525,7 @@ namespace picongpu
                  */
                 auto getFourierBuf(uint32_t index)
                 {
-                    const int nOmegasHalf = numOmegas / 2;
+                    int const nOmegasHalf = numOmegas / 2;
                     auto retBufferF = std::make_shared<HostBuffer<std::complex<float_64>, DIM3>>(
                         DataSpace<DIM3>(getSizeX(), getSizeY(), nOmegasHalf));
                     auto dataBox = retBufferF->getDataBox();
@@ -561,7 +560,6 @@ namespace picongpu
                     return retBufferF;
                 }
 
-
                 /** Calculate angular frequency in SI units
                  *
                  * @param i frequency index for trimmed plugin array
@@ -572,9 +570,8 @@ namespace picongpu
                 {
                     float_X const actualStep = dt;
                     return 2.0_X * float_X(PI) * (float_X(i) - float_X(pluginNumT) / 2.0_X) / float_X(pluginNumT)
-                        / actualStep;
+                           / actualStep;
                 }
-
 
                 //! Return size of trimmed arrays in omega dimension
                 int getNumOmegas() const
@@ -594,7 +591,7 @@ namespace picongpu
                  */
                 int getOmegaIndex(int i) const
                 {
-                    const int nOmegasHalf = numOmegas / 2;
+                    int const nOmegasHalf = numOmegas / 2;
                     if(i < nOmegasHalf)
                     {
                         return duration / params::tRes - getOmegaMinIndex() - nOmegasHalf + i + 1;
@@ -626,8 +623,8 @@ namespace picongpu
                 //! Returns openPMD data structure names for detector directions
                 std::string dataLabelsFieldComponent(int index) const
                 {
-                    const int localIndex = index / 2;
-                    const std::string dataLabelList[] = {
+                    int const localIndex = index / 2;
+                    std::string const dataLabelList[] = {
                         "Ex",
                         "Ey",
                         "Bx",
@@ -663,7 +660,6 @@ namespace picongpu
                     planBackward
                         = fftw_plan_dft_2d(pluginNumY, pluginNumX, fftwInB, fftwOutB, FFTW_BACKWARD, FFTW_MEASURE);
                 }
-
 
                 //! Free the memory allocated for the input and output arrays of FFTW.
                 void freeFFTW()
@@ -716,12 +712,13 @@ namespace picongpu
                                     complex_64 const Ey = EyOmegaPropagated[i][j][o] * exponential;
                                     complex_64 const Bx = BxOmegaPropagated[i][j][o] * exponential;
                                     complex_64 const By = ByOmegaPropagated[i][j][o] * exponential;
-                                    shadowgram[i][j] += (dt
-                                                         / (sim.si.getMue0() * pluginNumT * pluginNumT * pluginNumX
-                                                            * pluginNumX * pluginNumY * pluginNumY))
-                                        * (Ex * By - Ey * Bx + ExTmpSum[i][j] * By + Ex * ByTmpSum[i][j]
-                                           - EyTmpSum[i][j] * Bx - Ey * BxTmpSum[i][j])
-                                              .real();
+                                    shadowgram[i][j]
+                                        += (dt
+                                            / (sim.si.getMue0() * pluginNumT * pluginNumT * pluginNumX * pluginNumX
+                                               * pluginNumY * pluginNumY))
+                                           * (Ex * By - Ey * Bx + ExTmpSum[i][j] * By + Ex * ByTmpSum[i][j]
+                                              - EyTmpSum[i][j] * Bx - Ey * BxTmpSum[i][j])
+                                                 .real();
 
                                     if(o < (numOmegas - 1))
                                     {
@@ -754,7 +751,6 @@ namespace picongpu
                     return std::min(tmpIndex, pluginNumT) + 1;
                 }
 
-
                 /** x component of k vector in SI units for FFTs
                  *
                  * @param i k vector index
@@ -765,7 +761,7 @@ namespace picongpu
                 {
                     float_X const actualStep = params::xRes * sim.si.getCellSize().x();
                     return 2.0_X * float_X(PI) * (float_X(i) - float_X(pluginNumX) / 2.0_X) / float_X(pluginNumX)
-                        / actualStep;
+                           / actualStep;
                 }
 
                 /** y component of k vector in SI units for FFTs
@@ -778,7 +774,7 @@ namespace picongpu
                 {
                     float_X const actualStep = params::yRes * sim.si.getCellSize().y();
                     return 2.0_X * float_X(PI) * (float_X(i) - float_X(pluginNumY) / 2.0_X) / float_X(pluginNumY)
-                        / actualStep;
+                           / actualStep;
                 }
             }; // class Helper
         } // namespace shadowgraphy

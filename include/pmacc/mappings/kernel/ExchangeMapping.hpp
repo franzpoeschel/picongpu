@@ -56,7 +56,6 @@ namespace pmacc
             Dim = BaseClass::Dim
         };
 
-
         using SuperCellSize = typename BaseClass::SuperCellSize;
 
         /**
@@ -69,7 +68,7 @@ namespace pmacc
         {
         }
 
-        ExchangeMapping(const ExchangeMapping&) = default;
+        ExchangeMapping(ExchangeMapping const&) = default;
 
         /*get exchange type
          *@return exchange of this object
@@ -97,7 +96,7 @@ namespace pmacc
          * @return mapped SuperCell index including guards
          */
         template<uint32_t T_origin = GUARD>
-        HDINLINE DataSpace<DIM> getSuperCellIndex(const DataSpace<DIM>& blockIdx) const
+        HDINLINE DataSpace<DIM> getSuperCellIndex(DataSpace<DIM> const& blockIdx) const
         {
             auto result = ExchangeMappingMethods<areaType, DIM>::getSuperCellIndex(*this, blockIdx, exchangeType);
             if constexpr(T_origin == CORE)

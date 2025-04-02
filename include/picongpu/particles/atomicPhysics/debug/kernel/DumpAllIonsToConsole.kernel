@@ -61,7 +61,8 @@ namespace picongpu::particles::atomicPhysics::kernel
                 return;
 
             forEachLocalIonBoxEntry(
-                [](T_Worker const& worker, auto& ion) {
+                [](T_Worker const& worker, auto& ion)
+                {
                     picongpu::particles::atomicPhysics::debug::PrintAtomicPhysicsIonToConsole{}(worker.getAcc(), ion);
                 });
         }

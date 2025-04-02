@@ -128,6 +128,7 @@ namespace picongpu
                 }
             }
         }
+
         std::string JsonMatcher::get(std::string const& datasetPath) const
         {
             nlohmann::json result = nlohmann::json::object();

@@ -40,7 +40,7 @@ namespace pmacc
              * @param byte how many bytes in global gpu memory can be reserved for the reduction algorithm
              * @param sharedMemByte limit the usage of shared memory per block on gpu
              */
-            GlobalReduce(const uint32_t byte, const uint32_t sharedMemByte = 4 * 1024) : reduce(byte, sharedMemByte)
+            GlobalReduce(uint32_t const byte, uint32_t const sharedMemByte = 4 * 1024) : reduce(byte, sharedMemByte)
             {
             }
 
@@ -63,7 +63,7 @@ namespace pmacc
              *                reduceMethods::AllReduce, reduceMethods::Reduce
              * @return if result of operator() is valid*/
             template<class MPIMethod>
-            bool hasResult(const MPIMethod& method = ::pmacc::mpi::reduceMethods::AllReduce())
+            bool hasResult(MPIMethod const& method = ::pmacc::mpi::reduceMethods::AllReduce())
             {
                 return mpi_reduce.hasResult(method);
             }
@@ -110,6 +110,7 @@ namespace pmacc
                 }
                 return Type{};
             }
+
             /** @} */
 
         private:

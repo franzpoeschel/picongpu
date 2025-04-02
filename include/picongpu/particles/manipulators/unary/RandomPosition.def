@@ -62,7 +62,6 @@ namespace picongpu
 
                 } // namespace acc
 
-
                 /** Change the in cell position
                  *
                  * This functor changes the in-cell position of a particle.

@@ -53,7 +53,7 @@ namespace pmacc
                             auto const dataSpace = ::pmacc::DataSpace<T_Dim::value>::create(nElementsPerDim[i]);
                             ::pmacc::HostBuffer<Data, T_Dim::value> hostBuffer(dataSpace);
 
-                            const Data value = 255;
+                            Data const value = 255;
                             hostBuffer.setValue(value);
 
                             auto ptr = hostBuffer.data();

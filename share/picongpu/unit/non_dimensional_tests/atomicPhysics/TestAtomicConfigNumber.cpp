@@ -82,14 +82,14 @@ namespace picongpu::particles::atomicPhysics::debug
                 = {// configNumber, levelVector
                    // standard examples
                    TestExample{9779u, LevelVector{2, 1, 1, 0, 1, 0, 0, 0, 0, 0}},
-                   TestExample{66854705u, LevelVector{2, 1, 1, 0, 0, 0, 0, 1, 0, 0}},
+                   TestExample{66'854'705u, LevelVector{2, 1, 1, 0, 0, 0, 0, 1, 0, 0}},
                    // high value test examples
-                   TestExample{24134536956u, LevelVector{0, 1, 0, 0, 0, 0, 0, 0, 0, 1}},
-                   TestExample{24134537168u, LevelVector{2, 8, 7, 0, 0, 0, 0, 0, 0, 1}},
-                   TestExample{24134537139u, LevelVector{0, 8, 6, 0, 0, 0, 0, 0, 0, 1}},
-                   TestExample{434421665154u, LevelVector{0, 0, 0, 0, 0, 0, 0, 0, 0, 18}},
+                   TestExample{24'134'536'956u, LevelVector{0, 1, 0, 0, 0, 0, 0, 0, 0, 1}},
+                   TestExample{24'134'537'168u, LevelVector{2, 8, 7, 0, 0, 0, 0, 0, 0, 1}},
+                   TestExample{24'134'537'139u, LevelVector{0, 8, 6, 0, 0, 0, 0, 0, 0, 1}},
+                   TestExample{434'421'665'154u, LevelVector{0, 0, 0, 0, 0, 0, 0, 0, 0, 18}},
                    // all levels test example
-                   TestExample{25475344564u, LevelVector{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}};
+                   TestExample{25'475'344'564u, LevelVector{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}};
 
             bool pass = true;
 

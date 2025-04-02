@@ -44,14 +44,14 @@ namespace picongpu
         static constexpr bool InfluenceParticlePusher = (PARAM_FIELD_BACKGROUND != 0);
 
         /* We use this to calculate your SI input back to our unit system */
-        PMACC_ALIGN(m_unitField, const float3_64);
+        PMACC_ALIGN(m_unitField, float3_64 const);
 
         /* TWTS E-fields need to be initialized on host,
          *  so they can look up global grid dimensions. */
         templates::twtstight::EField const twtsFieldEPos;
         templates::twtstight::EField const twtsFieldENeg;
 
-        HINLINE FieldBackgroundE(const float3_64 unitField)
+        HINLINE FieldBackgroundE(float3_64 const unitField)
             : m_unitField(unitField)
             , twtsFieldEPos(
                   Params::FOCUS_Y_SI,
@@ -76,13 +76,13 @@ namespace picongpu
         {
         }
 
-        HDINLINE FieldBackgroundE(const FieldBackgroundE&) = default;
+        HDINLINE FieldBackgroundE(FieldBackgroundE const&) = default;
 
         /** Specify your background field E(r,t) here
          *
          * @param cellIdx The total cell id counted from the start at t = 0
          * @param currentStep The current time step */
-        HDINLINE float3_X operator()(const DataSpace<simDim>& cellIdx, const uint32_t currentStep) const
+        HDINLINE float3_X operator()(DataSpace<simDim> const& cellIdx, uint32_t const currentStep) const
         {
             /** unit: Volt /meter */
             float3_64 const invUnitField = float3_64(1.0 / m_unitField[0], 1.0 / m_unitField[1], 1.0 / m_unitField[2]);
@@ -104,14 +104,14 @@ namespace picongpu
         static constexpr bool InfluenceParticlePusher = (PARAM_FIELD_BACKGROUND != 0);
 
         /* We use this to calculate your SI input back to our unit system */
-        PMACC_ALIGN(m_unitField, const float3_64);
+        PMACC_ALIGN(m_unitField, float3_64 const);
 
         /* TWTS B-fields need to be initialized on host,
          *  so they can look up global grid dimensions. */
         templates::twtstight::BField const twtsFieldBPos;
         templates::twtstight::BField const twtsFieldBNeg;
 
-        HINLINE FieldBackgroundB(const float3_64 unitField)
+        HINLINE FieldBackgroundB(float3_64 const unitField)
             : m_unitField(unitField)
             , twtsFieldBPos(
                   Params::FOCUS_Y_SI,
@@ -136,13 +136,13 @@ namespace picongpu
         {
         }
 
-        HDINLINE FieldBackgroundB(const FieldBackgroundB&) = default;
+        HDINLINE FieldBackgroundB(FieldBackgroundB const&) = default;
 
         /** Specify your background field B(r,t) here
          *
          * @param cellIdx The total cell id counted from the start at t=0
          * @param currentStep The current time step */
-        HDINLINE float3_X operator()(const DataSpace<simDim>& cellIdx, const uint32_t currentStep) const
+        HDINLINE float3_X operator()(DataSpace<simDim> const& cellIdx, uint32_t const currentStep) const
         {
             /** unit: Volt /meter */
             float3_64 const invUnitField = float3_64(1.0 / m_unitField[0], 1.0 / m_unitField[1], 1.0 / m_unitField[2]);
@@ -164,11 +164,11 @@ namespace picongpu
         static constexpr bool activated = false;
 
         /* We use this to calculate your SI input back to our unit system */
-        PMACC_ALIGN(m_unitField, const float3_64);
+        PMACC_ALIGN(m_unitField, float3_64 const);
 
-        HDINLINE FieldBackgroundJ(const FieldBackgroundJ&) = default;
+        HDINLINE FieldBackgroundJ(FieldBackgroundJ const&) = default;
 
-        HDINLINE FieldBackgroundJ(const float3_64 unitField) : m_unitField(unitField)
+        HDINLINE FieldBackgroundJ(float3_64 const unitField) : m_unitField(unitField)
         {
         }
 
@@ -176,17 +176,17 @@ namespace picongpu
          *
          * @param cellIdx The total cell id counted from the start at t=0
          * @param currentStep The current time step */
-        HDINLINE float3_X operator()(const DataSpace<simDim>& cellIdx, const uint32_t currentStep) const
+        HDINLINE float3_X operator()(DataSpace<simDim> const& cellIdx, uint32_t const currentStep) const
         {
             /* example: periodicity of 20 microns ( = 2.0e-5 m) */
             constexpr float_64 period_SI(20.0e-6);
             /* calculate cells -> SI -> m to microns*/
-            const float_64 y_SI = cellIdx.y() * sim.si.getCellSize().y() * 1.0e6;
+            float_64 const y_SI = cellIdx.y() * sim.si.getCellSize().y() * 1.0e6;
             /* note: you can also transform the time step to seconds by
              *       multiplying with DELTA_T_SI */
 
             /* specify your J-Field in A/m^2 and convert to PIConGPU units */
-            const float_X sinArg = precisionCast<float_X>(y_SI / period_SI * 2.0 * PI);
+            float_X const sinArg = precisionCast<float_X>(y_SI / period_SI * 2.0 * PI);
             return float3_X(0.0, math::cos(sinArg) / m_unitField[1], 0.0);
         }
     };

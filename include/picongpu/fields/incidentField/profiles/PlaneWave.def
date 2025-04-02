@@ -22,7 +22,6 @@
 #include "picongpu/fields/incidentField/profiles/BaseParam.def"
 #include "picongpu/fields/incidentField/profiles/Traits.hpp"
 
-
 namespace picongpu
 {
     namespace fields

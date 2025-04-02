@@ -28,7 +28,6 @@
 
 #include <optional>
 
-
 namespace picongpu
 {
     namespace particles
@@ -68,7 +67,6 @@ namespace picongpu
                     uint32_t const& currentStep,
                     uint32_t const& extraSlotNr) const;
             };
-
 
             //! Specialization for normal derived attributes
             template<uint32_t AREA, typename T_Species, typename T_Filter, typename... T>

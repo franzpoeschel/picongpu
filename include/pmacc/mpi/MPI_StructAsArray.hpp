@@ -34,6 +34,7 @@ namespace pmacc
             MPI_StructAsArray(MPI_Datatype type, uint32_t factor) : dataType(type), sizeMultiplier(factor)
             {
             }
+
             MPI_Datatype dataType;
             uint32_t sizeMultiplier;
         };

@@ -25,7 +25,6 @@
 
 #include <cstdint>
 
-
 namespace pmacc
 {
     /**
@@ -49,7 +48,7 @@ namespace pmacc
          * Tears down this initialiser.
          * Called after any init.
          */
-        virtual void teardown(){};
+        virtual void teardown() {};
 
         /**
          * Initialises simulation data (concrete type of data is described by id).

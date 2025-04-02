@@ -26,7 +26,6 @@
 #include <pmacc/memory/boxes/CachedBox.hpp>
 #include <pmacc/types.hpp>
 
-
 namespace picongpu
 {
     namespace currentSolver
@@ -50,7 +49,7 @@ namespace picongpu
                  */
                 template<typename T_BlockDescription, typename T_Worker, typename T_FieldBox>
                 DINLINE static auto create(T_Worker const& worker, T_FieldBox const& fieldBox)
-#if(!BOOST_COMP_CLANG)
+#if (!BOOST_COMP_CLANG)
                     -> decltype(pmacc::CachedBox::create<0u, typename T_FieldBox::ValueType>(
                         worker,
                         std::declval<T_BlockDescription>()))
@@ -92,7 +91,7 @@ namespace picongpu
                  */
                 template<typename T_BlockDescription, typename T_Worker, typename T_FieldBox>
                 DINLINE static auto create([[maybe_unused]] T_Worker const& worker, T_FieldBox const& fieldBox)
-#if(!BOOST_COMP_CLANG)
+#if (!BOOST_COMP_CLANG)
                     -> T_FieldBox
 #endif
                 {

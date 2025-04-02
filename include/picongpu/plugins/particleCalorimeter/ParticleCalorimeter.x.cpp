@@ -18,7 +18,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "ParticleCalorimeter.kernel"
 
@@ -56,13 +56,11 @@
 
 #    include <openPMD/openPMD.hpp>
 
-
 namespace picongpu
 {
     using namespace pmacc;
 
     namespace po = boost::program_options;
-
 
     /** Virtual particle calorimeter plugin.
      *
@@ -117,11 +115,11 @@ namespace picongpu
             // override some attributes according to the calorimeter plugin
             if(this->numBinsEnergy > 1)
             {
-                const float_64 minEnergy_SI = this->minEnergy * sim.unit.energy();
-                const float_64 maxEnergy_SI = this->maxEnergy * sim.unit.energy();
+                float_64 const minEnergy_SI = this->minEnergy * sim.unit.energy();
+                float_64 const maxEnergy_SI = this->maxEnergy * sim.unit.energy();
                 // convert to keV
-                const float_64 minEnergy_keV = 1.0e-3 * sim.si.conv().joule2eV(minEnergy_SI);
-                const float_64 maxEnergy_keV = 1.0e-3 * sim.si.conv().joule2eV(maxEnergy_SI);
+                float_64 const minEnergy_keV = 1.0e-3 * sim.si.conv().joule2eV(minEnergy_SI);
+                float_64 const maxEnergy_keV = 1.0e-3 * sim.si.conv().joule2eV(maxEnergy_SI);
 
                 dataset.setAttribute<float_64>("minEnergy[keV]", minEnergy_keV);
                 dataset.setAttribute<float_64>("maxEnergy[keV]", maxEnergy_keV);
@@ -158,7 +156,7 @@ namespace picongpu
         }
 
     public:
-        void restart(uint32_t restartStep, const std::string& restartDirectory) override
+        void restart(uint32_t restartStep, std::string const& restartDirectory) override
         {
             HBufCalorimeter hBufLeftParsCalorimeter(this->dBufLeftParsCalorimeter->capacityND());
 
@@ -209,8 +207,7 @@ namespace picongpu
             this->dBufLeftParsCalorimeter->copyFrom(hBufLeftParsCalorimeter);
         }
 
-
-        void checkpoint(uint32_t currentStep, const std::string& checkpointDirectory) override
+        void checkpoint(uint32_t currentStep, std::string const& checkpointDirectory) override
         {
             /*
              * Create folder for openPMD checkpoint files.
@@ -302,8 +299,8 @@ namespace picongpu
             this->maxYaw_deg = float_X(0.5) * this->openingYaw_deg;
             this->maxPitch_deg = float_X(0.5) * this->openingPitch_deg;
             /* convert keV to joule */
-            const float_64 minEnergy_SI = sim.si.conv().eV2Joule(this->minEnergy * 1.0e3);
-            const float_64 maxEnergy_SI = sim.si.conv().eV2Joule(this->maxEnergy * 1.0e3);
+            float_64 const minEnergy_SI = sim.si.conv().eV2Joule(this->minEnergy * 1.0e3);
+            float_64 const maxEnergy_SI = sim.si.conv().eV2Joule(this->maxEnergy * 1.0e3);
             /* convert into PIConGPU units */
             this->minEnergy = minEnergy_SI / sim.unit.energy();
             this->maxEnergy = maxEnergy_SI / sim.unit.energy();
@@ -324,8 +321,8 @@ namespace picongpu
 
             /* calculate rotated calorimeter frame from posYaw_deg and posPitch_deg */
             constexpr float_64 radsInDegree = pmacc::math::Pi<float_64>::value / float_64(180.0);
-            const float_64 posYaw_rad = this->posYaw_deg * radsInDegree;
-            const float_64 posPitch_rad = this->posPitch_deg * radsInDegree;
+            float_64 const posYaw_rad = this->posYaw_deg * radsInDegree;
+            float_64 const posPitch_rad = this->posPitch_deg * radsInDegree;
             this->calorimeterFrameVecY = float3_X(
                 math::sin(posYaw_rad) * math::cos(posPitch_rad),
                 math::cos(posYaw_rad) * math::cos(posPitch_rad),
@@ -338,7 +335,7 @@ namespace picongpu
             else
             {
                 /* choose `calorimeterFrameVecX` so that the roll is zero. */
-                const float3_X vecUp(0.0, 0.0, -1.0);
+                float3_X const vecUp(0.0, 0.0, -1.0);
                 this->calorimeterFrameVecX = pmacc::math::cross(vecUp, this->calorimeterFrameVecY);
                 /* normalize vector */
                 this->calorimeterFrameVecX /= pmacc::math::l2norm(this->calorimeterFrameVecX);
@@ -470,7 +467,6 @@ namespace picongpu
                 std::string const& masterPrefix = std::string{}) override
             {
             }
-
 
             void validateOptions() override
             {
@@ -607,7 +603,7 @@ namespace picongpu
             this->writeToOpenPMDFile(currentStep);
         }
 
-        void onParticleLeave(const std::string& speciesName, int32_t direction) override
+        void onParticleLeave(std::string const& speciesName, int32_t direction) override
         {
             if(this->notifyPeriod.empty())
                 return;
@@ -667,7 +663,7 @@ namespace picongpu
         std::string filenameExtension;
         MappingDesc* m_cellDescription;
         std::ofstream outFile;
-        const std::string leftParticlesDatasetName;
+        std::string const leftParticlesDatasetName;
         std::string notifyPeriod;
 
         uint32_t numBinsYaw;

@@ -39,33 +39,33 @@ namespace picongpu
     {
         T_CalorimeterDataBox m_calorimeterBox;
 
-        const float_X maxYaw;
-        const float_X maxPitch;
-        const uint32_t numBinsYaw;
-        const uint32_t numBinsPitch;
-        const int32_t numBinsEnergy;
+        float_X const maxYaw;
+        float_X const maxPitch;
+        uint32_t const numBinsYaw;
+        uint32_t const numBinsPitch;
+        int32_t const numBinsEnergy;
         /* depending on `logScale` the energy range is initialized
          * with the logarithmic or the linear value. */
-        const float_X minEnergy;
-        const float_X maxEnergy;
-        const bool logScale;
+        float_X const minEnergy;
+        float_X const maxEnergy;
+        bool const logScale;
 
-        const float3_X calorimeterFrameVecX;
-        const float3_X calorimeterFrameVecY;
-        const float3_X calorimeterFrameVecZ;
+        float3_X const calorimeterFrameVecX;
+        float3_X const calorimeterFrameVecY;
+        float3_X const calorimeterFrameVecZ;
 
         CalorimeterFunctor(
-            const float_X maxYaw,
-            const float_X maxPitch,
-            const uint32_t numBinsYaw,
-            const uint32_t numBinsPitch,
-            const uint32_t numBinsEnergy,
-            const float_X minEnergy,
-            const float_X maxEnergy,
-            const bool logScale,
-            const float3_X calorimeterFrameVecX,
-            const float3_X calorimeterFrameVecY,
-            const float3_X calorimeterFrameVecZ)
+            float_X const maxYaw,
+            float_X const maxPitch,
+            uint32_t const numBinsYaw,
+            uint32_t const numBinsPitch,
+            uint32_t const numBinsEnergy,
+            float_X const minEnergy,
+            float_X const maxEnergy,
+            bool const logScale,
+            float3_X const calorimeterFrameVecX,
+            float3_X const calorimeterFrameVecY,
+            float3_X const calorimeterFrameVecZ)
             : maxYaw(maxYaw)
             , maxPitch(maxPitch)
             , numBinsYaw(numBinsYaw)
@@ -80,18 +80,18 @@ namespace picongpu
         {
         }
 
-        HDINLINE CalorimeterFunctor(const CalorimeterFunctor&) = default;
+        HDINLINE CalorimeterFunctor(CalorimeterFunctor const&) = default;
 
-        HINLINE void setCalorimeterData(const T_CalorimeterDataBox& calorimeterBox)
+        HINLINE void setCalorimeterData(T_CalorimeterDataBox const& calorimeterBox)
         {
             this->m_calorimeterBox = calorimeterBox;
         }
 
         template<typename T_Particle, typename T_Worker>
-        DINLINE void operator()(const T_Worker& worker, T_Particle& particle)
+        DINLINE void operator()(T_Worker const& worker, T_Particle& particle)
         {
-            const float3_X mom = particle[momentum_];
-            const float_X mom2 = pmacc::math::dot(mom, mom);
+            float3_X const mom = particle[momentum_];
+            float_X const mom2 = pmacc::math::dot(mom, mom);
             float3_X dirVec = mom * math::rsqrt(mom2);
 
             /* rotate dirVec into the calorimeter frame. This coordinate transformation
@@ -103,12 +103,12 @@ namespace picongpu
                 pmacc::math::dot(this->calorimeterFrameVecZ, dirVec));
 
             /* convert dirVec to yaw and pitch */
-            const float_X yaw = math::atan2(dirVec.x(), dirVec.y());
-            const float_X pitch = math::asin(dirVec.z());
+            float_X const yaw = math::atan2(dirVec.x(), dirVec.y());
+            float_X const pitch = math::asin(dirVec.z());
 
             if(math::abs(yaw) < this->maxYaw && math::abs(pitch) < this->maxPitch)
             {
-                const float2_X calorimeterPos
+                float2_X const calorimeterPos
                     = particleCalorimeter::mapYawPitchToNormedRange(yaw, pitch, this->maxYaw, this->maxPitch);
 
                 // yaw
@@ -124,21 +124,21 @@ namespace picongpu
                 pitchBin = pitchBin < 0 ? 0 : pitchBin;
 
                 // energy
-                const float_X weighting = particle[weighting_];
-                const float_X normedWeighting
+                float_X const weighting = particle[weighting_];
+                float_X const normedWeighting
                     = weighting / static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle());
-                const float_X mass = picongpu::traits::attribute::getMass(weighting, particle);
-                const float_X energy = KinEnergy<>()(mom, mass) / weighting;
+                float_X const mass = picongpu::traits::attribute::getMass(weighting, particle);
+                float_X const energy = KinEnergy<>()(mom, mass) / weighting;
 
                 int32_t energyBin = 0;
                 if(this->numBinsEnergy > 1)
                 {
-                    const int32_t numBinsOutOfRange = 2;
+                    int32_t const numBinsOutOfRange = 2;
                     energyBin
                         = pmacc::math::float2int_rd(
                               ((logScale ? pmacc::math::log10(energy) : energy) - minEnergy) / (maxEnergy - minEnergy)
                               * static_cast<float_X>(this->numBinsEnergy - numBinsOutOfRange))
-                        + 1;
+                          + 1;
 
                     // all entries larger than maxEnergy go into last bin
                     energyBin = energyBin < this->numBinsEnergy ? energyBin : this->numBinsEnergy - 1;

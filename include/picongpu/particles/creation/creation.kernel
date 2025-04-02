@@ -35,7 +35,6 @@
 
 #include <iostream>
 
-
 namespace picongpu
 {
     namespace particles
@@ -73,7 +72,7 @@ namespace picongpu
                     IdGenerator idGen,
                     T_Mapping const& mapper) const
                 {
-                    const DataSpace<simDim> superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
+                    DataSpace<simDim> const superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
 
                     DataSpace<simDim> const supercellCellOffset = superCellIdx * SuperCellSize::toRT();
 

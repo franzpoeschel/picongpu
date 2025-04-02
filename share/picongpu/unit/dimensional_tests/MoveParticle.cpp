@@ -37,12 +37,12 @@ using ::pmacc::localCellIdx;
 using ::pmacc::multiMask;
 using position = ::picongpu::position<>;
 using ::picongpu::float_X;
-using ::picongpu::simDim;
 using ::picongpu::particles::moveParticle;
+using ::picongpu::simDim;
 using ::picongpu::operator""_X;
 
-const auto superCellSize = ::picongpu::SuperCellSize::toRT();
-constexpr const auto superCellVolume = ::pmacc::math::CT::volume<::picongpu::SuperCellSize>::type::value;
+auto const superCellSize = ::picongpu::SuperCellSize::toRT();
+constexpr auto const superCellVolume = ::pmacc::math::CT::volume<::picongpu::SuperCellSize>::type::value;
 
 template<typename T>
 static bool isApproxEqual(T const& a, T const& b)
@@ -56,7 +56,6 @@ static bool isApproxEqual(T const& a, T const& b)
         [](auto const& lhs, auto const& rhs)
         { return lhs == Catch::Approx(rhs).margin(std::numeric_limits<typename T::type>::epsilon()); });
 }
-
 
 /** A tiny stub of a particle implementing the interface expected by moveParticle()
  */
@@ -84,7 +83,7 @@ struct ParticleStub
     bool operator==(ParticleStub const& other) const
     {
         return isApproxEqual(pos, other.pos) && localCellIdxValue == other.localCellIdxValue
-            && multiMaskValue == other.multiMaskValue;
+               && multiMaskValue == other.multiMaskValue;
     }
 
     std::string toString() const
@@ -129,7 +128,7 @@ TEST_CASE("unit::moveParticle", "[moveParticle test]")
     {
         auto i = GENERATE(range(0u, simDim));
 
-        const std::array<int, 3> neighbouringLocalCellIdxPositive{1, 8, 64};
+        std::array<int, 3> const neighbouringLocalCellIdxPositive{1, 8, 64};
         newPos[i] = 1.1;
         expectedParticle.pos[i] = .1;
         expectedParticle.localCellIdxValue = neighbouringLocalCellIdxPositive[i];
@@ -143,9 +142,9 @@ TEST_CASE("unit::moveParticle", "[moveParticle test]")
     {
         auto i = GENERATE(range(0u, simDim));
 
-        const auto lastCell = superCellVolume - 1;
+        auto const lastCell = superCellVolume - 1;
         // last number can be hard-coded because if this is used, we know we're 3D:
-        const std::array<int, 3> neighbouringLocalCellIdxNegative{
+        std::array<int, 3> const neighbouringLocalCellIdxNegative{
             lastCell - 1,
             lastCell - superCellSize[simDim - 2],
             191};

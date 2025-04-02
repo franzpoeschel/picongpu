@@ -25,7 +25,6 @@
 
 #include <boost/mpl/placeholders.hpp>
 
-
 namespace pmacc
 {
     namespace meta

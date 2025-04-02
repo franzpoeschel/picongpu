@@ -137,7 +137,7 @@ namespace pmacc
         }
 
         template<typename T_OtherParticle>
-        HDINLINE Particle(const T_OtherParticle& other) : frame(other.frame)
+        HDINLINE Particle(T_OtherParticle const& other) : frame(other.frame)
                                                         , idx(other.idx)
         {
         }
@@ -149,7 +149,7 @@ namespace pmacc
          * @return result of operator[] of the Frame
          */
         template<typename T_Key>
-        HDINLINE auto& operator[](const T_Key key)
+        HDINLINE auto& operator[](T_Key const key)
         {
             PMACC_CASSERT_MSG_TYPE(key_not_available, T_Key, traits::HasIdentifier<Particle, T_Key>::type::value);
 
@@ -158,7 +158,7 @@ namespace pmacc
 
         /** const version of method operator(const T_Key) */
         template<typename T_Key>
-        HDINLINE const auto& operator[](const T_Key key) const
+        HDINLINE const auto& operator[](T_Key const key) const
         {
             PMACC_CASSERT_MSG_TYPE(key_not_available, T_Key, traits::HasIdentifier<Particle, T_Key>::type::value);
 
@@ -166,7 +166,7 @@ namespace pmacc
         }
 
         HDINLINE
-        Particle& operator=(const Particle& other) = default;
+        Particle& operator=(Particle const& other) = default;
 
         /** Derive attributes
          *
@@ -267,7 +267,7 @@ namespace pmacc
                     using ResultType = pmacc::Particle<FrameType, NewValueTypeSeq>;
 
                     HDINLINE
-                    ResultType operator()(const ParticleType& particle)
+                    ResultType operator()(ParticleType const& particle)
                     {
                         return ResultType(particle);
                     };

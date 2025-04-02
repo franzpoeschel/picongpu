@@ -36,7 +36,6 @@ namespace pmacc
     identifier(pmacc_isAlias, );
 } // namespace pmacc
 
-
 /** create an alias
  *
  * an alias is a unspecialized type of an identifier or a value_identifier

@@ -33,13 +33,13 @@ namespace pmacc
             struct Add
             {
                 template<typename Dst, typename Src>
-                HDINLINE void operator()(Dst& dst, const Src& src) const
+                HDINLINE void operator()(Dst& dst, Src const& src) const
                 {
                     dst += src;
                 }
 
                 template<typename Dst, typename Src, typename T_Worker>
-                HDINLINE void operator()(const T_Worker&, Dst& dst, const Src& src) const
+                HDINLINE void operator()(T_Worker const&, Dst& dst, Src const& src) const
                 {
                     dst += src;
                 }

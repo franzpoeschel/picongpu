@@ -31,7 +31,7 @@ namespace pmacc
      */
     using vint_t = unsigned int;
     //! define which index means that the index is invalid
-#define INV_IDX (vint_t(0xFFFFFFFF))
+#define INV_IDX (vint_t(0xFFFF'FFFF))
 
     /**
      * Defines the local cell id type in a supercell

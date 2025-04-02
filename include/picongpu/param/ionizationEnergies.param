@@ -29,7 +29,6 @@
 
 #pragma once
 
-
 namespace picongpu
 {
     namespace ionization

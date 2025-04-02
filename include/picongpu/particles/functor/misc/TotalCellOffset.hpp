@@ -23,7 +23,6 @@
 #include "picongpu/particles/functor/misc/TotalCellOffset.def"
 #include "picongpu/simulation/control/MovingWindow.hpp"
 
-
 namespace picongpu
 {
     namespace particles

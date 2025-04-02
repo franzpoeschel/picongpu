@@ -29,7 +29,6 @@
 #include "pmacc/particles/memory/buffers/ParticlesBuffer.hpp"
 #include "pmacc/traits/GetNumWorkers.hpp"
 
-
 namespace pmacc
 {
     template<typename T_ParticleDescription, class MappingDesc, typename T_DeviceHeap>

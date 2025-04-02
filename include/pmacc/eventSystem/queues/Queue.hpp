@@ -24,7 +24,6 @@
 #include "pmacc/eventSystem/events/ComputeEventHandle.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     /** Wrapper for a single alpaka queue.
@@ -48,7 +47,7 @@ namespace pmacc
          */
         ComputeDeviceQueue getAlpakaQueue() const;
 
-        void waitOn(const ComputeEventHandle& ev);
+        void waitOn(ComputeEventHandle const& ev);
 
     private:
         ComputeDeviceQueue queue;

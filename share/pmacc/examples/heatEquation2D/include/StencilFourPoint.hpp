@@ -36,7 +36,7 @@ enum Directions
 
 struct StencilFourPoint
 {
-    const std::array<uint32_t, 4> stencilDirections{LEFT, RIGHT, UP, DOWN};
+    std::array<uint32_t, 4> const stencilDirections{LEFT, RIGHT, UP, DOWN};
 
     /** run a 4 point stencil for a supercell
      *
@@ -47,14 +47,14 @@ struct StencilFourPoint
      */
     template<typename T_Box, typename T_BoxRes, typename T_Mapping, typename T_Worker>
     DINLINE void operator()(
-        const T_Worker& worker,
-        const T_Box& boxRead,
+        T_Worker const& worker,
+        T_Box const& boxRead,
         T_Box boxWrite,
         T_BoxRes boxResidual,
-        const float alpha,
-        const float dx,
-        const float dt,
-        const T_Mapping& mapper) const
+        float const alpha,
+        float const dx,
+        float const dt,
+        T_Mapping const& mapper) const
     {
         using Type = typename T_Box::ValueType;
         using SuperCellSize = typename T_Mapping::SuperCellSize;

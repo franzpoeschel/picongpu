@@ -65,10 +65,10 @@ namespace picongpu
                 static constexpr float_64 gamma = 22.366272; // beta: 0.999
                 static constexpr auto driftDirection = float3_X(PARAM_VX, PARAM_VY, PARAM_VZ);
             };
+
             using AssignDrift = unary::Drift<DriftParam, pmacc::math::operation::Assign>;
 
         } // namespace manipulators
-
 
         namespace startPosition
         {
@@ -82,6 +82,7 @@ namespace picongpu
 
                 static constexpr auto inCellOffset = float3_X(0.9, 0.8, 0.7);
             };
+
             using OnePosition = OnePositionImpl<OnePositionParameter>;
 
         } // namespace startPosition

@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/plugins/common/openPMDDefinitions.def"
 #    include "picongpu/plugins/openPMD/openPMDWriter.def"
@@ -50,10 +50,10 @@ namespace picongpu
         struct WriteNDScalars
         {
             WriteNDScalars(
-                const std::string& baseName,
-                const std::string& group,
-                const std::string& dataset,
-                const std::string& attrName = "")
+                std::string const& baseName,
+                std::string const& group,
+                std::string const& dataset,
+                std::string const& attrName = "")
                 : baseName(baseName)
                 , group(group)
                 , dataset(dataset)
@@ -74,7 +74,7 @@ namespace picongpu
                 T_Attribute attribute)
             {
                 auto name = baseName + "/" + group + "/" + dataset;
-                const auto openPMDScalarType = ::openPMD::determineDatatype<T_Scalar>();
+                auto const openPMDScalarType = ::openPMD::determineDatatype<T_Scalar>();
                 using Dimensions = pmacc::math::UInt64<simDim>;
 
                 log<picLog::INPUT_OUTPUT>("openPMD: prepare write %1%D scalars: %2%") % simDim % name;
@@ -129,7 +129,7 @@ namespace picongpu
             }
 
         private:
-            const std::string baseName, group, dataset, attrName;
+            std::string const baseName, group, dataset, attrName;
             int64_t varId;
         };
 
@@ -149,12 +149,12 @@ namespace picongpu
              * referenced by the pointers */
             void operator()(
                 ThreadParams& params,
-                const uint32_t currentStep,
-                const std::string& baseName,
-                const std::string& group,
-                const std::string& dataset,
+                uint32_t const currentStep,
+                std::string const& baseName,
+                std::string const& group,
+                std::string const& dataset,
                 T_Scalar* value,
-                const std::string& attrName = "",
+                std::string const& attrName = "",
                 T_Attribute* attribute = nullptr)
             {
                 auto name = baseName + "/" + group + "/" + dataset;

@@ -47,7 +47,7 @@ namespace picongpu
         std::ofstream& outFile,
         std::string filename,
         uint32_t restartStep,
-        const std::string restartDirectory)
+        std::string const restartDirectory)
     {
         /* get restart time step as string */
         std::stringstream sStep;
@@ -97,7 +97,7 @@ namespace picongpu
         std::ofstream& outFile,
         std::string filename,
         uint32_t currentStep,
-        const std::string checkpointDirectory)
+        std::string const checkpointDirectory)
     {
         outFile.flush();
 

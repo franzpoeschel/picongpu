@@ -33,7 +33,6 @@
 #include "pmacc/traits/GetNumWorkers.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     /* count particles
@@ -99,7 +98,8 @@ namespace pmacc
             worker.sync();
 
             onlyMaster(
-                [&]() {
+                [&]()
+                {
                     alpaka::atomicAdd(
                         worker.getAcc(),
                         gCounter,
@@ -184,8 +184,8 @@ namespace pmacc
         static uint64_cu countOnDevice(
             PBuffer& buffer,
             CellDesc cellDescription,
-            const Space& origin,
-            const Space& size,
+            Space const& origin,
+            Space const& size,
             T_ParticleFilter& parFilter)
         {
             using usedFilters = mp_list<typename GetPositionFilter<Space::Dim>::type>;
@@ -209,8 +209,8 @@ namespace pmacc
         static uint64_cu countOnDevice(
             PBuffer& buffer,
             CellDesc cellDescription,
-            const Space& origin,
-            const Space& size,
+            Space const& origin,
+            Space const& size,
             T_ParticleFilter& parFilter)
         {
             return pmacc::CountParticles::countOnDevice<CORE + BORDER + GUARD>(

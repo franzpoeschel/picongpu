@@ -38,7 +38,7 @@ namespace pmacc
         return m_alpakaEvent;
     }
 
-    void DeviceTask::setComputeEventHandle(const ComputeEventHandle& alpakaEvent)
+    void DeviceTask::setComputeEventHandle(ComputeEventHandle const& alpakaEvent)
     {
         this->hasComputeEventHandle = true;
         this->m_alpakaEvent = alpakaEvent;

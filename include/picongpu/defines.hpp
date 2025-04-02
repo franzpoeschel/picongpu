@@ -28,7 +28,7 @@
 namespace picongpu
 {
     using namespace pmacc;
-}
+} // namespace picongpu
 
 // clang-format off
 #include "picongpu/param/precision.param"

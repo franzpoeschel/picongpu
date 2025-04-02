@@ -51,8 +51,9 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
 
             // sim.unit.mass()^2 * sim.unit.length()^2 / sim.unit.time()^2 * weight^2 /
             // sim.unit.typicalNumParticlesPerMacroParticle()^2
-            float_64 const momentumSquared = pmacc::math::l2norm2(momentumVector)
-                / pmacc::math::cPow(picongpu::sim.unit.typicalNumParticlesPerMacroParticle(), 2u);
+            float_64 const momentumSquared
+                = pmacc::math::l2norm2(momentumVector)
+                  / pmacc::math::cPow(picongpu::sim.unit.typicalNumParticlesPerMacroParticle(), 2u);
 
             // sim.unit.mass(), not weighted
             float_64 const mass
@@ -71,7 +72,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
             // = sim.unit.mass() * sim.unit.length()^2 / sim.unit.time()^2 * weight /
             // sim.unit.typicalNumParticlesPerMacroParticle()
             return /*since we sum over all three dimensions */ (1._X / 3._X)
-                * static_cast<float_X>(
+                   * static_cast<float_X>(
                        c * momentumSquared
                        / math::sqrt(momentumSquared + m2c2 * pmacc::math::cPow(weightNormalized, 2u)));
         }

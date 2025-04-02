@@ -19,7 +19,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/plugins/transitionRadiation/TransitionRadiation.kernel"
 
@@ -62,7 +62,6 @@
 #    include <memory>
 #    include <string>
 #    include <vector>
-
 
 namespace picongpu
 {
@@ -148,7 +147,6 @@ namespace picongpu
                         std::string const& masterPrefix = std::string{}) override
                     {
                     }
-
 
                     void validateOptions() override
                     {
@@ -269,7 +267,6 @@ namespace picongpu
                         % currentStep;
                 }
 
-
                 //! must be implemented by the user
                 static std::shared_ptr<plugins::multi::IHelp> getHelp()
                 {
@@ -364,7 +361,7 @@ namespace picongpu
                 static unsigned int elementsTransitionRadiation()
                 {
                     return transitionRadiation::frequencies::nOmega
-                        * transitionRadiation::parameters::nObserver; // storage for amplitude results on GPU
+                           * transitionRadiation::parameters::nObserver; // storage for amplitude results on GPU
                 }
 
                 /** Combine transition radiation data from each CPU and store result on master.
@@ -418,7 +415,6 @@ namespace picongpu
                     }
                 }
 
-
                 //! perform all operations to get data from GPU to master
                 void collectDataGPUToMaster()
                 {
@@ -460,8 +456,8 @@ namespace picongpu
                          ************************************************************/
                         for(unsigned int i = 0; i < elementsTransitionRadiation(); ++i)
                         {
-                            const float_X ctrPara = pmacc::math::norm(ctrParaArray[i]);
-                            const float_X ctrPerp = pmacc::math::norm(ctrPerpArray[i]);
+                            float_X const ctrPara = pmacc::math::norm(ctrParaArray[i]);
+                            float_X const ctrPerp = pmacc::math::norm(ctrPerpArray[i]);
                             if(numArray[i] != 0.0)
                             {
                                 targetArray[i]
@@ -510,12 +506,12 @@ namespace picongpu
                                 // Take Amplitude for one direction and frequency,
                                 // calculate the square of the absolute value
                                 // and write to file.
-                                constexpr float_X transRadUnit = sim.si.getElectronCharge()
-                                    * sim.si.getElectronCharge()
-                                    * (1.0 / (4 * PI * sim.si.getEps0() * PI * PI * sim.si.getSpeedOfLight()));
+                                constexpr float_X transRadUnit
+                                    = sim.si.getElectronCharge() * sim.si.getElectronCharge()
+                                      * (1.0 / (4 * PI * sim.si.getEps0() * PI * PI * sim.si.getSpeedOfLight()));
                                 outFile
                                     << values[index_direction * transitionRadiation::frequencies::nOmega + index_omega]
-                                        * transRadUnit
+                                           * transRadUnit
                                     << "\t";
 
                             } // for loop over all frequencies
@@ -558,10 +554,11 @@ namespace picongpu
                     mesh.setGeometry(::openPMD::Mesh::Geometry::cartesian); // set be default
                     mesh.setAttribute<float_X>("foilPositionY", foilPositionYSI);
 
-                    mesh.setUnitDimension(std::map<::openPMD::UnitDimension, double>{
-                        {::openPMD::UnitDimension::L, 2.0},
-                        {::openPMD::UnitDimension::M, 1.0},
-                        {::openPMD::UnitDimension::T, -1.0}});
+                    mesh.setUnitDimension(
+                        std::map<::openPMD::UnitDimension, double>{
+                            {::openPMD::UnitDimension::L, 2.0},
+                            {::openPMD::UnitDimension::M, 1.0},
+                            {::openPMD::UnitDimension::T, -1.0}});
 
                     auto transitionRadiation = mesh[::openPMD::RecordComponent::SCALAR];
                     transitionRadiation.resetDataset(dataset);
@@ -577,13 +574,13 @@ namespace picongpu
                         ++index_direction)
                     {
                         // theta
-                        const int i = index_direction / parameters::nPhi;
+                        int const i = index_direction / parameters::nPhi;
                         // phi
-                        const int j = index_direction % parameters::nPhi;
+                        int const j = index_direction % parameters::nPhi;
 
                         for(unsigned int k = 0; k < transitionRadiation::frequencies::nOmega; ++k)
                         {
-                            const int index = (k * parameters::nPhi + j) * parameters::nTheta + i;
+                            int const index = (k * parameters::nPhi + j) * parameters::nTheta + i;
                             spanBuffer[index] = static_cast<float_X>(
                                 theTransRad[index_direction * transitionRadiation::frequencies::nOmega + k]);
                         }
@@ -649,8 +646,9 @@ namespace picongpu
                     {
                         for(unsigned int i = 0; i < transitionRadiation::parameters::nPhi; ++i)
                         {
-                            spanBufferPhi[i] = parameters::phiMin
-                                + i * (parameters::phiMax - parameters::phiMin) / (parameters::nPhi - 1.0);
+                            spanBufferPhi[i]
+                                = parameters::phiMin
+                                  + i * (parameters::phiMax - parameters::phiMin) / (parameters::nPhi - 1.0);
                         }
                     }
                     else
@@ -686,8 +684,9 @@ namespace picongpu
                     {
                         for(unsigned int i = 0; i < transitionRadiation::parameters::nTheta; ++i)
                         {
-                            spanBufferTheta[i] = parameters::thetaMin
-                                + i * (parameters::thetaMax - parameters::thetaMin) / (parameters::nTheta - 1.0);
+                            spanBufferTheta[i]
+                                = parameters::thetaMin
+                                  + i * (parameters::thetaMax - parameters::thetaMin) / (parameters::nTheta - 1.0);
                         }
                     }
                     else
@@ -698,7 +697,6 @@ namespace picongpu
                     series.iterations[currentStep].close();
                 }
 
-
                 void restart(uint32_t restartStep, std::string const& restartDirectory) override
                 {
                 }
@@ -706,7 +704,6 @@ namespace picongpu
                 void checkpoint(uint32_t currentStep, std::string const& checkpointDirectory) override
                 {
                 }
-
 
                 /** Kernel call
                  *
@@ -723,7 +720,7 @@ namespace picongpu
                     /* execute the particle filter */
                     transitionRadiation::executeParticleFilter(particles, currentStep);
 
-                    const auto gridDim_rad = transitionRadiation::parameters::nObserver;
+                    auto const gridDim_rad = transitionRadiation::parameters::nObserver;
 
                     /* number of threads per block = number of cells in a super cell
                      *          = number of particles in a Frame
@@ -736,8 +733,8 @@ namespace picongpu
                     // Some funny things that make it possible for the kernel to calculate
                     // the absolute position of the particles
                     DataSpace<simDim> localSize(m_cellDescription->getGridLayout().sizeWithoutGuardND());
-                    const uint32_t numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
-                    const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                    uint32_t const numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
+                    SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
                     DataSpace<simDim> globalOffset(subGrid.getLocalDomain().offset);
                     globalOffset.y() += (localSize.y() * numSlides);
 

@@ -36,7 +36,7 @@ namespace pmacc
     template<typename T>
     struct IsParticleSpecies
     {
-        inline static constexpr bool value = std::is_same_v<typename T::SimulationDataTag, ParticlesTag>;
+        static inline constexpr bool value = std::is_same_v<typename T::SimulationDataTag, ParticlesTag>;
     };
 
     namespace communication

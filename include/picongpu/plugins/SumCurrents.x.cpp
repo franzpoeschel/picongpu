@@ -31,7 +31,6 @@
 #include <iostream>
 #include <memory>
 
-
 namespace picongpu
 {
     using namespace pmacc;
@@ -55,15 +54,15 @@ namespace picongpu
 
             worker.sync();
 
-            const DataSpace<simDim> superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
+            DataSpace<simDim> const superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
 
             constexpr uint32_t cellsPerSuperCell = pmacc::math::CT::volume<SuperCellSize>::type::value;
             lockstep::makeForEach<cellsPerSuperCell>(worker)(
                 [&](int32_t const linearIdx)
                 {
-                    const auto cellIdxInSupercell = pmacc::math::mapToND(SuperCellSize::toRT(), linearIdx);
-                    const DataSpace<simDim> cell(superCellIdx * SuperCellSize::toRT() + cellIdxInSupercell);
-                    const float3_X myJ = fieldJ(cell);
+                    auto const cellIdxInSupercell = pmacc::math::mapToND(SuperCellSize::toRT(), linearIdx);
+                    DataSpace<simDim> const cell(superCellIdx * SuperCellSize::toRT() + cellIdxInSupercell);
+                    float3_X const myJ = fieldJ(cell);
                     alpaka::atomicAdd(worker.getAcc(), &(sh_sumJ.x()), myJ.x(), ::alpaka::hierarchy::Threads{});
                     alpaka::atomicAdd(worker.getAcc(), &(sh_sumJ.y()), myJ.y(), ::alpaka::hierarchy::Threads{});
                     alpaka::atomicAdd(worker.getAcc(), &(sh_sumJ.z()), myJ.z(), ::alpaka::hierarchy::Threads{});
@@ -99,8 +98,8 @@ namespace picongpu
 
         void notify(uint32_t currentStep) override
         {
-            const int rank = Environment<simDim>::get().GridController().getGlobalRank();
-            const float3_X gCurrent = getSumCurrents();
+            int const rank = Environment<simDim>::get().GridController().getGlobalRank();
+            float3_X const gCurrent = getSumCurrents();
 
             // gCurrent is just j
             // j = I/A

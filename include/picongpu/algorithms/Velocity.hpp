@@ -28,11 +28,11 @@ namespace picongpu
     struct Velocity
     {
         template<typename MomType, typename MassType>
-        HDINLINE MomType operator()(const MomType mom, const MassType mass0)
+        HDINLINE MomType operator()(MomType const mom, MassType const mass0)
         {
-            const float_X rc2 = sim.pic.getMue0Eps0();
-            const float_X m0_2 = mass0 * mass0;
-            const float_X fMom2 = pmacc::math::l2norm2(mom);
+            float_X const rc2 = sim.pic.getMue0Eps0();
+            float_X const m0_2 = mass0 * mass0;
+            float_X const fMom2 = pmacc::math::l2norm2(mom);
             float_X t = math::rsqrt(precisionCast<sqrt_X>(m0_2 + fMom2 * rc2));
             return t * mom;
         }

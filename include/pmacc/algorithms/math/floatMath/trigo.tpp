@@ -27,7 +27,6 @@
 #include <cfloat>
 #include <cmath>
 
-
 namespace pmacc
 {
     namespace math
@@ -53,7 +52,7 @@ namespace pmacc
         {
             using result = float;
 
-            HDINLINE float operator()(const float& value)
+            HDINLINE float operator()(float const& value)
             {
                 if(pmacc::math::abs(value) < FLT_EPSILON)
                     return 1.0f;

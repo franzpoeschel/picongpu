@@ -22,7 +22,6 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/plugins/multi/IInstance.hpp"
 
-
 namespace picongpu
 {
     namespace plugins

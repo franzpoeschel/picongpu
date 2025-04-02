@@ -125,6 +125,7 @@ namespace picongpu
 
 
         } // namespace particleToGrid
+
         namespace traits
         {
             template<

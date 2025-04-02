@@ -20,7 +20,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/defines.hpp"
 #    include "picongpu/plugins/misc/ComponentNames.hpp"
@@ -43,7 +43,6 @@
 
 #    include <openPMD/openPMD.hpp>
 
-
 namespace picongpu
 {
     namespace openPMD
@@ -58,7 +57,7 @@ namespace picongpu
             template<class Data>
             static void loadField(
                 Data& field,
-                const uint32_t numComponents,
+                uint32_t const numComponents,
                 std::string objectName,
                 ThreadParams* params,
                 uint32_t const currentStep,
@@ -67,9 +66,9 @@ namespace picongpu
                 log<picLog::INPUT_OUTPUT>("Begin loading field '%1%'") % objectName;
 
                 auto const name_lookup_tpl = plugins::misc::getComponentNames(numComponents);
-                const DataSpace<simDim> field_guard = field.getGridLayout().guardSizeND();
+                DataSpace<simDim> const field_guard = field.getGridLayout().guardSizeND();
 
-                const pmacc::Selection<simDim> localDomain = Environment<simDim>::get().SubGrid().getLocalDomain();
+                pmacc::Selection<simDim> const localDomain = Environment<simDim>::get().SubGrid().getLocalDomain();
 
                 using ValueType = typename Data::ValueType;
                 field.getHostBuffer().setValue(ValueType::create(0.0));
@@ -135,8 +134,8 @@ namespace picongpu
                     log<picLog::INPUT_OUTPUT>("openPMD: Read from domain: offset=%1% size=%2%") % domain_offset
                         % local_domain_size;
                     ::openPMD::RecordComponent rc = numComponents > 1
-                        ? meshes[objectName][name_lookup_tpl[n]]
-                        : meshes[objectName][::openPMD::RecordComponent::SCALAR];
+                                                        ? meshes[objectName][name_lookup_tpl[n]]
+                                                        : meshes[objectName][::openPMD::RecordComponent::SCALAR];
 
                     log<picLog::INPUT_OUTPUT>("openPMD: Read from field '%1%'") % objectName;
 

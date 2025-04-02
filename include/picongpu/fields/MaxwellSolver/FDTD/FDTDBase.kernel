@@ -33,7 +33,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace fields
@@ -53,9 +52,9 @@ namespace picongpu
                 public:
                     HDINLINE UpdateEFunctor() = default;
 
-                    HDINLINE UpdateEFunctor(const UpdateEFunctor&) = default;
+                    HDINLINE UpdateEFunctor(UpdateEFunctor const&) = default;
 
-                    HDINLINE UpdateEFunctor& operator=(const UpdateEFunctor&) = default;
+                    HDINLINE UpdateEFunctor& operator=(UpdateEFunctor const&) = default;
 
                     /** Update electric field at the given position
                      *
@@ -79,6 +78,7 @@ namespace picongpu
                         constexpr auto c2 = sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight();
                         localE() += curl(localB) * c2 * getTimeStep();
                     }
+
                     // keep curl as member to support stateful types
                     T_CurlB const curl = T_CurlB{};
                 };
@@ -94,9 +94,9 @@ namespace picongpu
                 public:
                     HDINLINE UpdateBHalfFunctor() = default;
 
-                    HDINLINE UpdateBHalfFunctor(const UpdateBHalfFunctor&) = default;
+                    HDINLINE UpdateBHalfFunctor(UpdateBHalfFunctor const&) = default;
 
-                    HDINLINE UpdateBHalfFunctor& operator=(const UpdateBHalfFunctor&) = default;
+                    HDINLINE UpdateBHalfFunctor& operator=(UpdateBHalfFunctor const&) = default;
 
                     /** Update magnetic field at the given position
                      *
@@ -119,6 +119,7 @@ namespace picongpu
                     {
                         localB() -= curl(localE) * 0.5_X * getTimeStep();
                     }
+
                     // keep curl as member to support stateful types
                     T_CurlE const curl = T_CurlE{};
                 };
@@ -128,9 +129,9 @@ namespace picongpu
                 {
                     HDINLINE KernelUpdateField() = default;
 
-                    HDINLINE KernelUpdateField(const KernelUpdateField&) = default;
+                    HDINLINE KernelUpdateField(KernelUpdateField const&) = default;
 
-                    HDINLINE KernelUpdateField& operator=(const KernelUpdateField&) = default;
+                    HDINLINE KernelUpdateField& operator=(KernelUpdateField const&) = default;
 
                     /** Update the yee field using the given functor
                      *

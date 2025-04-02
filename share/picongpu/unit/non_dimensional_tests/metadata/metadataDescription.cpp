@@ -40,6 +40,7 @@ struct SomethingWithRTInfo
         return result;
     }
 };
+
 // doc-include-end: adapting metadata
 
 struct SomethingWithMoreRTInfo
@@ -108,6 +109,7 @@ struct picongpu::traits::GetMetadata<SomethingWithPrivateInfo>
         return result;
     }
 };
+
 // doc-include-end: reusing default metadata
 
 // doc-include-start: declare metadata as friend
@@ -117,7 +119,8 @@ struct SomethingWithoutUsefulMetadata : SomethingWithPrivateInfo
     // ...
     // doc-include-end: declare metadata as friend
 
-    SomethingWithoutUsefulMetadata(int i) : SomethingWithPrivateInfo(i){};
+    SomethingWithoutUsefulMetadata(int i) : SomethingWithPrivateInfo(i) {};
+
     json metadata() const override
     {
         return {};
@@ -146,6 +149,7 @@ struct SomeParameter
 struct SomethingWithCTInfo
 {
     using Info = SomeParameter;
+
     static json metadata()
     {
         json result = json::object();
@@ -182,7 +186,7 @@ struct CompileTimeInformation
 struct MyClass
 {
     using MyCompileTimeInformation = CompileTimeInformation;
-    const int runtimeValue = 8;
+    int const runtimeValue = 8;
     // would normally also provide a default implementation of
     // json description() const;
 };
@@ -202,6 +206,7 @@ struct picongpu::traits::GetMetadata<MyClass>
         return result;
     }
 };
+
 // doc-include-end: metadata customisation
 
 TEST_CASE("unit::metadataDescription", "[metadata description test]")

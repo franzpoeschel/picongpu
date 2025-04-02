@@ -20,7 +20,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/defines.hpp"
 #    include "picongpu/particles/traits/MacroWeighted.hpp"
@@ -40,7 +40,7 @@ namespace picongpu
     {
         using namespace pmacc;
 
-        static const std::string name_lookup[] = {"x", "y", "z"};
+        static std::string const name_lookup[] = {"x", "y", "z"};
 
         template<typename T_Identifier>
         struct InitParticleAttribute
@@ -59,7 +59,7 @@ namespace picongpu
             {
                 using Identifier = T_Identifier;
                 using ValueType = typename pmacc::traits::Resolve<Identifier>::type::type;
-                const uint32_t components = GetNComponents<ValueType>::value;
+                uint32_t const components = GetNComponents<ValueType>::value;
                 using ComponentType = typename GetComponentsType<ValueType>::type;
 
                 picongpu::traits::OpenPMDName<T_Identifier> openPMDName;
@@ -72,9 +72,9 @@ namespace picongpu
                 std::vector<float_64> unit = openPMDUnit();
                 traits::OpenPMDUnitDimension<T_Identifier> openPMDUnitDimension;
                 std::vector<float_64> unitDimension = openPMDUnitDimension();
-                const bool macroWeightedBool = traits::MacroWeighted<T_Identifier>::get();
-                const uint32_t macroWeighted = (macroWeightedBool ? 1 : 0);
-                const float_64 weightingPower = traits::WeightingPower<T_Identifier>::get();
+                bool const macroWeightedBool = traits::MacroWeighted<T_Identifier>::get();
+                uint32_t const macroWeighted = (macroWeightedBool ? 1 : 0);
+                float_64 const weightingPower = traits::WeightingPower<T_Identifier>::get();
 
                 PMACC_ASSERT(unit.size() == components); // unitSI for each component
                 PMACC_ASSERT(unitDimension.size() == 7); // seven openPMD base units
@@ -109,7 +109,6 @@ namespace picongpu
             }
         };
 
-
         /** write attribute of a particle to openPMD series
          *
          * @tparam T_Identifier identifier of a particle attribute
@@ -128,16 +127,16 @@ namespace picongpu
                 FrameType& frame,
                 ::openPMD::Container<::openPMD::Record>& particleSpecies,
                 std::string const& basepath,
-                const size_t elements,
-                const size_t globalElements,
-                const size_t globalOffset,
+                size_t const elements,
+                size_t const globalElements,
+                size_t const globalOffset,
                 size_t& accumulateWrittenBytes)
             {
                 using Identifier = T_Identifier;
                 using ValueType = typename pmacc::traits::Resolve<Identifier>::type::type;
                 using ComponentType = typename GetComponentsType<ValueType>::type;
 
-                const uint32_t components = GetNComponents<ValueType>::value;
+                uint32_t const components = GetNComponents<ValueType>::value;
                 picongpu::traits::OpenPMDName<T_Identifier> openPMDName;
                 ::openPMD::Record record = particleSpecies[openPMDName()];
 

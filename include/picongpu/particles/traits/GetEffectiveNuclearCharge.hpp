@@ -27,7 +27,6 @@
 #include <pmacc/traits/GetFlagType.hpp>
 #include <pmacc/traits/Resolve.hpp>
 
-
 namespace picongpu
 {
     namespace traits

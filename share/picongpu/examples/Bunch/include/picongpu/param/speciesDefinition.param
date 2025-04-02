@@ -28,7 +28,6 @@
 #include <pmacc/particles/Identifier.hpp>
 #include <pmacc/particles/traits/FilterByFlag.hpp>
 
-
 namespace picongpu
 {
 /*########################### define particle attributes #####################*/
@@ -46,7 +45,7 @@ namespace picongpu
         weighting,
         particleId,
         momentumPrev1
-#if(PARAM_FILTER_GAMMA == 1)
+#if (PARAM_FILTER_GAMMA == 1)
         ,
         radiationMask
 #endif

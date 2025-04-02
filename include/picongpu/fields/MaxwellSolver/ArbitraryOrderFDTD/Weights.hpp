@@ -26,7 +26,6 @@
 #include <cmath>
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace fields
@@ -50,7 +49,7 @@ namespace picongpu
                         namespace powSpace = pmacc::math;
                         // Set initial value
                         weights[0] = 4.0_X * T_neighbors
-                            * powSpace::cPow(
+                                     * powSpace::cPow(
                                          (factorial(2 * T_neighbors)
                                           / float_X(
                                               powSpace::cPow(2.0_X, 2u * T_neighbors)
@@ -61,8 +60,8 @@ namespace picongpu
                         for(uint32_t l = 1u; l < T_neighbors; ++l)
                         {
                             weights[l] = -1.0_X * powSpace::cPow(float_X(l) - 0.5_X, 2u) * (T_neighbors - l)
-                                / float_X(T_neighbors + l) / float_X(powSpace::cPow(float_X(l) + 0.5_X, 2u))
-                                * weights[l - 1];
+                                         / float_X(T_neighbors + l) / float_X(powSpace::cPow(float_X(l) + 0.5_X, 2u))
+                                         * weights[l - 1];
                         }
                     }
 

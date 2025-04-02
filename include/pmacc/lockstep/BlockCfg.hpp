@@ -28,7 +28,6 @@
 
 #include "pmacc/math/vector/compile-time/Vector.hpp"
 
-
 namespace pmacc::lockstep
 {
     namespace detail
@@ -59,6 +58,7 @@ namespace pmacc::lockstep
             }
         };
     } // namespace detail
+
     /** Configuration of worker used for a lockstep kernel
      *
      * @tparam T_BlockSize Compile time block size of type pmacc::math::CT::Vector

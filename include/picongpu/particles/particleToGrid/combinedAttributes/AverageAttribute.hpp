@@ -27,7 +27,6 @@
 #include <string>
 #include <vector>
 
-
 namespace picongpu
 {
     namespace particles
@@ -40,7 +39,7 @@ namespace picongpu
                 HDINLINE void AverageDivideOperation::operator()(
                     T_Worker const& worker,
                     float1_X& dst,
-                    const float1_X& dens) const
+                    float1_X const& dens) const
                 {
                     // avoid dividing by zero. Return zero if density is close to zero.
                     if(dens[0] * static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle())
@@ -54,10 +53,9 @@ namespace picongpu
                         // average value is total value over number of particles
                         // number of particles is density * sim.pic.getCellSize().productOfComponents()
                         dst /= dens * static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle())
-                            * sim.pic.getCellSize().productOfComponents();
+                               * sim.pic.getCellSize().productOfComponents();
                     }
                 }
-
 
                 template<typename T_DerivedAttribute>
                 struct AverageAttributeDescription

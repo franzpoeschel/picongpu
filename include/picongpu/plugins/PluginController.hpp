@@ -31,7 +31,6 @@
 #include <memory>
 #include <vector>
 
-
 namespace picongpu
 {
     /**

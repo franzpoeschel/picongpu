@@ -33,13 +33,13 @@
 #include <stdexcept>
 #include <utility>
 
-
 namespace pmacc
 {
     namespace detail
     {
         struct Environment;
-    }
+    } // namespace detail
+
     /** Singleton class which collects and shares simulation data
      *
      * All members are kept as shared pointers, which allows their factories to
@@ -74,7 +74,7 @@ namespace pmacc
          *
          * @param data simulation data to share ownership
          */
-        void share(const std::shared_ptr<ISimulationData>& data);
+        void share(std::shared_ptr<ISimulationData> const& data);
 
         /** Register a new Dataset and transfer its ownership.
          *
@@ -130,7 +130,7 @@ namespace pmacc
 
         virtual ~DataConnector();
 
-        std::string getExceptionStringForID(const char* msg, SimulationDataId id);
+        std::string getExceptionStringForID(char const* msg, SimulationDataId id);
 
         std::list<std::shared_ptr<ISimulationData>> datasets;
     };

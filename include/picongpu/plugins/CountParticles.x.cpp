@@ -35,7 +35,6 @@
 #include <iostream>
 #include <string>
 
-
 namespace picongpu
 {
     using namespace pmacc;
@@ -132,7 +131,7 @@ namespace picongpu
             }
         }
 
-        void restart(uint32_t restartStep, const std::string restartDirectory) override
+        void restart(uint32_t restartStep, std::string const restartDirectory) override
         {
             if(!writeToFile)
                 return;
@@ -140,7 +139,7 @@ namespace picongpu
             writeToFile = restoreTxtFile(outFile, filename, restartStep, restartDirectory);
         }
 
-        void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override
+        void checkpoint(uint32_t currentStep, std::string const checkpointDirectory) override
         {
             if(!writeToFile)
                 return;
@@ -153,8 +152,8 @@ namespace picongpu
         {
             uint64_cu size;
 
-            const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
-            const DataSpace<simDim> localSize(subGrid.getLocalDomain().size);
+            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
+            DataSpace<simDim> const localSize(subGrid.getLocalDomain().size);
 
             DataConnector& dc = Environment<>::get().DataConnector();
             auto particles = dc.get<ParticlesType>(ParticlesType::FrameType::getName());

@@ -34,7 +34,6 @@
 
 #include <pmacc/math/operation.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -75,6 +74,7 @@ namespace picongpu
                  */
                 static constexpr uint32_t numParticlesPerCell = 6u;
             };
+
             /** Definition of start position functor that randomly distributes macro-particles within a cell. */
             using Random = RandomImpl<RandomParameter>;
 
@@ -100,6 +100,7 @@ namespace picongpu
                  */
                 static constexpr auto inCellOffset = float3_X(0., 0., 0.);
             };
+
             /** Definition of OnePosition start position functor that
              * places macro-particles at the initial in-cell position defined above.
              */

@@ -80,11 +80,11 @@ namespace picongpu
             class FunctorEpos
             {
             public:
-                const float_X m_currentStep;
-                PMACC_ALIGN(m_unitField, const float3_64);
-                const templates::twtstight::EField twtsFieldEpos;
+                float_X const m_currentStep;
+                PMACC_ALIGN(m_unitField, float3_64 const);
+                templates::twtstight::EField const twtsFieldEpos;
 
-                HINLINE FunctorEpos(float_X const currentStep, const float3_64 unitField)
+                HINLINE FunctorEpos(float_X const currentStep, float3_64 const unitField)
                     : m_currentStep(currentStep)
                     , m_unitField(unitField)
                     , twtsFieldEpos(
@@ -100,7 +100,7 @@ namespace picongpu
                 {
                 }
 
-                HDINLINE float3_X operator()(const floatD_X& totalCellIdx) const
+                HDINLINE float3_X operator()(floatD_X const& totalCellIdx) const
                 {
                     float3_64 const invUnitField
                         = float3_64(1.0 / m_unitField[0], 1.0 / m_unitField[1], 1.0 / m_unitField[2]);
@@ -122,11 +122,11 @@ namespace picongpu
             class FunctorEneg
             {
             public:
-                const float_X m_currentStep;
-                PMACC_ALIGN(m_unitField, const float3_64);
-                const templates::twtstight::EField twtsFieldEneg;
+                float_X const m_currentStep;
+                PMACC_ALIGN(m_unitField, float3_64 const);
+                templates::twtstight::EField const twtsFieldEneg;
 
-                HINLINE FunctorEneg(float_X const currentStep, const float3_64 unitField)
+                HINLINE FunctorEneg(float_X const currentStep, float3_64 const unitField)
                     : m_currentStep(currentStep)
                     , m_unitField(unitField)
                     , twtsFieldEneg(
@@ -142,7 +142,7 @@ namespace picongpu
                 {
                 }
 
-                HDINLINE float3_X operator()(const floatD_X& totalCellIdx) const
+                HDINLINE float3_X operator()(floatD_X const& totalCellIdx) const
                 {
                     float3_64 const invUnitField
                         = float3_64(1.0 / m_unitField[0], 1.0 / m_unitField[1], 1.0 / m_unitField[2]);
@@ -164,11 +164,11 @@ namespace picongpu
             class FunctorBpos
             {
             public:
-                const float_X m_currentStep;
-                PMACC_ALIGN(m_unitField, const float3_64);
+                float_X const m_currentStep;
+                PMACC_ALIGN(m_unitField, float3_64 const);
                 templates::twtstight::BField twtsFieldBpos;
 
-                HINLINE FunctorBpos(const float_X currentStep, const float3_64 unitField)
+                HINLINE FunctorBpos(float_X const currentStep, float3_64 const unitField)
                     : m_currentStep(currentStep)
                     , m_unitField(unitField)
                     , twtsFieldBpos(
@@ -184,7 +184,7 @@ namespace picongpu
                 {
                 }
 
-                HDINLINE float3_X operator()(const floatD_X& totalCellIdx) const
+                HDINLINE float3_X operator()(floatD_X const& totalCellIdx) const
                 {
                     float3_64 const invUnitField
                         = float3_64(1.0 / m_unitField[0], 1.0 / m_unitField[1], 1.0 / m_unitField[2]);
@@ -206,11 +206,11 @@ namespace picongpu
             class FunctorBneg
             {
             public:
-                const float_X m_currentStep;
-                PMACC_ALIGN(m_unitField, const float3_64);
+                float_X const m_currentStep;
+                PMACC_ALIGN(m_unitField, float3_64 const);
                 templates::twtstight::BField twtsFieldBneg;
 
-                HINLINE FunctorBneg(const float_X currentStep, const float3_64 unitField)
+                HINLINE FunctorBneg(float_X const currentStep, float3_64 const unitField)
                     : m_currentStep(currentStep)
                     , m_unitField(unitField)
                     , twtsFieldBneg(
@@ -226,7 +226,7 @@ namespace picongpu
                 {
                 }
 
-                HDINLINE float3_X operator()(const floatD_X& totalCellIdx) const
+                HDINLINE float3_X operator()(floatD_X const& totalCellIdx) const
                 {
                     float3_64 const invUnitField
                         = float3_64(1.0 / m_unitField[0], 1.0 / m_unitField[1], 1.0 / m_unitField[2]);

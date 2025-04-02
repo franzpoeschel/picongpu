@@ -26,7 +26,7 @@ namespace picongpu
     {
         namespace none
         {
-            HDINLINE void addRGB(const float3_X&, const float_X, const float_X)
+            HDINLINE void addRGB(float3_X const&, float_X const, float_X const)
             {
                 return;
             }
@@ -34,56 +34,56 @@ namespace picongpu
 
         namespace gray
         {
-            HDINLINE void addRGB(float3_X& img, const float_X value, const float_X opacity)
+            HDINLINE void addRGB(float3_X& img, float_X const value, float_X const opacity)
             {
-                const float3_X myChannel(1.0, 1.0, 1.0);
+                float3_X const myChannel(1.0, 1.0, 1.0);
                 img = img
-                    - opacity * float3_X(myChannel.x() * img.x(), myChannel.y() * img.y(), myChannel.z() * img.z())
-                    + myChannel * value * opacity;
+                      - opacity * float3_X(myChannel.x() * img.x(), myChannel.y() * img.y(), myChannel.z() * img.z())
+                      + myChannel * value * opacity;
             }
         } // namespace gray
 
         namespace grayInv
         {
-            HDINLINE void addRGB(float3_X& img, const float_X value, const float_X opacity)
+            HDINLINE void addRGB(float3_X& img, float_X const value, float_X const opacity)
             {
-                const float3_X myChannel(1.0, 1.0, 1.0);
+                float3_X const myChannel(1.0, 1.0, 1.0);
                 img = img
-                    - opacity * float3_X(myChannel.x() * img.x(), myChannel.y() * img.y(), myChannel.z() * img.z())
-                    + myChannel * (1.0_X - value) * opacity;
+                      - opacity * float3_X(myChannel.x() * img.x(), myChannel.y() * img.y(), myChannel.z() * img.z())
+                      + myChannel * (1.0_X - value) * opacity;
             }
         } // namespace grayInv
 
         namespace red
         {
-            HDINLINE void addRGB(float3_X& img, const float_X value, const float_X opacity)
+            HDINLINE void addRGB(float3_X& img, float_X const value, float_X const opacity)
             {
-                const float3_X myChannel(1.0, 0.0, 0.0);
+                float3_X const myChannel(1.0, 0.0, 0.0);
                 img = img
-                    - opacity * float3_X(myChannel.x() * img.x(), myChannel.y() * img.y(), myChannel.z() * img.z())
-                    + myChannel * value * opacity;
+                      - opacity * float3_X(myChannel.x() * img.x(), myChannel.y() * img.y(), myChannel.z() * img.z())
+                      + myChannel * value * opacity;
             }
         } // namespace red
 
         namespace green
         {
-            HDINLINE void addRGB(float3_X& img, const float_X value, const float_X opacity)
+            HDINLINE void addRGB(float3_X& img, float_X const value, float_X const opacity)
             {
-                const float3_X myChannel(0.0, 1.0, 0.0);
+                float3_X const myChannel(0.0, 1.0, 0.0);
                 img = img
-                    - opacity * float3_X(myChannel.x() * img.x(), myChannel.y() * img.y(), myChannel.z() * img.z())
-                    + myChannel * value * opacity;
+                      - opacity * float3_X(myChannel.x() * img.x(), myChannel.y() * img.y(), myChannel.z() * img.z())
+                      + myChannel * value * opacity;
             }
         } // namespace green
 
         namespace blue
         {
-            HDINLINE void addRGB(float3_X& img, const float_X value, const float_X opacity)
+            HDINLINE void addRGB(float3_X& img, float_X const value, float_X const opacity)
             {
-                const float3_X myChannel(0.0, 0.0, 1.0);
+                float3_X const myChannel(0.0, 0.0, 1.0);
                 img = img
-                    - opacity * float3_X(myChannel.x() * img.x(), myChannel.y() * img.y(), myChannel.z() * img.z())
-                    + myChannel * value * opacity;
+                      - opacity * float3_X(myChannel.x() * img.x(), myChannel.y() * img.y(), myChannel.z() * img.z())
+                      + myChannel * value * opacity;
             }
         } // namespace blue
 

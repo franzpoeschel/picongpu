@@ -25,7 +25,6 @@
 
 #include <pmacc/math/Vector.hpp>
 
-
 namespace picongpu
 {
     namespace fields
@@ -74,7 +73,7 @@ namespace picongpu
                 {
                 }
 
-                HDINLINE Curl(const Curl&) = default;
+                HDINLINE Curl(Curl const&) = default;
 
                 /** Return curl value at the given point
                  *

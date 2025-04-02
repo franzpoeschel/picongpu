@@ -25,7 +25,6 @@
 
 #include <pmacc/traits/HasIdentifier.hpp>
 
-
 namespace picongpu::plugins::radiation
 {
     /** execute the particle filter on a species
@@ -40,7 +39,7 @@ namespace picongpu::plugins::radiation
     template<typename T_Species>
     inline void executeParticleFilter(
         [[maybe_unused]] std::shared_ptr<T_Species>& species,
-        [[maybe_unused]] const uint32_t currentStep)
+        [[maybe_unused]] uint32_t const currentStep)
     {
         constexpr bool hasRadiationFilter
             = pmacc::traits::HasIdentifier<typename T_Species::FrameType, radiationMask>::type::value;

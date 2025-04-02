@@ -45,6 +45,7 @@ namespace pmacc
         {
             Dim = T_SuperCellSize::dim
         };
+
         using SuperCellSize = T_SuperCellSize;
         using OffsetOrigin = T_OffsetOrigin;
         using OffsetEnd = T_OffsetEnd;

@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/defines.hpp"
 #    include "picongpu/plugins/PhaseSpace/AxisDescription.hpp"
@@ -61,14 +61,14 @@ namespace picongpu
         template<typename T_Type, uint32_t T_bufDim>
         void operator()(
             HostBuffer<T_Type, T_bufDim>& hBuffer,
-            const AxisDescription axis_element,
-            const phaseSpace::Pair<float_X, float_X> axis_p_range,
-            const float_64 pRange_unit,
-            const float_64 unit,
-            const std::string strSpecies,
-            const std::string filenameExtension,
-            const std::string jsonConfig,
-            const uint32_t currentStep,
+            AxisDescription const axis_element,
+            phaseSpace::Pair<float_X, float_X> const axis_p_range,
+            float_64 const pRange_unit,
+            float_64 const unit,
+            std::string const strSpecies,
+            std::string const filenameExtension,
+            std::string const jsonConfig,
+            uint32_t const currentStep,
             MPI_Comm mpiComm) const
         {
             using Type = T_Type;
@@ -88,7 +88,7 @@ namespace picongpu
             ::openPMD::Series series(openPMDFilename.str(), ::openPMD::Access::CREATE, mpiComm, jsonConfig);
             ::openPMD::Iteration iteration = series.iterations[currentStep];
 
-            const std::string software("PIConGPU");
+            std::string const software("PIConGPU");
 
             std::stringstream softwareVersion;
             softwareVersion << PICONGPU_VERSION_MAJOR << "." << PICONGPU_VERSION_MINOR << "."
@@ -100,11 +100,11 @@ namespace picongpu
             auto bufferExtents = hBuffer.capacityND();
 
             /** calculate local and global size of the phase space ***********/
-            const uint32_t numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
-            const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
-            const std::uint64_t rLocalOffset = subGrid.getLocalDomain().offset[axis_element.space];
-            const std::uint64_t rLocalSize = static_cast<size_t>(bufferExtents.y());
-            const std::uint64_t rGlobalSize = subGrid.getGlobalDomain().size[axis_element.space];
+            uint32_t const numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
+            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
+            std::uint64_t const rLocalOffset = subGrid.getLocalDomain().offset[axis_element.space];
+            std::uint64_t const rLocalSize = static_cast<size_t>(bufferExtents.y());
+            std::uint64_t const rGlobalSize = subGrid.getGlobalDomain().size[axis_element.space];
             PMACC_VERIFY(int(rLocalSize) == subGrid.getLocalDomain().size[axis_element.space]);
 
             /* globalDomain of the phase space */

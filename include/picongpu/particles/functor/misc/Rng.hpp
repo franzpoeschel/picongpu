@@ -31,7 +31,6 @@
 #include <type_traits>
 #include <utility>
 
-
 namespace picongpu
 {
     namespace particles
@@ -58,7 +57,6 @@ namespace picongpu
                     HINLINE Rng(uint32_t currentStep) : rngHandle(RNGFactory::createHandle())
                     {
                     }
-
 
                     /** create functor a random number generator
                      *

@@ -24,7 +24,6 @@
 #include <memory>
 #include <string>
 
-
 namespace picongpu
 {
     //! Interface for IO-backends with restart capability

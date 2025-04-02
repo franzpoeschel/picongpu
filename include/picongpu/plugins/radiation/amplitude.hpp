@@ -58,12 +58,12 @@ namespace picongpu
                  * Arguments:
                  * - 6x float: Re(x), Im(x), Re(y), Im(y), Re(z), Im(z) */
                 HDINLINE Amplitude(
-                    const picongpu::float_64 x_re,
-                    const picongpu::float_64 x_im,
-                    const picongpu::float_64 y_re,
-                    const picongpu::float_64 y_im,
-                    const picongpu::float_64 z_re,
-                    const picongpu::float_64 z_im)
+                    picongpu::float_64 const x_re,
+                    picongpu::float_64 const x_im,
+                    picongpu::float_64 const y_re,
+                    picongpu::float_64 const y_im,
+                    picongpu::float_64 const z_re,
+                    picongpu::float_64 const z_im)
                     : amp_x(x_re, x_im)
                     , amp_y(y_re, y_im)
                     , amp_z(z_re, z_im)
@@ -76,7 +76,7 @@ namespace picongpu
                  *  @param y pmacc::math::complex y component of the amplitude vector.
                  *  @param z pmacc::math::complex z component of the amplitude vector.
                  */
-                HDINLINE Amplitude(const complex_T& x, const complex_T& y, const complex_T& z)
+                HDINLINE Amplitude(complex_T const& x, complex_T const& y, complex_T const& z)
                     : amp_x(x)
                     , amp_y(y)
                     , amp_z(z)
@@ -96,7 +96,7 @@ namespace picongpu
                 }
 
                 /** assign addition */
-                HDINLINE Amplitude& operator+=(const Amplitude& other)
+                HDINLINE Amplitude& operator+=(Amplitude const& other)
                 {
                     amp_x += other.amp_x;
                     amp_y += other.amp_y;
@@ -104,9 +104,8 @@ namespace picongpu
                     return *this;
                 }
 
-
                 /** assign difference */
-                HDINLINE Amplitude& operator-=(const Amplitude& other)
+                HDINLINE Amplitude& operator-=(Amplitude const& other)
                 {
                     amp_x -= other.amp_x;
                     amp_y -= other.amp_y;
@@ -156,13 +155,13 @@ namespace picongpu
                 HDINLINE picongpu::float_64 calcRadiation(void)
                 {
                     // const SI factor radiation
-                    const picongpu::float_64 factor = 1.0
-                        / (16. * util::cube(pmacc::math::Pi<picongpu::float_64>::value) * picongpu::sim.pic.getEps0()
-                           * picongpu::sim.pic.getSpeedOfLight());
+                    picongpu::float_64 const factor
+                        = 1.0
+                          / (16. * util::cube(pmacc::math::Pi<picongpu::float_64>::value) * picongpu::sim.pic.getEps0()
+                             * picongpu::sim.pic.getSpeedOfLight());
 
                     return factor * (pmacc::math::norm(amp_x) + pmacc::math::norm(amp_y) + pmacc::math::norm(amp_z));
                 }
-
 
                 /** debugging method
                  *
@@ -178,10 +177,12 @@ namespace picongpu
                 {
                     return this->amp_x;
                 }
+
                 HDINLINE complex_T getYcomponent() const
                 {
                     return this->amp_y;
                 }
+
                 HDINLINE complex_T getZcomponent() const
                 {
                     return this->amp_z;
@@ -213,7 +214,6 @@ namespace pmacc
     } // namespace mpi
 } // namespace pmacc
 
-
 namespace pmacc
 {
     namespace algorithms
@@ -228,7 +228,7 @@ namespace pmacc
             template<typename CastToType>
             struct TypeCast<CastToType, picongpu::plugins::radiation::Amplitude<CastToType>>
             {
-                using result = const picongpu::plugins::radiation::Amplitude<CastToType>;
+                using result = picongpu::plugins::radiation::Amplitude<CastToType> const;
 
                 HDINLINE result operator()(result const& amplitude) const
                 {
@@ -241,7 +241,8 @@ namespace pmacc
             {
                 using result = picongpu::plugins::radiation::Amplitude<CastToType>;
                 using ParamType = picongpu::plugins::radiation::Amplitude<OldType>;
-                HDINLINE result operator()(const ParamType& amplitude) const
+
+                HDINLINE result operator()(ParamType const& amplitude) const
                 {
                     result Result(
                         precisionCast<result::complex_T::type>(amplitude.getXcomponent()),

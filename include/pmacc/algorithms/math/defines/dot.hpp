@@ -30,7 +30,6 @@ namespace pmacc
         template<typename Type1, typename Type2>
         struct Dot;
 
-
         template<typename T1, typename T2>
         HDINLINE typename Dot<T1, T2>::result dot(const T1& value, const T2& value2)
         {

@@ -55,23 +55,15 @@ namespace picongpu::particles::creation
         template<
             typename T_SourceParticleBox,
             typename T_ProductParticleBox,
-            typename... T_KernelConfigOptionsAndAdditionalData>
-        typename T_SanityCheckInputs,
-        template<typename... T_KernelConfigOptions>
-        typename T_SuperCellFilterFunctor,
-        template<typename T_Number, typename... T_KernelConfigOptions>
-        typename T_PredictorFunctor,
-        template<typename... T_KernelConfigOptions>
-        typename T_ParticlePairUpdateFunctor,
+            typename... T_KernelConfigOptionsAndAdditionalData> typename T_SanityCheckInputs,
+        template<typename... T_KernelConfigOptions> typename T_SuperCellFilterFunctor,
+        template<typename T_Number, typename... T_KernelConfigOptions> typename T_PredictorFunctor,
+        template<typename... T_KernelConfigOptions> typename T_ParticlePairUpdateFunctor,
         typename T_KernelStateType,
-        template<typename... T_KernelConfigOptions>
-        typename T_InitKernelStateFunctor,
-        template<uint32_t T_id, typename... T_KernelConfigOptions>
-        typename T_InitCacheFunctor,
-        template<typename... T_KernelConfigOptions>
-        typename T_AdditionalDataIndexFunctor,
-        template<typename... T_KernelConfigOptions>
-        typename T_WriteOutKernelStateFunctor>
+        template<typename... T_KernelConfigOptions> typename T_InitKernelStateFunctor,
+        template<uint32_t T_id, typename... T_KernelConfigOptions> typename T_InitCacheFunctor,
+        template<typename... T_KernelConfigOptions> typename T_AdditionalDataIndexFunctor,
+        template<typename... T_KernelConfigOptions> typename T_WriteOutKernelStateFunctor>
     struct ModuleConfig
     {
         template<

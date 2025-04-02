@@ -46,7 +46,6 @@
 #include <limits>
 #include <memory>
 
-
 namespace picongpu
 {
     using namespace pmacc;
@@ -63,7 +62,7 @@ namespace picongpu
         , buffer(cellDescription.getGridLayout())
         , fieldJrecv(nullptr)
     {
-        const DataSpace<simDim> coreBorderSize = cellDescription.getGridLayout().sizeWithoutGuardND();
+        DataSpace<simDim> const coreBorderSize = cellDescription.getGridLayout().sizeWithoutGuardND();
 
         /* cell margins the current might spread to due to particle shapes */
         using AllSpeciesWithCurrent =
@@ -119,8 +118,8 @@ namespace picongpu
 
         /* Receive border values in own guard for "receive" communication pattern - necessary for current
          * interpolation/filter */
-        const DataSpace<simDim> originRecvGuard = interpolationLowerMargin;
-        const DataSpace<simDim> endRecvGuard = interpolationUpperMargin;
+        DataSpace<simDim> const originRecvGuard = interpolationLowerMargin;
+        DataSpace<simDim> const endRecvGuard = interpolationUpperMargin;
         if(originRecvGuard != DataSpace<simDim>::create(0) || endRecvGuard != DataSpace<simDim>::create(0))
         {
             fieldJrecv = std::make_unique<Buffer>(buffer.getDeviceBuffer(), cellDescription.getGridLayout());
@@ -189,7 +188,7 @@ namespace picongpu
 
     FieldJ::UnitValueType FieldJ::getUnit()
     {
-        const float_64 unitCurrentDensity
+        float_64 const unitCurrentDensity
             = sim.unit.charge() / sim.unit.time() / (sim.unit.length() * sim.unit.length());
         return UnitValueType(unitCurrentDensity, unitCurrentDensity, unitCurrentDensity);
     }

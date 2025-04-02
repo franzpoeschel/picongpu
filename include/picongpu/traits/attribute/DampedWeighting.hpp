@@ -23,7 +23,6 @@
 
 #include <pmacc/traits/HasIdentifier.hpp>
 
-
 namespace picongpu
 {
     namespace traits
@@ -41,7 +40,7 @@ namespace picongpu
              * @return damped weighting of the macro particle
              */
             template<typename T_Particle>
-            HDINLINE auto getDampedWeighting(const T_Particle& particle)
+            HDINLINE auto getDampedWeighting(T_Particle const& particle)
             {
                 using HasWeightingDampingFactor =
                     typename pmacc::traits::HasIdentifier<T_Particle, weightingDampingFactor>::type;

@@ -29,7 +29,6 @@ namespace picongpu
 {
     using namespace pmacc;
 
-
     class ISimulationStarter : public IPlugin
     {
     public:
@@ -48,12 +47,12 @@ namespace picongpu
          */
         virtual void start() = 0;
 
-        void restart(uint32_t, const std::string) override
+        void restart(uint32_t, std::string const) override
         {
             // nothing to do here
         }
 
-        void checkpoint(uint32_t, const std::string) override
+        void checkpoint(uint32_t, std::string const) override
         {
             // nothing to do here
         }

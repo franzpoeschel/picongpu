@@ -41,7 +41,8 @@ namespace picongpu
                 {
                     using result = pmacc::math::Vector<T_Type, 3u>;
                     using AngleType = T_AngleType;
-                    HDINLINE result operator()(const result& fieldPosVector, const AngleType phi) const
+
+                    HDINLINE result operator()(result const& fieldPosVector, AngleType const phi) const
                     {
                         /*  Since, the laser propagation direction encloses an angle of phi with the
                          *  simulation y-axis (i.e. direction of sliding window), the positions vectors are
@@ -64,7 +65,8 @@ namespace picongpu
                 {
                     using result = pmacc::math::Vector<T_Type, 2u>;
                     using AngleType = T_AngleType;
-                    HDINLINE result operator()(const result& fieldPosVector, const AngleType phi) const
+
+                    HDINLINE result operator()(result const& fieldPosVector, AngleType const phi) const
                     {
                         /*  Since, the laser propagation direction encloses an angle of phi with the
                          *  simulation y-axis (i.e. direction of sliding window), the positions vectors are
@@ -103,8 +105,8 @@ namespace picongpu
 
                 template<typename T_Type, typename T_AngleType>
                 HDINLINE typename RotateField<T_Type, T_AngleType>::result rotateField(
-                    const T_Type& fieldPosVector,
-                    const T_AngleType phi)
+                    T_Type const& fieldPosVector,
+                    T_AngleType const phi)
                 {
                     return RotateField<T_Type, T_AngleType>()(fieldPosVector, phi);
                 }

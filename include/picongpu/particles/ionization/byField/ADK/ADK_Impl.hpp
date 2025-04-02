@@ -43,7 +43,6 @@
 #include <pmacc/random/methods/methods.hpp>
 #include <pmacc/traits/Resolve.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -112,7 +111,7 @@ namespace picongpu
 
             public:
                 /* host constructor initializing member : random number generator */
-                ADK_Impl(const uint32_t currentStep) : randomGen(RNGFactory::createRandom<Distribution>())
+                ADK_Impl(uint32_t const currentStep) : randomGen(RNGFactory::createRandom<Distribution>())
                 {
                     DataConnector& dc = Environment<>::get().DataConnector();
                     /* initialize pointers on host-side E-(B-)field and current density databoxes */
@@ -136,7 +135,7 @@ namespace picongpu
                  * @param blockCfg configuration of the worker
                  */
                 template<typename T_Worker>
-                DINLINE void collectiveInit(const T_Worker& worker, const DataSpace<simDim>& blockCell)
+                DINLINE void collectiveInit(T_Worker const& worker, DataSpace<simDim> const& blockCell)
                 {
                     /* shift origin of jbox to supercell of particle */
                     jBox = jBox.shift(blockCell);
@@ -175,8 +174,8 @@ namespace picongpu
                 template<typename T_Worker>
                 DINLINE void init(
                     [[maybe_unused]] T_Worker const& worker,
-                    const DataSpace<simDim>& localSuperCellOffset,
-                    const uint32_t rngIdx)
+                    DataSpace<simDim> const& localSuperCellOffset,
+                    uint32_t const rngIdx)
                 {
                     auto rngOffset = DataSpace<simDim>::create(0);
                     rngOffset.x() = rngIdx;
@@ -191,20 +190,20 @@ namespace picongpu
                  * @param localIdx local (linear) index in super cell / frame
                  */
                 template<typename T_Worker>
-                DINLINE uint32_t numNewParticles(const T_Worker& worker, FrameType& ionFrame, int localIdx)
+                DINLINE uint32_t numNewParticles(T_Worker const& worker, FrameType& ionFrame, int localIdx)
                 {
                     /* alias for the single macro-particle */
                     auto particle = ionFrame[localIdx];
                     /* particle position, used for field-to-particle interpolation */
                     floatD_X pos = particle[position_];
-                    const int particleCellIdx = particle[localCellIdx_];
+                    int const particleCellIdx = particle[localCellIdx_];
                     /* multi-dim coordinate of the local cell inside the super cell */
                     DataSpace<TVec::dim> localCell = pmacc::math::mapToND(TVec::toRT(), particleCellIdx);
                     /* interpolation of E- */
-                    const picongpu::traits::FieldPosition<fields::YeeCell, FieldE> fieldPosE;
+                    picongpu::traits::FieldPosition<fields::YeeCell, FieldE> const fieldPosE;
                     ValueType_E eField = Field2ParticleInterpolation()(cachedE.shift(localCell), pos, fieldPosE());
                     /*                     and B-field on the particle position */
-                    const picongpu::traits::FieldPosition<fields::YeeCell, FieldB> fieldPosB;
+                    picongpu::traits::FieldPosition<fields::YeeCell, FieldB> const fieldPosB;
                     ValueType_B bField = Field2ParticleInterpolation()(cachedB.shift(localCell), pos, fieldPosB());
 
                     IonizationAlgorithm ionizeAlgo;
@@ -232,7 +231,7 @@ namespace picongpu
                  */
                 template<typename T_parentIon, typename T_childElectron, typename T_Worker>
                 DINLINE void operator()(
-                    const T_Worker& worker,
+                    T_Worker const& worker,
                     IdGenerator& idGen,
                     T_parentIon& parentIon,
                     T_childElectron& childElectron)
@@ -241,7 +240,7 @@ namespace picongpu
                     namespace partOp = pmacc::particles::operations;
                     /* each thread sets the multiMask hard on "particle" (=1) */
                     childElectron[multiMask_] = 1u;
-                    const float_X weighting = parentIon[weighting_];
+                    float_X const weighting = parentIon[weighting_];
 
                     /* each thread initializes a clone of the parent ion but leaving out
                      * some attributes:
@@ -254,10 +253,10 @@ namespace picongpu
 
                     targetElectronClone.derive(worker, idGen, parentIon);
 
-                    const float_X massIon = picongpu::traits::attribute::getMass(weighting, parentIon);
-                    const float_X massElectron = picongpu::traits::attribute::getMass(weighting, childElectron);
+                    float_X const massIon = picongpu::traits::attribute::getMass(weighting, parentIon);
+                    float_X const massElectron = picongpu::traits::attribute::getMass(weighting, childElectron);
 
-                    const float3_X electronMomentum(parentIon[momentum_] * (massElectron / massIon));
+                    float3_X const electronMomentum(parentIon[momentum_] * (massElectron / massIon));
 
                     childElectron[momentum_] = electronMomentum;
 

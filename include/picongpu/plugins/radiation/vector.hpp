@@ -24,7 +24,6 @@
 
 #include <iostream>
 
-
 namespace picongpu
 {
     namespace plugins
@@ -49,32 +48,31 @@ namespace picongpu
 
                 // constructor
 
-                HDINLINE cuda_vec(const V& other)
+                HDINLINE cuda_vec(V const& other)
                 {
                     this->x() = other.x();
                     this->y() = other.y();
                     this->z() = other.z();
                 }
 
-                HDINLINE cuda_vec(const cuda_vec& other) = default;
+                HDINLINE cuda_vec(cuda_vec const& other) = default;
 
                 HDINLINE static cuda_vec<V, T> zero()
                 {
                     return cuda_vec(0, 0, 0);
                 }
 
-
                 // conversion between two cuda vectors with different types
 
                 template<typename O, typename Q>
-                HDINLINE cuda_vec(const cuda_vec<O, Q>& other)
+                HDINLINE cuda_vec(cuda_vec<O, Q> const& other)
                 {
                     this->x() = (T) other.x();
                     this->y() = (T) other.y();
                     this->z() = (T) other.z();
                 }
 
-                HDINLINE cuda_vec& operator=(const cuda_vec& other) = default;
+                HDINLINE cuda_vec& operator=(cuda_vec const& other) = default;
 
                 HDINLINE T& operator[](uint32_t dim)
                 {
@@ -86,45 +84,44 @@ namespace picongpu
                     return (&(this->x()))[dim];
                 }
 
-
                 // addition
 
-                HDINLINE cuda_vec<V, T> operator+(const cuda_vec<V, T>& other) const
+                HDINLINE cuda_vec<V, T> operator+(cuda_vec<V, T> const& other) const
                 {
                     return cuda_vec<V, T>(this->x() + other.x(), this->y() + other.y(), this->z() + other.z());
                 }
 
                 // difference
 
-                HDINLINE cuda_vec<V, T> operator-(const cuda_vec<V, T>& other) const
+                HDINLINE cuda_vec<V, T> operator-(cuda_vec<V, T> const& other) const
                 {
                     return cuda_vec<V, T>(this->x() - other.x(), this->y() - other.y(), this->z() - other.z());
                 }
 
                 // vector multiplication
 
-                HDINLINE T operator*(const cuda_vec<V, T>& other) const
+                HDINLINE T operator*(cuda_vec<V, T> const& other) const
                 {
                     return this->x() * other.x() + this->y() * other.y() + this->z() * other.z();
                 }
 
                 // scalar multiplication
 
-                HDINLINE cuda_vec<V, T> operator*(const T scalar) const
+                HDINLINE cuda_vec<V, T> operator*(T const scalar) const
                 {
                     return cuda_vec(scalar * this->x(), scalar * this->y(), scalar * this->z());
                 }
 
                 // division (scalar)
 
-                HDINLINE cuda_vec<V, T> operator/(const T scalar) const
+                HDINLINE cuda_vec<V, T> operator/(T const scalar) const
                 {
                     return cuda_vec(this->x() / scalar, this->y() / scalar, this->z() / scalar);
                 }
 
                 // cross product (vector)
 
-                HDINLINE cuda_vec<V, T> operator%(const cuda_vec<V, T>& other) const
+                HDINLINE cuda_vec<V, T> operator%(cuda_vec<V, T> const& other) const
                 {
                     return cuda_vec(
                         this->y() * other.z() - this->z() * other.y(),
@@ -148,7 +145,7 @@ namespace picongpu
 
                 // assign add
 
-                HDINLINE void operator+=(const cuda_vec<V, T>& other)
+                HDINLINE void operator+=(cuda_vec<V, T> const& other)
                 {
                     this->x() += other.x();
                     this->y() += other.y();
@@ -157,7 +154,7 @@ namespace picongpu
 
                 // assign multiply
 
-                HDINLINE void operator*=(const T scalar)
+                HDINLINE void operator*=(T const scalar)
                 {
                     this->x() *= scalar;
                     this->y() *= scalar;
@@ -172,7 +169,7 @@ namespace picongpu
 // print
 
 template<typename V, typename T>
-HINLINE std::ostream& operator<<(std::ostream& os, const picongpu::plugins::radiation::cuda_vec<V, T>& v)
+HINLINE std::ostream& operator<<(std::ostream& os, picongpu::plugins::radiation::cuda_vec<V, T> const& v)
 {
     os << " ( " << v.x() << " , " << v.y() << " , " << v.z() << " ) ";
     return os;

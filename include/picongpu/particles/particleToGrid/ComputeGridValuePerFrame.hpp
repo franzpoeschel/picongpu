@@ -30,7 +30,6 @@
 
 #include <vector>
 
-
 namespace picongpu
 {
     namespace particles
@@ -66,7 +65,7 @@ namespace picongpu
             DINLINE void ComputeGridValuePerFrame<T_ParticleShape, T_DerivedAttribute>::operator()(
                 T_Worker const& worker,
                 T_Particle& particle,
-                const TVecSuperCell superCell,
+                TVecSuperCell const superCell,
                 T_AccFilter& accFilter,
                 BoxTmp& tmpBox)
             {
@@ -77,36 +76,36 @@ namespace picongpu
                 if(accFilter(worker, particle))
                 {
                     /* particle attributes: in-cell position and generic, derived attribute */
-                    const floatD_X pos = particle[position_];
-                    const auto particleAttr = particleAttribute(particle);
+                    floatD_X const pos = particle[position_];
+                    auto const particleAttr = particleAttribute(particle);
 
                     /** Shift to the cell the particle belongs to
                      * range of particleCell: [DataSpace<simDim>::create(0), TVecSuperCell]
                      */
-                    const int particleCellIdx = particle[localCellIdx_];
-                    const DataSpace<TVecSuperCell::dim> particleCell
+                    int const particleCellIdx = particle[localCellIdx_];
+                    DataSpace<TVecSuperCell::dim> const particleCell
                         = pmacc::math::mapToND(SuperCellSize::toRT(), particleCellIdx);
                     auto fieldTmpShiftToParticle = tmpBox.shift(particleCell);
 
                     /* loop around the particle's cell (according to shape) */
-                    const DataSpace<simDim> lowMargin(LowerMargin().toRT());
-                    const DataSpace<simDim> upMargin(UpperMargin().toRT());
+                    DataSpace<simDim> const lowMargin(LowerMargin().toRT());
+                    DataSpace<simDim> const upMargin(UpperMargin().toRT());
 
-                    const DataSpace<simDim> marginSpace(upMargin + lowMargin + 1);
+                    DataSpace<simDim> const marginSpace(upMargin + lowMargin + 1);
 
-                    const int numWriteCells = marginSpace.productOfComponents();
+                    int const numWriteCells = marginSpace.productOfComponents();
 
                     for(int i = 0; i < numWriteCells; ++i)
                     {
                         /** for the current cell i the multi dimensional index currentCell is only positive:
                          * allowed range = [DataSpace<simDim>::create(0), LowerMargin+UpperMargin]
                          */
-                        const DataSpace<simDim> currentCell = pmacc::math::mapToND(marginSpace, i);
+                        DataSpace<simDim> const currentCell = pmacc::math::mapToND(marginSpace, i);
 
                         /** calculate the offset between the current cell i with simDim index currentCell
                          * and the cell of the particle (particleCell) in cells
                          */
-                        const DataSpace<simDim> offsetParticleCellToCurrentCell = currentCell - lowMargin;
+                        DataSpace<simDim> const offsetParticleCellToCurrentCell = currentCell - lowMargin;
 
                         /** assign particle contribution component-wise to the lower left corner of
                          * the cell i

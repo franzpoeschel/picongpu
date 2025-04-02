@@ -39,10 +39,12 @@ namespace picongpu::atomicPhysics
         // unit: eV
         static constexpr float_X maxEnergy = float_X(1e7);
     };
+
     using ElectronHistogram = particles::atomicPhysics::electronDistribution::LogSpaceHistogram<
         // T_numberBins
         100u,
         MaxEnergyParam>;
+
     //!@}
 
     //! atomicPhysics rate solver settings

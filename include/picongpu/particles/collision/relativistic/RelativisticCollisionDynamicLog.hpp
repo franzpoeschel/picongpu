@@ -24,6 +24,7 @@
 #include "picongpu/particles/collision/relativistic/RelativisticCollisionDynamicLog.def"
 
 #include <cmath>
+
 namespace picongpu
 {
     namespace particles
@@ -40,12 +41,13 @@ namespace picongpu
                         DINLINE float_COLL operator()(Variables const& v) const
                         {
                             // [Perez2012] formula (22):
-                            const float_COLL factor1 = math::abs((v.charge0 * v.charge1))
-                                / (4._COLL * pmacc::math::Pi<float_COLL>::value
-                                   * static_cast<float_COLL>(
-                                       sim.pic.getEps0() * sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight()));
-                            const float_COLL factor2 = v.gammaComs / (v.mass0 * v.gamma0 + v.mass1 * v.gamma1);
-                            const float_COLL factor3
+                            float_COLL const factor1
+                                = math::abs((v.charge0 * v.charge1))
+                                  / (4._COLL * pmacc::math::Pi<float_COLL>::value
+                                     * static_cast<float_COLL>(
+                                         sim.pic.getEps0() * sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight()));
+                            float_COLL const factor2 = v.gammaComs / (v.mass0 * v.gamma0 + v.mass1 * v.gamma1);
+                            float_COLL const factor3
                                 = (v.coeff0 * v.coeff1 / v.comsMomentum0Norm2
                                        * static_cast<float_COLL>(sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight())
                                    + 1._COLL);
@@ -55,22 +57,24 @@ namespace picongpu
                              * because we are mixing charge and mass in one formula an these are not canceling it each
                              * other out correctly.
                              */
-                            const float_COLL twoRadImpactParam
+                            float_COLL const twoRadImpactParam
                                 = factor1 * factor2 * factor3 / precision::WEIGHT_NORM_COLL;
 
                             // formula in line above eq. (22) in [Perez2012]:
-                            const float_COLL minImpactParam = math::max(
+                            float_COLL const minImpactParam = math::max(
                                 sim.pic.getHbar<float_COLL>() * pmacc::math::Pi<float_COLL>::doubleValue
                                     / (2._COLL * math::sqrt(v.comsMomentum0Norm2) / precision::WEIGHT_NORM_COLL),
                                 twoRadImpactParam);
 
                             // eq. (23) in [Perez2012]:
-                            const float_COLL coulombLog = 0.5_COLL
-                                * math::log(1.0_COLL
-                                            + static_cast<float_COLL>(screeningLengthSquared_m)
-                                                / (minImpactParam * minImpactParam));
+                            float_COLL const coulombLog = 0.5_COLL
+                                                          * math::log(
+                                                              1.0_COLL
+                                                              + static_cast<float_COLL>(screeningLengthSquared_m)
+                                                                    / (minImpactParam * minImpactParam));
                             return math::max(2._COLL, coulombLog);
                         }
+
                         PMACC_ALIGN(screeningLengthSquared_m, float_X);
                     };
 
@@ -90,7 +94,7 @@ namespace picongpu
                     using CallingIntraKernel = IntraCollision<true>;
 
                     static constexpr bool ifDebug_m = ifDebug;
-                    HINLINE RelativisticCollisionDynamicLogImpl(uint32_t currentStep){};
+                    HINLINE RelativisticCollisionDynamicLogImpl(uint32_t currentStep) {};
 
                     using AccFunctorImpl = acc::RelativisticCollision<acc::DynamicLog, ifDebug>;
                     using AccFunctor = collision::acc::IBinary<AccFunctorImpl>;

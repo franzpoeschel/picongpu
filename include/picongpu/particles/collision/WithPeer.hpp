@@ -29,7 +29,6 @@
 
 #include <cstdio>
 
-
 namespace picongpu
 {
     namespace particles
@@ -47,7 +46,7 @@ namespace picongpu
                     uint32_t pairId>
                 struct WithPeer
                 {
-                    void operator()(const std::shared_ptr<DeviceHeap>& deviceHeap, uint32_t currentStep)
+                    void operator()(std::shared_ptr<DeviceHeap> const& deviceHeap, uint32_t currentStep)
                     {
                         DataConnector& dc = Environment<>::get().DataConnector();
                         auto idProvider = dc.get<IdProvider>("globalId");
@@ -70,7 +69,7 @@ namespace picongpu
                     uint32_t pairId>
                 struct WithPeer<T_CollisionFunctor, T_FilterPair, T_Species, T_Species, colliderId, pairId>
                 {
-                    void operator()(const std::shared_ptr<DeviceHeap>& deviceHeap, uint32_t currentStep)
+                    void operator()(std::shared_ptr<DeviceHeap> const& deviceHeap, uint32_t currentStep)
                     {
                         DataConnector& dc = Environment<>::get().DataConnector();
                         auto idProvider = dc.get<IdProvider>("globalId");
@@ -106,7 +105,7 @@ namespace picongpu
                 uint32_t pairId>
             struct WithPeer
             {
-                void operator()(const std::shared_ptr<DeviceHeap>& deviceHeap, uint32_t currentStep)
+                void operator()(std::shared_ptr<DeviceHeap> const& deviceHeap, uint32_t currentStep)
                 {
                     using BaseSpecies = pmacc::particles::meta::FindByNameOrType_t<VectorAllSpecies, T_BaseSpecies>;
 

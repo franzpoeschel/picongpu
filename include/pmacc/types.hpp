@@ -29,7 +29,7 @@
 
 #include <alpaka/alpaka.hpp>
 
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
 #    include <mallocMC/mallocMC.hpp>
 #endif
 
@@ -53,7 +53,6 @@
 #include <alpaka/alpaka.hpp>
 
 #include <boost/filesystem.hpp>
-
 
 namespace pmacc
 {

@@ -83,7 +83,7 @@ namespace picongpu
          *  Problem: buffers don't allow "bigger" exchange during run time.
          *           so let's stay with the maximum guards.
          */
-        const DataSpace<simDim> coreBorderSize = cellDescription.getGridLayout().sizeWithoutGuardND();
+        DataSpace<simDim> const coreBorderSize = cellDescription.getGridLayout().sizeWithoutGuardND();
 
         using VectorSpeciesWithInterpolation =
             typename pmacc::particles::traits::FilterByFlag<VectorAllSpecies, interpolation<>>::type;
@@ -120,8 +120,8 @@ namespace picongpu
 
         using UpperMargin = pmacc::math::CT::max<SpeciesFieldTmpUpperMargin, FieldSolverUpperMargin>::type;
 
-        const DataSpace<simDim> originGuard(LowerMargin().toRT());
-        const DataSpace<simDim> endGuard(UpperMargin().toRT());
+        DataSpace<simDim> const originGuard(LowerMargin().toRT());
+        DataSpace<simDim> const endGuard(UpperMargin().toRT());
 
         /*go over all directions*/
         for(uint32_t i = 1; i < NumberOfExchanges<simDim>::value; ++i)

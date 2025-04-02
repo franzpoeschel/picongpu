@@ -31,7 +31,6 @@
 #include <string>
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace fields
@@ -123,7 +122,7 @@ namespace picongpu
                             {
                                 auto const phaseShift = pmacc::math::Pi<float_X>::halfValue;
                                 return this->getCircularPolarizationVector1() * getValueE(totalCellIdx, phaseShift)
-                                    + this->getCircularPolarizationVector2() * getValueE(totalCellIdx, 0.0_X);
+                                       + this->getCircularPolarizationVector2() * getValueE(totalCellIdx, 0.0_X);
                             }
                         }
 
@@ -138,10 +137,10 @@ namespace picongpu
                         HDINLINE float_X expandedWaveVectorX(float_X const Omega) const
                         {
                             return Unitless::W0 / sim.pic.getSpeedOfLight()
-                                * (Unitless::w * Unitless::AD * (Omega - Unitless::w)
-                                   + Unitless::AD * (Omega - Unitless::w) * (Omega - Unitless::w)
-                                   - Unitless::w / 6.0_X * Unitless::AD * Unitless::AD * Unitless::AD
-                                       * (Omega - Unitless::w) * (Omega - Unitless::w) * (Omega - Unitless::w));
+                                   * (Unitless::w * Unitless::AD * (Omega - Unitless::w)
+                                      + Unitless::AD * (Omega - Unitless::w) * (Omega - Unitless::w)
+                                      - Unitless::w / 6.0_X * Unitless::AD * Unitless::AD * Unitless::AD
+                                            * (Omega - Unitless::w) * (Omega - Unitless::w) * (Omega - Unitless::w));
                         }
 
                         /** The following two functions provide the electric field in frequency domain
@@ -172,21 +171,23 @@ namespace picongpu
                             float_X const focusPos = distanceFocusRelativeToOrigin - pos[0];
 
                             // beam waist at the generation plane so that at focus we will get W0
-                            float_X const waist = Unitless::W0
-                                * math::sqrt(1.0_X
-                                             + (focusPos / Unitless::rayleighLength)
-                                                 * (focusPos / Unitless::rayleighLength));
+                            float_X const waist
+                                = Unitless::W0
+                                  * math::sqrt(
+                                      1.0_X
+                                      + (focusPos / Unitless::rayleighLength) * (focusPos / Unitless::rayleighLength));
 
                             // Initial frequency dependent complex phase
                             float_X alpha = expandedWaveVectorX(Omega);
 
                             // Center of a frequency's spatial distribution
-                            float_X center = Unitless::SD * (Omega - Unitless::w)
-                                + sim.pic.getSpeedOfLight() * alpha * focusPos / (Unitless::W0 * Unitless::w);
+                            float_X center
+                                = Unitless::SD * (Omega - Unitless::w)
+                                  + sim.pic.getSpeedOfLight() * alpha * focusPos / (Unitless::W0 * Unitless::w);
 
                             // gaussian envelope in frequency domain
                             float_X const envFreqExp = -(Omega - Unitless::w) * (Omega - Unitless::w)
-                                * Unitless::PULSE_DURATION * Unitless::PULSE_DURATION;
+                                                       * Unitless::PULSE_DURATION * Unitless::PULSE_DURATION;
 
                             // transversal envelope
                             float_X const envYExp
@@ -210,7 +211,7 @@ namespace picongpu
 
                             // Normalization to Amplitude
                             mag *= math::sqrt(pmacc::math::Pi<float_X>::doubleValue * 0.5_X) * 2.0_X
-                                * Unitless::PULSE_DURATION * Unitless::AMPLITUDE;
+                                   * Unitless::PULSE_DURATION * Unitless::AMPLITUDE;
 
                             // Dividing amplitude by 2 to compensate doubled spectral field strength
                             // resulting from E(-Omega) = E*(Omega), which has to be fulfilled for E(t) to be real
@@ -243,12 +244,14 @@ namespace picongpu
                             float_X alpha = expandedWaveVectorX(Omega);
 
                             // Center of a frequency's spatial distribution
-                            float_X center = Unitless::SD * (Omega - Unitless::w)
-                                + sim.pic.getSpeedOfLight() * alpha * focusPos / (Unitless::W0 * Unitless::w);
+                            float_X center
+                                = Unitless::SD * (Omega - Unitless::w)
+                                  + sim.pic.getSpeedOfLight() * alpha * focusPos / (Unitless::W0 * Unitless::w);
 
                             // inverse radius of curvature of the pulse's wavefronts
-                            auto const R_inv = -focusPos
-                                / (Unitless::rayleighLength * Unitless::rayleighLength + focusPos * focusPos);
+                            auto const R_inv
+                                = -focusPos
+                                  / (Unitless::rayleighLength * Unitless::rayleighLength + focusPos * focusPos);
                             // the Gouy phase shift
                             auto const xi = math::atan(-focusPos / Unitless::rayleighLength);
 
@@ -257,13 +260,13 @@ namespace picongpu
                             float_X const timeDelay = mue + focusPos / sim.pic.getSpeedOfLight();
 
                             float_X phase = -Omega * focusPos / sim.pic.getSpeedOfLight()
-                                + 0.5_X * Unitless::GDD * (Omega - Unitless::w) * (Omega - Unitless::w)
-                                + Unitless::TOD / 6.0_X * (Omega - Unitless::w) * (Omega - Unitless::w)
-                                    * (Omega - Unitless::w)
-                                + phaseShift + Unitless::LASER_PHASE + Omega * timeDelay;
+                                            + 0.5_X * Unitless::GDD * (Omega - Unitless::w) * (Omega - Unitless::w)
+                                            + Unitless::TOD / 6.0_X * (Omega - Unitless::w) * (Omega - Unitless::w)
+                                                  * (Omega - Unitless::w)
+                                            + phaseShift + Unitless::LASER_PHASE + Omega * timeDelay;
 
                             phase += ((pos[1] - center) * (pos[1] - center) + (pos[2] - center) * (pos[2] - center))
-                                * Omega * 0.5_X * R_inv / sim.pic.getSpeedOfLight();
+                                     * Omega * 0.5_X * R_inv / sim.pic.getSpeedOfLight();
                             phase -= alpha * (pos[1] + pos[2]) / Unitless::W0;
 
                             // distinguish between dimensions

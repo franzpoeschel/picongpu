@@ -64,7 +64,7 @@ namespace pmacc
          *
          * @param str Comma separated list of slices. Empty slices will be skipped.
          */
-        inline std::vector<Slice> toSlice(std::string const& str, const auto fillDefaults)
+        inline std::vector<Slice> toSlice(std::string const& str, auto const fillDefaults)
         {
             std::vector<Slice> result;
             auto const seqOfSlices = misc::splitString(str, ",");

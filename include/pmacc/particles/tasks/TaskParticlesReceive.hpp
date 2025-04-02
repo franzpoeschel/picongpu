@@ -123,7 +123,6 @@ namespace pmacc
             Finish
         };
 
-
         Particles& parBase;
         state_t state;
         EventTask tmpEvent;

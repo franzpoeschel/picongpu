@@ -53,14 +53,13 @@ namespace pmacc
             Dim = BaseClass::Dim
         };
 
-
         using SuperCellSize = typename BaseClass::SuperCellSize;
 
         HINLINE AreaMapping(BaseClass base) : BaseClass(base)
         {
         }
 
-        AreaMapping(const AreaMapping&) = default;
+        AreaMapping(AreaMapping const&) = default;
 
         /** Generate grid dimension information for alpaka kernel calls
          *
@@ -80,7 +79,7 @@ namespace pmacc
          * @return mapped SuperCell index including guards
          */
         template<uint32_t T_origin = GUARD>
-        HDINLINE DataSpace<DIM> getSuperCellIndex(const DataSpace<DIM>& blockIdx) const
+        HDINLINE DataSpace<DIM> getSuperCellIndex(DataSpace<DIM> const& blockIdx) const
         {
             auto result
                 = AreaMappingMethods<areaType, DIM>::getSuperCellIndex(*this, this->getGridSuperCells(), blockIdx);

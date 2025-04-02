@@ -83,10 +83,11 @@ namespace pmacc
          */
         HostBuffer(MemSpace<T_dim> size)
             : Buffer<T_Type, T_dim>(size)
-            , hostBuffer(alpaka::allocMappedBufIfSupported<T_Type, MemIdxType>(
-                  manager::Device<HostDevice>::get().current(),
-                  manager::Device<ComputeDevice>::get().getPlatform(),
-                  MemSpace<DIM1>(size.productOfComponents()).toAlpakaMemVec()))
+            , hostBuffer(
+                  alpaka::allocMappedBufIfSupported<T_Type, MemIdxType>(
+                      manager::Device<HostDevice>::get().current(),
+                      manager::Device<ComputeDevice>::get().getPlatform(),
+                      MemSpace<DIM1>(size.productOfComponents()).toAlpakaMemVec()))
         {
             MemSpace<T_dim> pitchInBytes;
             pitchInBytes.x() = sizeof(T_Type);
@@ -167,7 +168,7 @@ namespace pmacc
             }
         }
 
-        void setValue(const T_Type& value) override
+        void setValue(T_Type const& value) override
         {
             // getDataBox is notifying the event system, no need to do it manually
             auto memBox = this->getDataBox();

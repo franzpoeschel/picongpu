@@ -36,7 +36,6 @@
 #include <type_traits>
 #include <vector>
 
-
 namespace picongpu
 {
     namespace fields

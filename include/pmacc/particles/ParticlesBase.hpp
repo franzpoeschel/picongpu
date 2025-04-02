@@ -35,7 +35,6 @@
 
 #include <memory>
 
-
 namespace pmacc
 {
     /* Tag used for marking particle types */
@@ -79,7 +78,7 @@ namespace pmacc
     protected:
         BufferType* particlesBuffer;
 
-        ParticlesBase(const std::shared_ptr<T_DeviceHeap>& deviceHeap, MappingDesc description)
+        ParticlesBase(std::shared_ptr<T_DeviceHeap> const& deviceHeap, MappingDesc description)
             : SimulationFieldHelper<MappingDesc>(description)
             , particlesBuffer(nullptr)
         {
@@ -183,7 +182,7 @@ namespace pmacc
             return particlesBuffer->getDeviceParticleBox();
         }
 
-        ParticlesBoxType getHostParticlesBox(const int64_t memoryOffset)
+        ParticlesBoxType getHostParticlesBox(int64_t const memoryOffset)
         {
             return particlesBuffer->getHostParticleBox(memoryOffset);
         }

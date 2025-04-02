@@ -23,7 +23,6 @@
 #include "pmacc/traits/NumberOfExchanges.hpp"
 #include "pmacc/type/Exchange.hpp"
 
-
 namespace pmacc
 {
     namespace boundary

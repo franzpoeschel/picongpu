@@ -21,7 +21,6 @@
 
 #pragma once
 
-
 namespace pmacc
 {
     /** prevent a type for boost apply

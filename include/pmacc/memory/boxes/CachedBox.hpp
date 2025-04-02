@@ -26,13 +26,12 @@
 #include "pmacc/memory/boxes/SharedBox.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     namespace CachedBox
     {
         template<uint32_t Id_, typename ValueType_, class BlockDescription_, typename T_Worker>
-        DINLINE auto create(T_Worker const& worker, const BlockDescription_ block)
+        DINLINE auto create(T_Worker const& worker, BlockDescription_ const block)
         {
             using OffsetOrigin = typename BlockDescription_::OffsetOrigin;
             using Type = DataBox<SharedBox<ValueType_, typename BlockDescription_::FullSuperCellSize, Id_>>;
@@ -40,7 +39,7 @@ namespace pmacc
         }
 
         template<uint32_t Id_, typename ValueType_, class BlockDescription_, typename T_Worker>
-        DINLINE auto create(T_Worker const& worker, const ValueType_& value, const BlockDescription_ block)
+        DINLINE auto create(T_Worker const& worker, ValueType_ const& value, BlockDescription_ const block)
         {
             return create<Id_, ValueType_, BlockDescription_>(worker);
         }

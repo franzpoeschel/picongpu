@@ -33,7 +33,6 @@
 
 #include "picongpu/fields/MaxwellSolver/Solvers.def"
 
-
 namespace picongpu
 {
     namespace fields

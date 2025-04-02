@@ -31,7 +31,6 @@
 
 #include <string>
 
-
 namespace pmacc::exec
 {
     namespace detail
@@ -122,7 +121,6 @@ namespace pmacc::exec
         return detail::KernelPreperationWrapper<T_KernelFunctor>(kernelFunctor, file, line);
     }
 } // namespace pmacc::exec
-
 
 namespace alpaka
 {

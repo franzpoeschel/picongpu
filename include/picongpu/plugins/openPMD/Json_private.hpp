@@ -108,6 +108,7 @@ namespace picongpu
                 return m_defaultConfig;
             }
         };
+
         /**
          * @brief Class to handle extended JSON configurations as used by
          *        the openPMD plugin.
@@ -124,6 +125,7 @@ namespace picongpu
                 std::string backendName;
                 MatcherPerBackend matcher;
             };
+
             std::vector<PerBackend> m_perBackend;
             nlohmann::json m_wholeConfig;
             static std::vector<std::string> const m_recognizedBackends;

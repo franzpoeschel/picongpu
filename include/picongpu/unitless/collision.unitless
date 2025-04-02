@@ -38,11 +38,11 @@ namespace picongpu
                 }
 
                 using float3_COLL = pmacc::math::Vector<float_COLL, 3>;
-                const float_COLL DELTA_T_COLL = static_cast<float_COLL>(sim.pic.getDt());
-                const float_COLL EPS0_COLL = static_cast<float_COLL>(sim.pic.getEps0());
-                const float_COLL WEIGHT_NORM_COLL
+                float_COLL const DELTA_T_COLL = static_cast<float_COLL>(sim.pic.getDt());
+                float_COLL const EPS0_COLL = static_cast<float_COLL>(sim.pic.getEps0());
+                float_COLL const WEIGHT_NORM_COLL
                     = static_cast<float_COLL>(sim.unit.typicalNumParticlesPerMacroParticle());
-                const float_COLL CELL_VOLUME_COLL
+                float_COLL const CELL_VOLUME_COLL
                     = static_cast<float_COLL>(sim.pic.getCellSize().productOfComponents());
             } // namespace precision
         } // namespace collision

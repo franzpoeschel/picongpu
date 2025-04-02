@@ -51,7 +51,7 @@ namespace picongpu
                      * @param dens number density
                      */
                     template<typename T_Worker>
-                    HDINLINE void operator()(T_Worker const& worker, float1_X& dst, const float1_X& dens) const;
+                    HDINLINE void operator()(T_Worker const& worker, float1_X& dst, float1_X const& dens) const;
                 };
 
                 //! Provides description for an averaged attribute

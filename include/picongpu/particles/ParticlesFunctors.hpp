@@ -80,9 +80,9 @@ namespace picongpu
             using FrameType = typename SpeciesType::FrameType;
 
             template<typename T_DeviceHeap>
-            HINLINE void operator()(const std::shared_ptr<T_DeviceHeap>& deviceHeap) const
+            HINLINE void operator()(std::shared_ptr<T_DeviceHeap> const& deviceHeap) const
             {
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
                 auto alpakaStream = pmacc::eventSystem::getComputeDeviceQueue(ITask::TASK_DEVICE)->getAlpakaQueue();
                 log<picLog::MEMORY>("mallocMC: free slots for species %3%: %1% a %2%")
                     % deviceHeap->getAvailableSlots(
@@ -104,7 +104,7 @@ namespace picongpu
             using SpeciesType = pmacc::particles::meta::FindByNameOrType_t<VectorAllSpecies, T_SpeciesType>;
             using FrameType = typename SpeciesType::FrameType;
 
-            HINLINE void operator()(const uint32_t currentStep)
+            HINLINE void operator()(uint32_t const currentStep)
             {
                 DataConnector& dc = Environment<>::get().DataConnector();
                 auto species = dc.get<SpeciesType>(FrameType::getName());

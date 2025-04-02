@@ -60,6 +60,7 @@ namespace picongpu
                  */
                 static constexpr auto driftDirection = float3_X(0.0, -1.0, 0.0);
             };
+
             /** Definition of manipulator that assigns a drift in X
              *  using parameters from struct DriftParam.
              */
@@ -84,6 +85,7 @@ namespace picongpu
                  */
                 static constexpr uint32_t numParticlesPerCell = TYPICAL_PARTICLES_PER_CELL;
             };
+
             /** Definition of start position functor that randomly distributes macro-particles within a cell. */
             using Random = RandomImpl<RandomParameter>;
 
@@ -109,6 +111,7 @@ namespace picongpu
                  */
                 static constexpr auto inCellOffset = float3_X(0., 0., 0.);
             };
+
             /** Definition of OnePosition start position functor that
              * places macro-particles at the initial in-cell position defined above.
              */

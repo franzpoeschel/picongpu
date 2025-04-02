@@ -31,7 +31,6 @@
 #include <pmacc/traits/GetFlagType.hpp>
 #include <pmacc/traits/Resolve.hpp>
 
-
 namespace picongpu
 {
     namespace traits
@@ -51,7 +50,6 @@ namespace picongpu
 
                 return sim.pic.getBaseMass() * MassRatioValue::getValue();
             }
-
 
             /** default `getCharge()` specialization
              *

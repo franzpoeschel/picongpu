@@ -32,7 +32,6 @@
 
 #include <type_traits>
 
-
 namespace pmacc
 {
     /** set a value to all elements of a box
@@ -111,7 +110,7 @@ namespace pmacc
         using ValueType = T_ValueType;
         static constexpr uint32_t dim = T_dim;
 
-        TaskSetValueBase(DeviceBuffer<ValueType, dim>& dst, const ValueType& value)
+        TaskSetValueBase(DeviceBuffer<ValueType, dim>& dst, ValueType const& value)
             : DeviceTask()
             , destination(&dst)
             , value(value)
@@ -153,7 +152,7 @@ namespace pmacc
         using ValueType = T_ValueType;
         static constexpr uint32_t dim = T_dim;
 
-        TaskSetValue(DeviceBuffer<ValueType, dim>& dst, const ValueType& value)
+        TaskSetValue(DeviceBuffer<ValueType, dim>& dst, ValueType const& value)
             : TaskSetValueBase<ValueType, dim>(dst, value)
         {
         }
@@ -217,12 +216,13 @@ namespace pmacc
 
         using ValueBufferType = ::alpaka::Buf<HostDevice, T_ValueType, AlpakaDim<DIM1>, MemIdxType>;
 
-        TaskSetValue(DeviceBuffer<ValueType, dim>& dst, const ValueType& value)
+        TaskSetValue(DeviceBuffer<ValueType, dim>& dst, ValueType const& value)
             : TaskSetValueBase<ValueType, dim>(dst, value)
-            , valueBuffer(std::make_shared<ValueBufferType>(alpaka::allocMappedBufIfSupported<ValueType, MemIdxType>(
-                  manager::Device<HostDevice>::get().current(),
-                  manager::Device<ComputeDevice>::get().getPlatform(),
-                  MemSpace<DIM1>(1).toAlpakaMemVec())))
+            , valueBuffer(
+                  std::make_shared<ValueBufferType>(alpaka::allocMappedBufIfSupported<ValueType, MemIdxType>(
+                      manager::Device<HostDevice>::get().current(),
+                      manager::Device<ComputeDevice>::get().getPlatform(),
+                      MemSpace<DIM1>(1).toAlpakaMemVec())))
         {
         }
 
@@ -233,7 +233,7 @@ namespace pmacc
         void init() override
         {
             size_t size = this->destination->size();
-            const MemSpace<dim> areaSizeND(this->destination->sizeND(size));
+            MemSpace<dim> const areaSizeND(this->destination->sizeND(size));
             if(areaSizeND.productOfComponents() != 0)
             {
                 auto gridSize = areaSizeND;

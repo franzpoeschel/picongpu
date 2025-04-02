@@ -23,7 +23,6 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/plugins/radiation/vector.hpp"
 
-
 namespace picongpu
 {
     namespace plugins

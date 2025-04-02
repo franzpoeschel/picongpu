@@ -23,7 +23,6 @@
 #include "picongpu/fields/currentDeposition/Strategy.def"
 #include "picongpu/traits/GetMargin.hpp"
 
-
 namespace picongpu
 {
     namespace currentSolver

@@ -64,14 +64,14 @@ namespace picongpu::templates::twtstight
                       * ((rhom2 - x2 + x * Xm * cosPhi) * (sinPolAngle * sinPhi_2)
                          + cosPolAngle * (rhom2 + rhom2 * cosPhi_2 - x2 * sinPhi_2 - x * cosPhi * sinPhi_2 * Xm))
                   + besselJ1const * sinPhi
-                      * (+sinPolAngle
-                             * (-rhom2 + float_T(2.0) * x2 - I * rhom2 * Xm * (k * sinPhi)
-                                + x * cosPhi * (float_T(-2.0) * Xm - I * rhom2 * (k * sinPhi)))
-                         + cosPolAngle
-                             * (-rhom2 + float_T(2.0) * x2 + I * rhom2 * Xm * (k * sinPhi)
-                                + x * cosPhi * (float_T(+2.0) * Xm + I * rhom2 * (k * sinPhi)))))
+                        * (+sinPolAngle
+                               * (-rhom2 + float_T(2.0) * x2 - I * rhom2 * Xm * (k * sinPhi)
+                                  + x * cosPhi * (float_T(-2.0) * Xm - I * rhom2 * (k * sinPhi)))
+                           + cosPolAngle
+                                 * (-rhom2 + float_T(2.0) * x2 + I * rhom2 * Xm * (k * sinPhi)
+                                    + x * cosPhi * (float_T(+2.0) * Xm + I * rhom2 * (k * sinPhi)))))
                * psi0)
-            / (rhom * rhom2 * besselI0const);
+              / (rhom * rhom2 * besselI0const);
 
         /* A 180deg-rotation of the field vector around the y-axis
          * leads to a sign flip in the x- and z- components, respectively.
@@ -114,7 +114,7 @@ namespace picongpu::templates::twtstight
                                             + (float_T(1.0) + cosPhi_2) * sinPolAngle * Xm)
                                      + I * rhom * besselJ0const * ((cosPolAngle - sinPolAngle) * sinPhi_2))
                                   * psi0)
-            / (float_T(4.0) * besselI0const * rhom);
+                                 / (float_T(4.0) * besselI0const * rhom);
 
         return result.real();
     }
@@ -152,16 +152,17 @@ namespace picongpu::templates::twtstight
                * (float_T(2.0) * k * rhom * besselJ0const
                       * (x * (cosPolAngle + sinPolAngle) * sinPhi_2 * Xm
                          + cosPhi
-                             * (cosPolAngle * sinPhi_2 * Xm2 + sinPolAngle * (float_T(2.0) * rhom2 - Xm2 * sinPhi_2)))
+                               * (cosPolAngle * sinPhi_2 * Xm2
+                                  + sinPolAngle * (float_T(2.0) * rhom2 - Xm2 * sinPhi_2)))
                   + besselJ1const * sinPhi
-                      * (cosPolAngle
-                             * (float_T(-4.0) * x * Xm + float_T(2.0) * cosPhi * (rhom2 - float_T(2.0) * Xm2)
-                                + complex_T(0, 2) * rhom2 * (x - Xm * cosPhi) * (k * sinPhi))
-                         + sinPolAngle
-                             * (float_T(-4.0) * x * Xm - float_T(2.0) * cosPhi * (rhom2 - float_T(2.0) * Xm2)
-                                - complex_T(0, 2) * rhom2 * (k * x * sinPhi) + I * rhom2 * Xm * (k * sin2Phi))))
+                        * (cosPolAngle
+                               * (float_T(-4.0) * x * Xm + float_T(2.0) * cosPhi * (rhom2 - float_T(2.0) * Xm2)
+                                  + complex_T(0, 2) * rhom2 * (x - Xm * cosPhi) * (k * sinPhi))
+                           + sinPolAngle
+                                 * (float_T(-4.0) * x * Xm - float_T(2.0) * cosPhi * (rhom2 - float_T(2.0) * Xm2)
+                                    - complex_T(0, 2) * rhom2 * (k * x * sinPhi) + I * rhom2 * Xm * (k * sin2Phi))))
                * psi0)
-            / (besselI0const * rhom * rhom2);
+              / (besselI0const * rhom * rhom2);
 
         /* A 180deg-rotation of the field vector around the y-axis
          * leads to a sign flip in the x- and z- components, respectively.

@@ -26,7 +26,6 @@
 
 #include "picongpu/particles/InitFunctors.hpp"
 
-
 namespace picongpu
 {
     /** IterationStartPipeline defines the functors called at each iteration start

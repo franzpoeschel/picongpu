@@ -22,7 +22,6 @@
 #include <numeric>
 #include <string>
 
-
 namespace picongpu
 {
     namespace plugins

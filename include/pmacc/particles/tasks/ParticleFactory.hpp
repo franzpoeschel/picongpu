@@ -24,7 +24,6 @@
 
 #include "pmacc/Environment.def"
 
-
 namespace pmacc
 {
     /**
@@ -84,7 +83,7 @@ namespace pmacc
         ParticleFactory() = default;
         ;
 
-        ParticleFactory(const ParticleFactory&) = default;
+        ParticleFactory(ParticleFactory const&) = default;
         ;
     };
 

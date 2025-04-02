@@ -85,8 +85,9 @@ namespace picongpu::particles::atomicPhysics::stage
             auto& fieldEnergyUseCacheField = *dc.get<FieldEnergyUseCacheField>("FieldEnergyUseCacheField");
 
             // macro for call of kernel for every superCell, see pull request #4321
-            PMACC_LOCKSTEP_KERNEL(picongpu::particles::atomicPhysics::kernel::CheckForOverSubscriptionKernel<
-                                      T_numberAtomicPhysicsIonSpecies>())
+            PMACC_LOCKSTEP_KERNEL(
+                picongpu::particles::atomicPhysics::kernel::CheckForOverSubscriptionKernel<
+                    T_numberAtomicPhysicsIonSpecies>())
                 .template config<picongpu::atomicPhysics::ElectronHistogram::numberBins>(mapper.getGridDim())(
                     mapper,
                     timeRemainingField.getDeviceDataBox(),

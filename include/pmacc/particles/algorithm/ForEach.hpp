@@ -35,7 +35,6 @@
 #include <type_traits>
 #include <utility>
 
-
 namespace pmacc::particles::algorithm
 {
     namespace acc
@@ -340,6 +339,7 @@ namespace pmacc::particles::algorithm
                 particlesBox,
                 superCellIdx);
         }
+
         /** Creates an executor to iterate over all particles in a supercell.
          *
          * @tparam T_Order Iteration order. valid options: Forward or Reverse
@@ -357,6 +357,7 @@ namespace pmacc::particles::algorithm
                 particlesBox,
                 superCellIdx);
         }
+
         /** @} */
 
         namespace detail

@@ -40,6 +40,7 @@ namespace picongpu
              *                               True for odd particle shape if position is [0.0;1.0), else false,
              */
             float_X const particlePosition;
+
             HDINLINE Jit(float_X const position, [[maybe_unused]] bool const isInBaseAssignmentCell)
                 : particlePosition(position)
             {

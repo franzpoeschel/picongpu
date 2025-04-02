@@ -91,9 +91,10 @@ namespace picongpu
                 static constexpr float_64 RAMP_INIT = 20.6146;
 
                 /** Convert the normalized laser strength parameter a0 to Volt per meter */
-                static constexpr float_64 UNITCONV_A0_to_Amplitude_SI = -2.0 * PI / WAVE_LENGTH_SI
-                    * ::picongpu::sim.si.getElectronMass() * ::picongpu::sim.si.getSpeedOfLight()
-                    * ::picongpu::sim.si.getSpeedOfLight() / ::picongpu::sim.si.getElectronCharge();
+                static constexpr float_64 UNITCONV_A0_to_Amplitude_SI
+                    = -2.0 * PI / WAVE_LENGTH_SI * ::picongpu::sim.si.getElectronMass()
+                      * ::picongpu::sim.si.getSpeedOfLight() * ::picongpu::sim.si.getSpeedOfLight()
+                      / ::picongpu::sim.si.getElectronCharge();
 
                 /** unit: none */
                 static constexpr float_64 _A0 = 1.0;
@@ -186,6 +187,7 @@ namespace picongpu
                 static constexpr float_64 POLARISATION_DIRECTION_X = 1.0;
                 static constexpr float_64 POLARISATION_DIRECTION_Y = 0.0;
                 static constexpr float_64 POLARISATION_DIRECTION_Z = 0.0;
+
                 /** @} */
 
                 template<typename My = PlaneWaveParams>

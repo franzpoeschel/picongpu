@@ -34,7 +34,6 @@
 
 #include <pmacc/math/operation.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -55,11 +54,11 @@ namespace picongpu
                  */
                 static constexpr auto driftDirection = float3_X(1.0, 0.0, 0.0);
             };
+
             /** Definition of manipulator that assigns a drift in X
              *  using parameters from struct DriftSlowParam.
              */
             using AssignSlowDrift = unary::Drift<DriftSlowParam, pmacc::math::operation::Assign>;
-
 
             /** Define Lorentz factor of initial particle drift for fast particles. */
             struct DriftFastParam
@@ -69,11 +68,11 @@ namespace picongpu
                  */
                 static constexpr auto driftDirection = float3_X(1.0, 0.0, 0.0);
             };
+
             /** Definition of manipulator that assigns a drift in X
              *  using parameters from struct DriftFastParam.
              */
             using AssignFastDrift = unary::Drift<DriftFastParam, pmacc::math::operation::Assign>;
-
 
             /** Define initial temperature of electrons. */
             struct TemperatureParamElectrons
@@ -84,8 +83,9 @@ namespace picongpu
                 static constexpr float_64 temperature
                     = sim.si.conv().joule2eV(
                           sim.si.getElectronMass() * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight())
-                    * 0.0002;
+                      * 0.0002;
             };
+
             /** Definition of manipulator assigning a temperature
              *  using parameters from struct TemperatureParamElectrons.
              */
@@ -100,8 +100,9 @@ namespace picongpu
                 static constexpr float_64 temperature
                     = sim.si.conv().joule2eV(
                           sim.si.getElectronMass() * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight())
-                    * 0.02;
+                      * 0.02;
             };
+
             /** Definition of manipulator assigning a temperature
              *  using parameters from struct TemperatureParamIons.
              */
@@ -142,6 +143,7 @@ namespace picongpu
                  */
                 static constexpr auto inCellOffset = float3_X(0., 0., 0.);
             };
+
             /** Definition of start position functor that
              * places macro-particles at the initial in-cell position defined above.
              * Number of macro-particles per cell is defined by argument to OnePositionParam<>.

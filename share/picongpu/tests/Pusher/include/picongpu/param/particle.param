@@ -35,7 +35,6 @@
 
 #include <limits>
 
-
 namespace picongpu
 {
     namespace particles
@@ -57,6 +56,7 @@ namespace picongpu
                  */
                 static constexpr auto driftDirection = float3_X(1.0, 0.0, 0.0);
             };
+
             /** Definition of manipulator that assigns a drift in X
              *  using parameters from struct DriftParam.
              */
@@ -87,6 +87,7 @@ namespace picongpu
 
                 static constexpr auto inCellOffset = float3_X(0., 0., 0.);
             };
+
             /** Definition of OnePosition start position functor that
              * places macro-particles at the initial in-cell position defined above.
              */

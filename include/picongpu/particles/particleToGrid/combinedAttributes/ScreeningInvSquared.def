@@ -51,7 +51,7 @@ namespace picongpu
                      * @param energyDensity energy density value
                      */
                     template<typename T_Acc>
-                    HDINLINE void operator()(T_Acc const& acc, float1_X& chargeDensity, const float1_X& energyDensity)
+                    HDINLINE void operator()(T_Acc const& acc, float1_X& chargeDensity, float1_X const& energyDensity)
                         const;
                 };
                 struct ScreeningInvSquaredDescription;

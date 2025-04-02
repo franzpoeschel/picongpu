@@ -25,7 +25,6 @@
 
 #include <memory>
 
-
 namespace picongpu
 {
     namespace plugins
@@ -60,7 +59,7 @@ namespace picongpu
                  * @param speciesName name of the particle species
                  * @param direction the direction the particles are leaving the simulation
                  */
-                virtual void onParticleLeave(const std::string& speciesName, const int32_t direction)
+                virtual void onParticleLeave(std::string const& speciesName, int32_t const direction)
                 {
                 }
             };

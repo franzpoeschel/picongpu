@@ -34,7 +34,6 @@ namespace picongpu
             value_identifier(float_X, DefaultDensityRatio, 1.0);
         } // namespace detail
 
-
         /** get density ratio of a species
          *
          * ratio is set to 1.0 if no alias `densityRatio<>` is defined

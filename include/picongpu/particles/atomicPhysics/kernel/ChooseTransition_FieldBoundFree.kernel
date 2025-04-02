@@ -113,11 +113,12 @@ namespace picongpu::particles::atomicPhysics::kernel
             T_IonBox ionBox,
             T_IPDInput const... ipdInput) const
         {
-            PMACC_CASSERT(CheckSetOfAtomicDataBoxes::areBoundFreeAndDirection<
-                          s_enums::TransitionDirection::upward,
-                          T_AtomicStateBoundFreeStartIndexBlockDataBox,
-                          T_AtomicStateBoundFreeNumberTransitionsDataBox,
-                          T_BoundFreeTransitionDataBox>());
+            PMACC_CASSERT(
+                CheckSetOfAtomicDataBoxes::areBoundFreeAndDirection<
+                    s_enums::TransitionDirection::upward,
+                    T_AtomicStateBoundFreeStartIndexBlockDataBox,
+                    T_AtomicStateBoundFreeNumberTransitionsDataBox,
+                    T_BoundFreeTransitionDataBox>());
 
             VectorIdx const superCellIdx = KernelIndexation::getSuperCellIndex(worker, areaMapping);
             VectorIdx const superCellFieldIdx
@@ -217,8 +218,9 @@ namespace picongpu::particles::atomicPhysics::kernel
                             if constexpr(picongpu::atomicPhysics::debug::kernel::chooseTransition::
                                              CHECK_FOR_INFINITE_FIELD_IONIZATION_RATES)
                                 if(rateTransition < 0._X)
-                                    printf("atomicPhysics ERROR: encountered infinite transition rate in non instant "
-                                           "transition ion");
+                                    printf(
+                                        "atomicPhysics ERROR: encountered infinite transition rate in non instant "
+                                        "transition ion");
 
                             cumSum += rateTransition / stateTotalLossRate;
 

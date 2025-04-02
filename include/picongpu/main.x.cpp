@@ -35,7 +35,6 @@
 #include <string>
 #include <typeinfo>
 
-
 /** Run a PIConGPU simulation
  *
  * @param argc count of arguments in argv (same as for main() )
@@ -83,7 +82,7 @@ int main(int argc, char** argv)
         return runSimulation(argc, argv);
     }
     // A last-ditch effort to report exceptions to a user
-    catch(const std::exception& ex)
+    catch(std::exception const& ex)
     {
         auto const typeName = std::string(typeid(ex).name());
         std::cerr << "Unhandled exception of type '" + typeName + "' with message '" + ex.what() + "', terminating\n";

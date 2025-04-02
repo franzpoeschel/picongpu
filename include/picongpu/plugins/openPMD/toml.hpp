@@ -39,7 +39,7 @@ namespace picongpu
         struct TomlParameter
         {
             std::string optionName;
-            std::string openPMD::PluginParameters::*destination;
+            std::string openPMD::PluginParameters::* destination;
         };
 
         // We can't use pmacc::pluginSystem::Slice in a hostonly file due to PIConGPU include structure

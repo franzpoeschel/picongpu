@@ -34,13 +34,13 @@ namespace pmacc
             struct Max
             {
                 template<typename Dst, typename Src>
-                HDINLINE void operator()(Dst& dst, const Src& src) const
+                HDINLINE void operator()(Dst& dst, Src const& src) const
                 {
                     dst = pmacc::math::max(dst, src);
                 }
 
                 template<typename Dst, typename Src, typename T_Worker>
-                HDINLINE void operator()(const T_Worker& worker, Dst& dst, const Src& src) const
+                HDINLINE void operator()(T_Worker const& worker, Dst& dst, Src const& src) const
                 {
                     dst = alpaka::math::max(worker.getAcc(), dst, src);
                 }

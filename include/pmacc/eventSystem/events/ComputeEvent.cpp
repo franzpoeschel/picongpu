@@ -35,7 +35,6 @@ namespace pmacc
         log(ggLog::CUDA_RT() + ggLog::EVENT(), "create event");
     }
 
-
     ComputeEvent::~ComputeEvent()
     {
         PMACC_ASSERT(refCounter == 0u);
@@ -63,7 +62,6 @@ namespace pmacc
         }
     }
 
-
     bool ComputeEvent::isFinished()
     {
         // avoid alpaka calls if event is already finished
@@ -74,7 +72,6 @@ namespace pmacc
         }
         return finished;
     }
-
 
     void ComputeEvent::recordEvent(ComputeDeviceQueue const& stream)
     {

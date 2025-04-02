@@ -43,7 +43,6 @@
 #include <string>
 #include <vector>
 
-
 namespace picongpu
 {
     namespace fields

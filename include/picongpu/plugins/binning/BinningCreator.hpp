@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/plugins/binning/BinningData.hpp"
 #    include "picongpu/plugins/binning/binners/FieldBinner.hpp"

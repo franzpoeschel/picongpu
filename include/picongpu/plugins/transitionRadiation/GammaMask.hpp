@@ -23,7 +23,6 @@
 
 #include <pmacc/traits/HasIdentifier.hpp>
 
-
 namespace picongpu
 {
     namespace plugins
@@ -40,7 +39,7 @@ namespace picongpu
                  * @return value of the attribute `transitionRadiationMask`
                  */
                 template<typename T_Particle>
-                HDINLINE bool operator()(const T_Particle& particle) const
+                HDINLINE bool operator()(T_Particle const& particle) const
                 {
                     return particle[transitionRadiationMask_];
                 }
@@ -60,7 +59,7 @@ namespace picongpu
                  * @return always true
                  */
                 template<typename T_Particle>
-                HDINLINE bool operator()(const T_Particle&) const
+                HDINLINE bool operator()(T_Particle const&) const
                 {
                     return true;
                 }
@@ -77,7 +76,7 @@ namespace picongpu
              * `transitionRadiationMask` is not defined
              */
             template<typename T_Particle>
-            HDINLINE bool getTransitionRadiationMask(const T_Particle& particle)
+            HDINLINE bool getTransitionRadiationMask(T_Particle const& particle)
             {
                 constexpr bool hasTransitionRadiationMask = pmacc::traits::
                     HasIdentifier<typename T_Particle::FrameType, transitionRadiationMask>::type::value;

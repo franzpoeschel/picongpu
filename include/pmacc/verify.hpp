@@ -44,7 +44,6 @@
  */
 #define PMACC_VERIFY_MSG(expr, msg) (!!(expr)) ? ((void) 0) : pmacc::abortWithError(#expr, __FILE__, __LINE__, msg)
 
-
 namespace pmacc
 {
     /** verify expression with message on device
@@ -61,7 +60,7 @@ namespace pmacc
         if(!isValid)
         {
             printf(std::forward<T_PrintfArgs>(printfArgs)...);
-#if(PMACC_DEVICE_COMPILE == 1)
+#if (PMACC_DEVICE_COMPILE == 1)
 #    if BOOST_COMP_HIP
             __builtin_trap();
 #    elif BOOST_LANG_CUDA
@@ -73,7 +72,6 @@ namespace pmacc
         }
     }
 } // namespace pmacc
-
 
 /** verify expression with message on device
  *

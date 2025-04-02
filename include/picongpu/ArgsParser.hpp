@@ -29,7 +29,6 @@
 #include <string>
 #include <vector>
 
-
 namespace picongpu
 {
     namespace po = boost::program_options;

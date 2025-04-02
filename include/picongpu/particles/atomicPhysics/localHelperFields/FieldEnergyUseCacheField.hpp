@@ -86,7 +86,7 @@ namespace picongpu::particles::atomicPhysics::localHelperFields
 
         FieldEnergyUseCacheField(T_MappingDescription const& mappingDesc)
             : SuperCellField<FieldEnergyUseCache<Extent, StorageType>, T_MappingDescription, false /*no guards*/>(
-                mappingDesc)
+                  mappingDesc)
         {
         }
 

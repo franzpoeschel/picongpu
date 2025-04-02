@@ -110,7 +110,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                                                    boundFreeTransitionBox,
                                                    ionizationPotentialDepression,
                                                    chargeStateBox)
-                        * weight;
+                                               * weight;
 
                     // uses atomics
                     fieldEnergyUseCache.add(worker, linearCellIdx, energyUsed);

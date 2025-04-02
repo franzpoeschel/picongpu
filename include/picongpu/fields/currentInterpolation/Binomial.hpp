@@ -24,7 +24,6 @@
 
 #include <pmacc/dimensions/DataSpace.hpp>
 
-
 namespace picongpu
 {
     namespace fields
@@ -167,7 +166,6 @@ namespace picongpu
                 };
 
             } // namespace detail
-
 
             /** Smoothing the current density before passing it to the field solver
              *

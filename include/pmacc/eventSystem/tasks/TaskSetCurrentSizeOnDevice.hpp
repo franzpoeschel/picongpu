@@ -26,13 +26,12 @@
 #include "pmacc/eventSystem/events/kernelEvents.hpp"
 #include "pmacc/eventSystem/tasks/DeviceTask.hpp"
 
-
 namespace pmacc
 {
     struct KernelSetValueOnDeviceMemory
     {
         template<typename T_Worker>
-        DINLINE void operator()(const T_Worker&, size_t* pointer, const size_t size) const
+        DINLINE void operator()(T_Worker const&, size_t* pointer, size_t const size) const
         {
             *pointer = size;
         }
@@ -90,7 +89,7 @@ namespace pmacc
         }
 
         T_DeviceBuffer* destination;
-        const size_t size;
+        size_t const size;
     };
 
 } // namespace pmacc

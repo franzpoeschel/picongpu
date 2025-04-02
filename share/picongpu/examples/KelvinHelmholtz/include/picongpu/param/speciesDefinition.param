@@ -44,7 +44,7 @@ namespace picongpu
         position<position_pic>,
         momentum,
         weighting
-#if(PARAM_RADIATION == 1)
+#if (PARAM_RADIATION == 1)
         ,
         momentumPrev1
 #endif

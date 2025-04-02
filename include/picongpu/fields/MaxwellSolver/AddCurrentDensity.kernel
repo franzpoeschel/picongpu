@@ -30,7 +30,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu::fields::maxwellSolver
 {
     /** Kernel adding current density to electric and magnetic field

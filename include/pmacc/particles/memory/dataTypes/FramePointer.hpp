@@ -23,7 +23,6 @@
 #include "pmacc/particles/memory/dataTypes/Pointer.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     /** Wrapper for a raw pointer a PMacc frame
@@ -52,15 +51,15 @@ namespace pmacc
         {
         }
 
-        HDINLINE FramePointer(const Base& other) : Base(other)
+        HDINLINE FramePointer(Base const& other) : Base(other)
         {
         }
 
-        HDINLINE FramePointer(const FramePointer& other) : Base(other)
+        HDINLINE FramePointer(FramePointer const& other) : Base(other)
         {
         }
 
-        HDINLINE FramePointer& operator=(const FramePointer& other)
+        HDINLINE FramePointer& operator=(FramePointer const& other)
         {
             Base::operator=(other);
             return *this;
@@ -72,7 +71,7 @@ namespace pmacc
          *
          * @param idx particle index in the frame
          */
-        HDINLINE typename type::ParticleType operator[](const uint32_t idx)
+        HDINLINE typename type::ParticleType operator[](uint32_t const idx)
         {
             return (*Base::ptr)[idx];
         }
@@ -83,7 +82,7 @@ namespace pmacc
          *
          * @param idx particle index in the frame
          */
-        HDINLINE const typename type::ParticleType operator[](const uint32_t idx) const
+        HDINLINE const typename type::ParticleType operator[](uint32_t const idx) const
         {
             return (*Base::ptr)[idx];
         }

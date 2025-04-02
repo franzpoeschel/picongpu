@@ -30,12 +30,12 @@ namespace picongpu
     class ILightweightPlugin : public ISimulationPlugin
     {
     public:
-        void restart(uint32_t, const std::string) override
+        void restart(uint32_t, std::string const) override
         {
             // disable checkpoint/restart capabilities for lightweight plugins
         }
 
-        void checkpoint(uint32_t, const std::string) override
+        void checkpoint(uint32_t, std::string const) override
         {
             // disable checkpoint/restart capabilities for lightweight plugins
         }

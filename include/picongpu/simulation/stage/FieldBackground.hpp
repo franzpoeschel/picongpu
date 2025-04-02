@@ -38,7 +38,6 @@
 #include <memory>
 #include <stdexcept>
 
-
 namespace picongpu
 {
     namespace simulation

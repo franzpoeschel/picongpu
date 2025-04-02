@@ -19,7 +19,6 @@
 
 #pragma once
 
-
 namespace picongpu
 {
     namespace plugins
@@ -87,7 +86,6 @@ namespace picongpu
                     = 2.0 * PI * sim.si.getSpeedOfLight() / (centralLambda - dLambda - dLambdaWf);
             } // namespace params
 
-
             namespace masks
             {
                 /** Tukey-like position domain window function
@@ -114,8 +112,8 @@ namespace picongpu
                     {
                         xFactor
                             = math::cos(PI * (i - (pluginNumX - params::posWfSizeX)) / float_64(params::posWfSizeX))
-                                / 2.0
-                            + 0.5;
+                                  / 2.0
+                              + 0.5;
                     }
 
                     float_64 yFactor = 1.0;
@@ -128,8 +126,8 @@ namespace picongpu
                     {
                         yFactor
                             = math::cos(PI * (j - (pluginNumY - params::posWfSizeY)) / float_64(params::posWfSizeY))
-                                / 2.0
-                            + 0.5;
+                                  / 2.0
+                              + 0.5;
                     }
 
                     return xFactor * yFactor;
@@ -164,7 +162,6 @@ namespace picongpu
 
                     return tFactor;
                 }
-
 
                 /** Band-pass filter with sinusoidal slopes
                  *

@@ -111,7 +111,6 @@ namespace pmacc
             Finished
         };
 
-
         Field& m_buffer;
         state_t m_state;
         EventTask m_sendEvent;

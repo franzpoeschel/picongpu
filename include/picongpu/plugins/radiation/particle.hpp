@@ -26,7 +26,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace plugins
@@ -36,6 +35,7 @@ namespace picongpu
             class When
             {
                 // a enum to describe all needed times
+
             public:
                 enum
                 {
@@ -59,27 +59,27 @@ namespace picongpu
                     momentum_begin = When::now,
                     beta_begin = When::first
                 };
-                const vector_X momentum_now;
-                const vector_X momentum_old;
-                const vector_X location_now;
-                const picongpu::float_X mass;
+
+                vector_X const momentum_now;
+                vector_X const momentum_old;
+                vector_X const location_now;
+                picongpu::float_X const mass;
 
             public:
                 //////////////////////////////////////////////////////////////////
                 // constructors:
 
                 HDINLINE Particle(
-                    const vector_X& locationNow_set,
-                    const vector_X& momentumOld_set,
-                    const vector_X& momentumNow_set,
-                    const picongpu::float_X mass_set)
+                    vector_X const& locationNow_set,
+                    vector_X const& momentumOld_set,
+                    vector_X const& momentumNow_set,
+                    picongpu::float_X const mass_set)
                     : momentum_now(momentumNow_set)
                     , momentum_old(momentumOld_set)
                     , location_now(locationNow_set)
                     , mass(mass_set)
                 {
                 }
-
 
                 //////////////////////////////////////////////////////////////////
                 // getters:
@@ -90,6 +90,7 @@ namespace picongpu
 
                 template<unsigned int when>
                 HDINLINE vector_64 getMomentum(void) const;
+
                 // get momentum at time when
 
                 template<unsigned int when>
@@ -97,6 +98,7 @@ namespace picongpu
                 {
                     return calcBeta(getMomentum<when>());
                 } // get beta at time when except:
+
                 // first --> is specialized below
 
                 template<unsigned int when>
@@ -112,10 +114,10 @@ namespace picongpu
                 } // get 1/gamma^2
 
                 template<unsigned int when>
-                HDINLINE picongpu::float_64 getCosTheta(const vector_64& n) const
+                HDINLINE picongpu::float_64 getCosTheta(vector_64 const& n) const
                 {
                     // get cos(theta) at time when
-                    const vector_64 beta = getBeta<when>();
+                    vector_64 const beta = getBeta<when>();
                     return calcCosTheta(n, beta);
                 }
 
@@ -124,46 +126,44 @@ namespace picongpu
                 //////////////////////////////////////////////////////////////////
                 // private methods:
 
-                HDINLINE vector_64 calcBeta(const vector_X& momentum) const
+                HDINLINE vector_64 calcBeta(vector_X const& momentum) const
                 {
                     // returns beta=v/c
-                    const picongpu::float_32 gamma1 = calcGamma(momentum);
+                    picongpu::float_32 const gamma1 = calcGamma(momentum);
                     return momentum * (1.0 / (mass * picongpu::sim.pic.getSpeedOfLight() * gamma1));
                 }
 
-                HDINLINE picongpu::float_64 calcGamma(const vector_X& momentum) const
+                HDINLINE picongpu::float_64 calcGamma(vector_X const& momentum) const
                 {
                     // return gamma = E/(mc^2)
-                    const picongpu::float_32 x = util::square<vector_X, picongpu::float_32>(
+                    picongpu::float_32 const x = util::square<vector_X, picongpu::float_32>(
                         momentum * (1.0 / (mass * picongpu::sim.pic.getSpeedOfLight())));
                     return picongpu::math::sqrt(1.0 + x);
                 }
 
-                HDINLINE picongpu::float_64 calcGammaInvSquare(const vector_X& momentum) const
+                HDINLINE picongpu::float_64 calcGammaInvSquare(vector_X const& momentum) const
                 {
                     // returns 1/gamma^2 = m^2*c^2/(m^2*c^2 + p^2)
-                    const picongpu::float_32 Emass = mass * picongpu::sim.pic.getSpeedOfLight();
+                    picongpu::float_32 const Emass = mass * picongpu::sim.pic.getSpeedOfLight();
                     return Emass / (Emass + (util::square<vector_X, picongpu::float_32>(momentum)) / Emass);
                 }
 
-                HDINLINE picongpu::float_64 calcCosTheta(const vector_64& n, const vector_64& beta) const
+                HDINLINE picongpu::float_64 calcCosTheta(vector_64 const& n, vector_64 const& beta) const
                 {
                     // return cos of angle between looking and flight direction
                     return (n * beta) / (std::sqrt(beta * beta));
                 }
-
 
                 // setters:
 
                 HDINLINE picongpu::float_64 summand(void) const
                 {
                     // return \vec n independend summand (next value to add to \vec n independend sum)
-                    const picongpu::float_64 x = getGammaInvSquare<When::now>();
+                    picongpu::float_64 const x = getGammaInvSquare<When::now>();
                     return Taylor()(x);
                 }
 
             }; // end of Particle definition
-
 
             template<>
             HDINLINE vector_64 Particle::getLocation<When::now>(void) const

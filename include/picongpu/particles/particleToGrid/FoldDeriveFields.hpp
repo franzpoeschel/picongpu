@@ -32,7 +32,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace particles
@@ -55,7 +54,6 @@ namespace picongpu
                 {
                     using type = typename plugins::misc::SpeciesFilter<T...>;
                 };
-
 
                 /** Modifies a FieldTmp by calculating a derived attribute and applying a binary operation to both
                  *

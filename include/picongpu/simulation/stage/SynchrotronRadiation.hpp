@@ -121,6 +121,7 @@ namespace picongpu::simulation::stage
             f1 = 0u,
             f2 = 1u
         };
+
         constexpr uint32_t u32(Accessor const t)
         {
             return static_cast<uint32_t>(t);

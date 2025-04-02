@@ -24,7 +24,6 @@
 #include "pmacc/meta/Mp11.hpp"
 #include "pmacc/traits/HasIdentifier.hpp"
 
-
 namespace pmacc
 {
     namespace traits

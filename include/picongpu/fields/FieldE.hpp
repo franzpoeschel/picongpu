@@ -28,7 +28,6 @@
 #include <string>
 #include <vector>
 
-
 namespace picongpu
 {
     /** Representation of the electric field

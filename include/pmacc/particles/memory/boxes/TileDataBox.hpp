@@ -35,7 +35,7 @@ namespace pmacc
         using BaseType = DataBox<PitchedBox<TYPE, 1U>>;
         using type = TYPE;
 
-        HDINLINE VectorDataBox(TYPE* pointer, const DataSpace<DIM1>& offset = {})
+        HDINLINE VectorDataBox(TYPE* pointer, DataSpace<DIM1> const& offset = {})
             : BaseType(BaseType(PitchedBox<TYPE, DIM1>(pointer)).shift(offset))
         {
         }
@@ -54,7 +54,7 @@ namespace pmacc
     public:
         using BaseType = VectorDataBox<TYPE>;
 
-        HDINLINE TileDataBox(TYPE* pointer, const DataSpace<DIM1>& offset = DataSpace<DIM1>(0), uint32_t size = 0)
+        HDINLINE TileDataBox(TYPE* pointer, DataSpace<DIM1> const& offset = DataSpace<DIM1>(0), uint32_t size = 0)
             : BaseType(pointer, offset)
             , size(size)
         {

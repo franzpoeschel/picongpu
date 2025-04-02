@@ -24,7 +24,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu::fields::differentiation::traits
 {
     /** Type trait for derivative functor for the given derivative tag and

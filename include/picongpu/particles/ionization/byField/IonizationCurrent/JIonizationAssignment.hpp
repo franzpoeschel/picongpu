@@ -140,6 +140,7 @@ namespace picongpu
                     }
                 }
             };
+
             /**@}*/
         } // namespace ionization
     } // namespace particles

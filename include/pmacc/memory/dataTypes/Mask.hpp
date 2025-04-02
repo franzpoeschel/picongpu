@@ -94,7 +94,7 @@ namespace pmacc
          * @param other Mask with directions to join
          * @return the newly created mask
          */
-        Mask operator+(const Mask& other) const
+        Mask operator+(Mask const& other) const
         {
             Mask result;
             result.bitMask = bitMask | other.bitMask;
@@ -109,7 +109,7 @@ namespace pmacc
          * @param other Mask with directions to intersect with
          * @return the newly created mask
          */
-        Mask operator&(const Mask& other) const
+        Mask operator&(Mask const& other) const
         {
             Mask result;
             result.bitMask = bitMask & other.bitMask;
@@ -233,7 +233,7 @@ namespace pmacc
 
             for(uint32_t d = 0; d < DIM; ++d)
             {
-                const int dim_direction(direction % 3);
+                int const dim_direction(direction % 3);
                 tmp[d] = (dim_direction == 2 ? -1 : dim_direction);
                 direction /= 3;
             }

@@ -35,11 +35,10 @@ using picongpu::ArgsParser;
 using picongpu::MetadataAggregator;
 using std::begin;
 using std::end;
+using std::filesystem::path;
 using std::string;
 using std::transform;
 using std::vector;
-using std::filesystem::path;
-
 
 // strongly inspired by
 // https://codereview.stackexchange.com/questions/205269/create-a-c-style-char-from-a-c-vectorstring/205298#205298
@@ -70,6 +69,7 @@ struct TestableArgsParser : ArgsParser
         static TestableArgsParser instance;
         return instance;
     }
+
     void reset()
     {
         options.clear();

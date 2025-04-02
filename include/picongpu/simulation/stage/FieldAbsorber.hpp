@@ -29,7 +29,6 @@
 #include <stdexcept>
 #include <string>
 
-
 namespace picongpu
 {
     namespace simulation
@@ -90,7 +89,7 @@ namespace picongpu
                 //! Return whether all boudaries are periodic
                 bool areAllBoundariesPeriodic() const
                 {
-                    const DataSpace<DIM3> isPeriodicBoundary
+                    DataSpace<DIM3> const isPeriodicBoundary
                         = Environment<simDim>::get().EnvironmentController().getCommunicator().getPeriodic();
                     for(uint32_t axis = 0u; axis < simDim; axis++)
                         if(!isPeriodicBoundary[axis])

@@ -40,7 +40,7 @@ namespace pmacc
 
             HDINLINE RNGState() = default;
 
-            HDINLINE RNGState(const StateType& other) : state(other)
+            HDINLINE RNGState(StateType const& other) : state(other)
             {
             }
 

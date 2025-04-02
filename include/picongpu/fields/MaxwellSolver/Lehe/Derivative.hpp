@@ -32,7 +32,6 @@
 #include <pmacc/meta/accessors/Identity.hpp>
 #include <pmacc/types.hpp>
 
-
 namespace picongpu
 {
     namespace fields
@@ -96,9 +95,11 @@ namespace picongpu
 
                         float_64 const stepRatio
                             = sim.pic.getCellSize()[dir0] / (sim.pic.getSpeedOfLight() * sim.pic.getDt());
-                        float_64 const coeff = stepRatio
-                            * math::sin(pmacc::math::Pi<float_64>::halfValue * float_64(sim.pic.getSpeedOfLight())
-                                        * float_64(sim.pic.getDt()) / float_64(sim.pic.getCellSize()[dir0]));
+                        float_64 const coeff
+                            = stepRatio
+                              * math::sin(
+                                  pmacc::math::Pi<float_64>::halfValue * float_64(sim.pic.getSpeedOfLight())
+                                  * float_64(sim.pic.getDt()) / float_64(sim.pic.getCellSize()[dir0]));
                         delta = static_cast<float_X>(0.25 * (1.0 - coeff * coeff));
                         // for 2D the betas corresponding to z are 0
                         float_64 const stepRatio1
@@ -144,11 +145,11 @@ namespace picongpu
                         InternalDerivativeFunctor forwardDerivative
                             = differentiation::makeDerivativeFunctor<differentiation::Forward, T_direction>();
                         return alpha * forwardDerivative(data)
-                            + betaDir1 * forwardDerivative(data.shift(upperNeighborDir1))
-                            + betaDir1 * forwardDerivative(data.shift(-upperNeighborDir1))
-                            + betaDir2 * forwardDerivative(data.shift(upperNeighborDir2))
-                            + betaDir2 * forwardDerivative(data.shift(-upperNeighborDir2))
-                            + delta * (data(secondUpperIndexDir0) - data(lowerIndexDir0)) / step[T_direction];
+                               + betaDir1 * forwardDerivative(data.shift(upperNeighborDir1))
+                               + betaDir1 * forwardDerivative(data.shift(-upperNeighborDir1))
+                               + betaDir2 * forwardDerivative(data.shift(upperNeighborDir2))
+                               + betaDir2 * forwardDerivative(data.shift(-upperNeighborDir2))
+                               + delta * (data(secondUpperIndexDir0) - data(lowerIndexDir0)) / step[T_direction];
                     }
 
                 private:
@@ -223,7 +224,7 @@ namespace picongpu
                         auto const upperNeighbor
                             = pmacc::math::basisVector<pmacc::DataSpace<simDim>, T_cherenkovFreeDirection>();
                         return alpha * forwardDerivative(data) + beta * forwardDerivative(data.shift(upperNeighbor))
-                            + beta * forwardDerivative(data.shift(-upperNeighbor));
+                               + beta * forwardDerivative(data.shift(-upperNeighbor));
                     }
                 };
 

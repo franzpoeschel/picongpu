@@ -39,6 +39,7 @@ namespace picongpu::particles::atomicPhysics::stage
 {
     /// short hand for
     namespace localHelperFields = picongpu::particles::atomicPhysics::localHelperFields;
+
     /** ResetSharedRessources atomic physics sub-stage
      *
      * reset all superCell-shared atomicPhysics-transition's resource usage tracking, such as:

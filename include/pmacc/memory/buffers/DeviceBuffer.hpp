@@ -56,9 +56,10 @@ namespace pmacc
 
         void createSizeOnDeviceBuffers()
         {
-            currentSizeBufferDevice.emplace(alpaka::allocBuf<size_t, MemIdxType>(
-                manager::Device<ComputeDevice>::get().current(),
-                MemSpace<DIM1>(1).toAlpakaMemVec()));
+            currentSizeBufferDevice.emplace(
+                alpaka::allocBuf<size_t, MemIdxType>(
+                    manager::Device<ComputeDevice>::get().current(),
+                    MemSpace<DIM1>(1).toAlpakaMemVec()));
         }
 
     public:
@@ -104,9 +105,10 @@ namespace pmacc
          */
         DeviceBuffer(MemSpace<T_dim> const& size, bool sizeOnDevice = false)
             : Buffer<T_Type, T_dim>(size)
-            , devBuffer(alpaka::allocBuf<T_Type, MemIdxType>(
-                  manager::Device<ComputeDevice>::get().current(),
-                  MemSpace<DIM1>(size.productOfComponents()).toAlpakaMemVec()))
+            , devBuffer(
+                  alpaka::allocBuf<T_Type, MemIdxType>(
+                      manager::Device<ComputeDevice>::get().current(),
+                      MemSpace<DIM1>(size.productOfComponents()).toAlpakaMemVec()))
         {
             MemSpace<T_dim> pitchInBytes;
             pitchInBytes.x() = sizeof(T_Type);
@@ -237,7 +239,7 @@ namespace pmacc
             return Buffer<T_Type, T_dim>::size();
         }
 
-        void setSize(const size_t newSize) override
+        void setSize(size_t const newSize) override
         {
             Buffer<T_Type, T_dim>::setSize(newSize);
 

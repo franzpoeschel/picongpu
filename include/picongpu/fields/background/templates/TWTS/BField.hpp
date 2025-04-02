@@ -61,15 +61,15 @@ namespace picongpu
                  * The other origin coordinates (x and z) default to globally centered values
                  * with respect to the simulation volume.
                  */
-                PMACC_ALIGN(focus_y_SI, const float_64);
+                PMACC_ALIGN(focus_y_SI, float_64 const);
                 /* Laser wavelength [meter] */
-                PMACC_ALIGN(wavelength_SI, const float_64);
+                PMACC_ALIGN(wavelength_SI, float_64 const);
                 /* TWTS laser pulse duration [second] */
-                PMACC_ALIGN(pulselength_SI, const float_64);
+                PMACC_ALIGN(pulselength_SI, float_64 const);
                 /* line focus height of TWTS pulse [meter] */
-                PMACC_ALIGN(w_x_SI, const float_64);
+                PMACC_ALIGN(w_x_SI, float_64 const);
                 /* line focus width of TWTS pulse [meter] */
-                PMACC_ALIGN(w_y_SI, const float_64);
+                PMACC_ALIGN(w_y_SI, float_64 const);
                 /** TWTS interaction angle
                  *  Enclosed by the laser propagation direction and the y-axis.
                  *  For a positive value of the interaction angle, the laser propagation direction
@@ -77,26 +77,26 @@ namespace picongpu
                  *  That is, for phi = 90 degree the laser propagates in the -z direction.
                  * [rad]
                  */
-                PMACC_ALIGN(phi, const float_X);
+                PMACC_ALIGN(phi, float_X const);
                 /* Takes value 1.0 for phi > 0 and -1.0 for phi < 0. */
                 PMACC_ALIGN(phiPositive, float_X);
                 /* propagation speed of TWTS laser overlap
                    normalized to the speed of light. [Default: beta0 = 1.0] */
-                PMACC_ALIGN(beta_0, const float_X);
+                PMACC_ALIGN(beta_0, float_X const);
                 /* If auto_tdelay=FALSE, then a user defined delay is used. [second] */
-                PMACC_ALIGN(tdelay_user_SI, const float_64);
+                PMACC_ALIGN(tdelay_user_SI, float_64 const);
                 /* Make time step constant accessible to device. */
-                PMACC_ALIGN(dt, const float_64);
+                PMACC_ALIGN(dt, float_64 const);
                 /* Make length normalization constant accessible to device. */
-                PMACC_ALIGN(unit_length, const float_64);
+                PMACC_ALIGN(unit_length, float_64 const);
                 /* TWTS laser time delay */
                 PMACC_ALIGN(tdelay, float_64);
                 /* Should the TWTS laser time delay be chosen automatically, such that
                  * the laser gradually enters the simulation volume? [Default: TRUE]
                  */
-                PMACC_ALIGN(auto_tdelay, const bool);
+                PMACC_ALIGN(auto_tdelay, bool const);
                 /* Polarization of TWTS laser */
-                PMACC_ALIGN(pol, const PolarizationType);
+                PMACC_ALIGN(pol, PolarizationType const);
 
                 /** Magnetic field of the TWTS laser
                  *
@@ -119,23 +119,23 @@ namespace picongpu
                  */
                 HINLINE
                 BField(
-                    const float_64 focus_y_SI,
-                    const float_64 wavelength_SI,
-                    const float_64 pulselength_SI,
-                    const float_64 w_x_SI,
-                    const float_64 w_y_SI,
-                    const float_X phi = 90. * (PI / 180.),
-                    const float_X beta_0 = 1.0,
-                    const float_64 tdelay_user_SI = 0.0,
-                    const bool auto_tdelay = true,
-                    const PolarizationType pol = LINEAR_X);
+                    float_64 const focus_y_SI,
+                    float_64 const wavelength_SI,
+                    float_64 const pulselength_SI,
+                    float_64 const w_x_SI,
+                    float_64 const w_y_SI,
+                    float_X const phi = 90. * (PI / 180.),
+                    float_X const beta_0 = 1.0,
+                    float_64 const tdelay_user_SI = 0.0,
+                    bool const auto_tdelay = true,
+                    PolarizationType const pol = LINEAR_X);
 
 
                 /** Specify your background field B(r,t) here
                  *
                  * @param cellIdx The total cell id counted from the start at t=0
                  * @param currentStep The current time step */
-                HDINLINE float3_X operator()(const DataSpace<simDim>& cellIdx, const uint32_t currentStep) const;
+                HDINLINE float3_X operator()(DataSpace<simDim> const& cellIdx, uint32_t const currentStep) const;
 
                 /** Calculate the By(r,t) field, when electric field vector (Ex,0,0)
                  *  is normal to the pulse-front-tilt plane (y,z)
@@ -143,7 +143,7 @@ namespace picongpu
                  * @param pos Spatial position of the target field.
                  * @param time Absolute time (SI, including all offsets and transformations)
                  *  for calculating the field */
-                HDINLINE float_T calcTWTSBy(const float3_64& pos, const float_64 time) const;
+                HDINLINE float_T calcTWTSBy(float3_64 const& pos, float_64 const time) const;
 
                 /** Calculate the Bz(r,t) field, when electric field vector (Ex,0,0)
                  *  is normal to the pulse-front-tilt plane (y,z)
@@ -151,7 +151,7 @@ namespace picongpu
                  * @param pos Spatial position of the target field.
                  * @param time Absolute time (SI, including all offsets and transformations)
                  *  for calculating the field */
-                HDINLINE float_T calcTWTSBz_Ex(const float3_64& pos, const float_64 time) const;
+                HDINLINE float_T calcTWTSBz_Ex(float3_64 const& pos, float_64 const time) const;
 
                 /** Calculate the By(r,t) field, when electric field vector (0,Ey,0)
                  *  lies within the pulse-front-tilt plane (y,z)
@@ -159,7 +159,7 @@ namespace picongpu
                  * @param pos Spatial position of the target field.
                  * @param time Absolute time (SI, including all offsets and transformations)
                  *  for calculating the field */
-                HDINLINE float_T calcTWTSBx(const float3_64& pos, const float_64 time) const;
+                HDINLINE float_T calcTWTSBx(float3_64 const& pos, float_64 const time) const;
 
                 /** Calculate the Bz(r,t) field here (electric field vector (0,Ey,0)
                  *  lies within the pulse-front-tilt plane (y,z)
@@ -167,7 +167,7 @@ namespace picongpu
                  * @param pos Spatial position of the target field.
                  * @param time Absolute time (SI, including all offsets and transformations)
                  *  for calculating the field */
-                HDINLINE float_T calcTWTSBz_Ey(const float3_64& pos, const float_64 time) const;
+                HDINLINE float_T calcTWTSBz_Ey(float3_64 const& pos, float_64 const time) const;
 
                 /** Calculate the B-field vector of the TWTS laser in SI units.
                  * @tparam T_dim Specializes for the simulation dimension
@@ -175,8 +175,8 @@ namespace picongpu
                  * @return B-field vector of the rotated TWTS field in SI units */
                 template<unsigned T_dim>
                 HDINLINE float3_X getTWTSBfield_Normalized(
-                    const pmacc::math::Vector<floatD_64, detail::numComponents>& eFieldPositions_SI,
-                    const float_64 time) const;
+                    pmacc::math::Vector<floatD_64, detail::numComponents> const& eFieldPositions_SI,
+                    float_64 const time) const;
 
                 /** Calculate the B-field vector of the "in-plane" polarized TWTS laser in SI units.
                  * @tparam T_dim Specializes for the simulation dimension
@@ -184,8 +184,8 @@ namespace picongpu
                  * @return B-field vector of the rotated TWTS field in SI units */
                 template<unsigned T_dim>
                 HDINLINE float3_X getTWTSBfield_Normalized_Ey(
-                    const pmacc::math::Vector<floatD_64, detail::numComponents>& eFieldPositions_SI,
-                    const float_64 time) const;
+                    pmacc::math::Vector<floatD_64, detail::numComponents> const& eFieldPositions_SI,
+                    float_64 const time) const;
             };
 
         } /* namespace twts */

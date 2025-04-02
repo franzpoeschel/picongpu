@@ -27,7 +27,7 @@
 
 #include <mpi.h>
 
-const int GridManagerRank = 0;
+int const GridManagerRank = 0;
 
 enum
 {

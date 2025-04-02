@@ -64,22 +64,20 @@ namespace picongpu
                 constexpr unsigned int N_omega = 1024; // number of frequencies
             } // namespace log_frequencies
 
-
             namespace frequencies_from_list
             {
                 /** path to text file with frequencies */
-                constexpr const char* listLocation = "/path/to/frequency.list";
+                constexpr char const* listLocation = "/path/to/frequency.list";
                 constexpr unsigned int N_omega = 2048; // number of frequencies
             } // namespace frequencies_from_list
 
 
             namespace radiation_frequencies = log_frequencies;
 
-
             namespace radiationNyquist
             {
                 constexpr float_32 NyquistFactor = 0.5;
-            }
+            } // namespace radiationNyquist
 
             ///////////////////////////////////////////////////
 
@@ -98,30 +96,36 @@ namespace picongpu
             namespace radFormFactor_CIC_3D
             {
             }
+
             namespace radFormFactor_TSC_3D
             {
             }
+
             namespace radFormFactor_PCS_3D
             {
             }
+
             namespace radFormFactor_CIC_1Dy
             {
             }
+
             namespace radFormFactor_Gauss_spherical
             {
             }
+
             namespace radFormFactor_Gauss_cell
             {
             }
+
             namespace radFormFactor_incoherent
             {
             }
+
             namespace radFormFactor_coherent
             {
             }
 
             namespace radFormFactor = radFormFactor_Gauss_spherical;
-
 
             ///////////////////////////////////////////////////////////
 
@@ -148,7 +152,6 @@ namespace picongpu
                 }
             };
 
-
             /* filter to enable radiation for electrons
              *
              * to enable the filter:
@@ -156,7 +159,6 @@ namespace picongpu
              *   - add the attribute `radiationMask` to the electron species
              */
             using RadiationParticleFilter = picongpu::particles::manipulators::generic::Free<GammaFilterFunctor>;
-
 
             //////////////////////////////////////////////////
 
@@ -175,15 +177,19 @@ namespace picongpu
             namespace radWindowFunctionTriangle
             {
             }
+
             namespace radWindowFunctionHamming
             {
             }
+
             namespace radWindowFunctionTriplett
             {
             }
+
             namespace radWindowFunctionGauss
             {
             }
+
             namespace radWindowFunctionNone
             {
             }

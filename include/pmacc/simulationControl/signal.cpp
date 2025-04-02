@@ -30,10 +30,9 @@ namespace pmacc
         {
             namespace
             {
-                volatile std::sig_atomic_t gStatusCreateCheckpoint = 0;
-                volatile std::sig_atomic_t gStatusStopSimulation = 0;
+                std::sig_atomic_t volatile gStatusCreateCheckpoint = 0;
+                std::sig_atomic_t volatile gStatusStopSimulation = 0;
             } // namespace
-
 
             void setCreateCheckpoint(int signal)
             {
@@ -70,7 +69,6 @@ namespace pmacc
         {
             return detail::gStatusCreateCheckpoint != 0 || detail::gStatusStopSimulation != 0;
         }
-
 
         bool createCheckpoint()
         {

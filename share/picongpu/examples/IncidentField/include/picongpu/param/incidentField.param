@@ -62,7 +62,6 @@
 
 #include "picongpu/fields/incidentField/profiles/profiles.def"
 
-
 namespace picongpu
 {
     namespace fields
@@ -80,9 +79,9 @@ namespace picongpu
                 // Constants for pulse generation
                 static constexpr float_64 TIME_PERIOD_SI = 0.0211e-9; // 0.0211 ns
                 static constexpr float_64 WAVE_LENGTH_SI = TIME_PERIOD_SI * sim.si.getSpeedOfLight();
-                static constexpr float_64 UNITCONV_A0_to_Amplitude_SI = -2.0 * PI / WAVE_LENGTH_SI
-                    * sim.si.getElectronMass() * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight()
-                    / sim.si.getElectronCharge();
+                static constexpr float_64 UNITCONV_A0_to_Amplitude_SI
+                    = -2.0 * PI / WAVE_LENGTH_SI * sim.si.getElectronMass() * sim.si.getSpeedOfLight()
+                      * sim.si.getSpeedOfLight() / sim.si.getElectronCharge();
                 static constexpr float_64 A0 = 8.0;
                 static constexpr float_64 AMPLITUDE_SI = A0 * UNITCONV_A0_to_Amplitude_SI;
                 static constexpr float_64 DURATION_SI = 0.026e-9; // 0.026 ns
@@ -171,7 +170,7 @@ namespace picongpu
             {
             public:
                 /* We use this to calculate your SI input back to our unit system */
-                PMACC_ALIGN(m_unitField, const float3_64);
+                PMACC_ALIGN(m_unitField, float3_64 const);
 
                 /** Create a functor on the host side for the given time step
                  *
@@ -204,7 +203,7 @@ namespace picongpu
             {
             public:
                 /* We use this to calculate your SI input back to our unit system */
-                PMACC_ALIGN(m_unitField, const float3_64);
+                PMACC_ALIGN(m_unitField, float3_64 const);
 
                 /** Create a functor on the host side for the given time step
                  *
@@ -238,7 +237,7 @@ namespace picongpu
             {
             public:
                 /* We use this to calculate your SI input back to our unit system */
-                PMACC_ALIGN(m_unitField, const float3_64);
+                PMACC_ALIGN(m_unitField, float3_64 const);
 
                 /** Create a functor on the host side for the given time step
                  *
@@ -272,7 +271,7 @@ namespace picongpu
             {
             public:
                 /* We use this to calculate your SI input back to our unit system */
-                PMACC_ALIGN(m_unitField, const float3_64);
+                PMACC_ALIGN(m_unitField, float3_64 const);
 
                 /** Create a functor on the host side for the given time step
                  *

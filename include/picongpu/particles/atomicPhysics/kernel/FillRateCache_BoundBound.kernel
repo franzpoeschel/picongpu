@@ -134,10 +134,11 @@ namespace picongpu::particles::atomicPhysics::kernel
             T_BoundBoundTransitionDataBox const boundBoundTransitionDataBox) const
         {
             // check that correct databoxes are given
-            PMACC_CASSERT(checkAtomicDataBoxes<
-                          T_AtomicStateStartIndexBox,
-                          T_AtomicStateNumberTransitionsBox,
-                          T_BoundBoundTransitionDataBox>());
+            PMACC_CASSERT(
+                checkAtomicDataBoxes<
+                    T_AtomicStateStartIndexBox,
+                    T_AtomicStateNumberTransitionsBox,
+                    T_BoundBoundTransitionDataBox>());
 
             constexpr bool isUpward = (u8(T_TransitionOrdering) == u8(s_enums::TransitionOrdering::byLowerState));
 

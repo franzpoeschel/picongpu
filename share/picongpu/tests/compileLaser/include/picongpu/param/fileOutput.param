@@ -28,7 +28,6 @@
 
 #include <boost/mpl/vector.hpp>
 
-
 namespace picongpu
 {
     /** FieldTmpSolvers groups all solvers that create data for FieldTmp ******

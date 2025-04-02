@@ -42,16 +42,16 @@ namespace pmacc
         struct Euler;
 
         template<typename T_Type>
-        HDINLINE typename Euler<T_Type>::result euler(const T_Type& magnitude, const T_Type& phase)
+        HDINLINE typename Euler<T_Type>::result euler(T_Type const& magnitude, T_Type const& phase)
         {
             return Euler<T_Type>()(magnitude, phase);
         }
 
         template<typename T_Type>
         HDINLINE typename Euler<T_Type>::result euler(
-            const T_Type& magnitude,
-            const T_Type& sinValue,
-            const T_Type& cosValue)
+            T_Type const& magnitude,
+            T_Type const& sinValue,
+            T_Type const& cosValue)
         {
             return Euler<T_Type>()(magnitude, sinValue, cosValue);
         }
@@ -61,12 +61,12 @@ namespace pmacc
         {
             using result = alpaka::Complex<T_Type>;
 
-            HDINLINE result operator()(const T_Type& magnitude, const T_Type& phase)
+            HDINLINE result operator()(T_Type const& magnitude, T_Type const& phase)
             {
                 return result(magnitude * pmacc::math::cos(phase), magnitude * pmacc::math::sin(phase));
             }
 
-            HDINLINE result operator()(const T_Type& magnitude, const T_Type& sinValue, const T_Type& cosValue)
+            HDINLINE result operator()(T_Type const& magnitude, T_Type const& sinValue, T_Type const& cosValue)
             {
                 return result(magnitude * cosValue, magnitude * sinValue);
             }
@@ -78,7 +78,7 @@ namespace pmacc
         {
             using result = typename alpaka::Complex<T_Type>::value_type;
 
-            HDINLINE result operator()(const alpaka::Complex<T_Type>& other)
+            HDINLINE result operator()(alpaka::Complex<T_Type> const& other)
             {
                 return other.real() * other.real() + other.imag() * other.imag();
             }
@@ -98,9 +98,9 @@ namespace pmacc
             template<typename T_CastToType>
             struct TypeCast<T_CastToType, alpaka::Complex<T_CastToType>>
             {
-                using result = const alpaka::Complex<T_CastToType>;
+                using result = alpaka::Complex<T_CastToType> const;
 
-                HDINLINE result operator()(const alpaka::Complex<T_CastToType>& complexNumber) const
+                HDINLINE result operator()(alpaka::Complex<T_CastToType> const& complexNumber) const
                 {
                     return complexNumber;
                 }
@@ -111,7 +111,7 @@ namespace pmacc
             {
                 using result = alpaka::Complex<T_CastToType>;
 
-                HDINLINE result operator()(const alpaka::Complex<T_OldType>& complexNumber) const
+                HDINLINE result operator()(alpaka::Complex<T_OldType> const& complexNumber) const
                 {
                     return result(complexNumber);
                 }

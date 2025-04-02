@@ -49,13 +49,13 @@ namespace picongpu
                  * @param omega frequency
                  * @param observerUnitVec unit vector of observation direction
                  */
-                HDINLINE RadFormFactorConcept(const float_X omega, vector_64 const& observerUnitVec);
+                HDINLINE RadFormFactorConcept(float_X const omega, vector_64 const& observerUnitVec);
 
                 /** Calculate form factor value \f$ \sqrt( | \mathcal{F} |^2 ) \f$
                  *
                  * @param N macro particle weighting
                  */
-                HDINLINE float_X operator()(const float_X N) const;
+                HDINLINE float_X operator()(float_X const N) const;
             };
 
             namespace radFormFactor_baseShape_3D
@@ -75,7 +75,7 @@ namespace picongpu
                      * @param omega frequency
                      * @param observerUnitVec unit vector of observation direction
                      */
-                    HDINLINE RadFormFactor(const float_X omega, vector_64 const& observerUnitVec)
+                    HDINLINE RadFormFactor(float_X const omega, vector_64 const& observerUnitVec)
                         : normalizedCoherentAmplification(getNormalizedCoherentAmplification(omega, observerUnitVec))
                     {
                     }
@@ -92,7 +92,7 @@ namespace picongpu
                      *
                      * @return the Form Factor: \f$ \sqrt( | \mathcal{F} |^2 ) \f$
                      */
-                    HDINLINE float_X operator()(const float_X N) const
+                    HDINLINE float_X operator()(float_X const N) const
                     {
                         return math::sqrt(N + (N * N - N) * normalizedCoherentAmplification);
                     }
@@ -107,7 +107,7 @@ namespace picongpu
                      * @param observerUnitVec unit vector of observation direction
                      */
                     HDINLINE float_X
-                    getNormalizedCoherentAmplification(const float_X omega, vector_64 const& observerUnitVec) const
+                    getNormalizedCoherentAmplification(float_X const omega, vector_64 const& observerUnitVec) const
                     {
                         // here we combine sinc^2(..) with (...)^T_shapeOrder to ...^(2 * T_shapeOrder)
                         float_X sincValue = 1.0_X;
@@ -120,7 +120,6 @@ namespace picongpu
                 };
             } // namespace radFormFactor_baseShape_3D
 
-
             namespace radFormFactor_CIC_3D
             {
                 //! Adheres to the RadFormFactorConcept concept
@@ -131,7 +130,7 @@ namespace picongpu
                      * @param omega frequency
                      * @param observerUnitVec unit vector of observation direction
                      */
-                    HDINLINE RadFormFactor(const float_X omega, vector_64 const& observerUnitVec)
+                    HDINLINE RadFormFactor(float_X const omega, vector_64 const& observerUnitVec)
                         : radFormFactor_baseShape_3D::RadFormFactor<1>(omega, observerUnitVec)
                     {
                     }
@@ -148,7 +147,7 @@ namespace picongpu
                      * @param omega frequency
                      * @param observerUnitVec unit vector of observation direction
                      */
-                    HDINLINE RadFormFactor(const float_X omega, vector_64 const& observerUnitVec)
+                    HDINLINE RadFormFactor(float_X const omega, vector_64 const& observerUnitVec)
                         : radFormFactor_baseShape_3D::RadFormFactor<2>(omega, observerUnitVec)
                     {
                     }
@@ -165,13 +164,12 @@ namespace picongpu
                      * @param omega frequency
                      * @param observerUnitVec unit vector of observation direction
                      */
-                    HDINLINE RadFormFactor(const float_X omega, vector_64 const& observerUnitVec)
+                    HDINLINE RadFormFactor(float_X const omega, vector_64 const& observerUnitVec)
                         : radFormFactor_baseShape_3D::RadFormFactor<3>(omega, observerUnitVec)
                     {
                     }
                 };
             } // namespace radFormFactor_PCS_3D
-
 
             namespace radFormFactor_CIC_1Dy
             {
@@ -184,9 +182,11 @@ namespace picongpu
                      * @param observerUnitVec unit vector of observation direction,
                      *                        not used for this form factor but requried by RadFormFactorConcept
                      */
-                    HDINLINE RadFormFactor(const float_X omega, vector_64 const&)
-                        : normalizedCoherentAmplification(util::square(pmacc::math::sinc(
-                            sim.pic.getCellSize().y() / (sim.pic.getSpeedOfLight() * 2.0_X) * omega)))
+                    HDINLINE RadFormFactor(float_X const omega, vector_64 const&)
+                        : normalizedCoherentAmplification(
+                              util::square(
+                                  pmacc::math::sinc(
+                                      sim.pic.getCellSize().y() / (sim.pic.getSpeedOfLight() * 2.0_X) * omega)))
                     {
                     }
 
@@ -200,7 +200,7 @@ namespace picongpu
                      *
                      * @return the Form Factor: \f$ \sqrt( | \mathcal{F} |^2 ) \f$
                      */
-                    HDINLINE float_X operator()(const float_X N) const
+                    HDINLINE float_X operator()(float_X const N) const
                     {
                         return math::sqrt(N + (N * N - N) * normalizedCoherentAmplification);
                     }
@@ -210,7 +210,6 @@ namespace picongpu
                     float_X const normalizedCoherentAmplification;
                 };
             } // namespace radFormFactor_CIC_1Dy
-
 
             namespace radFormFactor_Gauss_spherical
             {
@@ -226,9 +225,9 @@ namespace picongpu
                      * @param observerUnitVec unit vector of observation direction,
                      *                        not used for this form factor but requried by RadFormFactorConcept
                      */
-                    HDINLINE RadFormFactor(const float_X omega, vector_64 const&)
+                    HDINLINE RadFormFactor(float_X const omega, vector_64 const&)
                         : normalizedCoherentAmplification(
-                            util::square(math::exp(-0.5_X * util::square(omega * 0.5_X * sim.pic.getDt()))))
+                              util::square(math::exp(-0.5_X * util::square(omega * 0.5_X * sim.pic.getDt()))))
                     {
                     }
 
@@ -240,7 +239,7 @@ namespace picongpu
                      *
                      * @return the Form Factor: \f$ \sqrt( | \mathcal{F} |^2 ) \f$
                      */
-                    HDINLINE float_X operator()(const float_X N) const
+                    HDINLINE float_X operator()(float_X const N) const
                     {
                         return math::sqrt(N + (N * N - N) * normalizedCoherentAmplification);
                     }
@@ -250,7 +249,6 @@ namespace picongpu
                     float_X const normalizedCoherentAmplification;
                 };
             } // namespace radFormFactor_Gauss_spherical
-
 
             namespace radFormFactor_Gauss_cell
             {
@@ -262,7 +260,7 @@ namespace picongpu
                      * @param omega frequency
                      * @param observerUnitVec unit vector of observation direction
                      */
-                    HDINLINE RadFormFactor(const float_X omega, vector_64 const& observerUnitVec)
+                    HDINLINE RadFormFactor(float_X const omega, vector_64 const& observerUnitVec)
                         : normalizedCoherentAmplification(getNormalizedCoherentAmplification(omega, observerUnitVec))
                     {
                     }
@@ -275,7 +273,7 @@ namespace picongpu
                      *
                      * @return the Form Factor: \f$ \sqrt( | \mathcal{F} |^2 ) \f$
                      */
-                    HDINLINE float_X operator()(const float_X N) const
+                    HDINLINE float_X operator()(float_X const N) const
                     {
                         return math::sqrt(N + (N * N - N) * normalizedCoherentAmplification);
                     }
@@ -290,23 +288,23 @@ namespace picongpu
                      * @param observerUnitVec unit vector of observation direction
                      */
                     HDINLINE float_X
-                    getNormalizedCoherentAmplification(const float_X omega, vector_64 const& observerUnitVec)
+                    getNormalizedCoherentAmplification(float_X const omega, vector_64 const& observerUnitVec)
                     {
-                        return util::square(math::exp(
-                            -0.5_X
-                            * (util::square(
-                                   observerUnitVec.x() * sim.pic.getCellSize().x()
-                                   / (sim.pic.getSpeedOfLight() * 2.0_X) * omega)
-                               + util::square(
-                                   observerUnitVec.y() * sim.pic.getCellSize().y()
-                                   / (sim.pic.getSpeedOfLight() * 2.0_X) * omega)
-                               + util::square(
-                                   observerUnitVec.z() * sim.pic.getCellSize().z()
-                                   / (sim.pic.getSpeedOfLight() * 2.0_X) * omega))));
+                        return util::square(
+                            math::exp(
+                                -0.5_X
+                                * (util::square(
+                                       observerUnitVec.x() * sim.pic.getCellSize().x()
+                                       / (sim.pic.getSpeedOfLight() * 2.0_X) * omega)
+                                   + util::square(
+                                       observerUnitVec.y() * sim.pic.getCellSize().y()
+                                       / (sim.pic.getSpeedOfLight() * 2.0_X) * omega)
+                                   + util::square(
+                                       observerUnitVec.z() * sim.pic.getCellSize().z()
+                                       / (sim.pic.getSpeedOfLight() * 2.0_X) * omega))));
                     }
                 };
             } // namespace radFormFactor_Gauss_cell
-
 
             namespace radFormFactor_incoherent
             {
@@ -320,7 +318,7 @@ namespace picongpu
                      * @param observerUnitVec unit vector of observation direction,
                      *                        not used for this form factor but requried by RadFormFactorConcept
                      */
-                    HDINLINE RadFormFactor(const float_X, vector_64 const&)
+                    HDINLINE RadFormFactor(float_X const, vector_64 const&)
                     {
                     }
 
@@ -330,13 +328,12 @@ namespace picongpu
                      *
                      * @return the Form Factor: \f$ \sqrt( | \mathcal{F} |^2 == \sqrt(weighting) \f$
                      */
-                    HDINLINE float_X operator()(const float_X N) const
+                    HDINLINE float_X operator()(float_X const N) const
                     {
                         return math::sqrt(N);
                     }
                 };
             } // namespace radFormFactor_incoherent
-
 
             namespace radFormFactor_coherent
             {
@@ -350,7 +347,7 @@ namespace picongpu
                      * @param observerUnitVec unit vector of observation direction,
                      *                        not used for this form factor but requried by RadFormFactorConcept
                      */
-                    HDINLINE RadFormFactor(const float_X, vector_64 const&)
+                    HDINLINE RadFormFactor(float_X const, vector_64 const&)
                     {
                     }
 
@@ -360,7 +357,7 @@ namespace picongpu
                      *
                      * @return the Form Factor: \f$ \sqrt( | \mathcal{F} |^2 == \sqrt(weighting) \f$
                      */
-                    HDINLINE float_X operator()(const float_X N) const
+                    HDINLINE float_X operator()(float_X const N) const
                     {
                         return N;
                     }

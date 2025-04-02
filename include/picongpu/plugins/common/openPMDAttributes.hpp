@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/defines.hpp"
 
@@ -71,7 +71,6 @@ namespace picongpu
             SetMeshAttributes const& operator()(::openPMD::MeshRecordComponent& dataset) const;
         };
 
-
         /******************
          * IMPLEMENTATION *
          ******************/
@@ -92,7 +91,6 @@ namespace picongpu
             return gridSpacing;
         }
 
-
         inline std::vector<float_64> SetMeshAttributes::initGridGlobalOffset(uint32_t currentStep)
         {
             std::vector<float_64> gridGlobalOffset;
@@ -103,13 +101,14 @@ namespace picongpu
             auto movingWindow = MovingWindow::getInstance().getWindow(currentStep);
             gridGlobalOffset = std::vector<float_64>(simDim);
             DataSpace<simDim> globalSlideOffset;
-            const pmacc::Selection<simDim> localDomain = Environment<simDim>::get().SubGrid().getLocalDomain();
-            const uint32_t numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
+            pmacc::Selection<simDim> const localDomain = Environment<simDim>::get().SubGrid().getLocalDomain();
+            uint32_t const numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
             globalSlideOffset.y() += numSlides * localDomain.size.y();
             for(uint32_t d = 0; d < simDim; ++d)
             {
-                gridGlobalOffset.at(simDim - 1 - d) = float_64(sim.pic.getCellSize()[d])
-                    * float_64(movingWindow.globalDimensions.offset[d] + globalSlideOffset[d]);
+                gridGlobalOffset.at(simDim - 1 - d)
+                    = float_64(sim.pic.getCellSize()[d])
+                      * float_64(movingWindow.globalDimensions.offset[d] + globalSlideOffset[d]);
             }
             return gridGlobalOffset;
         }

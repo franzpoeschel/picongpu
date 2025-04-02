@@ -58,17 +58,17 @@ namespace pmacc
             return (*this)[idx.x()];
         }
 
-        HDINLINE decltype(auto) operator[](const int idx) const
+        HDINLINE decltype(auto) operator[](int const idx) const
         {
             return Base::operator[](pmacc::math::mapToND(originalSize, idx));
         }
 
-        HDINLINE decltype(auto) operator[](const int idx)
+        HDINLINE decltype(auto) operator[](int const idx)
         {
             return Base::operator[](pmacc::math::mapToND(originalSize, idx));
         }
 
     private:
-        PMACC_ALIGN(originalSize, const DataSpace<Dim>);
+        PMACC_ALIGN(originalSize, DataSpace<Dim> const);
     };
 } // namespace pmacc

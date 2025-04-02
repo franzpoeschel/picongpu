@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    pragma once
 
@@ -273,8 +273,8 @@ namespace picongpu
                             auto dataBoxCellSize = bufferCellSizeOpenPMD->getHostBuffer().getDataBox();
                             auto dataBoxOffset = bufferOffsetOpenPMD->getHostBuffer().getDataBox();
 
-                            const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
-                            const auto extentPIC(subGrid.getGlobalDomain().size);
+                            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
+                            auto const extentPIC(subGrid.getGlobalDomain().size);
                             DataSpace<3u> extentOpenPMD;
 
                             for(uint32_t d = 0u; d < 3u; d++)
@@ -284,11 +284,12 @@ namespace picongpu
                                 dataBoxExtent(aligningAxisIndex[d]) = static_cast<float_X>(extentRaw[d]);
                                 dataBoxCellSize(aligningAxisIndex[d])
                                     = static_cast<float_X>(cellSizeRaw[d] * mesh.gridUnitSI()) / sim.unit.length();
-                                dataBoxOffset(aligningAxisIndex[d]) = 0.5_X
-                                    * (static_cast<float_X>(extentPIC[aligningAxisIndex[d]] - 1)
-                                           * sim.pic.getCellSize()[aligningAxisIndex[d]]
-                                       - (dataBoxExtent(aligningAxisIndex[d]) - 1.0_X)
-                                           * dataBoxCellSize(aligningAxisIndex[d]));
+                                dataBoxOffset(aligningAxisIndex[d])
+                                    = 0.5_X
+                                      * (static_cast<float_X>(extentPIC[aligningAxisIndex[d]] - 1)
+                                             * sim.pic.getCellSize()[aligningAxisIndex[d]]
+                                         - (dataBoxExtent(aligningAxisIndex[d]) - 1.0_X)
+                                               * dataBoxCellSize(aligningAxisIndex[d]));
                             }
 
                             // push attribute data to device
@@ -328,7 +329,7 @@ namespace picongpu
                                     // if the field record is complex, take only its real part
                                     hostFieldDataBox(openPMDIdx)
                                         = static_cast<float_X>(fieldData.get()[linearIdx].real() * meshRecord.unitSI())
-                                        / sim.unit.eField();
+                                          / sim.unit.eField();
                                 }
                                 else if constexpr(
                                     std::is_same<dataType, float>::value or std::is_same<dataType, double>::value)
@@ -336,7 +337,7 @@ namespace picongpu
                                     // field record is real
                                     hostFieldDataBox(openPMDIdx)
                                         = static_cast<float_X>(fieldData.get()[linearIdx] * meshRecord.unitSI())
-                                        / sim.unit.eField();
+                                          / sim.unit.eField();
                                 }
                             }
 
@@ -498,9 +499,10 @@ namespace picongpu
                                 static_cast<int>(pmacc::math::abs(pmacc::math::dot(xyzAxisIndex, getDirection()))),
                                 static_cast<int>(
                                     pmacc::math::abs(pmacc::math::dot(xyzAxisIndex, getPolarisationVector()))),
-                                static_cast<int>(pmacc::math::abs(pmacc::math::dot(
-                                    xyzAxisIndex,
-                                    pmacc::math::cross(getDirection(), getPolarisationVector()))))};
+                                static_cast<int>(pmacc::math::abs(
+                                    pmacc::math::dot(
+                                        xyzAxisIndex,
+                                        pmacc::math::cross(getDirection(), getPolarisationVector()))))};
 
                             return internalAxisIndex;
                         }
@@ -531,8 +533,9 @@ namespace picongpu
                                 if(d != internalAxisIndex[0])
                                 {
                                     if(posPIC[d] < offsetOpenPMDdataBox(d)
-                                       or posPIC[d] > offsetOpenPMDdataBox(d)
-                                               + (extentOpenPMDdataBox(d) - 1.0_X) * cellSizeOpenPMDdataBox(d))
+                                       or posPIC[d]
+                                              > offsetOpenPMDdataBox(d)
+                                                    + (extentOpenPMDdataBox(d) - 1.0_X) * cellSizeOpenPMDdataBox(d))
                                         return 0.0_X;
                                 }
                                 // return zero if simulation timestep exceeds chunk extent
@@ -540,7 +543,8 @@ namespace picongpu
                                 {
                                     if((timeOriginPIC - Unitless::TIME_DELAY) < 0.0_X
                                        or (timeOriginPIC - Unitless::TIME_DELAY) > (extentOpenPMDdataBox(d) - 1.0_X)
-                                               * cellSizeOpenPMDdataBox(d) / sim.pic.getSpeedOfLight())
+                                                                                       * cellSizeOpenPMDdataBox(d)
+                                                                                       / sim.pic.getSpeedOfLight())
                                         return 0.0_X;
                                 }
                             }
@@ -572,11 +576,12 @@ namespace picongpu
                                 {
                                     if(d == internalAxisIndex[1] and polAxisDirection < 0
                                        or d == internalAxisIndex[2]
-                                           and (transvAxisDirection < 0 and rh or transvAxisDirection > 0 and !rh))
+                                              and (transvAxisDirection < 0 and rh or transvAxisDirection > 0 and !rh))
                                     {
                                         // we have to invert
-                                        idxClosestRaw[d] = extentOpenPMDdataBox(d) - 1.0_X
-                                            - (posPIC[d] - offsetOpenPMDdataBox(d)) / cellSizeOpenPMDdataBox(d);
+                                        idxClosestRaw[d]
+                                            = extentOpenPMDdataBox(d) - 1.0_X
+                                              - (posPIC[d] - offsetOpenPMDdataBox(d)) / cellSizeOpenPMDdataBox(d);
                                     }
                                     else
                                     {
@@ -590,7 +595,7 @@ namespace picongpu
                                 {
                                     // the longitudinal (time) axis is never inverted
                                     idxClosestRaw[d] = (timeOriginPIC - Unitless::TIME_DELAY)
-                                        / cellSizeOpenPMDdataBox(d) * sim.pic.getSpeedOfLight();
+                                                       / cellSizeOpenPMDdataBox(d) * sim.pic.getSpeedOfLight();
                                 }
                             } // for(uint32_t d = 0u; d < simDim; d++)
 

@@ -26,7 +26,6 @@
 
 #include <cmath>
 
-
 namespace pmacc
 {
     namespace math
@@ -36,7 +35,7 @@ namespace pmacc
         {
             using result = double;
 
-            HDINLINE double operator()(const double& value)
+            HDINLINE double operator()(double const& value)
             {
                 return value * value;
             }

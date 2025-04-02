@@ -58,9 +58,9 @@ namespace picongpu
                  * (current implementation supports only 0 or 1 per execution)
                  */
                 template<typename EType, typename ParticleType>
-                HDINLINE IonizerReturn operator()(const EType eField, ParticleType& parentIon)
+                HDINLINE IonizerReturn operator()(EType const eField, ParticleType& parentIon)
                 {
-                    const float_X protonNumber
+                    float_X const protonNumber
                         = picongpu::traits::GetAtomicNumbers<ParticleType>::type::numberOfProtons;
                     float_X chargeState = picongpu::traits::attribute::getChargeState(parentIon);
 
@@ -69,7 +69,7 @@ namespace picongpu
                     {
                         uint32_t cs = pmacc::math::float2int_rd(chargeState);
                         /* ionization potential in atomic units */
-                        const float_X iEnergy =
+                        float_X const iEnergy =
                             typename picongpu::traits::GetIonizationEnergies<ParticleType>::type{}[cs];
                         /* critical field strength in atomic units */
                         float_X critField

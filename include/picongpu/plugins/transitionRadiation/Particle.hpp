@@ -78,7 +78,7 @@ namespace picongpu
 
                 //! propagates the current window to the foil position
                 HDINLINE
-                void propagate(const float_X& propagationDistance)
+                void propagate(float_X const& propagationDistance)
                 {
                     location += propagationDistance * beta;
                 }

@@ -101,7 +101,7 @@ namespace picongpu
             /* add interface for compile time interface validation*/
             using PositionFunctor = manipulators::IUnary<UserPositionFunctor>;
 
-            HINLINE void operator()(const uint32_t currentStep)
+            HINLINE void operator()(uint32_t const currentStep)
             {
                 DataConnector& dc = Environment<>::get().DataConnector();
                 auto speciesPtr = dc.get<SpeciesType>(FrameType::getName());
@@ -131,7 +131,6 @@ namespace picongpu
                 speciesPtr->fillAllGaps();
             }
         };
-
 
         /** Generate particles in a species by deriving and manipulating from another species' particles
          *
@@ -178,7 +177,7 @@ namespace picongpu
             using FilteredManipulator = manipulators::IBinary<DestFunctor>;
             using SrcFilterInterfaced = filter::IUnary<SrcFilter>;
 
-            HINLINE void operator()(const uint32_t currentStep)
+            HINLINE void operator()(uint32_t const currentStep)
             {
                 DataConnector& dc = Environment<>::get().DataConnector();
                 auto speciesPtr = dc.get<DestSpeciesType>(DestFrameType::getName());
@@ -191,7 +190,6 @@ namespace picongpu
                 speciesPtr->deviceDeriveFrom(*srcSpeciesPtr, filteredManipulator, srcFilter);
             }
         };
-
 
         /** Generate particles in a species by deriving from another species' particles
          *
@@ -214,7 +212,6 @@ namespace picongpu
         {
         };
 
-
         /** Generate a valid, contiguous list of particle frames
          *
          * Some operations, such as deactivating or adding particles to a particle
@@ -236,7 +233,7 @@ namespace picongpu
             using SpeciesType = pmacc::particles::meta::FindByNameOrType_t<VectorAllSpecies, T_SpeciesType>;
             using FrameType = typename SpeciesType::FrameType;
 
-            HINLINE void operator()(const uint32_t currentStep)
+            HINLINE void operator()(uint32_t const currentStep)
             {
                 DataConnector& dc = Environment<>::get().DataConnector();
                 auto speciesPtr = dc.get<SpeciesType>(FrameType::getName());
@@ -255,7 +252,7 @@ namespace picongpu
             template<uint32_t T_timeStep, typename T_Functor, typename T_Comparator>
             struct ExecuteIfTimeStep
             {
-                HINLINE void operator()(const uint32_t currentStep)
+                HINLINE void operator()(uint32_t const currentStep)
                 {
                     if(T_Comparator{}(currentStep, T_timeStep))
                         T_Functor{}(currentStep);

@@ -43,6 +43,7 @@ namespace picongpu
                 T_Data min;
                 /** Maximum of binning range in SI Units */
                 T_Data max;
+
                 Range(T_Data minIn, T_Data maxIn) : min{minIn}, max{maxIn}
                 {
                     PMACC_VERIFY(min < max);
@@ -65,6 +66,7 @@ namespace picongpu
                  * Defaults to true
                  */
                 bool enableOverflowBins;
+
                 AxisSplitting(Range<T_Data> range, uint32_t numBins, bool enableOverflow = true)
                     : m_range{range}
                     , nBins{numBins}
@@ -86,6 +88,7 @@ namespace picongpu
             public:
                 std::string label;
                 std::array<double, numUnits> units;
+
                 struct GenericAxisKernel
                 {
                     uint32_t n_bins;
@@ -99,11 +102,12 @@ namespace picongpu
 
                     // Forwards arguments to getAttributeValue
                     template<typename... Args>
-                    ALPAKA_FN_ACC auto getBinIdx(const Args&... args) const
+                    ALPAKA_FN_ACC auto getBinIdx(Args const&... args) const
                     {
                         return std::make_pair(true, getAttributeValue(args...));
                     }
                 };
+
                 GenericAxisKernel gAK;
 
                 GenericAxis(uint32_t n_bins, T_AttrFunctor attrFunctor) : gAK{n_bins, attrFunctor}
@@ -122,6 +126,7 @@ namespace picongpu
             public:
                 std::string label;
                 std::array<double, numUnits> units;
+
                 struct BoolAxisKernel
                 {
                     static constexpr uint32_t n_bins = 2u;
@@ -132,7 +137,7 @@ namespace picongpu
                     }
 
                     template<typename... Args>
-                    ALPAKA_FN_ACC std::pair<bool, bool> getBinIdx(const Args&... args) const
+                    ALPAKA_FN_ACC std::pair<bool, bool> getBinIdx(Args const&... args) const
                     {
                         return {true, getAttributeValue(args...)};
                     }

@@ -40,7 +40,6 @@
 #include "picongpu/plugins/radiation/debug/PIConGPUVerboseLogRadiation.hpp"
 #include "picongpu/traits/attribute/GetMass.hpp"
 
-
 namespace picongpu
 {
     namespace plugins
@@ -51,24 +50,31 @@ namespace picongpu
             namespace radFormFactor_CIC_3D
             {
             }
+
             namespace radFormFactor_TSC_3D
             {
             }
+
             namespace radFormFactor_PCS_3D
             {
             }
+
             namespace radFormFactor_CIC_1Dy
             {
             }
+
             namespace radFormFactor_Gauss_spherical
             {
             }
+
             namespace radFormFactor_Gauss_cell
             {
             }
+
             namespace radFormFactor_incoherent
             {
             }
+
             namespace radFormFactor_coherent
             {
             }
@@ -105,7 +111,6 @@ namespace picongpu
                 constexpr unsigned int nOmega = 256;
 
             } // namespace logFrequencies
-
 
             namespace listFrequencies
             {
@@ -166,7 +171,6 @@ namespace picongpu
                 constexpr float_64 phiMin = 0.0;
                 constexpr float_64 phiMax = 2 * picongpu::PI;
             } /* end namespace parameters */
-
 
             //! example of a filter for the relativistic Lorentz factor gamma
             struct GammaFilterFunctor
@@ -235,7 +239,7 @@ namespace picongpu
              * @return   unit vector pointing in observation direction
              *           type: float3_X
              */
-            HDINLINE float3_X observationDirection(const int observation_id_extern)
+            HDINLINE float3_X observationDirection(int const observation_id_extern)
             {
                 /* generate two indices from single block index */
                 /** split distance of given index
@@ -244,26 +248,27 @@ namespace picongpu
                  * index_b = index % split_distance
                  */
                 /** get index for computing angle theta: */
-                const int indexTheta = observation_id_extern / parameters::nPhi;
+                int const indexTheta = observation_id_extern / parameters::nPhi;
 
                 /** step width angle theta */
-                const picongpu::float_64 deltaTheta = (parameters::nTheta > 1)
-                    ? (parameters::thetaMax - parameters::thetaMin) / (parameters::nTheta - 1.0)
-                    : 0.0;
+                picongpu::float_64 const deltaTheta
+                    = (parameters::nTheta > 1)
+                          ? (parameters::thetaMax - parameters::thetaMin) / (parameters::nTheta - 1.0)
+                          : 0.0;
 
                 /** compute observation angles theta */
-                const picongpu::float_64 theta = indexTheta * deltaTheta + parameters::thetaMin;
+                picongpu::float_64 const theta = indexTheta * deltaTheta + parameters::thetaMin;
 
                 /** get index for computing angle phi: */
-                const int indexPhi = observation_id_extern % parameters::nPhi;
+                int const indexPhi = observation_id_extern % parameters::nPhi;
 
                 /** step width angle phi */
-                const picongpu::float_64 deltaPhi = (parameters::nPhi > 1)
-                    ? (parameters::phiMax - parameters::phiMin) / (parameters::nPhi - 1.0)
-                    : 0.0;
+                picongpu::float_64 const deltaPhi
+                    = (parameters::nPhi > 1) ? (parameters::phiMax - parameters::phiMin) / (parameters::nPhi - 1.0)
+                                             : 0.0;
 
                 /** compute observation angles phi */
-                const picongpu::float_64 phi = indexPhi * deltaPhi - parameters::phiMin;
+                picongpu::float_64 const phi = indexPhi * deltaPhi - parameters::phiMin;
 
                 /* helper functions for efficient trigonometric calculations */
                 picongpu::float_32 sinPhi;

@@ -25,7 +25,6 @@
 
 #include <string>
 
-
 namespace picongpu
 {
     namespace particles

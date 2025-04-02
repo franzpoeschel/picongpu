@@ -28,7 +28,6 @@
 
 #include <vector>
 
-
 namespace picongpu
 {
     namespace particles
@@ -50,7 +49,7 @@ namespace picongpu
                 {
                     HDINLINE float1_64 getUnit() const
                     {
-                        const float_64 unitVolume = (sim.unit.length() * sim.unit.length() * sim.unit.length());
+                        float_64 const unitVolume = (sim.unit.length() * sim.unit.length() * sim.unit.length());
                         return sim.unit.charge() / unitVolume;
                     }
 

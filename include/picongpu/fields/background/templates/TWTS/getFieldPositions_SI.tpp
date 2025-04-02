@@ -39,17 +39,17 @@ namespace picongpu
                  *  and Bz(r ,t) calculations as r.
                  *  @param cellIdx The total cell id counted from the start at timestep 0. */
                 HDINLINE pmacc::math::Vector<floatD_64, numComponents> getFieldPositions_SI(
-                    const DataSpace<simDim>& cellIdx,
-                    const DataSpace<simDim>& halfSimSize,
-                    const pmacc::math::Vector<floatD_X, numComponents>& fieldOnGridPositions,
-                    const float_64 unit_length,
-                    const float_64 focus_y_SI,
-                    const float_X phi)
+                    DataSpace<simDim> const& cellIdx,
+                    DataSpace<simDim> const& halfSimSize,
+                    pmacc::math::Vector<floatD_X, numComponents> const& fieldOnGridPositions,
+                    float_64 const unit_length,
+                    float_64 const focus_y_SI,
+                    float_X const phi)
                 {
                     /* Note: Neither direct precisionCast on picongpu::cellSize
                        or casting on floatD_ does work. */
-                    const floatD_64 cellDim(picongpu::sim.pic.getCellSize().shrink<simDim>());
-                    const floatD_64 cellDimensions = cellDim * unit_length;
+                    floatD_64 const cellDim(picongpu::sim.pic.getCellSize().shrink<simDim>());
+                    floatD_64 const cellDimensions = cellDim * unit_length;
 
                     /* TWTS laser coordinate origin is centered transversally and defined longitudinally by
                        the laser center in y (usually maximum of intensity). */

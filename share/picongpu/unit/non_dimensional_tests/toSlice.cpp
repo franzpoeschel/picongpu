@@ -39,10 +39,9 @@ using pmacc::pluginSystem::Slice;
 using pmacc::pluginSystem::toRangeSlice;
 using pmacc::pluginSystem::toTimeSlice;
 
-
 struct SliceEqual
 {
-    auto operator()(const Slice& lhs, const Slice& rhs) const
+    auto operator()(Slice const& lhs, Slice const& rhs) const
     {
         return std::equal(lhs.values.cbegin(), lhs.values.cend(), rhs.values.cbegin());
     }
@@ -99,9 +98,9 @@ TEST_CASE("Both slices", "")
             {",1:5,,10:15,", {Slice{1, 5, 1}, Slice{10, 15, 1}}},
         };
 
-        for(const auto& testCase : testCases)
+        for(auto const& testCase : testCases)
         {
-            const auto result = toSlice(testCase.first);
+            auto const result = toSlice(testCase.first);
             CHECK_THAT(result, SizeIs(testCase.second.size()));
             CHECK_THAT(result, Catch::Matchers::RangeEquals(testCase.second, SliceEqual{}));
         }
@@ -140,7 +139,7 @@ TEST_CASE("Both slices", "")
         }
 
 
-        for(const auto& testCase : testCases)
+        for(auto const& testCase : testCases)
         {
             CHECK_THROWS_AS(toSlice(testCase), std::runtime_error);
         }
@@ -154,9 +153,9 @@ TEST_CASE("toRangeSlice interprets single int as single slice.")
         {"5,10", {Slice{5, 6, 1}, Slice{10, 11, 1}}},
     };
 
-    for(const auto& testCase : testCases)
+    for(auto const& testCase : testCases)
     {
-        const auto result = toRangeSlice(testCase.first);
+        auto const result = toRangeSlice(testCase.first);
         CHECK_THAT(result, SizeIs(testCase.second.size()));
         CHECK_THAT(result, Catch::Matchers::RangeEquals(testCase.second, SliceEqual{}));
     }
@@ -169,9 +168,9 @@ TEST_CASE("toTimeSlice interprets single int as step size.")
         {"5,10", {Slice{0, static_cast<uint32_t>(-1), 5}, Slice{0, static_cast<uint32_t>(-1), 10}}},
     };
 
-    for(const auto& testCase : testCases)
+    for(auto const& testCase : testCases)
     {
-        const auto result = toTimeSlice(testCase.first);
+        auto const result = toTimeSlice(testCase.first);
         CHECK_THAT(result, SizeIs(testCase.second.size()));
         CHECK_THAT(result, Catch::Matchers::RangeEquals(testCase.second, SliceEqual{}));
     }

@@ -43,7 +43,7 @@ namespace pmacc
          */
         EventTask(id_t taskId);
 
-        constexpr EventTask(const pmacc::EventTask&) = default;
+        constexpr EventTask(pmacc::EventTask const&) = default;
 
         /**
          * Constructor.
@@ -78,7 +78,7 @@ namespace pmacc
          *
          * @param other EventTask to add to this task
          */
-        EventTask operator+(const EventTask& other);
+        EventTask operator+(EventTask const& other);
 
         /**
          * Adds two tasks (this task and other) and creates
@@ -86,14 +86,14 @@ namespace pmacc
          *
          * @param other EventTask to add to this task
          */
-        EventTask& operator+=(const EventTask& other);
+        EventTask& operator+=(EventTask const& other);
 
         /**
          * Copies attributes from other to this task.
          *
          * This task effectively becomes other.
          */
-        EventTask& operator=(const EventTask& other) = default;
+        EventTask& operator=(EventTask const& other) = default;
         ;
 
         std::string toString();

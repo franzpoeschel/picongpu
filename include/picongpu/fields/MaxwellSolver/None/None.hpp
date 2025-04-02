@@ -31,7 +31,6 @@
 #include <cstdint>
 #include <limits>
 
-
 namespace picongpu
 {
     namespace fields
@@ -78,7 +77,7 @@ namespace picongpu
                  * Synchronizes simulation data, meaning accessing (host side) data
                  * will return up-to-date values.
                  */
-                void synchronize() override{};
+                void synchronize() override {};
 
                 /**
                  * Return the globally unique identifier for this simulation data.

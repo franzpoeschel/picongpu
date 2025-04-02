@@ -23,7 +23,6 @@
 #include "picongpu/particles/manipulators/generic/Free.def"
 #include "picongpu/particles/traits/GetDensityRatio.hpp"
 
-
 namespace picongpu
 {
     namespace particles
@@ -62,9 +61,9 @@ namespace picongpu
                         template<typename T_DesParticle, typename T_SrcParticle>
                         HDINLINE void operator()(T_DesParticle& particleDes, T_SrcParticle const&)
                         {
-                            const float_X densityRatioDes
+                            float_X const densityRatioDes
                                 = picongpu::traits::GetDensityRatio<T_DesParticle>::type::getValue();
-                            const float_X densityRatioSrc
+                            float_X const densityRatioSrc
                                 = picongpu::traits::GetDensityRatio<T_SrcParticle>::type::getValue();
 
                             particleDes[weighting_] *= densityRatioDes / densityRatioSrc;

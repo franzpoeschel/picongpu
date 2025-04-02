@@ -54,8 +54,7 @@ namespace picongpu
         };
 
         template<typename T>
-        concept IsFilteredSpecies = requires
-        {
+        concept IsFilteredSpecies = requires {
             typename T::species_type;
             typename T::filter_type;
         };

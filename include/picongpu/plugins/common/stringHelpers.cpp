@@ -19,7 +19,6 @@
 
 #include "picongpu/plugins/common/stringHelpers.hpp"
 
-
 namespace picongpu
 {
     namespace helper
@@ -33,7 +32,7 @@ namespace picongpu
         {
             time_t rawtime;
             struct tm* timeinfo;
-            const size_t maxLen = 30;
+            size_t const maxLen = 30;
             char buffer[maxLen];
 
             time(&rawtime);

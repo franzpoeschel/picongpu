@@ -103,7 +103,7 @@ namespace picongpu
 
 
         Particles(
-            const std::shared_ptr<DeviceHeap>& heap,
+            std::shared_ptr<DeviceHeap> const& heap,
             picongpu::MappingDesc cellDescription,
             SimulationDataId datasetID);
 
@@ -173,7 +173,7 @@ namespace picongpu
                     throw std::runtime_error("The used exchange results into an invalid selected axis.");
                 auto const temperature = boundaryDescription()[axis].temperature;
 
-                const std::string directionName = ExchangeTypeNames()[exchange];
+                std::string const directionName = ExchangeTypeNames()[exchange];
                 propList[directionName]["param"] = std::string("none");
                 switch(boundaryDescription()[axis].kind)
                 {
@@ -220,7 +220,7 @@ namespace picongpu
         {
             using namespace particles::boundary;
             std::array<Description, simDim> result;
-            const DataSpace<DIM3> periodic
+            DataSpace<DIM3> const periodic
                 = Environment<simDim>::get().EnvironmentController().getCommunicator().getPeriodic();
             for(uint32_t d = 0; d < simDim; d++)
             {
@@ -244,6 +244,7 @@ namespace pmacc
         };
 
     } // namespace traits
+
     namespace lockstep::traits
     {
         //! Specialization to create a lockstep block configuration out of a particle species.

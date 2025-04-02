@@ -114,7 +114,7 @@ namespace picongpu
 
             public:
                 /* host constructor initializing member : random number generator */
-                ThomasFermi_Impl(const uint32_t currentStep) : randomGen(RNGFactory::createRandom<Distribution>())
+                ThomasFermi_Impl(uint32_t const currentStep) : randomGen(RNGFactory::createRandom<Distribution>())
                 {
                     /* create handle for access to host and device data */
                     DataConnector& dc = Environment<>::get().DataConnector();
@@ -187,7 +187,7 @@ namespace picongpu
                  * @param blockCfg configuration of the worker
                  */
                 template<typename T_Worker>
-                DINLINE void collectiveInit(const T_Worker& worker, const DataSpace<simDim>& blockCell)
+                DINLINE void collectiveInit(T_Worker const& worker, DataSpace<simDim> const& blockCell)
                 {
                     /* caching of density and "temperature" fields */
                     cachedRho = CachedBox::create<0, ValueType_Rho>(worker, BlockArea());
@@ -224,8 +224,8 @@ namespace picongpu
                 template<typename T_Worker>
                 DINLINE void init(
                     [[maybe_unused]] T_Worker const& worker,
-                    const DataSpace<simDim>& localSuperCellOffset,
-                    const uint32_t rngIdx)
+                    DataSpace<simDim> const& localSuperCellOffset,
+                    uint32_t const rngIdx)
                 {
                     auto rngOffset = DataSpace<simDim>::create(0);
                     rngOffset.x() = rngIdx;
@@ -251,11 +251,11 @@ namespace picongpu
                     DataSpace<SuperCellSize::dim> localCell
                         = pmacc::math::mapToND(SuperCellSize::toRT(), particleCellIdx);
                     /* interpolation of density */
-                    const picongpu::traits::FieldPosition<fields::YeeCell, FieldTmp> fieldPosRho;
+                    picongpu::traits::FieldPosition<fields::YeeCell, FieldTmp> const fieldPosRho;
                     ValueType_Rho densityV
                         = Field2ParticleInterpolation()(cachedRho.shift(localCell), pos, fieldPosRho());
                     /*                          and energy density field on the particle position */
-                    const picongpu::traits::FieldPosition<fields::YeeCell, FieldTmp> fieldPosEne;
+                    picongpu::traits::FieldPosition<fields::YeeCell, FieldTmp> const fieldPosEne;
                     ValueType_Ene kinEnergyV
                         = Field2ParticleInterpolation()(cachedEne.shift(localCell), pos, fieldPosEne());
 
@@ -293,7 +293,7 @@ namespace picongpu
                     namespace partOp = pmacc::particles::operations;
                     /* each thread sets the multiMask hard on "particle" (=1) */
                     childElectron[multiMask_] = 1u;
-                    const float_X weighting = parentIon[weighting_];
+                    float_X const weighting = parentIon[weighting_];
 
                     /* each thread initializes a clone of the parent ion but leaving out
                      * some attributes:
@@ -306,10 +306,10 @@ namespace picongpu
 
                     targetElectronClone.derive(worker, idGen, parentIon);
 
-                    const float_X massIon = picongpu::traits::attribute::getMass(weighting, parentIon);
-                    const float_X massElectron = picongpu::traits::attribute::getMass(weighting, childElectron);
+                    float_X const massIon = picongpu::traits::attribute::getMass(weighting, parentIon);
+                    float_X const massElectron = picongpu::traits::attribute::getMass(weighting, childElectron);
 
-                    const float3_X electronMomentum(parentIon[momentum_] * (massElectron / massIon));
+                    float3_X const electronMomentum(parentIon[momentum_] * (massElectron / massIon));
 
                     childElectron[momentum_] = electronMomentum;
 

@@ -136,7 +136,7 @@ namespace pmacc
          * @param gpuMemory how many memory on device is used for this instance (in byte)
          */
         ParticlesBuffer(
-            const std::shared_ptr<DeviceHeap>& deviceHeap,
+            std::shared_ptr<DeviceHeap> const& deviceHeap,
             DataSpace<DIM> layout,
             DataSpace<DIM> superCellSize)
             : superCellSize(superCellSize)
@@ -252,7 +252,7 @@ namespace pmacc
         EventTask asyncCommunication(EventTask serialEvent)
         {
             return framesExchanges->asyncCommunication(serialEvent)
-                + exchangeMemoryIndexer->asyncCommunication(serialEvent);
+                   + exchangeMemoryIndexer->asyncCommunication(serialEvent);
         }
 
         EventTask asyncSendParticles(EventTask serialEvent, uint32_t ex)
@@ -269,7 +269,7 @@ namespace pmacc
         EventTask asyncReceiveParticles(EventTask serialEvent, uint32_t ex)
         {
             return framesExchanges->asyncReceive(serialEvent, ex)
-                + exchangeMemoryIndexer->asyncReceive(serialEvent, ex);
+                   + exchangeMemoryIndexer->asyncReceive(serialEvent, ex);
         }
 
         /**

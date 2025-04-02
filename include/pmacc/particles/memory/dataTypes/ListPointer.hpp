@@ -24,7 +24,6 @@
 #include "pmacc/particles/memory/dataTypes/Pointer.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     template<typename T_Type = boost::mpl::_1>

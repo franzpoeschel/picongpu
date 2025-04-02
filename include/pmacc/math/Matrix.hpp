@@ -47,8 +47,8 @@ namespace pmacc::math
         using Extent = T_Extent;
         using Type = T_Type;
 
-        static auto constexpr m = Extent::template at<0u>::type::value;
-        static auto constexpr n = Extent::template at<1u>::type::value;
+        static constexpr auto m = Extent::template at<0u>::type::value;
+        static constexpr auto n = Extent::template at<1u>::type::value;
 
         using S_Elements = pmacc::memory::Array<T_Type, CT::volume<T_Extent>::type::value>;
         using Idx = typename S_Elements::size_type;

@@ -113,7 +113,7 @@ namespace pmacc
         std::string toString() override
         {
             return std::string("TaskLogicalAnd (") + EventTask(task1).toString() + std::string(" - ")
-                + EventTask(task2).toString() + std::string(" )");
+                   + EventTask(task2).toString() + std::string(" )");
         }
 
     private:

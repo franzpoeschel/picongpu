@@ -64,7 +64,6 @@
 
 #include "picongpu/fields/incidentField/profiles/profiles.def"
 
-
 namespace picongpu
 {
     namespace fields
@@ -77,7 +76,7 @@ namespace picongpu
             {
             public:
                 /* We use this to calculate your SI input back to our unit system */
-                PMACC_ALIGN(m_unitField, const float3_64);
+                PMACC_ALIGN(m_unitField, float3_64 const);
 
                 /** Create a functor
                  *
@@ -85,7 +84,7 @@ namespace picongpu
                  * @param unitField conversion factor from SI to internal units,
                  *                  field_internal = field_SI / unitField
                  */
-                HDINLINE UserFunctorIncidentE(float_X const currentStep, const float3_64 unitField)
+                HDINLINE UserFunctorIncidentE(float_X const currentStep, float3_64 const unitField)
                     : m_unitField(unitField)
                 {
                 }
@@ -96,7 +95,7 @@ namespace picongpu
                  *        note that it is fractional
                  * @return incident field value in internal units
                  */
-                HDINLINE float3_X operator()(const floatD_X& totalCellIdx) const
+                HDINLINE float3_X operator()(floatD_X const& totalCellIdx) const
                 {
                     auto const fieldSI = float3_X(0.0_X, 0.0_X, 0.0_X);
                     return fieldSI / precisionCast<float_X>(m_unitField);
@@ -109,7 +108,7 @@ namespace picongpu
             {
             public:
                 /* We use this to calculate your SI input back to our unit system */
-                PMACC_ALIGN(m_unitField, const float3_64);
+                PMACC_ALIGN(m_unitField, float3_64 const);
 
                 /** Create a functor
                  *
@@ -117,7 +116,7 @@ namespace picongpu
                  * @param unitField conversion factor from SI to internal units,
                  *                  field_internal = field_SI / unitField
                  */
-                HDINLINE UserFunctorIncidentB(float_X const currentStep, const float3_64 unitField)
+                HDINLINE UserFunctorIncidentB(float_X const currentStep, float3_64 const unitField)
                     : m_unitField(unitField)
                 {
                 }
@@ -128,7 +127,7 @@ namespace picongpu
                  *        note that it is fractional
                  * @return incident field value in internal units
                  */
-                HDINLINE float3_X operator()(const floatD_X& totalCellIdx) const
+                HDINLINE float3_X operator()(floatD_X const& totalCellIdx) const
                 {
                     auto const fieldSI = float3_X(0.0_X, 0.0_X, 0.0_X);
                     return fieldSI / precisionCast<float_X>(m_unitField);

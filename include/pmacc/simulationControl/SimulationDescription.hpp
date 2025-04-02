@@ -55,7 +55,7 @@ namespace pmacc
              *
              * @param[in] std::string setAuthor
              */
-            void setAuthor(const std::string setAuthor)
+            void setAuthor(std::string const setAuthor)
             {
                 this->author = setAuthor;
             }
@@ -75,7 +75,7 @@ namespace pmacc
              *
              * @param[in] uint32_t setRunSteps
              */
-            void setRunSteps(const uint32_t setRunSteps)
+            void setRunSteps(uint32_t const setRunSteps)
             {
                 runSteps = setRunSteps;
             }
@@ -95,7 +95,7 @@ namespace pmacc
              *
              * @param[in] uint32_t setCurrentStep
              */
-            void setCurrentStep(const uint32_t setCurrentStep)
+            void setCurrentStep(uint32_t const setCurrentStep)
             {
                 currentStep = setCurrentStep;
             }

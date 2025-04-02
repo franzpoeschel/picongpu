@@ -66,7 +66,7 @@ namespace pmacc
                 }
                 else
                 {
-                    const int numDevices = count();
+                    int const numDevices = count();
                     if(idx >= numDevices)
                     {
                         std::stringstream err;
@@ -81,7 +81,7 @@ namespace pmacc
                     {
                         dev = std::make_optional<DeviceType>(alpaka::getDevByIdx(platform, idx));
                     }
-                    catch(const std::runtime_error& e)
+                    catch(std::runtime_error const& e)
                     {
                         throw std::runtime_error(e.what());
                     }

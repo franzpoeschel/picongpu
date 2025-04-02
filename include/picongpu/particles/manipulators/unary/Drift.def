@@ -23,7 +23,6 @@
 
 #include <pmacc/math/operation.hpp>
 
-
 namespace picongpu
 {
     namespace particles

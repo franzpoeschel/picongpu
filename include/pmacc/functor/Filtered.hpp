@@ -27,7 +27,6 @@
 
 #include <string>
 
-
 namespace pmacc
 {
     namespace functor
@@ -128,7 +127,6 @@ namespace pmacc
                 , Functor(currentStep, idGen)
             {
             }
-
 
             /** create a filtered functor which can be used on the accelerator
              *

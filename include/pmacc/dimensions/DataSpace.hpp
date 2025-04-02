@@ -65,9 +65,9 @@ namespace pmacc
         {
         }
 
-        constexpr DataSpace(const DataSpace&) = default;
+        constexpr DataSpace(DataSpace const&) = default;
 
-        HDINLINE constexpr DataSpace& operator=(const DataSpace&) = default;
+        HDINLINE constexpr DataSpace& operator=(DataSpace const&) = default;
 
         /** constructor.
          *
@@ -92,11 +92,11 @@ namespace pmacc
             static_assert(sizeof...(T_Args) == T_dim, "Number of arguments must be equal to the DataSpace dimension.");
         }
 
-        constexpr DataSpace(const BaseType& vec) : BaseType(vec)
+        constexpr DataSpace(BaseType const& vec) : BaseType(vec)
         {
         }
 
-        HDINLINE DataSpace(const math::Size_t<T_dim>& vec)
+        HDINLINE DataSpace(math::Size_t<T_dim> const& vec)
         {
             for(uint32_t i = 0; i < T_dim; ++i)
             {
@@ -136,7 +136,7 @@ namespace pmacc
          * @param other DataSpace to compare with
          * @return true if one dimension is greater, false otherwise
          */
-        HINLINE bool isOneDimensionGreaterThan(const MemSpace<T_dim>& other) const
+        HINLINE bool isOneDimensionGreaterThan(MemSpace<T_dim> const& other) const
         {
             for(uint32_t i = 0; i < T_dim; ++i)
             {

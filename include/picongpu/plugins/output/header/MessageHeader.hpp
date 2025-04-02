@@ -30,7 +30,6 @@
 #include <cstdlib>
 #include <iostream>
 
-
 namespace picongpu
 {
     struct MessageHeader
@@ -42,18 +41,18 @@ namespace picongpu
             using namespace pmacc;
             using namespace picongpu;
 
-            const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
 
-            const auto localSize(subGrid.getLocalDomain().size);
-            const Size2D localSize2D(localSize[transpose.x()], localSize[transpose.y()]);
+            auto const localSize(subGrid.getLocalDomain().size);
+            Size2D const localSize2D(localSize[transpose.x()], localSize[transpose.y()]);
 
-            const auto globalSize(subGrid.getGlobalDomain().size);
+            auto const globalSize(subGrid.getGlobalDomain().size);
             simHeader.size.x() = globalSize[transpose.x()];
             simHeader.size.y() = globalSize[transpose.y()];
 
             node.maxSize = Size2D(localSize[transpose.x()], localSize[transpose.y()]);
 
-            const auto windowSize = vWindow.globalDimensions.size;
+            auto const windowSize = vWindow.globalDimensions.size;
             window.size = Size2D(windowSize[transpose.x()], windowSize[transpose.y()]);
 
             picongpu::float_32 scale[2];
@@ -62,7 +61,7 @@ namespace picongpu
             simHeader.cellSizeArr[0] = sim.pic.getCellSize()[transpose.x()];
             simHeader.cellSizeArr[1] = sim.pic.getCellSize()[transpose.y()];
 
-            const picongpu::float_32 scale0to1 = scale[0] / scale[1];
+            picongpu::float_32 const scale0to1 = scale[0] / scale[1];
 
             if(scale0to1 > 1.0f)
             {
@@ -77,19 +76,19 @@ namespace picongpu
                 simHeader.setScale(1.f, 1.f);
             }
 
-            const auto offsetToSimNull(subGrid.getLocalDomain().offset);
-            const auto windowOffsetToSimNull(vWindow.globalDimensions.offset);
+            auto const offsetToSimNull(subGrid.getLocalDomain().offset);
+            auto const windowOffsetToSimNull(vWindow.globalDimensions.offset);
 
-            const Size2D offsetToSimNull2D(offsetToSimNull[transpose.x()], offsetToSimNull[transpose.y()]);
+            Size2D const offsetToSimNull2D(offsetToSimNull[transpose.x()], offsetToSimNull[transpose.y()]);
             node.offset = offsetToSimNull2D;
 
-            const Size2D windowOffsetToSimNull2D(
+            Size2D const windowOffsetToSimNull2D(
                 windowOffsetToSimNull[transpose.x()],
                 windowOffsetToSimNull[transpose.y()]);
             window.offset = windowOffsetToSimNull2D;
 
-            const auto currentLocalSize(vWindow.localDimensions.size);
-            const Size2D currentLocalSize2D(currentLocalSize[transpose.x()], currentLocalSize[transpose.y()]);
+            auto const currentLocalSize(vWindow.localDimensions.size);
+            Size2D const currentLocalSize2D(currentLocalSize[transpose.x()], currentLocalSize[transpose.y()]);
             node.size = currentLocalSize2D;
 
             simHeader.step = currentStep;

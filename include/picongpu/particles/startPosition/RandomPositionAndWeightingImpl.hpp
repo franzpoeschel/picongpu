@@ -27,7 +27,6 @@
 
 #include <boost/mpl/integral_c.hpp>
 
-
 namespace picongpu
 {
     namespace particles

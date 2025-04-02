@@ -21,7 +21,7 @@
 
 #pragma once
 
-#if(ALPAKA_ACC_GPU_CUDA_ENABLED || ALPAKA_ACC_GPU_HIP_ENABLED)
+#if (ALPAKA_ACC_GPU_CUDA_ENABLED || ALPAKA_ACC_GPU_HIP_ENABLED)
 
 #    include "pmacc/alpakaHelper/Device.hpp"
 #    include "pmacc/eventSystem/eventSystem.hpp"
@@ -31,11 +31,10 @@
 
 #    include <memory>
 
-
 namespace pmacc
 {
     template<typename T_DeviceHeap>
-    MallocMCBuffer<T_DeviceHeap>::MallocMCBuffer(const std::shared_ptr<DeviceHeap>& deviceHeap)
+    MallocMCBuffer<T_DeviceHeap>::MallocMCBuffer(std::shared_ptr<DeviceHeap> const& deviceHeap)
         : /* currently mallocMC has only one heap */
         deviceHeapInfo(deviceHeap->getHeapLocations()[0])
         , hostBufferOffset(0)

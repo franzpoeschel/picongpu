@@ -38,7 +38,6 @@
 #include <pmacc/traits/HasFlag.hpp>
 #include <pmacc/traits/HasIdentifiers.hpp>
 
-
 namespace picongpu
 {
     namespace particles

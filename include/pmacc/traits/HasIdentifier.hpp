@@ -54,7 +54,7 @@ namespace pmacc
         };
 
         template<typename T_Object, typename T_Key>
-        bool hasIdentifier(const T_Object& obj, const T_Key& key)
+        bool hasIdentifier(T_Object const& obj, T_Key const& key)
         {
             return HasIdentifier<T_Object, T_Key>::type::value;
         }

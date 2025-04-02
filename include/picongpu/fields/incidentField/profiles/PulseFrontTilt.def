@@ -22,7 +22,6 @@
 
 #include "picongpu/fields/incidentField/profiles/GaussianPulse.def"
 
-
 namespace picongpu
 {
     namespace fields

@@ -79,8 +79,9 @@ namespace picongpu::particles::atomicPhysics::stage
 
             using IPDModel = picongpu::atomicPhysics::IPDModel;
 
-            constexpr bool atLeastOneElectronicCollisionalChannelActive = AtomicDataType::switchElectronicExcitation
-                || AtomicDataType::switchElectronicDeexcitation || AtomicDataType::switchElectronicIonization;
+            constexpr bool atLeastOneElectronicCollisionalChannelActive
+                = AtomicDataType::switchElectronicExcitation || AtomicDataType::switchElectronicDeexcitation
+                  || AtomicDataType::switchElectronicIonization;
             constexpr bool fieldIonizationActive = AtomicDataType::switchFieldIonization;
 
             if constexpr(atLeastOneElectronicCollisionalChannelActive || fieldIonizationActive)

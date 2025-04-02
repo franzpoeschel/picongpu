@@ -31,7 +31,8 @@ namespace picongpu
             {
                 template<typename T_BinaryFunctor>
                 using IBinary = pmacc::functor::acc::Interface<T_BinaryFunctor, 2u, void>;
-            }
+            } // namespace acc
+
             /**  interface for a binary particle functor
              *
              *

@@ -40,7 +40,6 @@
 #include <iostream>
 #include <limits>
 
-
 namespace pmacc
 {
     namespace test
@@ -117,9 +116,9 @@ namespace pmacc
 
             /** Write in PGM grayscale file format (easy to read/interpret) */
             template<class T_Buffer>
-            void writePGM(const std::string& filePath, T_Buffer& buffer)
+            void writePGM(std::string const& filePath, T_Buffer& buffer)
             {
-                const Space2D size = buffer.capacityND();
+                Space2D const size = buffer.capacityND();
                 uint32_t maxVal = 0;
                 for(int y = 0; y < size.y(); y++)
                 {
@@ -135,7 +134,7 @@ namespace pmacc
                 // An extension allows 2 bytes so 0-65536)
                 if(maxVal > std::numeric_limits<uint16_t>::max())
                     maxVal = std::numeric_limits<uint16_t>::max();
-                const bool isTwoByteFormat = maxVal > std::numeric_limits<uint8_t>::max();
+                bool const isTwoByteFormat = maxVal > std::numeric_limits<uint8_t>::max();
 
                 std::ofstream outFile(filePath.c_str());
                 // TAG
@@ -161,10 +160,10 @@ namespace pmacc
 
             template<class T_DeviceBuffer, class T_Random>
             void generateRandomNumbers(
-                const Space2D& rngSize,
+                Space2D const& rngSize,
                 uint32_t numSamples,
                 T_DeviceBuffer& buffer,
-                const T_Random& rand)
+                T_Random const& rand)
             {
                 pmacc::TimeIntervall timer;
                 timer.toggleStart();
@@ -191,21 +190,21 @@ namespace pmacc
             {
                 typedef pmacc::random::RNGProvider<2, T_Method> RNGProvider;
 
-                const std::string rngName = RNGProvider::RNGMethod::getName();
+                std::string const rngName = RNGProvider::RNGMethod::getName();
                 std::cout << std::endl
                           << "Running test for " << rngName << " with " << numSamples << " samples per cell"
                           << std::endl;
                 // Size of the detector
-                const Space2D size(256, 256);
+                Space2D const size(256, 256);
                 // Size of the rng provider (= number of states used)
-                const Space2D rngSize(256, 256);
+                Space2D const rngSize(256, 256);
 
                 pmacc::HostDeviceBuffer<uint32_t, 2> detector(size);
                 auto rngProvider = new RNGProvider(rngSize);
 
                 pmacc::Environment<>::get().DataConnector().share(
                     std::shared_ptr<pmacc::ISimulationData>(rngProvider));
-                rngProvider->init(0x42133742);
+                rngProvider->init(0x4213'3742);
 
                 generateRandomNumbers(rngSize, numSamples, detector.getDeviceBuffer(), GetRanidx<RNGProvider>());
 
@@ -254,7 +253,7 @@ namespace pmacc
                         Space2D idx(x, y);
                         uint32_t val = box(idx);
                         errSq += val
-                            * math::pow(
+                                 * math::pow(
                                      static_cast<double>(pmacc::math::linearize(size.shrink<1>(1), idx) - mean),
                                      2.0);
                     }
@@ -283,7 +282,7 @@ int main(int argc, char** argv)
 
     Environment<2>::get().initDevices(Space2D::create(1), Space2D::create(0));
 
-    const uint32_t numSamples = (argc > 1) ? atoi(argv[1]) : 100;
+    uint32_t const numSamples = (argc > 1) ? atoi(argv[1]) : 100;
 
     runTest<random::methods::AlpakaRand<pmacc::Acc<DIM1>>>(numSamples);
 

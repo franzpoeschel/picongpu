@@ -29,7 +29,6 @@
 #include <pmacc/particles/Identifier.hpp>
 #include <pmacc/particles/traits/FilterByFlag.hpp>
 
-
 namespace picongpu
 {
     /*########################### define particle attributes #####################*/
@@ -40,7 +39,7 @@ namespace picongpu
     /* attribute sequence for species: ions */
     using AttributeSeqIons = MakeSeq_t<
         DefaultParticleAttributes
-#if(PARAM_IONIZATION == 1)
+#if (PARAM_IONIZATION == 1)
         ,
         boundElectrons
 #endif
@@ -81,7 +80,7 @@ namespace picongpu
         current<UsedParticleCurrentSolver>,
         massRatio<MassRatioIons>,
         chargeRatio<ChargeRatioIons>,
-#if(PARAM_IONIZATION == 1)
+#if (PARAM_IONIZATION == 1)
         ionizers<MakeSeq_t<
             particles::ionization::BSIEffectiveZ<PIC_Electrons, particles::ionization::current::None>,
             particles::ionization::ADKCircPol<PIC_Electrons, particles::ionization::current::None>>>,
@@ -102,7 +101,7 @@ namespace picongpu
 
     using VectorAllSpecies = MakeSeq_t<
         PIC_Electrons
-#if(PARAM_IONS == 1)
+#if (PARAM_IONS == 1)
         ,
         PIC_Ions
 #endif

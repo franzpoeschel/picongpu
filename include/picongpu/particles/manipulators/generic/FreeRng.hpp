@@ -28,7 +28,6 @@
 #include <type_traits>
 #include <utility>
 
-
 namespace picongpu
 {
     namespace particles
@@ -82,6 +81,7 @@ namespace picongpu
                         {
                             Functor::operator()(worker, m_rng, particle, std::forward<T_Args>(args)...);
                         }
+
                         /** @} */
 
                     private:

@@ -27,7 +27,6 @@
 #include <string> // std::string
 #include <vector> // std::vector
 
-
 namespace picongpu
 {
     ParserGridDistribution::ParserGridDistribution(std::string const s)
@@ -115,7 +114,7 @@ namespace picongpu
             if(count == *iter)
                 count = "1";
 
-            const SubdomainPair g
+            SubdomainPair const g
                 = {static_cast<uint32_t>(std::stoul(extent)), static_cast<uint32_t>(std::stoul(count))};
             newInput.emplace_back(g);
         }

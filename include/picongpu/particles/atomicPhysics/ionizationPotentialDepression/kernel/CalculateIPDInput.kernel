@@ -119,7 +119,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
             float_X const sumChargeNumberSquared = sumChargeNumberSquaredBox(superCellFieldIdx);
             //!@}
 
-            const auto onlyMaster = lockstep::makeMaster(worker);
+            auto const onlyMaster = lockstep::makeMaster(worker);
 
             /// @todo use forEachSuperCell instead of letting workers wait, Brian Marre, 2024
             onlyMaster(
@@ -154,15 +154,16 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                      *
                      * unit: sim.unit.length()^3 */
                     constexpr float_X volumeSuperCell = pmacc::math::CT::volume<picongpu::SuperCellSize>::type::value
-                        * picongpu::sim.pic.getCellSize().productOfComponents();
+                                                        * picongpu::sim.pic.getCellSize().productOfComponents();
 
                     /* unit: (unit_charge^2 / (unit_energy * unit_length)) * unit_length^3 / unit_charge^2
                      *      / typicalNumParticlesPerMacroParticle)
                      * = unit_length^2 / unit_energy / typicalNumParticlesPerMacroParticle
                      */
-                    constexpr float_X constFactorDebyeLength = picongpu::sim.pic.getEps0() * volumeSuperCell
-                        / pmacc::math::cPow(picongpu::sim.pic.getElectronCharge(), 2u)
-                        / sim.unit.typicalNumParticlesPerMacroParticle();
+                    constexpr float_X constFactorDebyeLength
+                        = picongpu::sim.pic.getEps0() * volumeSuperCell
+                          / pmacc::math::cPow(picongpu::sim.pic.getElectronCharge(), 2u)
+                          / sim.unit.typicalNumParticlesPerMacroParticle();
 
                     /** @note debyeLength = sqrt(eps_0 * k_B*T / sum_species(numberDensity_species * charge_species^2))
                      *

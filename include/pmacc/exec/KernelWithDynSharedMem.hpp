@@ -24,7 +24,6 @@
 
 #include <string>
 
-
 namespace pmacc::exec::detail
 {
     /** Kernel with dynamic shared memory

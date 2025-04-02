@@ -65,10 +65,10 @@ namespace picongpu
              *
              * @return float_X density [normalized to 1.0]
              */
-            HDINLINE float_X operator()(const floatD_64& position_SI, const float3_64& cellSize_SI)
+            HDINLINE float_X operator()(floatD_64 const& position_SI, float3_64 const& cellSize_SI)
             {
                 // m -> mu
-                const float_64 y(position_SI.y() * 1.e6);
+                float_64 const y(position_SI.y() * 1.e6);
 
                 // target begin & end (plateau)
                 constexpr float_64 y0(0.5);

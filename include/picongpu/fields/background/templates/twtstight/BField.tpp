@@ -64,14 +64,14 @@ namespace picongpu::templates::twtstight
                       * (cosPolAngle * (-rhom2 + x2 + x * cosPhi * Xm) * sinPhi_2
                          - sinPolAngle * (rhom2 + rhom2 * cosPhi_2 - x2 * sinPhi_2 + x * cosPhi * sinPhi_2 * Xm))
                   + besselJ1const
-                      * (cosPolAngle * sinPhi
-                             * (rhom2 - float_T(2.0) * x2 + I * Xm * rhom2 * (k * sinPhi)
-                                + x * cosPhi * (float_T(-2.0) * Xm - I * rhom2 * (k * sinPhi)))
-                         + sinPolAngle
-                             * ((rhom2 - float_T(2.0) * x2) * sinPhi + I * rhom2 * (-Xm + x * cosPhi) * (k * sinPhi_2)
-                                + x * sin2Phi * Xm)))
+                        * (cosPolAngle * sinPhi
+                               * (rhom2 - float_T(2.0) * x2 + I * Xm * rhom2 * (k * sinPhi)
+                                  + x * cosPhi * (float_T(-2.0) * Xm - I * rhom2 * (k * sinPhi)))
+                           + sinPolAngle
+                                 * ((rhom2 - float_T(2.0) * x2) * sinPhi
+                                    + I * rhom2 * (-Xm + x * cosPhi) * (k * sinPhi_2) + x * sin2Phi * Xm)))
                * psi0)
-            / (cspeed * besselI0const * rhom * rhom2);
+              / (cspeed * besselI0const * rhom * rhom2);
 
         /* A 180deg-rotation of the field vector around the y-axis
          * leads to a sign flip in the x- and z- components, respectively.
@@ -114,7 +114,7 @@ namespace picongpu::templates::twtstight
                                           + (Xm + float_T(2.0) * x * cosPhi - Xm * cosPhi_2) * sinPolAngle))
                                      + I * rhom * besselJ0const * (cosPolAngle - sinPolAngle) * sinPhi_2)
                                   * psi0)
-            / (float_T(4.0) * cspeed * besselI0const * rhom);
+                                 / (float_T(4.0) * cspeed * besselI0const * rhom);
 
         return result.real() / sim.unit.speed();
     }
@@ -154,13 +154,13 @@ namespace picongpu::templates::twtstight
                              * (x * (float_T(2.0) * Xm - I * (k * rhom2 * sinPhi))
                                 + cosPhi * (rhom2 - float_T(2.0) * Xm2 - I * Xm * (k * rhom2 * sinPhi)))
                          + cosPolAngle
-                             * (x * (float_T(2.0) * Xm + I * (k * rhom2 * sinPhi))
-                                + cosPhi * (-rhom2 + float_T(2.0) * Xm2 + I * Xm * (k * rhom2 * sinPhi))))
+                               * (x * (float_T(2.0) * Xm + I * (k * rhom2 * sinPhi))
+                                  + cosPhi * (-rhom2 + float_T(2.0) * Xm2 + I * Xm * (k * rhom2 * sinPhi))))
                   + k * rhom * besselJ0const
-                      * (Xm * (-x + Xm * cosPhi) * (sinPolAngle * sinPhi_2)
-                         - cosPolAngle * (x * sinPhi_2 * Xm + cosPhi * (float_T(-2.0) * rhom2 + Xm2 * sinPhi_2))))
+                        * (Xm * (-x + Xm * cosPhi) * (sinPolAngle * sinPhi_2)
+                           - cosPolAngle * (x * sinPhi_2 * Xm + cosPhi * (float_T(-2.0) * rhom2 + Xm2 * sinPhi_2))))
                * psi0)
-            / (cspeed * besselI0const * rhom * rhom2);
+              / (cspeed * besselI0const * rhom * rhom2);
 
         /* A 180deg-rotation of the field vector around the y-axis
          * leads to a sign flip in the x- and z- components, respectively.

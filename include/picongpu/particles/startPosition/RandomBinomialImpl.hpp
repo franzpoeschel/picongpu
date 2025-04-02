@@ -26,7 +26,6 @@
 
 #include <pmacc/algorithms/math/defines/pi.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -94,7 +93,7 @@ namespace picongpu
                             u1 = uniformRng();
                         auto const u2 = uniformRng();
                         auto const z = math::sqrt(-2.0_X * math::log(u1))
-                            * math::cos(pmacc::math::Pi<float_X>::doubleValue * u2);
+                                       * math::cos(pmacc::math::Pi<float_X>::doubleValue * u2);
                         return z;
                     }
                 };

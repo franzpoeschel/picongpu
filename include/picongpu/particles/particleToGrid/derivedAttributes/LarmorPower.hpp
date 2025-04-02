@@ -30,7 +30,6 @@
 
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace particles
@@ -50,27 +49,28 @@ namespace picongpu
                         hasMomentumPrev1);
 
                     /* read existing attributes */
-                    const float3_X mom = particle[momentum_];
-                    const float3_X mom_mt1 = particle[momentumPrev1_];
-                    const float_X weighting = particle[weighting_];
-                    const float_X charge = picongpu::traits::attribute::getCharge(weighting, particle);
-                    const float_X mass = picongpu::traits::attribute::getMass(weighting, particle);
+                    float3_X const mom = particle[momentum_];
+                    float3_X const mom_mt1 = particle[momentumPrev1_];
+                    float_X const weighting = particle[weighting_];
+                    float_X const charge = picongpu::traits::attribute::getCharge(weighting, particle);
+                    float_X const mass = picongpu::traits::attribute::getMass(weighting, particle);
 
                     /* calculate new attribute */
                     Gamma<float_X> calcGamma;
-                    const typename Gamma<float_X>::valueType gamma = calcGamma(mom, mass);
-                    const float_X gamma2 = gamma * gamma;
-                    const float_X c2 = sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight();
+                    typename Gamma<float_X>::valueType const gamma = calcGamma(mom, mass);
+                    float_X const gamma2 = gamma * gamma;
+                    float_X const c2 = sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight();
 
-                    const float3_X mom_dt = (mom - mom_mt1) / float_X(sim.pic.getDt());
-                    const float_X el_factor = charge * charge
-                        / (float_X(6.0) * PI * sim.pic.getEps0() * c2 * sim.pic.getSpeedOfLight() * mass * mass)
-                        * gamma2 * gamma2;
-                    const float_X momentumToBetaConvert = float_X(1.0) / (mass * sim.pic.getSpeedOfLight() * gamma);
-                    const float_X larmorPower = el_factor
-                        * (pmacc::math::l2norm2(mom_dt)
-                           - momentumToBetaConvert * momentumToBetaConvert
-                               * pmacc::math::l2norm2(pmacc::math::cross(mom, mom_dt)));
+                    float3_X const mom_dt = (mom - mom_mt1) / float_X(sim.pic.getDt());
+                    float_X const el_factor
+                        = charge * charge
+                          / (float_X(6.0) * PI * sim.pic.getEps0() * c2 * sim.pic.getSpeedOfLight() * mass * mass)
+                          * gamma2 * gamma2;
+                    float_X const momentumToBetaConvert = float_X(1.0) / (mass * sim.pic.getSpeedOfLight() * gamma);
+                    float_X const larmorPower = el_factor
+                                                * (pmacc::math::l2norm2(mom_dt)
+                                                   - momentumToBetaConvert * momentumToBetaConvert
+                                                         * pmacc::math::l2norm2(pmacc::math::cross(mom, mom_dt)));
 
                     /* return attribute */
                     return larmorPower;

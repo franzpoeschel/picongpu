@@ -30,7 +30,6 @@
 
 #include <nlohmann/json.hpp>
 
-
 namespace picongpu
 {
     namespace traits
@@ -52,7 +51,8 @@ namespace picongpu
 
         template<typename T>
         inline constexpr bool
-            providesMetadataAtRT<T, std::enable_if_t<providesMetadata<T> && !providesMetadataAtCT<T>>> = true;
+            providesMetadataAtRT<T, std::enable_if_t<providesMetadata<T> && !providesMetadataAtCT<T>>>
+            = true;
 
         namespace detail
         {
@@ -132,6 +132,7 @@ namespace picongpu
                 return TObject::metadata();
             }
         };
+
         // doc-include-end: GetMetdata trait
 
         /**
@@ -171,6 +172,7 @@ namespace picongpu
                 return nlohmann::json::object();
             }
         };
+
         // doc-include-end: AllowMissingMetadata
 
         /**
@@ -204,7 +206,6 @@ namespace picongpu
                 return collection;
             }
         } // namespace detail
-
 
         template<typename BoundaryName, typename Profiles>
         struct GetMetadata<IncidentFieldPolicy<BoundaryName, Profiles>>

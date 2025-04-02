@@ -61,29 +61,29 @@ namespace picongpu
          */
         template<typename T_Particle, typename T_SharedMemHist, typename T_Worker>
         DINLINE void operator()(
-            const T_Worker& worker,
+            T_Worker const& worker,
             T_Particle particle,
             T_SharedMemHist sharedMemHist,
-            const uint32_t el_p,
-            const phaseSpace::Pair<float_X, float_X>& axis_p_range)
+            uint32_t const el_p,
+            phaseSpace::Pair<float_X, float_X> const& axis_p_range)
         {
             using float_PS = typename T_SharedMemHist::ValueType;
             /** \todo this can become a functor to be even more flexible
              * This requires increasing the y extent of the histogram to take the guard into account
              */
-            const float_X mom_i = particle[momentum_][el_p];
+            float_X const mom_i = particle[momentum_][el_p];
 
             /* cell id in this block */
-            const int linearCellIdx = particle[localCellIdx_];
-            const pmacc::math::UInt32<simDim> cellIdx(pmacc::math::mapToND(SuperCellSize::toRT(), linearCellIdx));
+            int const linearCellIdx = particle[localCellIdx_];
+            pmacc::math::UInt32<simDim> const cellIdx(pmacc::math::mapToND(SuperCellSize::toRT(), linearCellIdx));
 
-            const uint32_t r_bin = cellIdx[r_dir];
-            const float_X weighting = particle[weighting_];
-            const float_X charge = picongpu::traits::attribute::getCharge(weighting, particle);
-            const float_PS particleChargeDensity
+            uint32_t const r_bin = cellIdx[r_dir];
+            float_X const weighting = particle[weighting_];
+            float_X const charge = picongpu::traits::attribute::getCharge(weighting, particle);
+            float_PS const particleChargeDensity
                 = precisionCast<float_PS>(charge / sim.pic.getCellSize().productOfComponents());
 
-            const float_X rel_bin
+            float_X const rel_bin
                 = (mom_i / weighting - axis_p_range.first) / (axis_p_range.second - axis_p_range.first);
             int p_bin = int(rel_bin * float_X(num_pbins));
 
@@ -138,11 +138,11 @@ namespace picongpu
          */
         HDINLINE
         FunctorBlock(
-            const TParticlesBox& pb,
+            TParticlesBox const& pb,
             pmacc::DataBox<PitchedBox<float_PS, 2>> phaseSpaceHistogram,
-            const uint32_t p_dir,
-            const phaseSpace::Pair<float_X, float_X>& p_range,
-            const T_Filter& parFilter)
+            uint32_t const p_dir,
+            phaseSpace::Pair<float_X, float_X> const& p_range,
+            T_Filter const& parFilter)
             : particlesBox(pb)
             , globalHist(phaseSpaceHistogram)
             , p_element(p_dir)
@@ -151,16 +151,16 @@ namespace picongpu
         {
         }
 
-        HDINLINE FunctorBlock(const FunctorBlock&) = default;
+        HDINLINE FunctorBlock(FunctorBlock const&) = default;
 
-        HDINLINE FunctorBlock& operator=(const FunctorBlock&) = default;
+        HDINLINE FunctorBlock& operator=(FunctorBlock const&) = default;
 
         /** Called for the first cell of each block #-of-cells-in-block times
          */
         template<typename T_Worker, typename T_Mapping>
-        DINLINE void operator()(const T_Worker& worker, T_Mapping const& mapper) const
+        DINLINE void operator()(T_Worker const& worker, T_Mapping const& mapper) const
         {
-            const DataSpace<simDim> superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
+            DataSpace<simDim> const superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
 
             /* create shared mem */
             constexpr int blockCellsInDir = SuperCellSize::template at<r_dir>::type::value;

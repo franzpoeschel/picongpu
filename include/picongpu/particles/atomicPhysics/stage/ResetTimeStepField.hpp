@@ -57,8 +57,9 @@ namespace picongpu::particles::atomicPhysics::stage
                     "TimeStepField");
 
             // macro for call of kernel
-            PMACC_LOCKSTEP_KERNEL(picongpu::particles::atomicPhysics::kernel::ResetTimeStepFieldKernel<
-                                      T_numberAtomicPhysicsIonSpecies>())
+            PMACC_LOCKSTEP_KERNEL(
+                picongpu::particles::atomicPhysics::kernel::ResetTimeStepFieldKernel<
+                    T_numberAtomicPhysicsIonSpecies>())
                 .template config<1u>(mapper.getGridDim())(
                     mapper,
                     timeRemainingField.getDeviceDataBox(),

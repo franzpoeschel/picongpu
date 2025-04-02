@@ -30,7 +30,6 @@
 #include <fstream>
 #include <memory>
 
-
 namespace picongpu
 {
     namespace plugins
@@ -53,12 +52,12 @@ namespace picongpu
                         this->frequencies_host = frequencies_handed->getHostBuffer().getDataBox();
                     }
 
-                    DINLINE float_X operator()(const unsigned int ID)
+                    DINLINE float_X operator()(unsigned int const ID)
                     {
                         return (ID < radiation_frequencies::N_omega) ? frequencies_dev[ID] : 0.0;
                     }
 
-                    HINLINE float_X get(const unsigned int ID)
+                    HINLINE float_X get(unsigned int const ID)
                     {
                         return (ID < radiation_frequencies::N_omega) ? frequencies_host[ID] : 0.0;
                     }
@@ -68,7 +67,6 @@ namespace picongpu
                     DBoxType frequencies_host;
                 };
 
-
                 class InitFreqFunctor
                 {
                 public:
@@ -76,7 +74,7 @@ namespace picongpu
 
                     using DBoxType = GridBuffer<picongpu::float_X, 1U>::DataBoxType;
 
-                    HINLINE void Init(const std::string path)
+                    HINLINE void Init(std::string const path)
                     {
                         frequencyBuffer = std::make_unique<GridBuffer<float_X, DIM1>>(DataSpace<DIM1>(N_omega));
 
@@ -106,8 +104,10 @@ namespace picongpu
 
                         if(i != N_omega)
                         {
-                            throw std::runtime_error(std::string("The number of frequencies in the list and the "
-                                                                 "number of frequencies in the parameters differ.\n"));
+                            throw std::runtime_error(
+                                std::string(
+                                    "The number of frequencies in the list and the "
+                                    "number of frequencies in the parameters differ.\n"));
                         }
 
                         frequencyBuffer->hostToDevice();

@@ -25,7 +25,6 @@
 #include <cstdint>
 #include <string>
 
-
 namespace picongpu
 {
     namespace fields
@@ -115,8 +114,8 @@ namespace picongpu
                              * the laser amplitude rises  for riseTime and falls for riseTime
                              * making the laser pulse 2*riseTime long
                              */
-                            const float_X riseTime = 0.5_X * Unitless::PULSE_DURATION;
-                            const float_X tau = time / riseTime;
+                            float_X const riseTime = 0.5_X * Unitless::PULSE_DURATION;
+                            float_X const tau = time / riseTime;
                             auto const phase = Unitless::w * (time - riseTime) + Unitless::LASER_PHASE + phaseShift;
                             auto const amplitude = Unitless::AMPLITUDE * polynomial(tau);
                             return math::sin(phase) * amplitude;
@@ -131,7 +130,7 @@ namespace picongpu
                                 result = tau * tau * tau * (10.0_X - 15.0_X * tau + 6.0_X * tau * tau);
                             else if(tau > 1.0_X && tau <= 2.0_X)
                                 result = (2.0_X - tau) * (2.0_X - tau) * (2.0_X - tau)
-                                    * (4.0_X - 9.0_X * tau + 6.0_X * tau * tau);
+                                         * (4.0_X - 9.0_X * tau + 6.0_X * tau * tau);
                             return result;
                         }
                     };

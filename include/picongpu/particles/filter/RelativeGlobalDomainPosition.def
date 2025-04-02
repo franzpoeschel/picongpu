@@ -63,6 +63,7 @@ namespace picongpu
             struct RelativeGlobalDomainPosition;
 
         } // namespace filter
+
         namespace traits
         {
             template<typename T_Species, typename T_Params>

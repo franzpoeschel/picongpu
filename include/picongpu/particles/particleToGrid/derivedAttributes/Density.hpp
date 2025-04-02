@@ -25,7 +25,6 @@
 
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace particles
@@ -38,12 +37,13 @@ namespace picongpu
                 DINLINE float_X Density::operator()(T_Particle& particle) const
                 {
                     /* read existing attributes */
-                    const float_X weighting = particle[weighting_];
+                    float_X const weighting = particle[weighting_];
 
                     /* calculate new attribute */
-                    const float_X particleDensity = weighting
-                        / (static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle())
-                           * sim.pic.getCellSize().productOfComponents());
+                    float_X const particleDensity
+                        = weighting
+                          / (static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle())
+                             * sim.pic.getCellSize().productOfComponents());
 
                     /* return attribute */
                     return particleDensity;

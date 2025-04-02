@@ -41,7 +41,7 @@ namespace picongpu::particles::atomicPhysics::initElectrons
 
             float_X const massElectronPerMassIon
                 = picongpu::traits::frame::getMass<typename T_ElectronParticle::FrameType>()
-                / picongpu::traits::frame::getMass<typename T_IonParticle::FrameType>();
+                  / picongpu::traits::frame::getMass<typename T_IonParticle::FrameType>();
 
             // init electron as co-moving with ion
             electron[momentum_] = ion[momentum_] * massElectronPerMassIon;

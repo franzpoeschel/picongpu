@@ -25,7 +25,6 @@
 #include <stdexcept>
 #include <string>
 
-
 namespace picongpu
 {
     namespace fields

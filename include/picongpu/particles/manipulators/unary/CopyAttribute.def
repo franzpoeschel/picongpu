@@ -21,7 +21,6 @@
 
 #include "picongpu/particles/manipulators/generic/Free.def"
 
-
 namespace picongpu
 {
     namespace particles

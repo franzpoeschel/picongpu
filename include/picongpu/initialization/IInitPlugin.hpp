@@ -25,7 +25,6 @@
 #include <pmacc/pluginSystem/PluginConnector.hpp>
 #include <pmacc/types.hpp>
 
-
 namespace picongpu
 {
     using namespace pmacc;

@@ -47,9 +47,9 @@ namespace picongpu::particles::atomicPhysics::localHelperFields
 
         RejectionProbabilityCacheField_Bin(T_MappingDescription const& mappingDesc)
             : SuperCellField<
-                RejectionProbabilityCache_Bin<picongpu::atomicPhysics::ElectronHistogram::numberBins>,
-                T_MappingDescription,
-                false /*no guards*/>(mappingDesc)
+                  RejectionProbabilityCache_Bin<picongpu::atomicPhysics::ElectronHistogram::numberBins>,
+                  T_MappingDescription,
+                  false /*no guards*/>(mappingDesc)
         {
         }
 

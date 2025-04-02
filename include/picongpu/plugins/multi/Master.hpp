@@ -29,7 +29,6 @@
 #include <stdexcept>
 #include <vector>
 
-
 namespace picongpu
 {
     namespace plugins
@@ -95,7 +94,7 @@ namespace picongpu
                  * @param speciesName name of the particle species
                  * @param direction the direction the particles are leaving the simulation
                  */
-                void onParticleLeave(const std::string& speciesName, const int32_t direction) override
+                void onParticleLeave(std::string const& speciesName, int32_t const direction) override
                 {
                     for(auto& instance : instanceList)
                         instance->onParticleLeave(speciesName, direction);

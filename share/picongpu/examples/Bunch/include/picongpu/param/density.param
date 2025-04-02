@@ -56,7 +56,6 @@ namespace picongpu
         /* definition of cloud profile */
         using GaussianCloud = GaussianCloudImpl<GaussianCloudParam>;
 
-
         struct FreeFormulaFunctor
         {
             /** This formula uses SI quantities only
@@ -68,17 +67,18 @@ namespace picongpu
              *
              * @return float_X density [normalized to 1.0]
              */
-            HDINLINE float_X operator()(const floatD_64& position_SI, const float3_64& cellSize_SI)
+            HDINLINE float_X operator()(floatD_64 const& position_SI, float3_64 const& cellSize_SI)
             {
                 /* add particle in cell at center of Gaussian Cloud profile */
-                const float3_64 position_start_SI(1.024e-5, 9.072e-5, 1.024e-5);
+                float3_64 const position_start_SI(1.024e-5, 9.072e-5, 1.024e-5);
 
                 /* from all cells ... */
-                const pmacc::math::UInt64<simDim> cell_id(position_SI / cellSize_SI.shrink<simDim>());
+                pmacc::math::UInt64<simDim> const cell_id(position_SI / cellSize_SI.shrink<simDim>());
 
                 /* ... we calculate the corresponding "center" cell to init the particle in ... */
-                const pmacc::math::UInt64<simDim> cell_start(precisionCast<uint64_t>(
-                    math::floor(position_start_SI.shrink<simDim>() / cellSize_SI.shrink<simDim>())));
+                pmacc::math::UInt64<simDim> const cell_start(
+                    precisionCast<uint64_t>(
+                        math::floor(position_start_SI.shrink<simDim>() / cellSize_SI.shrink<simDim>())));
 
                 /* ... and only in that center cell the density is 1.0, outside zero */
                 bool isStartCell = true;

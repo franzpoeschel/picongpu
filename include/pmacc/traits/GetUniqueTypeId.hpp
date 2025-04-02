@@ -57,7 +57,7 @@ namespace pmacc
             template<typename T_Type>
             struct TypeId
             {
-                static const uint64_t id;
+                static uint64_t const id;
             };
 
             /** These id values are generated during the startup for all types that cause
@@ -68,7 +68,7 @@ namespace pmacc
              * the run-time access is not.
              */
             template<typename T_Type>
-            const uint64_t TypeId<T_Type>::id = getUniqueId<uint64_t>();
+            uint64_t const TypeId<T_Type>::id = getUniqueId<uint64_t>();
 
             /** check if a value can be represented by the type
              *
@@ -128,9 +128,9 @@ namespace pmacc
              *
              * @param maxValue largest allowed id
              */
-            static const ResultType uid(uint64_t maxValue = std::numeric_limits<ResultType>::max())
+            static ResultType const uid(uint64_t maxValue = std::numeric_limits<ResultType>::max())
             {
-                const uint64_t id = detail::TypeId<Type>::id;
+                uint64_t const id = detail::TypeId<Type>::id;
                 detail::idRangeCheck<T_ResultType>(id);
                 return static_cast<ResultType>(id);
             }

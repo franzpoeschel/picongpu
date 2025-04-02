@@ -22,7 +22,6 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/fields/incidentField/traits/GetFunctor.hpp"
 
-
 namespace picongpu::fields::incidentField::traits
 {
     /** Get max E field amplitude for the given profile type

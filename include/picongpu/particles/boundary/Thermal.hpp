@@ -37,7 +37,6 @@
 #include <cstdint>
 #include <limits>
 
-
 namespace picongpu
 {
     namespace particles
@@ -163,7 +162,7 @@ namespace picongpu
                         for(uint32_t d = 0; d < simDim; d++)
                         {
                             pos[d] += (velAfterThermal[d] - velBeforeThermal[d]) * timeAfterFirstBoundaryCross
-                                / sim.pic.getCellSize()[d];
+                                      / sim.pic.getCellSize()[d];
                             if((crossedBoundary[d] > 0) && (pos[d] >= -epsilon))
                                 pos[d] = -epsilon;
                             else if((crossedBoundary[d] < 0) && (pos[d] <= 1.0_X))

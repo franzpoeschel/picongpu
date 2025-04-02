@@ -59,8 +59,9 @@ namespace picongpu::particles::atomicPhysics::stage
                 IonSpecies::FrameType::getName() + "_rateCacheField");
 
             // rate cache inits to all zeros
-            rateCacheField.getDeviceBuffer().setValue(picongpu::particles::atomicPhysics::localHelperFields::RateCache<
-                                                      picongpu::traits::GetNumberAtomicStates<IonSpecies>::value>());
+            rateCacheField.getDeviceBuffer().setValue(
+                picongpu::particles::atomicPhysics::localHelperFields::RateCache<
+                    picongpu::traits::GetNumberAtomicStates<IonSpecies>::value>());
         }
     };
 } // namespace picongpu::particles::atomicPhysics::stage

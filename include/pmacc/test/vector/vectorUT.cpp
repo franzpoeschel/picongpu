@@ -113,9 +113,7 @@ struct CompileTimeKernel1D
         };
 
         constexpr auto inputTypes = std::tuple<int, uint32_t, uint64_t, float, double>{};
-        constexpr bool x = std::apply(
-            [&](auto... args) constexpr { return (typeLambda(args) && ...); },
-            inputTypes);
+        constexpr bool x = std::apply([&](auto... args) constexpr { return (typeLambda(args) && ...); }, inputTypes);
         static_assert(x);
     }
 };
@@ -178,9 +176,7 @@ struct CompileTimeKernel2D
         };
 
         constexpr auto inputTypes = std::tuple<int, uint32_t, uint64_t, float, double>{};
-        constexpr bool x = std::apply(
-            [&](auto... args) constexpr { return (typeLambda(args) && ...); },
-            inputTypes);
+        constexpr bool x = std::apply([&](auto... args) constexpr { return (typeLambda(args) && ...); }, inputTypes);
         static_assert(x);
     }
 };
@@ -235,9 +231,7 @@ struct CompileTimeKernelCompare2D
         };
 
         constexpr auto inputTypes = std::tuple<int, uint32_t, uint64_t, float, double>{};
-        constexpr bool x = std::apply(
-            [&](auto... args) constexpr { return (typeLambda(args) && ...); },
-            inputTypes);
+        constexpr bool x = std::apply([&](auto... args) constexpr { return (typeLambda(args) && ...); }, inputTypes);
         static_assert(x);
     }
 };

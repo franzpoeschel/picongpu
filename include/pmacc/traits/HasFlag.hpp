@@ -38,7 +38,7 @@ namespace pmacc
         struct HasFlag;
 
         template<typename T_Object, typename T_Key>
-        bool hasFlag(const T_Object& obj, const T_Key& key)
+        bool hasFlag(T_Object const& obj, T_Key const& key)
         {
             return HasFlag<T_Object, T_Key>::type::value;
         }

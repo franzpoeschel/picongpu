@@ -75,11 +75,10 @@ namespace picongpu
                 constexpr unsigned int N_omega = 2048;
             } // namespace log_frequencies
 
-
             namespace frequencies_from_list
             {
                 /** path to text file with frequencies */
-                constexpr const char* listLocation = "/path/to/frequency_list";
+                constexpr char const* listLocation = "/path/to/frequency_list";
                 /** number of frequency values to compute if frequencies are given in a file [unitless] */
                 constexpr unsigned int N_omega = 2048;
             } // namespace frequencies_from_list
@@ -101,7 +100,6 @@ namespace picongpu
                 constexpr float_32 NyquistFactor = 0.5;
             } // namespace radiationNyquist
 
-
             ///////////////////////////////////////////////////
 
 
@@ -120,30 +118,36 @@ namespace picongpu
             namespace radFormFactor_CIC_3D
             {
             }
+
             namespace radFormFactor_TSC_3D
             {
             }
+
             namespace radFormFactor_PCS_3D
             {
             }
+
             namespace radFormFactor_CIC_1Dy
             {
             }
+
             namespace radFormFactor_Gauss_spherical
             {
             }
+
             namespace radFormFactor_Gauss_cell
             {
             }
+
             namespace radFormFactor_incoherent
             {
             }
+
             namespace radFormFactor_coherent
             {
             }
 
             namespace radFormFactor = radFormFactor_Gauss_spherical;
-
 
             ///////////////////////////////////////////////////////////
 
@@ -174,7 +178,6 @@ namespace picongpu
                 }
             };
 
-
             /** filter to (de)select particles for the radiation calculation
              *
              * to activate the filter:
@@ -182,7 +185,6 @@ namespace picongpu
              *   - add the attribute `radiationMask` to the particle species
              */
             using RadiationParticleFilter = picongpu::particles::manipulators::generic::Free<GammaFilterFunctor>;
-
 
             //////////////////////////////////////////////////
 
@@ -201,15 +203,19 @@ namespace picongpu
             namespace radWindowFunctionTriangle
             {
             }
+
             namespace radWindowFunctionHamming
             {
             }
+
             namespace radWindowFunctionTriplett
             {
             }
+
             namespace radWindowFunctionGauss
             {
             }
+
             namespace radWindowFunctionNone
             {
             }

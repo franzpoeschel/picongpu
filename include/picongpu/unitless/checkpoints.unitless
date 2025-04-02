@@ -25,7 +25,6 @@
 /* some forward declarations we need */
 #include "picongpu/fields/Fields.def"
 
-
 namespace picongpu
 {
     /** Note: we need at least FieldE and FieldB for restart

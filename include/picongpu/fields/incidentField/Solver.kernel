@@ -337,11 +337,11 @@ namespace picongpu
                                         = derivativeCoefficients.value[coeffIdx[0]][coeffIdx[1]][coeffIdx[2]];
                                     if(applyIncidentField1)
                                         result[dir1] += derivativeCoefficient
-                                            * getIncidentFieldComponent1(
+                                                        * getIncidentFieldComponent1(
                                                             incidentFieldShift1 + incidentIdxShift.shrink<simDim>());
                                     if(applyIncidentField2)
                                         result[dir2] += derivativeCoefficient
-                                            * getIncidentFieldComponent2(
+                                                        * getIncidentFieldComponent2(
                                                             incidentFieldShift2 + incidentIdxShift.shrink<simDim>());
                                     incidentIdxShift[dir2] += 1.0_X;
                                 }

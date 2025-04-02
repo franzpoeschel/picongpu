@@ -31,7 +31,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace fields
@@ -96,8 +95,9 @@ namespace picongpu
 
                 //! Helper to calculate delta
                 float_64 const coeff = stepRatio
-                    * math::sin(pmacc::math::Pi<float_64>::halfValue
-                                * static_cast<float_64>(sim.pic.getSpeedOfLight() * timeStep) / step[dir0]);
+                                       * math::sin(
+                                           pmacc::math::Pi<float_64>::halfValue
+                                           * static_cast<float_64>(sim.pic.getSpeedOfLight() * timeStep) / step[dir0]);
 
                 /** delta_x0 from eq. (10) in Lehe et al., generalized for any direction
                  *
@@ -146,9 +146,9 @@ namespace picongpu
                         rhs += sSquared[d] / stepSquared[d];
                     rhs -= 4.0 * delta * sSquared[dir0] * sSquared[dir0] / stepSquared[dir0];
                     rhs -= 4.0 * (betaDir1 / stepSquared[dir1] + betaDir0 / stepSquared[dir0]) * sSquared[dir0]
-                        * sSquared[dir1];
+                           * sSquared[dir1];
                     rhs -= 4.0 * (betaDir2 / stepSquared[dir2] + betaDir0 / stepSquared[dir0]) * sSquared[dir0]
-                        * sSquared[dir2];
+                           * sSquared[dir2];
                     auto const lhsTerm = math::sin(0.5 * omega * timeStep) / (sim.pic.getSpeedOfLight() * timeStep);
                     auto const lhs = lhsTerm * lhsTerm;
                     return rhs - lhs;
@@ -179,10 +179,12 @@ namespace picongpu
                     for(uint32_t d = 0; d < simDim; d++)
                         result += sSquaredDerivative[d] / stepSquared[d];
                     result -= 4.0 * delta * sSquared[dir0] * sSquaredDerivative[dir0] / stepSquared[dir0];
-                    result -= 4.0 * (betaDir1 / stepSquared[dir1] + betaDir0 / stepSquared[dir0])
-                        * (sSquared[dir0] * sSquaredDerivative[dir1] + sSquaredDerivative[dir0] * sSquared[dir1]);
-                    result -= 4.0 * (betaDir1 / stepSquared[dir1] + betaDir0 / stepSquared[dir0])
-                        * (sSquared[dir0] * sSquaredDerivative[dir2] + sSquaredDerivative[dir0] * sSquared[dir2]);
+                    result
+                        -= 4.0 * (betaDir1 / stepSquared[dir1] + betaDir0 / stepSquared[dir0])
+                           * (sSquared[dir0] * sSquaredDerivative[dir1] + sSquaredDerivative[dir0] * sSquared[dir1]);
+                    result
+                        -= 4.0 * (betaDir1 / stepSquared[dir1] + betaDir0 / stepSquared[dir0])
+                           * (sSquared[dir0] * sSquaredDerivative[dir2] + sSquaredDerivative[dir0] * sSquared[dir2]);
                     return result;
                 }
 

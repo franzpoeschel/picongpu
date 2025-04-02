@@ -58,7 +58,7 @@ namespace picongpu
                  * (current implementation supports only 0 or 1 per execution)
                  */
                 template<typename EType, typename ParticleType>
-                HDINLINE IonizerReturn operator()(const EType eField, ParticleType& parentIon)
+                HDINLINE IonizerReturn operator()(EType const eField, ParticleType& parentIon)
                 {
                     float_X const protonNumber
                         = picongpu::traits::GetAtomicNumbers<ParticleType>::type::numberOfProtons;

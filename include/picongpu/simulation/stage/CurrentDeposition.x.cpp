@@ -37,7 +37,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace simulation
@@ -53,7 +52,7 @@ namespace picongpu
                     using FrameType = typename SpeciesType::FrameType;
 
                     /** Compute current density created by a species in an area */
-                    HINLINE void operator()(const uint32_t currentStep, FieldJ& fieldJ, pmacc::DataConnector& dc) const
+                    HINLINE void operator()(uint32_t const currentStep, FieldJ& fieldJ, pmacc::DataConnector& dc) const
                     {
                         auto species = dc.get<SpeciesType>(FrameType::getName());
 

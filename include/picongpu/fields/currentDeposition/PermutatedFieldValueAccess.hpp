@@ -23,7 +23,6 @@
 #include <pmacc/math/Vector.hpp>
 #include <pmacc/types.hpp>
 
-
 namespace picongpu
 {
     namespace currentSolver
@@ -116,9 +115,9 @@ namespace picongpu
             {
                 return get<T_component>(pmacc::DataSpace<DIM3>(x, y, z));
             }
+
             /** @} */
         };
-
 
         /** creates an permuted field accessor
          *

@@ -19,7 +19,6 @@
 
 #pragma once
 
-
 namespace picongpu
 {
     namespace particles

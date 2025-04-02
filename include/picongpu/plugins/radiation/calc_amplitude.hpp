@@ -23,7 +23,6 @@
 
 #include <iostream>
 
-
 namespace picongpu
 {
     namespace plugins
@@ -41,7 +40,6 @@ namespace picongpu
                 }
             };
 
-
             struct OneMinusBetaTimesN
             {
                 /// Class to calculate \f$1-\beta \times \vec n\f$
@@ -51,11 +49,11 @@ namespace picongpu
 
                 //  Taylor just includes a method, When includes just enum
 
-                HDINLINE picongpu::float_32 operator()(const vector_64& n, const Particle& particle) const
+                HDINLINE picongpu::float_32 operator()(vector_64 const& n, Particle const& particle) const
                 {
                     // 1/gamma^2:
 
-                    const picongpu::float_64 gamma_inv_square(particle.getGammaInvSquare<When::now>());
+                    picongpu::float_64 const gamma_inv_square(particle.getGammaInvSquare<When::now>());
 
                     // picongpu::float_64 value; // storage for 1-\beta \times \vec n
 
@@ -67,15 +65,15 @@ namespace picongpu
                     // order
                     if(gamma_inv_square < picongpu::GAMMA_INV_SQUARE_RAD_THRESH)
                     {
-                        const picongpu::float_64 cos_theta(particle.getCosTheta<When::now>(
+                        picongpu::float_64 const cos_theta(particle.getCosTheta<When::now>(
                             n)); // cosine between looking vector and momentum of particle
-                        const picongpu::float_64 taylor_approx(
+                        picongpu::float_64 const taylor_approx(
                             cos_theta * Taylor()(gamma_inv_square) + (1.0 - cos_theta));
                         return (taylor_approx);
                     }
                     else
                     {
-                        const vector_64 beta(particle.getBeta<When::now>()); // calculate v/c=beta
+                        vector_64 const beta(particle.getBeta<When::now>()); // calculate v/c=beta
                         return (1.0 - beta * n);
                     }
                 }
@@ -88,12 +86,12 @@ namespace picongpu
                 // same interface as 'Retarded_time_2'
 
                 HDINLINE picongpu::float_64 operator()(
-                    const picongpu::float_64 t,
-                    const vector_64& n,
-                    const Particle& particle) const
+                    picongpu::float_64 const t,
+                    vector_64 const& n,
+                    Particle const& particle) const
                 {
-                    const vector_64 r(particle.getLocation<When::now>()); // location
-                    return (picongpu::float_64)(t - (n * r) / (picongpu::sim.pic.getSpeedOfLight()));
+                    vector_64 const r(particle.getLocation<When::now>()); // location
+                    return (picongpu::float_64) (t - (n * r) / (picongpu::sim.pic.getSpeedOfLight()));
                 }
             };
 
@@ -106,15 +104,15 @@ namespace picongpu
                 /// with Exponent=Square the integration over t_sim will be assumed (old DFT)
 
                 HDINLINE vector_64
-                operator()(const vector_64& n, const Particle& particle, const picongpu::float_64 delta_t) const
+                operator()(vector_64 const& n, Particle const& particle, picongpu::float_64 const delta_t) const
                 {
-                    const vector_64 beta(particle.getBeta<When::now>()); // beta = v/c
-                    const vector_64 beta_dot(
+                    vector_64 const beta(particle.getBeta<When::now>()); // beta = v/c
+                    vector_64 const beta_dot(
                         (beta - particle.getBeta<When::now + 1>())
                         / delta_t); // numeric differentiation (backward difference)
-                    const Exponent exponent; // instance of the Exponent class // ???is a static class and no instance
+                    Exponent const exponent; // instance of the Exponent class // ???is a static class and no instance
                                              // possible??? const OneMinusBetaTimesN one_minus_beta_times_n;
-                    const picongpu::float_64 factor(exponent(1.0 / (OneMinusBetaTimesN()(n, particle))));
+                    picongpu::float_64 const factor(exponent(1.0 / (OneMinusBetaTimesN()(n, particle))));
                     // factor=1/(1-beta*n)^g   g=2 for DFT and g=3 for FFT
                     return (n % ((n - beta) % beta_dot)) * factor;
                 }
@@ -123,7 +121,6 @@ namespace picongpu
             // typedef of all possible forms of OldMethod
             // typedef OldMethod<util::Cube<picongpu::float_64> > OldFFT;
             typedef OldMethod<util::Square<picongpu::float_64>> OldDFT;
-
 
             // ------- Calculate Amplitude class ------------- //
 
@@ -135,6 +132,7 @@ namespace picongpu
                 /// Retarded_Time_1 and Retarded_Time_2) and from a class to  calculate
                 /// the real vector part of the amplitude (VecCalc; possibilities:
                 /// OldFFT, OldDFT, Partial_Integral_Method_1, Partial_Integral_Method_2)
+
             public:
                 /// constructor
                 // takes a lot of parameters to have a general interface
@@ -142,9 +140,9 @@ namespace picongpu
                 // of base classes
 
                 HDINLINE CalcAmplitude(
-                    const Particle& particle,
-                    const picongpu::float_64 delta_t,
-                    const picongpu::float_64 t_sim)
+                    Particle const& particle,
+                    picongpu::float_64 const delta_t,
+                    picongpu::float_64 const t_sim)
                     : m_particle(particle)
                     , m_delta_t(delta_t)
                     , m_t_sim(t_sim)
@@ -153,16 +151,16 @@ namespace picongpu
 
                 // get real vector part of amplitude
 
-                HDINLINE vector_64 getVector(const vector_64& n) const
+                HDINLINE vector_64 getVector(vector_64 const& n) const
                 {
-                    const vector_64 look_direction(n.unitVec()); // make sure look_direction is a unit vector
+                    vector_64 const look_direction(n.unitVec()); // make sure look_direction is a unit vector
                     VecCalc vecC;
                     return vecC(look_direction, m_particle, m_delta_t);
                 }
 
                 // get retarded time
 
-                HDINLINE picongpu::float_64 getTRet(const vector_64 look_direction) const
+                HDINLINE picongpu::float_64 getTRet(vector_64 const look_direction) const
                 {
                     TimeCalc timeC;
                     return timeC(m_t_sim, look_direction, m_particle);
@@ -173,9 +171,9 @@ namespace picongpu
 
             private:
                 // data:
-                const Particle& m_particle; // one particle
-                const picongpu::float_64 m_delta_t; // length of one time step in simulation
-                const picongpu::float_64 m_t_sim; // simulation time (for methods not using index*delta_t )
+                Particle const& m_particle; // one particle
+                picongpu::float_64 const m_delta_t; // length of one time step in simulation
+                picongpu::float_64 const m_t_sim; // simulation time (for methods not using index*delta_t )
             };
 
         } // namespace radiation

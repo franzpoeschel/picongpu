@@ -178,7 +178,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
 
             // eV
             float_X const ionizationEnergy = chargeStateBox.ionizationEnergy(currentChargeState)
-                - atomicStateBox.energy(currentAtomicStateClctIdx);
+                                             - atomicStateBox.energy(currentAtomicStateClctIdx);
 
             // eV
             float_X ipd = kernelState.superCellConstantIPD;

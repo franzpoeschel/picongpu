@@ -43,7 +43,6 @@ namespace picongpu
 
             } // namespace acc
 
-
             /** Set the in cell position to in-cell random
              *
              * The new in-cell position is uniformly distributed position between [0.0;1.0).

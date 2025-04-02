@@ -32,7 +32,6 @@
 
 #include <boost/core/ignore_unused.hpp>
 
-
 namespace pmacc
 {
     namespace fields

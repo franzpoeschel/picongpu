@@ -23,7 +23,6 @@
 
 #include <boost/mpl/placeholders.hpp>
 
-
 namespace picongpu
 {
     namespace particles

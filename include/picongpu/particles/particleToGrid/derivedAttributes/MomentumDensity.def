@@ -30,7 +30,6 @@
 #include <cstdint>
 #include <vector>
 
-
 namespace picongpu
 {
     namespace particles

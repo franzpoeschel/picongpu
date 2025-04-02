@@ -53,45 +53,45 @@ namespace picongpu
                      *                to the speed of light [c, default = 1.0]
                      *  @return time delay in SI units */
                     HDINLINE float_64 operator()(
-                        const bool auto_tdelay,
-                        const float_64 tdelay_user_SI,
-                        const DataSpace<simDim>& halfSimSize,
-                        const float_64 pulselength_SI,
-                        const float_64 focus_y_SI,
-                        const float_X phi,
-                        const float_X beta_0) const;
+                        bool const auto_tdelay,
+                        float_64 const tdelay_user_SI,
+                        DataSpace<simDim> const& halfSimSize,
+                        float_64 const pulselength_SI,
+                        float_64 const focus_y_SI,
+                        float_X const phi,
+                        float_X const beta_0) const;
                 };
 
                 template<>
                 HDINLINE float_64 GetInitialTimeDelay<DIM3>::operator()(
-                    const bool auto_tdelay,
-                    const float_64 tdelay_user_SI,
-                    const DataSpace<simDim>& halfSimSize,
-                    const float_64 pulselength_SI,
-                    const float_64 focus_y_SI,
-                    const float_X phi,
-                    const float_X beta_0) const
+                    bool const auto_tdelay,
+                    float_64 const tdelay_user_SI,
+                    DataSpace<simDim> const& halfSimSize,
+                    float_64 const pulselength_SI,
+                    float_64 const focus_y_SI,
+                    float_X const phi,
+                    float_X const beta_0) const
                 {
                     if(auto_tdelay)
                     {
                         /* angle between the laser pulse front and the y-axis. Good approximation for
                          * beta0\simeq 1. For exact relation look in TWTS core routines for Ex, By or Bz. */
-                        const float_64 eta = (PI / 2) - (phi / 2);
+                        float_64 const eta = (PI / 2) - (phi / 2);
                         /* halfSimSize[2] --> Half-depth of simulation volume (in z); By geometric
                          * projection we calculate the y-distance walkoff of the TWTS-pulse.
                          * The abs()-function is for correct offset for -phi<-90Deg and +phi>+90Deg. */
-                        const float_64 y1 = float_64(halfSimSize[2] * picongpu::sim.si.getCellSize().z())
-                            * math::abs(math::cos(eta));
+                        float_64 const y1 = float_64(halfSimSize[2] * picongpu::sim.si.getCellSize().z())
+                                            * math::abs(math::cos(eta));
                         /* Fudge parameter to make sure, that TWTS pulse starts to impact simulation volume
                          * at low intensity values. */
-                        const float_64 m = 3.;
+                        float_64 const m = 3.;
                         /* Approximate cross section of laser pulse through y-axis,
                          * scaled with "fudge factor" m. */
-                        const float_64 y2 = m * (pulselength_SI * picongpu::sim.si.getSpeedOfLight()) / math::cos(eta);
+                        float_64 const y2 = m * (pulselength_SI * picongpu::sim.si.getSpeedOfLight()) / math::cos(eta);
                         /* y-position of laser coordinate system origin within simulation. */
-                        const float_64 y3 = focus_y_SI;
+                        float_64 const y3 = focus_y_SI;
                         /* Programmatically obtained time-delay */
-                        const float_64 tdelay = (y1 + y2 + y3) / (picongpu::sim.si.getSpeedOfLight() * beta_0);
+                        float_64 const tdelay = (y1 + y2 + y3) / (picongpu::sim.si.getSpeedOfLight() * beta_0);
 
                         return tdelay;
                     }
@@ -101,34 +101,34 @@ namespace picongpu
 
                 template<>
                 HDINLINE float_64 GetInitialTimeDelay<DIM2>::operator()(
-                    const bool auto_tdelay,
-                    const float_64 tdelay_user_SI,
-                    const DataSpace<simDim>& halfSimSize,
-                    const float_64 pulselength_SI,
-                    const float_64 focus_y_SI,
-                    const float_X phi,
-                    const float_X beta_0) const
+                    bool const auto_tdelay,
+                    float_64 const tdelay_user_SI,
+                    DataSpace<simDim> const& halfSimSize,
+                    float_64 const pulselength_SI,
+                    float_64 const focus_y_SI,
+                    float_X const phi,
+                    float_X const beta_0) const
                 {
                     if(auto_tdelay)
                     {
                         /* angle between the laser pulse front and the y-axis. Good approximation for
                          * beta0\simeq 1. For exact relation look in TWTS core routines for Ex, By or Bz. */
-                        const float_64 eta = (PI / 2) - (phi / 2);
+                        float_64 const eta = (PI / 2) - (phi / 2);
                         /* halfSimSize[0] --> Half-depth of simulation volume (in x); By geometric
                          * projection we calculate the y-distance walkoff of the TWTS-pulse.
                          * The abs()-function is for correct offset for -phi<-90Deg and +phi>+90Deg. */
-                        const float_64 y1 = float_64(halfSimSize[0] * picongpu::sim.si.getCellSize().x())
-                            * math::abs(math::cos(eta));
+                        float_64 const y1 = float_64(halfSimSize[0] * picongpu::sim.si.getCellSize().x())
+                                            * math::abs(math::cos(eta));
                         /* Fudge parameter to make sure, that TWTS pulse starts to impact simulation volume
                          * at low intensity values. */
-                        const float_64 m = 3.;
+                        float_64 const m = 3.;
                         /* Approximate cross section of laser pulse through y-axis,
                          * scaled with "fudge factor" m. */
-                        const float_64 y2 = m * (pulselength_SI * picongpu::sim.si.getSpeedOfLight()) / math::cos(eta);
+                        float_64 const y2 = m * (pulselength_SI * picongpu::sim.si.getSpeedOfLight()) / math::cos(eta);
                         /* y-position of laser coordinate system origin within simulation. */
-                        const float_64 y3 = focus_y_SI;
+                        float_64 const y3 = focus_y_SI;
                         /* Programmatically obtained time-delay */
-                        const float_64 tdelay = (y1 + y2 + y3) / (picongpu::sim.si.getSpeedOfLight() * beta_0);
+                        float_64 const tdelay = (y1 + y2 + y3) / (picongpu::sim.si.getSpeedOfLight() * beta_0);
 
                         return tdelay;
                     }
@@ -138,13 +138,13 @@ namespace picongpu
 
                 template<unsigned T_Dim>
                 HDINLINE float_64 getInitialTimeDelay_SI(
-                    const bool auto_tdelay,
-                    const float_64 tdelay_user_SI,
-                    const DataSpace<T_Dim>& halfSimSize,
-                    const float_64 pulselength_SI,
-                    const float_64 focus_y_SI,
-                    const float_X phi,
-                    const float_X beta_0)
+                    bool const auto_tdelay,
+                    float_64 const tdelay_user_SI,
+                    DataSpace<T_Dim> const& halfSimSize,
+                    float_64 const pulselength_SI,
+                    float_64 const focus_y_SI,
+                    float_X const phi,
+                    float_X const beta_0)
                 {
                     return GetInitialTimeDelay<T_Dim>()(
                         auto_tdelay,

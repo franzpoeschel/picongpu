@@ -19,12 +19,11 @@
 
 #pragma once
 
-
 namespace picongpu
 {
     namespace densityProfiles
     {
         template<typename T_Base>
         struct IProfile;
-    }
+    } // namespace densityProfiles
 } // namespace picongpu

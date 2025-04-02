@@ -112,12 +112,12 @@ namespace pmacc
             {
             }
 
-            constexpr Vector(const Vector& other) = default;
+            constexpr Vector(Vector const& other) = default;
 
             /** constructor allows changing the storage policy
              */
             template<typename T_OtherStorage>
-            constexpr Vector(const Vector<T_Type, T_dim, T_OtherStorage>& other)
+            constexpr Vector(Vector<T_Type, T_dim, T_OtherStorage> const& other)
                 : Vector([&](uint32_t const i) constexpr { return other[i]; })
             {
             }
@@ -126,7 +126,7 @@ namespace pmacc
                 typename T_OtherType,
                 typename T_OtherStorage,
                 typename = std::enable_if_t<std::is_convertible_v<T_OtherType, T_Type>>>
-            constexpr explicit Vector(const Vector<T_OtherType, dim, T_OtherStorage>& other)
+            constexpr explicit Vector(Vector<T_OtherType, dim, T_OtherStorage> const& other)
                 : Vector([&](uint32_t const i) constexpr { return static_cast<T_Type>(other[i]); })
             {
             }
@@ -180,7 +180,7 @@ namespace pmacc
                 return invertedVector;
             }
 
-            constexpr Vector& operator=(const Vector&) = default;
+            constexpr Vector& operator=(Vector const&) = default;
 
             constexpr Vector operator-() const
             {
@@ -211,14 +211,15 @@ namespace pmacc
             PMACC_VECTOR_ASSIGN_OP(=)
 
 #undef PMACC_VECTOR_ASSIGN_OP
+
             /** @} */
 
-            constexpr type& operator[](const uint32_t idx)
+            constexpr type& operator[](uint32_t const idx)
             {
                 return Storage::operator[](idx);
             }
 
-            constexpr type const& operator[](const uint32_t idx) const
+            constexpr type const& operator[](uint32_t const idx) const
             {
                 return Storage::operator[](idx);
             }
@@ -246,6 +247,7 @@ namespace pmacc
             PMACC_NAMED_ARRAY_ACCESS(w, 3)
 
 #undef PMACC_NAMED_ARRAY_ACCESS
+
             /** @} */
 
             /** Shrink the number of elements of a vector.
@@ -274,7 +276,7 @@ namespace pmacc
              *         Indexing will wrapp around when the end of the origin vector is reached.
              */
             template<uint32_t T_numElements>
-            HDINLINE Vector<type, T_numElements> shrink(const int startIdx) const
+            HDINLINE Vector<type, T_numElements> shrink(int const startIdx) const
             {
                 PMACC_CASSERT_MSG(
                     math_Vector_T_numElements_must_be_lesser_or_equal_to_Vector_DIM,
@@ -373,7 +375,7 @@ namespace pmacc
              * .toString(";","|")     -> |x;...;z|
              * .toString(",","[]")    -> [x,...,z]
              */
-            std::string toString(const std::string separator = ",", const std::string enclosings = "{}") const
+            std::string toString(std::string const separator = ",", std::string const enclosings = "{}") const
             {
                 std::string locale_enclosing_begin;
                 std::string locale_enclosing_end;
@@ -429,7 +431,7 @@ namespace pmacc
         };
 
         template<std::size_t I, typename T_Type, uint32_t T_dim, typename T_Storage>
-        constexpr auto get(const Vector<T_Type, T_dim, T_Storage>& v)
+        constexpr auto get(Vector<T_Type, T_dim, T_Storage> const& v)
         {
             return v[I];
         }
@@ -457,7 +459,7 @@ namespace pmacc
              *
              * Returns always true
              */
-            constexpr bool operator==(const Vector& rhs) const
+            constexpr bool operator==(Vector const& rhs) const
             {
                 return true;
             }
@@ -467,12 +469,12 @@ namespace pmacc
              *
              * Returns always false
              */
-            constexpr bool operator!=(const Vector& rhs) const
+            constexpr bool operator!=(Vector const& rhs) const
             {
                 return false;
             }
 
-            constexpr static Vector create(Type)
+            static constexpr Vector create(Type)
             {
                 /* this method should never be actually called,
                  * it exists only for Visual Studio to handle pmacc::math::Size_t< 0 >
@@ -484,10 +486,10 @@ namespace pmacc
         // type deduction guide
         template<typename T_1, typename... T_Args>
         ALPAKA_FN_HOST_ACC Vector(T_1, T_Args...)
-            ->Vector<T_1, uint32_t(sizeof...(T_Args) + 1u), ArrayStorage<T_1, uint32_t(sizeof...(T_Args) + 1u)>>;
+            -> Vector<T_1, uint32_t(sizeof...(T_Args) + 1u), ArrayStorage<T_1, uint32_t(sizeof...(T_Args) + 1u)>>;
 
         template<typename Type, uint32_t dim, typename T_Storage>
-        std::ostream& operator<<(std::ostream& s, const Vector<Type, dim, T_Storage>& vec)
+        std::ostream& operator<<(std::ostream& s, Vector<Type, dim, T_Storage> const& vec)
         {
             return s << vec.toString();
         }
@@ -547,6 +549,7 @@ namespace pmacc
         PMACC_VECTOR_BINARY_OP(T_Type, %)
 
 #undef PMACC_VECTOR_BINARY_OP
+
         /** @} */
 
 
@@ -569,8 +572,8 @@ namespace pmacc
             uint32_t T_dim,
             typename = std::enable_if_t<std::is_integral_v<T_IntegralType> && T_dim >= DIM2>>
         constexpr T_IntegralType linearize(
-            const Vector<T_IntegralType, T_dim - 1u, T_Storage>& size,
-            const Vector<T_IntegralType, T_dim, T_OtherStorage>& idx)
+            Vector<T_IntegralType, T_dim - 1u, T_Storage> const& size,
+            Vector<T_IntegralType, T_dim, T_OtherStorage> const& idx)
         {
             T_IntegralType linearIdx{idx[T_dim - 1u]};
             for(int d = T_dim - 2; d >= 0; --d)
@@ -586,8 +589,8 @@ namespace pmacc
             uint32_t T_dim,
             typename = std::enable_if_t<std::is_integral_v<T_IntegralType>>>
         constexpr T_IntegralType linearize(
-            const Vector<T_IntegralType, T_dim, T_Storage>& size,
-            const Vector<T_IntegralType, T_dim, T_OtherStorage>& idx)
+            Vector<T_IntegralType, T_dim, T_Storage> const& size,
+            Vector<T_IntegralType, T_dim, T_OtherStorage> const& idx)
         {
             return linearize(size.template shrink<T_dim - 1u>(), idx);
         }
@@ -598,8 +601,8 @@ namespace pmacc
             typename T_OtherStorage,
             typename = std::enable_if_t<std::is_integral_v<T_IntegralType>>>
         HDINLINE T_IntegralType linearize(
-            const Vector<T_IntegralType, DIM1, T_Storage>&,
-            const Vector<T_IntegralType, DIM1, T_OtherStorage>& idx)
+            Vector<T_IntegralType, DIM1, T_Storage> const&,
+            Vector<T_IntegralType, DIM1, T_OtherStorage> const& idx)
         {
             return idx.x();
         }
@@ -622,7 +625,7 @@ namespace pmacc
             typename T_Storage,
             uint32_t T_dim,
             typename = std::enable_if_t<std::is_integral_v<T_IntegralType> && T_dim >= DIM2>>
-        HDINLINE auto mapToND(const Vector<T_IntegralType, T_dim, T_Storage>& size, T_IntegralType linearIdx)
+        HDINLINE auto mapToND(Vector<T_IntegralType, T_dim, T_Storage> const& size, T_IntegralType linearIdx)
         {
             Vector<T_IntegralType, T_dim - 1u> pitchExtents;
             pitchExtents[0] = size[0];
@@ -643,7 +646,7 @@ namespace pmacc
             typename T_IntegralType,
             typename T_Storage,
             typename = std::enable_if_t<std::is_integral_v<T_IntegralType>>>
-        HDINLINE auto mapToND(const Vector<T_IntegralType, DIM1, T_Storage>& size, T_IntegralType linearIdx)
+        HDINLINE auto mapToND(Vector<T_IntegralType, DIM1, T_Storage> const& size, T_IntegralType linearIdx)
         {
             return linearIdx;
         }

@@ -23,7 +23,6 @@
 
 #include <pmacc/traits/HasIdentifier.hpp>
 
-
 namespace picongpu::plugins::radiation
 {
     /** get the value of the particle attribute `radiationMask`
@@ -37,7 +36,7 @@ namespace picongpu::plugins::radiation
      * defined
      */
     template<typename T_Particle>
-    HDINLINE bool getRadiationMask(const T_Particle& particle)
+    HDINLINE bool getRadiationMask(T_Particle const& particle)
     {
         constexpr bool hasRadiationMask
             = pmacc::traits::HasIdentifier<typename T_Particle::FrameType, radiationMask>::type::value;

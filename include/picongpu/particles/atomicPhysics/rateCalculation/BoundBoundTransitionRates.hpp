@@ -37,7 +37,6 @@
 #include <cmath>
 #include <cstdint>
 
-
 /** @file implements calculation of rates for bound-bound atomic physics transitions
  *
  * this includes:
@@ -211,8 +210,9 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             if constexpr(picongpu::atomicPhysics::debug::rateCalculation::DEBUG_CHECKS)
                 if(energyDifference < 0._X)
                 {
-                    printf("atomicPhysics ERROR: upper and lower state inverted in "
-                           "collisionalBoundBoundCrossSection() call\n");
+                    printf(
+                        "atomicPhysics ERROR: upper and lower state inverted in "
+                        "collisionalBoundBoundCrossSection() call\n");
                     return 0._X;
                 }
 
@@ -244,14 +244,15 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
                 8. * pmacc::math::cPow(picongpu::PI * sim.si.getBohrRadius(), u8(2u))
                 / (1.e-22)); // [1e6b], ~ 2211,01 * 1e6b
             // 1e6b
-            constexpr float_X constantPart = scalingConstant
-                * static_cast<float_X>(pmacc::math::cPow(sim.si.conv().joule2eV(sim.si.getRydbergEnergy()), u8(2u)));
+            constexpr float_X constantPart
+                = scalingConstant
+                  * static_cast<float_X>(pmacc::math::cPow(sim.si.conv().joule2eV(sim.si.getRydbergEnergy()), u8(2u)));
             // [1e6b * (eV)^2]
 
             // 1e6b*(eV)^2 / (eV)^2 * unitless * (eV)/(eV) * unitless = 1e6b
             float_X crossSection_butGaunt = constantPart / math::sqrt(3._X)
-                / pmacc::math::cPow(energyDifference, u8(2u)) * collisionalOscillatorStrength
-                * (energyDifference / energyElectron);
+                                            / pmacc::math::cPow(energyDifference, u8(2u))
+                                            * collisionalOscillatorStrength * (energyDifference / energyElectron);
             // [1e6b]
 
             float_X result = 0.0_X;
@@ -286,7 +287,7 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
 
                 // [1e6b]
                 result = crossSection_butGaunt * ratio
-                    * gauntFactor(U, transitionCollectionIndex, boundBoundTransitionDataBox);
+                         * gauntFactor(U, transitionCollectionIndex, boundBoundTransitionDataBox);
             }
             return result;
         }
@@ -421,7 +422,7 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             // sim.unit.time() * 1/(sim.unit.time()^2) * unitless * unitless = 1/sim.unit.time()
             // 1/sim.unit.time()
             return scalingConstantRate * frequencyPhoton * frequencyPhoton * ratio
-                * boundBoundTransitionDataBox.absorptionOscillatorStrength(transitionCollectionIndex);
+                   * boundBoundTransitionDataBox.absorptionOscillatorStrength(transitionCollectionIndex);
         }
 
         /// @todo radiativeBoundBoundCrossSection, Brian Marre, 2022

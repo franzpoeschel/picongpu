@@ -89,7 +89,7 @@ namespace pmacc
                 [[maybe_unused]] uint32_t const numRanksPerDevice,
                 [[maybe_unused]] MPI_Comm mpiComm) const
             {
-#if(!ALPAKA_ACC_GPU_CUDA_ENABLED && !ALPAKA_ACC_GPU_HIP_ENABLED)
+#if (!ALPAKA_ACC_GPU_CUDA_ENABLED && !ALPAKA_ACC_GPU_HIP_ENABLED)
                 return true;
 #else
                 if(numRanksPerDevice >= 2u)

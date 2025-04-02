@@ -26,7 +26,6 @@
 #include "pmacc/eventSystem/tasks/DeviceTask.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     template<typename T_SrcBuffer, typename T_DestBuffer>

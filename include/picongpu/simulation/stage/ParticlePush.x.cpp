@@ -49,7 +49,7 @@ namespace picongpu
             using FrameType = typename SpeciesType::FrameType;
 
             template<typename T_EventList>
-            HINLINE void operator()(const uint32_t currentStep, const EventTask& eventInt, T_EventList& updateEvent)
+            HINLINE void operator()(uint32_t const currentStep, EventTask const& eventInt, T_EventList& updateEvent)
                 const
             {
                 DataConnector& dc = Environment<>::get().DataConnector();
@@ -99,8 +99,8 @@ namespace picongpu
              * @param commEvent[out] grouped event that marks the end of the species communication
              */
             HINLINE void operator()(
-                const uint32_t currentStep,
-                const EventTask& eventInt,
+                uint32_t const currentStep,
+                EventTask const& eventInt,
                 EventTask& pushEvent,
                 EventTask& commEvent) const
             {

@@ -22,7 +22,6 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/simulation/control/MovingWindow.hpp"
 
-
 namespace picongpu
 {
     namespace densityProfiles
@@ -46,7 +45,7 @@ namespace picongpu
              *
              * @param totalCellOffset total offset including all slides [in cells]
              */
-            HDINLINE float_X operator()(const DataSpace<simDim>& totalCellOffset)
+            HDINLINE float_X operator()(DataSpace<simDim> const& totalCellOffset)
             {
                 floatD_X const globalCellPos(
                     precisionCast<float_X>(totalCellOffset) * sim.pic.getCellSize().shrink<simDim>());

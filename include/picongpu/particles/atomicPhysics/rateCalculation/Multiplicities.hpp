@@ -75,8 +75,9 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             if constexpr(picongpu::atomicPhysics::debug::rateCalculation::DEBUG_CHECKS)
                 if(lowerState[i] < removedElectrons[i])
                 {
-                    printf("atomicPhysics ERROR: in multiplicityBoundFreeTransition lowerState[i] < "
-                           "removedElectrons[i]\n");
+                    printf(
+                        "atomicPhysics ERROR: in multiplicityBoundFreeTransition lowerState[i] < "
+                        "removedElectrons[i]\n");
                     return 1.;
                 }
 

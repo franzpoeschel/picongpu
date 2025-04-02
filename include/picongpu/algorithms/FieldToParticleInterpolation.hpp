@@ -56,7 +56,7 @@ namespace picongpu
             pmacc::math::CT::min<typename pmacc::math::CT::mul<SuperCellSize, GuardSize>::type>::type::value
                     >= lowerMargin
                 && pmacc::math::CT::min<typename pmacc::math::CT::mul<SuperCellSize, GuardSize>::type>::type::value
-                    >= upperMargin);
+                       >= upperMargin);
 
         /*(supp + 1) % 2 is 1 for even supports else 0*/
         static constexpr int begin = -supp / 2 + (supp + 1) % 2;
@@ -94,7 +94,7 @@ namespace picongpu
         };
 
         template<class T_FieldDataBox, class VecVector>
-        HDINLINE auto operator()(T_FieldDataBox const& field, const floatD_X& particlePos, const VecVector& fieldPos)
+        HDINLINE auto operator()(T_FieldDataBox const& field, floatD_X const& particlePos, VecVector const& fieldPos)
         {
             /**\brief:
              * The following calls seperate the vector interpolation into
@@ -111,10 +111,7 @@ namespace picongpu
                 floatD_X particlePosShifted = particlePos;
                 ShiftCoordinateSystem<supp>()(shiftedField, particlePosShifted, fieldPos[i]);
 
-                auto accessFunctor = [&](DataSpace<simDim> const& idx) constexpr
-                {
-                    return shiftedField(idx)[i];
-                };
+                auto accessFunctor = [&](DataSpace<simDim> const& idx) constexpr { return shiftedField(idx)[i]; };
                 result[i] = InterpolationMethod::template interpolate<begin, end>(
                     accessFunctor,
                     getShapeFunctors(particlePosShifted));

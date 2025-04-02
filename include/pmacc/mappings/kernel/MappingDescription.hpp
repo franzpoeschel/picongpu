@@ -80,7 +80,7 @@ namespace pmacc
             }
         }
 
-        MappingDescription(const MappingDescription&) = default;
+        MappingDescription(MappingDescription const&) = default;
 
         HDINLINE DataSpace<DIM> getGridSuperCells() const
         {
@@ -107,7 +107,7 @@ namespace pmacc
          * @param globaOffset cells
          * @return global index of the root supercell
          */
-        HINLINE DataSpace<DIM> getRootSuperCellCoordinate(const DataSpace<DIM> globalOffset) const
+        HINLINE DataSpace<DIM> getRootSuperCellCoordinate(DataSpace<DIM> const globalOffset) const
         {
             return globalOffset / SuperCellSize::toRT();
         }

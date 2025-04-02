@@ -55,7 +55,7 @@ namespace picongpu
                         >= currentLowerMargin
 
                     && pmacc::math::CT::min<typename pmacc::math::CT::mul<SuperCellSize, GuardSize>::type>::type::value
-                        >= currentUpperMargin);
+                           >= currentUpperMargin);
 
             static constexpr int begin = ParticleAssign::begin;
             static constexpr int end = begin + supp;
@@ -67,16 +67,16 @@ namespace picongpu
             DINLINE void operator()(
                 T_Worker const& worker,
                 DataBoxJ dataBoxJ,
-                const PosType pos,
-                const VelType velocity,
-                const ChargeType charge,
-                const float_X deltaTime)
+                PosType const pos,
+                VelType const velocity,
+                ChargeType const charge,
+                float_X const deltaTime)
             {
                 this->charge = charge;
-                const float2_X deltaPos = float2_X(
+                float2_X const deltaPos = float2_X(
                     velocity.x() * deltaTime / sim.pic.getCellSize().x(),
                     velocity.y() * deltaTime / sim.pic.getCellSize().y());
-                const PosType oldPos = pos - deltaPos;
+                PosType const oldPos = pos - deltaPos;
                 Line<float2_X> line(oldPos, pos);
 
                 DataSpace<simDim> gridShift;
@@ -146,10 +146,10 @@ namespace picongpu
             template<typename T_DataBox, typename T_Permutation, typename T_Worker>
             DINLINE void cptCurrent1D(
                 T_Worker const& worker,
-                const DataSpace<simDim>& parStatus,
+                DataSpace<simDim> const& parStatus,
                 PermutatedFieldValueAccess<T_DataBox, T_Permutation> jField,
-                const Line<float2_X>& line,
-                const float_X cellEdgeLength)
+                Line<float2_X> const& line,
+                float_X const cellEdgeLength)
             {
                 /* skip calculation if the particle is not moving in x direction */
                 if(line.m_pos0[0] == line.m_pos1[0])
@@ -174,15 +174,15 @@ namespace picongpu
                 /* We multiply with `cellEdgeLength` due to the fact that the attribute for the
                  * in-cell particle `position` (and it's change in sim.pic.getDt()) is normalize to [0,1)
                  */
-                const float_X currentSurfaceDensity = this->charge
-                    * (1.0_X / float_X(sim.pic.getCellSize().productOfComponents() * sim.pic.getDt()))
-                    * cellEdgeLength;
+                float_X const currentSurfaceDensity
+                    = this->charge * (1.0_X / float_X(sim.pic.getCellSize().productOfComponents() * sim.pic.getDt()))
+                      * cellEdgeLength;
 
                 for(int j = begin; j < end + 1; ++j)
                     if(j < end + bitpacking::getValue(parStatus[1], bitpacking::Status::LEAVE_CELL))
                     {
-                        const float_X s0j = shapeJ.S0(j);
-                        const float_X dsj = shapeJ.S1(j) - s0j;
+                        float_X const s0j = shapeJ.S0(j);
+                        float_X const dsj = shapeJ.S1(j) - s0j;
 
                         float_X tmp = -currentSurfaceDensity * (s0j + 0.5_X * dsj);
 
@@ -198,7 +198,7 @@ namespace picongpu
                                  * from Esirkepov paper. All coordinates are rotated before thus we can always use C
                                  * style W(i,j,k,0).
                                  */
-                                const float_X W = shapeI.DS(i) * tmp;
+                                float_X const W = shapeI.DS(i) * tmp;
                                 accumulated_J += W;
                                 auto const atomicOp = typename T_Strategy::BlockReductionOp{};
                                 atomicOp(worker, jField.template get<0>(i, j), accumulated_J);
@@ -209,10 +209,10 @@ namespace picongpu
             template<typename T_JField, typename T_Worker>
             DINLINE void cptCurrentZ(
                 T_Worker const& worker,
-                const DataSpace<simDim>& parStatus,
+                DataSpace<simDim> const& parStatus,
                 T_JField jField,
-                const Line<float2_X>& line,
-                const float_X v_z)
+                Line<float2_X> const& line,
+                float_X const v_z)
             {
                 if(v_z == 0.0_X)
                     return;
@@ -240,18 +240,18 @@ namespace picongpu
                 for(int j = begin; j < end + 1; ++j)
                     if(j < end + leaveCellJ)
                     {
-                        const float_X s0j = shapeJ.S0(j);
-                        const float_X dsj = shapeJ.S1(j) - s0j;
+                        float_X const s0j = shapeJ.S0(j);
+                        float_X const dsj = shapeJ.S1(j) - s0j;
 
                         int const leaveCellI = bitpacking::getValue(parStatus[0], bitpacking::Status::LEAVE_CELL);
                         for(int i = begin; i < end + 1; ++i)
                             if(i < end + leaveCellI)
                             {
-                                const float_X s0i = shapeI.S0(i);
-                                const float_X dsi = shapeI.S1(i) - s0i;
+                                float_X const s0i = shapeI.S0(i);
+                                float_X const dsi = shapeI.S1(i) - s0i;
                                 float_X W = s0i * s0j + 0.5_X * (dsi * s0j + s0i * dsj) + (1.0_X / 3.0_X) * dsi * dsj;
 
-                                const float_X j_z = W * currentSurfaceDensityZ;
+                                float_X const j_z = W * currentSurfaceDensityZ;
                                 auto const atomicOp = typename T_Strategy::BlockReductionOp{};
                                 atomicOp(worker, jField(DataSpace<DIM2>(i, j)).z(), j_z);
                             }

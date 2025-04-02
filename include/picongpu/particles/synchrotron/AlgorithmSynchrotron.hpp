@@ -93,9 +93,9 @@ namespace picongpu
 
                 template<typename T_Worker, typename EType, typename BType, typename ParticleType>
                 HDINLINE float_X operator()(
-                    const T_Worker& worker,
-                    const BType bField,
-                    const EType eField,
+                    T_Worker const& worker,
+                    BType const bField,
+                    EType const eField,
                     ParticleType& parentElectron,
                     float_64 randNr1,
                     float_64 randNr2,
@@ -145,18 +145,19 @@ namespace picongpu
 
                     //! Calculate chi
                     float_X const gamma = Gamma()(parentElectron[momentum_], mass);
-                    float_X const inverse_E_Schwinger = (-sim.pic.getElectronCharge() * sim.pic.getHbar())
-                        / (sim.pic.getElectronMass() * sim.pic.getElectronMass() * sim.pic.getSpeedOfLight()
-                           * sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight());
+                    float_X const inverse_E_Schwinger
+                        = (-sim.pic.getElectronCharge() * sim.pic.getHbar())
+                          / (sim.pic.getElectronMass() * sim.pic.getElectronMass() * sim.pic.getSpeedOfLight()
+                             * sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight());
                     float_X const chi = HeffValue * gamma * inverse_E_Schwinger;
 
                     //! zq
-                    const float_64 oneMinusDeltaOverDelta = (1. - delta) / delta;
-                    const float_X zq = 2._X / (3._X * chi) / oneMinusDeltaOverDelta;
+                    float_64 const oneMinusDeltaOverDelta = (1. - delta) / delta;
+                    float_X const zq = 2._X / (3._X * chi) / oneMinusDeltaOverDelta;
 
                     //! zq convert to index and F1 and F2
-                    const float_X zqExponent = math::log2(zq);
-                    const int16_t index
+                    float_X const zqExponent = math::log2(zq);
+                    int16_t const index
                         = static_cast<int16_t>((zqExponent - minZqExponent) / stepWidthLogatihmicScale);
 
                     float_X F1 = 0._X;
@@ -188,8 +189,9 @@ namespace picongpu
                      * overflows
                      */
                     float_X numericFactor = sim.pic.getDt() * sim.pic.getElectronCharge() / sim.pic.getHbar()
-                        * sim.pic.getElectronCharge() / sim.pic.getHbar() * sim.pic.getElectronMass()
-                        * sim.pic.getSpeedOfLight() / (sim.pic.getEps0() * 4._X * PI);
+                                            * sim.pic.getElectronCharge() / sim.pic.getHbar()
+                                            * sim.pic.getElectronMass() * sim.pic.getSpeedOfLight()
+                                            / (sim.pic.getEps0() * 4._X * PI);
 
                     if constexpr(params::supressRequirementWarning == false)
                     {
@@ -278,7 +280,7 @@ namespace picongpu
             public:
                 /** host constructor initializing member : random number generator */
                 AlgorithmSynchrotron(
-                    const uint32_t currentStep,
+                    uint32_t const currentStep,
                     GridBuffer<float_X, 2>::DataBoxType F1F2DeviceBuff,
                     GridBuffer<int32_t, 1>::DataBoxType failedRequirementQBuff)
                     : randomGen(RNGFactory::createRandom<Distribution>())
@@ -305,7 +307,7 @@ namespace picongpu
                  * @param workerCfg configuration of the worker
                  */
                 template<typename T_Worker>
-                DINLINE void collectiveInit(const T_Worker& worker, const DataSpace<simDim>& blockCell)
+                DINLINE void collectiveInit(T_Worker const& worker, DataSpace<simDim> const& blockCell)
                 {
                     /** caching of E and B fields */
                     cachedB = CachedBox::create<0, ValueType_B>(worker, BlockArea());
@@ -337,8 +339,8 @@ namespace picongpu
                 template<typename T_Worker>
                 DINLINE void init(
                     T_Worker const&,
-                    const DataSpace<simDim>& localSuperCellOffset,
-                    const uint32_t rngIdx)
+                    DataSpace<simDim> const& localSuperCellOffset,
+                    uint32_t const rngIdx)
 
                 {
                     auto rngOffset = DataSpace<simDim>::create(0);
@@ -354,20 +356,20 @@ namespace picongpu
                  * @param localIdx local (linear) index in super cell / frame
                  */
                 template<typename T_Worker>
-                DINLINE uint32_t numNewParticles(const T_Worker& worker, FrameType& electronFrame, int localIdx)
+                DINLINE uint32_t numNewParticles(T_Worker const& worker, FrameType& electronFrame, int localIdx)
                 {
                     /** alias for the single macro-particle - electron */
                     auto particle = electronFrame[localIdx];
                     /** particle position, used for field-to-particle interpolation */
                     floatD_X pos = particle[position_];
-                    const int particleCellIdx = particle[localCellIdx_];
+                    int const particleCellIdx = particle[localCellIdx_];
                     /** multi-dim coordinate of the local cell inside the super cell */
                     DataSpace<TVec::dim> localCell = pmacc::math::mapToND(TVec::toRT(), particleCellIdx);
                     /** interpolation of E-... */
-                    const picongpu::traits::FieldPosition<fields::YeeCell, FieldE> fieldPosE;
+                    picongpu::traits::FieldPosition<fields::YeeCell, FieldE> const fieldPosE;
                     ValueType_E eField = Field2ParticleInterpolation()(cachedE.shift(localCell), pos, fieldPosE());
                     /**                     ...and B-field on the particle position */
-                    const picongpu::traits::FieldPosition<fields::YeeCell, FieldB> fieldPosB;
+                    picongpu::traits::FieldPosition<fields::YeeCell, FieldB> const fieldPosB;
                     ValueType_B bField = Field2ParticleInterpolation()(cachedB.shift(localCell), pos, fieldPosB());
 
                     //! use the algorithm from the SynchrotronIdea struct
@@ -406,7 +408,7 @@ namespace picongpu
                  */
                 template<typename T_parentElectron, typename T_childPhoton, typename T_Worker>
                 DINLINE void operator()(
-                    const T_Worker& worker,
+                    T_Worker const& worker,
                     IdGenerator& idGen,
                     T_parentElectron& parentElectron,
                     T_childPhoton& childPhoton)

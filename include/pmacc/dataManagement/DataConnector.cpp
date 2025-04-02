@@ -32,7 +32,6 @@
 #include <utility>
 #include <vector>
 
-
 namespace pmacc
 {
     std::list<std::shared_ptr<ISimulationData>>::iterator DataConnector::findId(SimulationDataId id)
@@ -60,8 +59,7 @@ namespace pmacc
         initialiser.teardown();
     }
 
-
-    void DataConnector::share(const std::shared_ptr<ISimulationData>& data)
+    void DataConnector::share(std::shared_ptr<ISimulationData> const& data)
     {
         PMACC_ASSERT(data != nullptr);
 
@@ -75,17 +73,15 @@ namespace pmacc
         datasets.push_back(data);
     }
 
-
     void DataConnector::consume(std::unique_ptr<ISimulationData> data)
     {
         std::shared_ptr<ISimulationData> newOwner(std::move(data));
         share(newOwner);
     }
 
-
     void DataConnector::deregister(SimulationDataId id)
     {
-        const auto it = findId(id);
+        auto const it = findId(id);
 
         if(it == datasets.end())
             throw std::runtime_error(getExceptionStringForID("dataset not found", id));
@@ -109,14 +105,13 @@ namespace pmacc
         }
     }
 
-
     DataConnector::~DataConnector()
     {
         log<ggLog::MEMORY>("DataConnector: being destroyed (%1% datasets left to destroy)") % datasets.size();
         clean();
     }
 
-    std::string DataConnector::getExceptionStringForID(const char* msg, SimulationDataId id)
+    std::string DataConnector::getExceptionStringForID(char const* msg, SimulationDataId id)
     {
         std::stringstream stream;
         stream << "DataConnector: " << msg << " (" << id << ")";

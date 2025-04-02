@@ -113,10 +113,11 @@ namespace picongpu::particles::atomicPhysics::kernel
             T_LocalRateCacheBox const rateCacheBox,
             T_IonBox ionBox) const
         {
-            PMACC_CASSERT(checkAtomicDataBoxes<
-                          T_AtomicStateAutonomousStartIndexBlockDataBox,
-                          T_AtomicStateAutonomousNumberTransitionsDataBox,
-                          T_AutonomousTransitionDataBox>());
+            PMACC_CASSERT(
+                checkAtomicDataBoxes<
+                    T_AtomicStateAutonomousStartIndexBlockDataBox,
+                    T_AtomicStateAutonomousNumberTransitionsDataBox,
+                    T_AutonomousTransitionDataBox>());
 
             pmacc::DataSpace<simDim> const superCellIdx = areaMapping.getSuperCellIndex(worker.blockDomIdxND());
             // atomicPhysics superCellFields have no guard, but areMapping includes a guard

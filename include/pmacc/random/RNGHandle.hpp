@@ -54,7 +54,7 @@ namespace pmacc
              *
              * @param rngBox Databox of the RNG provider
              */
-            RNGHandle(const RNGBox& rngBox) : m_rngBox(rngBox)
+            RNGHandle(RNGBox const& rngBox) : m_rngBox(rngBox)
             {
             }
 
@@ -63,7 +63,7 @@ namespace pmacc
              *
              * @param cellIdx index into the underlying RNG provider
              */
-            HDINLINE void init(const RNGSpace& cellIdx)
+            HDINLINE void init(RNGSpace const& cellIdx)
             {
                 m_rngBox = m_rngBox.shift(cellIdx);
             }

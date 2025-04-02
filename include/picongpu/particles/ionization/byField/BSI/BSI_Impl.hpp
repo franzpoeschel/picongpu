@@ -43,7 +43,6 @@
 #include <pmacc/particles/meta/FindByNameOrType.hpp>
 #include <pmacc/traits/Resolve.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -100,7 +99,7 @@ namespace picongpu
 
             public:
                 /* host constructor */
-                BSI_Impl(const uint32_t currentStep)
+                BSI_Impl(uint32_t const currentStep)
                 {
                     DataConnector& dc = Environment<>::get().DataConnector();
                     /* initialize pointers on host-side E-field and current density databoxes */
@@ -122,7 +121,7 @@ namespace picongpu
                  * @param worker lockstep worker
                  */
                 template<typename T_Worker>
-                DINLINE void collectiveInit(const T_Worker& worker, const DataSpace<simDim>& blockCell)
+                DINLINE void collectiveInit(T_Worker const& worker, DataSpace<simDim> const& blockCell)
                 {
                     /* shift origin of jbox to supercell of particle */
                     jBox = jBox.shift(blockCell);
@@ -158,8 +157,8 @@ namespace picongpu
                 template<typename T_Worker>
                 DINLINE void init(
                     [[maybe_unused]] T_Worker const& worker,
-                    [[maybe_unused]] const DataSpace<simDim>& localSuperCellOffset,
-                    [[maybe_unused]] const uint32_t rngIdx)
+                    [[maybe_unused]] DataSpace<simDim> const& localSuperCellOffset,
+                    [[maybe_unused]] uint32_t const rngIdx)
                 {
                 }
 
@@ -175,11 +174,11 @@ namespace picongpu
                     auto particle = ionFrame[localIdx];
                     /* particle position, used for field-to-particle interpolation */
                     floatD_X pos = particle[position_];
-                    const int particleCellIdx = particle[localCellIdx_];
+                    int const particleCellIdx = particle[localCellIdx_];
                     /* multi-dim coordinate of the local cell inside the super cell */
                     DataSpace<TVec::dim> localCell = pmacc::math::mapToND(TVec::toRT(), particleCellIdx);
                     /* interpolation of E */
-                    const picongpu::traits::FieldPosition<fields::YeeCell, FieldE> fieldPosE;
+                    picongpu::traits::FieldPosition<fields::YeeCell, FieldE> const fieldPosE;
                     ValueType_E eField = Field2ParticleInterpolation()(cachedE.shift(localCell), pos, fieldPosE());
 
                     /* this is the point where actual ionization takes place */
@@ -217,7 +216,7 @@ namespace picongpu
                     namespace partOp = pmacc::particles::operations;
                     /* each thread sets the multiMask hard on "particle" (=1) */
                     childElectron[multiMask_] = 1u;
-                    const float_X weighting = parentIon[weighting_];
+                    float_X const weighting = parentIon[weighting_];
 
                     /* each thread initializes a clone of the parent ion but leaving out
                      * some attributes:
@@ -230,10 +229,10 @@ namespace picongpu
 
                     targetElectronClone.derive(worker, idGen, parentIon);
 
-                    const float_X massIon = picongpu::traits::attribute::getMass(weighting, parentIon);
-                    const float_X massElectron = picongpu::traits::attribute::getMass(weighting, childElectron);
+                    float_X const massIon = picongpu::traits::attribute::getMass(weighting, parentIon);
+                    float_X const massElectron = picongpu::traits::attribute::getMass(weighting, childElectron);
 
-                    const float3_X electronMomentum(parentIon[momentum_] * (massElectron / massIon));
+                    float3_X const electronMomentum(parentIon[momentum_] * (massElectron / massIon));
 
                     childElectron[momentum_] = electronMomentum;
 

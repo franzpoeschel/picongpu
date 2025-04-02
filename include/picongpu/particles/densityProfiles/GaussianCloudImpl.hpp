@@ -22,7 +22,6 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/simulation/control/MovingWindow.hpp"
 
-
 namespace picongpu
 {
     namespace densityProfiles
@@ -46,30 +45,30 @@ namespace picongpu
              *
              * @param totalCellOffset total offset including all slides [in cells]
              */
-            HDINLINE float_X operator()(const DataSpace<simDim>& totalCellOffset)
+            HDINLINE float_X operator()(DataSpace<simDim> const& totalCellOffset)
             {
-                const float_64 unit_length = sim.unit.length();
-                const float_X vacuum_y = float_X(ParamClass::vacuumCellsY) * sim.pic.getCellSize().y();
+                float_64 const unit_length = sim.unit.length();
+                float_X const vacuum_y = float_X(ParamClass::vacuumCellsY) * sim.pic.getCellSize().y();
                 constexpr auto centerSI = ParamClass::center_SI;
-                const floatD_X center = precisionCast<float_X>(centerSI / unit_length);
+                floatD_X const center = precisionCast<float_X>(centerSI / unit_length);
                 constexpr auto sigmaSI = ParamClass::sigma_SI;
-                const floatD_X sigma = precisionCast<float_X>(sigmaSI / unit_length);
+                floatD_X const sigma = precisionCast<float_X>(sigmaSI / unit_length);
 
-                const floatD_X globalCellPos(
+                floatD_X const globalCellPos(
                     precisionCast<float_X>(totalCellOffset) * sim.pic.getCellSize().shrink<simDim>());
 
                 if(globalCellPos.y() < vacuum_y)
                     return float_X(0.0);
 
                 /* for x, y, z calculate: x-x0 / sigma_x */
-                const floatD_X r0overSigma = (globalCellPos - center) / sigma;
+                floatD_X const r0overSigma = (globalCellPos - center) / sigma;
                 /* get lenghts of r0 over sigma */
-                const float_X exponent = pmacc::math::l2norm(r0overSigma);
+                float_X const exponent = pmacc::math::l2norm(r0overSigma);
 
                 /* calculate exp(factor * exponent**power) */
-                const float_X power = ParamClass::gasPower;
-                const float_X factor = ParamClass::gasFactor;
-                const float_X density = math::exp(factor * math::pow(exponent, power));
+                float_X const power = ParamClass::gasPower;
+                float_X const factor = ParamClass::gasFactor;
+                float_X const density = math::exp(factor * math::pow(exponent, power));
 
                 return density;
             }

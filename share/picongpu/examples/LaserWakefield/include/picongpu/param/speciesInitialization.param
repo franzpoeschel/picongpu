@@ -30,7 +30,6 @@
 
 #include "picongpu/particles/InitFunctors.hpp"
 
-
 namespace picongpu
 {
     namespace particles
@@ -40,9 +39,9 @@ namespace picongpu
          * the functors are called in order (from first to last functor)
          */
         using InitPipeline = pmacc::mp_list<
-#if(PARAM_IONIZATION == 0)
+#if (PARAM_IONIZATION == 0)
             CreateDensity<densityProfiles::Gaussian, startPosition::Random, PIC_Electrons>
-#    if(PARAM_IONS == 1)
+#    if (PARAM_IONS == 1)
             ,
             Derive<PIC_Electrons, PIC_Ions>
 #    endif

@@ -29,7 +29,6 @@
 #include <pmacc/meta/conversion/ApplyGuard.hpp>
 #include <pmacc/meta/conversion/ToSeq.hpp>
 
-
 namespace picongpu
 {
     namespace particles

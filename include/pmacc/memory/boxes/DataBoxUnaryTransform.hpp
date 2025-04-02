@@ -53,13 +53,13 @@ namespace pmacc
         HDINLINE DataBoxUnaryTransform(DataBoxUnaryTransform const&) = default;
 
         template<typename T_Index>
-        HDINLINE ValueType operator()(const T_Index& idx) const
+        HDINLINE ValueType operator()(T_Index const& idx) const
         {
             return UnaryFunctor()(Base::operator[](idx));
         }
 
         template<typename T_Index>
-        HDINLINE ValueType operator[](const T_Index idx) const
+        HDINLINE ValueType operator[](T_Index const idx) const
         {
             return UnaryFunctor()(Base::operator[](idx));
         }

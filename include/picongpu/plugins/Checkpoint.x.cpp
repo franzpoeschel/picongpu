@@ -25,7 +25,7 @@
 #include "picongpu/plugins/multi/IHelp.hpp"
 #include "picongpu/plugins/output/IIOBackend.hpp"
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 #    include "picongpu/plugins/openPMD/openPMDWriter.hpp"
 #endif
 #include <pmacc/pluginSystem/PluginConnector.hpp>
@@ -34,7 +34,6 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-
 
 namespace picongpu
 {
@@ -47,7 +46,7 @@ namespace picongpu
     public:
         Checkpoint() : checkpointFilename("checkpoint")
         {
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
             ioBackendsHelp["openPMD"] = std::shared_ptr<plugins::multi::IHelp>(openPMD::getOpenPMDWriterHelp());
 #endif
             // currently we support only `openPMD` as IO checkpoint plugin
@@ -100,7 +99,7 @@ namespace picongpu
                      * frame overflow in our memory manager if we process all particles in one kernel.
                      **/
                     "checkpoint.restart.chunkSize",
-                    po::value<uint32_t>(&restartChunkSize)->default_value(1000000u),
+                    po::value<uint32_t>(&restartChunkSize)->default_value(1'000'000u),
                     "Number of particles processed in one kernel call during restart to prevent frame count blowup");
 
             for(auto& backend : ioBackendsHelp)
@@ -121,7 +120,7 @@ namespace picongpu
             m_cellDescription = cellDescription;
         }
 
-        void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override
+        void checkpoint(uint32_t currentStep, std::string const checkpointDirectory) override
         {
             auto cBackend = ioBackends.find(checkpointBackendName);
             if(cBackend != ioBackends.end())
@@ -130,7 +129,7 @@ namespace picongpu
             }
         }
 
-        void restart(uint32_t restartStep, const std::string restartDirectory) override
+        void restart(uint32_t restartStep, std::string const restartDirectory) override
         {
             auto rBackend = ioBackends.find(restartBackendName);
             if(rBackend != ioBackends.end())

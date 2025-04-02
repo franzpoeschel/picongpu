@@ -25,7 +25,6 @@
 
 #include <pmacc/math/Vector.hpp>
 
-
 namespace picongpu
 {
     namespace fields
@@ -50,15 +49,15 @@ namespace picongpu
             /** @tparam float2_X position of the component in the cell
              *  @tparam DIM3     Fields (E/B/J) have 3 components, even in 1 or 2D !
              */
-            using VectorVector2D3V = const ::pmacc::math::Vector<float2_X, DIM3>;
+            using VectorVector2D3V = ::pmacc::math::Vector<float2_X, DIM3> const;
 
             HDINLINE FieldPosition() = default;
 
             HDINLINE VectorVector2D3V operator()() const
             {
-                const float2_X posE_x(0.5, 0.0);
-                const float2_X posE_y(0.0, 0.5);
-                const float2_X posE_z(0.0, 0.0);
+                float2_X const posE_x(0.5, 0.0);
+                float2_X const posE_y(0.0, 0.5);
+                float2_X const posE_z(0.0, 0.0);
 
                 return VectorVector2D3V(posE_x, posE_y, posE_z);
             }
@@ -72,15 +71,15 @@ namespace picongpu
             /** @tparam float2_X position of the component in the cell
              *  @tparam DIM3     Fields (E/B/J) have 3 components, even in 1 or 2D !
              */
-            using VectorVector3D3V = const ::pmacc::math::Vector<float3_X, DIM3>;
+            using VectorVector3D3V = ::pmacc::math::Vector<float3_X, DIM3> const;
 
             HDINLINE FieldPosition() = default;
 
             HDINLINE VectorVector3D3V operator()() const
             {
-                const float3_X posE_x(0.5, 0.0, 0.0);
-                const float3_X posE_y(0.0, 0.5, 0.0);
-                const float3_X posE_z(0.0, 0.0, 0.5);
+                float3_X const posE_x(0.5, 0.0, 0.0);
+                float3_X const posE_y(0.0, 0.5, 0.0);
+                float3_X const posE_z(0.0, 0.0, 0.5);
 
                 return VectorVector3D3V(posE_x, posE_y, posE_z);
             }
@@ -94,15 +93,15 @@ namespace picongpu
             /** @tparam float2_X position of the component in the cell
              *  @tparam DIM3     Fields (E/B/J) have 3 components, even in 1 or 2D !
              */
-            using VectorVector2D3V = const ::pmacc::math::Vector<float2_X, DIM3>;
+            using VectorVector2D3V = ::pmacc::math::Vector<float2_X, DIM3> const;
 
             HDINLINE FieldPosition() = default;
 
             HDINLINE VectorVector2D3V operator()() const
             {
-                const float2_X posB_x(0.0, 0.5);
-                const float2_X posB_y(0.5, 0.0);
-                const float2_X posB_z(0.5, 0.5);
+                float2_X const posB_x(0.0, 0.5);
+                float2_X const posB_y(0.5, 0.0);
+                float2_X const posB_z(0.5, 0.5);
 
                 return VectorVector2D3V(posB_x, posB_y, posB_z);
             }
@@ -116,15 +115,15 @@ namespace picongpu
             /** @tparam float2_X position of the component in the cell
              *  @tparam DIM3     Fields (E/B/J) have 3 components, even in 1 or 2D !
              */
-            using VectorVector3D3V = const ::pmacc::math::Vector<float3_X, DIM3>;
+            using VectorVector3D3V = ::pmacc::math::Vector<float3_X, DIM3> const;
 
             HDINLINE FieldPosition() = default;
 
             HDINLINE VectorVector3D3V operator()() const
             {
-                const float3_X posB_x(0.0, 0.5, 0.5);
-                const float3_X posB_y(0.5, 0.0, 0.5);
-                const float3_X posB_z(0.5, 0.5, 0.0);
+                float3_X const posB_x(0.0, 0.5, 0.5);
+                float3_X const posB_y(0.5, 0.0, 0.5);
+                float3_X const posB_z(0.5, 0.5, 0.0);
 
                 return VectorVector3D3V(posB_x, posB_y, posB_z);
             }

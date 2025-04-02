@@ -23,7 +23,6 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/fields/incidentField/Functors.hpp"
 
-
 namespace picongpu
 {
     namespace fields

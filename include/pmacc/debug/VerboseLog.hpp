@@ -41,11 +41,10 @@ namespace pmacc
      * @return name of LogClass
      */
     template<class LogClass>
-    std::string getLogName(const LogClass& dummy)
+    std::string getLogName(LogClass const& dummy)
     {
         return std::string("UNDEFINED_LVL");
     }
-
 
     namespace verboseLog_detail
     {
@@ -73,7 +72,7 @@ namespace pmacc
          * Create a LogLvl that contains two levels. At least one lvl has to be true
          */
         template<class OtherLogLvl>
-        LogLvl<(OtherLogLvl::lvl | lvl), membership_> operator+(const OtherLogLvl&)
+        LogLvl<(OtherLogLvl::lvl | lvl), membership_> operator+(OtherLogLvl const&)
         {
             return LogLvl<(OtherLogLvl::lvl | lvl), membership_>();
         }
@@ -89,7 +88,7 @@ namespace pmacc
             static constexpr uint64_t logLvl = LogLevel::lvl;
 
         public:
-            VerboseLog(const char* msg) : fmt(msg)
+            VerboseLog(char const* msg) : fmt(msg)
             {
             }
 
@@ -128,7 +127,7 @@ namespace pmacc
      * output of example: 4 | printf style stream messages, number example 5
      */
     template<class LogLvl>
-    verboseLog_detail::VerboseLog<LogLvl> log(const char* msg)
+    verboseLog_detail::VerboseLog<LogLvl> log(char const* msg)
     {
         return verboseLog_detail::VerboseLog<LogLvl>(msg);
     }
@@ -139,7 +138,7 @@ namespace pmacc
      * "style" % 5
      */
     template<class LogLvl>
-    verboseLog_detail::VerboseLog<LogLvl> log(const LogLvl, const char* msg)
+    verboseLog_detail::VerboseLog<LogLvl> log(LogLvl const, char const* msg)
     {
         return verboseLog_detail::VerboseLog<LogLvl>(msg);
     }

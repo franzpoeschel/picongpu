@@ -43,7 +43,6 @@
 #include <iostream>
 #include <utility>
 
-
 namespace picongpu
 {
     namespace simulation
@@ -84,7 +83,7 @@ namespace picongpu
                 struct GetSquaredScreeningLength
                 {
                     template<typename T_Acc>
-                    DINLINE void operator()(T_Acc const& acc, float1_X& lengthInvSquared, const float1_X& dens) const
+                    DINLINE void operator()(T_Acc const& acc, float1_X& lengthInvSquared, float1_X const& dens) const
                     {
                         /* avoid dividing by zero, lengthInvSquared is zero if there were no charged particles.
                          * In that case the Debye length should also be set to zero.
@@ -96,22 +95,21 @@ namespace picongpu
                             return;
                         }
                         // the default case
-                        const float_X squaredLength = 1.0_X / lengthInvSquared[0];
+                        float_X const squaredLength = 1.0_X / lengthInvSquared[0];
 
                         // enforce a lower cutoff for the Debye length equal to the mean inter atomic distance
                         // of the species with the highest density
-                        const float_X maxDens
+                        float_X const maxDens
                             = dens[0] * static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle());
-                        const float_X val = 2.0_X * pmacc::math::Pi<float_X>::doubleValue / 3.0_X * maxDens;
-                        const float_X rMin = 1.0_X / math::cbrt(val);
-                        const float_X rMin2 = rMin * rMin;
+                        float_X const val = 2.0_X * pmacc::math::Pi<float_X>::doubleValue / 3.0_X * maxDens;
+                        float_X const rMin = 1.0_X / math::cbrt(val);
+                        float_X const rMin2 = rMin * rMin;
                         lengthInvSquared[0] = math::max(squaredLength, rMin2);
                     }
                 };
             } // namespace collision
 
-
-            void debug(uint32_t const currentStep, const std::shared_ptr<FieldTmp>& screeningLengthSquared)
+            void debug(uint32_t const currentStep, std::shared_ptr<FieldTmp> const& screeningLengthSquared)
             {
                 // write Debye length averaged over the whole simulation volume to a text file for debugging
                 if constexpr(particles::collision::debugScreeningLength)
@@ -124,7 +122,7 @@ namespace picongpu
                         SqrtBox(screeningLengthSquared->getDeviceDataBox().shift(
                             screeningLengthSquared->getGridLayout().guardSizeND())),
                         screeningLengthSquared->getGridLayout().sizeWithoutGuardND());
-                    const auto elements = static_cast<uint32_t>(
+                    auto const elements = static_cast<uint32_t>(
                         screeningLengthSquared->getGridLayout().sizeWithoutGuardND().productOfComponents());
                     auto reducedValue = globalReduce(pmacc::math::operation::Add(), d1access, elements);
 
@@ -145,7 +143,7 @@ namespace picongpu
                         outFile.open(fileName.c_str(), std::ofstream::out | std::ostream::app);
                         outFile << currentStep << " " << std::scientific
                                 << static_cast<float_64>(reducedValue[0]) / static_cast<float_64>(reducedCellAmount)
-                                * sim.unit.length()
+                                       * sim.unit.length()
                                 << std::endl;
                         outFile.flush();
                         outFile.close();

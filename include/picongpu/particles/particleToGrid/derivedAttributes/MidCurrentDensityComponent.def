@@ -62,7 +62,7 @@ namespace picongpu
 
                     HDINLINE float1_64 getUnit() const
                     {
-                        const float_64 unitArea = sim.unit.length() * sim.unit.length();
+                        float_64 const unitArea = sim.unit.length() * sim.unit.length();
                         return sim.unit.charge() / (sim.unit.time() * unitArea);
                     }
 

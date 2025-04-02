@@ -42,7 +42,7 @@ namespace pmacc::eventSystem
         TransactionManager::getInstance().startOperation(op);
     };
 
-    EventTask setTransactionEvent(const EventTask& event)
+    EventTask setTransactionEvent(EventTask const& event)
     {
         return TransactionManager::getInstance().setTransactionEvent(event);
     }

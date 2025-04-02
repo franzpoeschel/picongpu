@@ -23,7 +23,6 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/particles/filter/RelativeGlobalDomainPosition.def"
 
-
 namespace picongpu
 {
     namespace particles
@@ -83,7 +82,7 @@ namespace picongpu
                         DataSpace<simDim> const globalParticleOffset(globalSuperCellOffset + cellInSuperCell);
 
                         float_X const relativePosition = float_X(globalParticleOffset[Params::dimension])
-                            / float_X(m_globalDomainSize[Params::dimension]);
+                                                         / float_X(m_globalDomainSize[Params::dimension]);
 
                         return (Params::lowerBound <= relativePosition && relativePosition < Params::upperBound);
                     }

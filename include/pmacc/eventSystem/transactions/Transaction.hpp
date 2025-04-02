@@ -48,7 +48,7 @@ namespace pmacc
          * @param event EventTask to add to base event
          * @return new base event
          */
-        EventTask setTransactionEvent(const EventTask& event);
+        EventTask setTransactionEvent(EventTask const& event);
 
         /**
          * Returns the current base event.

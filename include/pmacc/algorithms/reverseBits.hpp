@@ -27,7 +27,6 @@
 #include <climits>
 #include <type_traits>
 
-
 namespace pmacc
 {
     /**

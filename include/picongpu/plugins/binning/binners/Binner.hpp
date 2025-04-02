@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/plugins/binning/UnitConversion.hpp"
 #    include "picongpu/plugins/binning/WriteHist.hpp"
@@ -36,14 +36,13 @@
 
 #    include <openPMD/Series.hpp>
 
-
 namespace picongpu
 {
     namespace plugins::binning
     {
         HINLINE void dimensionSubtraction(
             std::array<double, numUnits>& outputDims,
-            const std::array<double, numUnits>& axisDims)
+            std::array<double, numUnits> const& axisDims)
         {
             for(size_t i = 0; i < 7; i++)
             {
@@ -195,7 +194,6 @@ namespace picongpu
                 }
             }
 
-
             void pluginRegisterHelp(po::options_description& desc) override
             {
             }
@@ -205,7 +203,7 @@ namespace picongpu
                 return pluginName;
             }
 
-            void checkpoint(uint32_t currentStep, const std::string restartDirectory) override
+            void checkpoint(uint32_t currentStep, std::string const restartDirectory) override
             {
                 /**
                  * State to hold, accumulateCounter and hReducedBuffer
@@ -247,7 +245,7 @@ namespace picongpu
                 }
             }
 
-            void restart(uint32_t restartStep, const std::string restartDirectory) override
+            void restart(uint32_t restartStep, std::string const restartDirectory) override
             {
                 // retore to master or restore equal values to all MPI ranks or restore only on dump,
                 // bool wasRestarted, and read from file and add to buffer

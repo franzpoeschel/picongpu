@@ -26,7 +26,7 @@
 #include <array>
 #include <map>
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 #    include <openPMD/openPMD.hpp>
 #endif
 
@@ -52,7 +52,7 @@ namespace picongpu
          * In this format the conversion factor needs to be divided(?)
          * is it faster/better to calculate the inverse and then multiply?
          */
-        HINLINE double getConversionFactor(const std::array<double, numUnits>& myDimension)
+        HINLINE double getConversionFactor(std::array<double, numUnits> const& myDimension)
         {
             double conversion_factor = 1.;
             for(size_t i = 0; i < 7; i++)
@@ -63,7 +63,7 @@ namespace picongpu
         }
 
         template<typename T>
-        HINLINE T toPICUnits(T varSI, const std::array<double, numUnits>& myDimension)
+        HINLINE T toPICUnits(T varSI, std::array<double, numUnits> const& myDimension)
         {
             if constexpr(std::is_integral_v<T>)
             {
@@ -76,12 +76,12 @@ namespace picongpu
         }
 
         template<typename T>
-        HINLINE double toSIUnits(T varPIC, const std::array<double, numUnits>& myDimension)
+        HINLINE double toSIUnits(T varPIC, std::array<double, numUnits> const& myDimension)
         {
             return static_cast<double>(varPIC) * getConversionFactor(myDimension);
         }
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
         HINLINE std::map<::openPMD::UnitDimension, double> makeOpenPMDUnitMap(
             const std::array<double, numUnits>& myDimension)
         {

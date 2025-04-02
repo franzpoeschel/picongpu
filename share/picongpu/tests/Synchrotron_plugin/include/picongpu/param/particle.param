@@ -33,7 +33,6 @@
 
 #include <pmacc/math/operation.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -48,11 +47,13 @@ namespace picongpu
                  */
                 static constexpr auto driftDirection = float3_X(0.0, -1.0, 0.0);
             };
+
             /** Definition of manipulator that assigns a drift in X
              *  using parameters from struct DriftParam.
              */
             using AssignYDriftNegative = unary::Drift<DriftParamNegative, pmacc::math::operation::Assign>;
         } // namespace manipulators
+
         /** a particle with a weighting below MIN_WEIGHTING will not
          *      be created / will be deleted
          *
@@ -76,6 +77,7 @@ namespace picongpu
                  */
                 static constexpr uint32_t numParticlesPerCell = 40u;
             };
+
             /** Definition of start position functor that randomly distributes macro-particles within a cell. */
 
             using Random = RandomImpl<RandomParameter>;

@@ -48,8 +48,7 @@ namespace pmacc
     class StrideIntervalMapping;
 
     template<
-        template<unsigned, class>
-        class T_MappingDescription,
+        template<unsigned, class> class T_MappingDescription,
         unsigned T_dim,
         typename T_SuperCellSize,
         uint32_t T_stride>
@@ -86,7 +85,7 @@ namespace pmacc
         {
         }
 
-        StrideIntervalMapping(const StrideIntervalMapping&) = default;
+        StrideIntervalMapping(StrideIntervalMapping const&) = default;
 
         /** Generate grid dimension information for alpaka kernel calls
          *

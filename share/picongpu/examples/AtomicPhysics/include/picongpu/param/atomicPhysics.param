@@ -30,7 +30,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu::atomicPhysics
 {
     // configuration of electron ElectronHistogram
@@ -40,9 +39,11 @@ namespace picongpu::atomicPhysics
         // eV
         static constexpr float_X maxEnergy = float_X(1.5e5);
     };
+
     using ElectronHistogram = particles::atomicPhysics::electronDistribution::LogSpaceHistogram<
         100u, // T_numberBins
         MaxEnergyParam>;
+
     //}
 
     //! atomicPhysics rate solver settings

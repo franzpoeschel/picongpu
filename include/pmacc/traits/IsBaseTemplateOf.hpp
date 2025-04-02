@@ -23,7 +23,6 @@
 
 #include <type_traits>
 
-
 namespace pmacc
 {
     namespace traits
@@ -44,7 +43,7 @@ namespace pmacc
         struct IsBaseTemplateOf
         {
             template<typename... T_Args>
-            static constexpr std::true_type test(const T_Base<T_Args...>*);
+            static constexpr std::true_type test(T_Base<T_Args...> const*);
             static constexpr std::false_type test(...);
             using type = decltype(test(std::declval<T_Derived*>()));
         };
