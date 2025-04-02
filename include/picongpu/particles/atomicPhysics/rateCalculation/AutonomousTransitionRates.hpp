@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Brian Marre, Axel Huebl
+/* Copyright 2023-2025 Brian Marre, Axel Huebl
  *
  * This file is part of PIConGPU.
  *
@@ -49,14 +49,15 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
          * @param transitionCollectionIndex index of transition in autonomousTransitionDataBox
          * @param autonomousTransitionDataBox access to autonomous transition data
          *
-         * @return unit: 1/sim.unit.time(), usually Delta_T_SI ... PIC time step length
+         * @return unit: 1/sim.unit.time
          */
         template<typename T_AutonomousTransitionDataBox>
         HDINLINE static float_X rateAutonomousIonization(
             uint32_t const transitionCollectionIndex,
             T_AutonomousTransitionDataBox const autonomousTransitionDataBox)
         {
-            return autonomousTransitionDataBox.rate(transitionCollectionIndex); // 1/sim.unit.time()
+            // 1/sim.unit.time
+            return autonomousTransitionDataBox.rate(transitionCollectionIndex);
         }
     };
 } // namespace picongpu::particles::atomicPhysics::rateCalculation
