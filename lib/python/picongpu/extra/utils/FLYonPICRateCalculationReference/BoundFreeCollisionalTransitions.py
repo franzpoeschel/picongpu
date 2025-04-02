@@ -59,9 +59,15 @@ class BoundFreeCollisionalTransitions:
             lowerStateLevelVector, upperStateLevelVector
         )
 
+        print("\t\t ionizationEnergy: {:.4}".format(ionizationEnergy))
+        print("\t\t energyDifference: {:.4}".format(energyDifference))
+        print("\t\t U: {:.4}".format(U))
+        print("\t\t wFactor: {:.4}".format(BoundFreeCollisionalTransitions._wFactor(U, screenedCharge)))
+
+        rate = 0
         # m^2 * (eV/(eV))^2 * 1/(eV/eV) * unitless * unitless / (m^2/1e6b) = 1e6b
         if U > 1:
-            return (
+            rate = (
                 np.pi
                 * const.value("Bohr radius") ** 2
                 * 2.3
@@ -72,8 +78,8 @@ class BoundFreeCollisionalTransitions:
                 * np.log(U)
                 * BoundFreeCollisionalTransitions._wFactor(U, screenedCharge)
             ) / 1e-22  # 1e6b, 1e-22 m^2
-        else:
-            return 0.0
+
+        return rate
 
     @staticmethod
     def rateCollisionalIonization(

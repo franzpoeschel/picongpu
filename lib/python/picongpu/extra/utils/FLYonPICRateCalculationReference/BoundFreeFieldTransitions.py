@@ -94,6 +94,7 @@ class BoundFreeFieldTransitions:
         rate = (
             F * np.float32(D**2.0 * gamowFactor) * np.sqrt((3.0 * nEff**3.0 * F) / (np.pi * Z**3.0)) / (8.0 * np.pi * Z)
         )
+        print("\t\t rate[AU]: {:.6}".format(rate))
         return rate
 
     @staticmethod

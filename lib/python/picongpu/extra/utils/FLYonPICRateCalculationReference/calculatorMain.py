@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # in eV
     Hartree = 27.211386245981
     # in Hartree
-    ionizationEnergy = 5.0 / Hartree
+    ionizationEnergy_ADK = 5.0 / Hartree
     # in atomic_unit["electric field"] ~ 5.1422e11 V/m
     fieldStrength = 0.0126
 
@@ -131,13 +131,13 @@ if __name__ == "__main__":
 
     print("- bound-free field")
     # in unit electric field atomic units
-    nEff = boundfreefield.BoundFreeFieldTransitions.n_eff_numpy(screenedCharge, ionizationEnergy)
+    nEff = boundfreefield.BoundFreeFieldTransitions.n_eff_numpy(screenedCharge, ionizationEnergy_ADK)
     fieldStrengthMaxADKRate = 4.0 * screenedCharge**3 / (3.0 * nEff**3 * (4.0 * nEff - 3.0))
     print(
-        "\t ADK fieldStrength: {0:.4e}, F_maxADK: {1:.4e}, F_crit_BSI: {2:.4e}".format(
+        "\t ADK:\n \t\t fieldStrength: {0:.4e}\n\t\t F_maxADK: {1:.4e}\n\t\t F_crit_BSI: {2:.4e}".format(
             fieldStrength,
             fieldStrengthMaxADKRate,
-            boundfreefield.BoundFreeFieldTransitions.F_crit_BSI(screenedCharge, ionizationEnergy),
+            boundfreefield.BoundFreeFieldTransitions.F_crit_BSI(screenedCharge, ionizationEnergy_ADK),
         )
     )
 
@@ -145,7 +145,7 @@ if __name__ == "__main__":
         "\t ADK rate(numpy) : {0:.9e} * 1/(3.3e-17s)".format(
             np.float32(
                 boundfreefield.BoundFreeFieldTransitions.ADKRate_numpy(
-                    np.float32(screenedCharge), np.float32(ionizationEnergy), np.float32(fieldStrength)
+                    np.float32(screenedCharge), np.float32(ionizationEnergy_ADK), np.float32(fieldStrength)
                 )
                 * 3.3e-17
                 / boundfreefield.atomic_unit["time"]
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         "\t ADK rate(mpmath): "
         + mp.nstr(
             boundfreefield.BoundFreeFieldTransitions.ADKRate_mpmath(
-                mp.mpf(screenedCharge), mp.mpf(ionizationEnergy), mp.mpf(fieldStrength)
+                mp.mpf(screenedCharge), mp.mpf(ionizationEnergy_ADK), mp.mpf(fieldStrength)
             )
             * mp.mpf(3.3e-17)
             / mp.mpf(boundfreefield.atomic_unit["time"]),
