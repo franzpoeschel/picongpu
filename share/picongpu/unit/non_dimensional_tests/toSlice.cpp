@@ -71,33 +71,40 @@ TEST_CASE("Both slices", "")
 
     SECTION("accept : and , syntax.")
     {
-        std::vector<std::pair<std::string, std::vector<Slice>>> testCases = {
-            // empty
-            {"", {}},
-            // only colons
-            {":", {Slice{0, static_cast<uint32_t>(-1), 1}}},
-            {"::", {Slice{0, static_cast<uint32_t>(-1), 1}}},
-            // single value
-            {":2", {Slice{0, 2, 1}}},
-            {":2:", {Slice{0, 2, 1}}},
-            {"2:", {Slice{2, static_cast<uint32_t>(-1), 1}}},
-            {"2::", {Slice{2, static_cast<uint32_t>(-1), 1}}},
-            {"::2", {Slice{0, static_cast<uint32_t>(-1), 2}}},
-            // two values
-            {"1:5", {Slice{1, 5, 1}}},
-            {"1:5:", {Slice{1, 5, 1}}},
-            {":1:5", {Slice{0, 1, 5}}},
-            {"1::5", {Slice{1, static_cast<uint32_t>(-1), 5}}},
-            // three values
-            {"1:5:2", {Slice{1, 5, 2}}},
-            // explicit -1 as end
-            {"1:-1", {Slice{1, static_cast<uint32_t>(-1), 1}}},
-            // multiple slices
-            {"1:5,10:15", {Slice{1, 5, 1}, Slice{10, 15, 1}}},
-            {"1:5:2,10:15:3", {Slice{1, 5, 2}, Slice{10, 15, 3}}},
-            {"1:-1,10:15", {Slice{1, static_cast<uint32_t>(-1), 1}, Slice{10, 15, 1}}},
-            {",1:5,,10:15,", {Slice{1, 5, 1}, Slice{10, 15, 1}}},
-        };
+        std::vector<std::pair<std::string, std::vector<Slice>>> testCases
+            = {// empty
+               {"", {}},
+               // only colons
+               {":", {Slice{0, static_cast<uint32_t>(-1), 1}}},
+               {"::", {Slice{0, static_cast<uint32_t>(-1), 1}}},
+               // single value
+               {":2", {Slice{0, 2, 1}}},
+               {":2:", {Slice{0, 2, 1}}},
+               {"2:", {Slice{2, static_cast<uint32_t>(-1), 1}}},
+               {"2::", {Slice{2, static_cast<uint32_t>(-1), 1}}},
+               {"::2", {Slice{0, static_cast<uint32_t>(-1), 2}}},
+               // two values
+               {"1:5", {Slice{1, 5, 1}}},
+               {"1:5:", {Slice{1, 5, 1}}},
+               {":1:5", {Slice{0, 1, 5}}},
+               {"1::5", {Slice{1, static_cast<uint32_t>(-1), 5}}},
+               // three values
+               {"1:5:2", {Slice{1, 5, 2}}},
+               // explicit -1 as end
+               {"1:-1", {Slice{1, static_cast<uint32_t>(-1), 1}}},
+               // multiple slices
+               {"1:5,10:15", {Slice{1, 5, 1}, Slice{10, 15, 1}}},
+               {"1:5:2,10:15:3", {Slice{1, 5, 2}, Slice{10, 15, 3}}},
+               {"1:-1,10:15", {Slice{1, static_cast<uint32_t>(-1), 1}, Slice{10, 15, 1}}},
+               {",1:5,,10:15,", {Slice{1, 5, 1}, Slice{10, 15, 1}}},
+               {":,:,:",
+                {Slice{0, static_cast<uint32_t>(-1), 1},
+                 Slice{0, static_cast<uint32_t>(-1), 1},
+                 Slice{0, static_cast<uint32_t>(-1), 1}}},
+               {"0:,:,:",
+                {Slice{0, static_cast<uint32_t>(-1), 1},
+                 Slice{0, static_cast<uint32_t>(-1), 1},
+                 Slice{0, static_cast<uint32_t>(-1), 1}}}};
 
         for(const auto& testCase : testCases)
         {
