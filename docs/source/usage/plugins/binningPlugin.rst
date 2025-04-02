@@ -227,6 +227,10 @@ The signature of quantity functors is
 
 	auto myQuantityFunctor = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, ...) -> returnType
 
+This option makes it evident that the binning is more than just about creating histograms. While histograms are a common use case, the binning plugin allows for the accumulation of various quantities within bins and not just noting the frequencies of occurrences. This means that users can define custom quantities to be accumulated in each bin, such as charge, energy, momentum, or any other property of interest. The flexibility of the functor description enables users to specify exactly what and how they want to accumulate data in the bins.
+For example, you might want to accumulate the total charge of particles within each bin, or the average kinetic energy of particles in a specific region. The deposited quantity functor provides the mechanism to calculate and return these values, which are then accumulated in the corresponding bins during the simulation.
+By default the deposited quantity is added for each bin, but this is configurable by the user by setting an ref:`accumulate operation <usage/plugins/binningPlugin:Accumulation>`. 
+
 Extra Data
 ----------
 Users can pass extra data to the functors if additional information is required by the kernels to do binning.
@@ -327,6 +331,21 @@ Attribute                   Description
 ``<axisName>_bin_edges``    The edges of the bins of an axis in SI units
 ``<axisName>_units``        The units of an axis
 =========================== ==========================================================
+
+
+Accumulation
+============
+The binning plugin provides flexible options for accumulating data within bins. Instead of simply adding values to accumulate in a bin, users can utilize any alpaka atomic operation. This includes operations such as subtraction, minimum, maximum, AND, OR, XOR, and more.
+This flexibility enables users to tailor the accumulation process to their specific needs. For instance, you might want to track the minimum or maximum value of a certain property within each bin.
+
+The accumulate operation is passed as a template parameter to the `createBinner` functions.
+For example, to use the maximum operation for accumulation, you would pass the corresponding Alpaka atomic operation as a template parameter:
+
+.. code-block:: c++
+
+    binningCreator.addParticleBinner<alpaka::AtomicMax>("MaxBinner", axisTuple, speciesTuple, depositionData);
+
+Similarly, you can use other alpaka atomic operations such as `alpaka::AtomicMin`, `alpaka::AtomicSub`, `alpaka::AtomicAnd`, `alpaka::AtomicOr`, `alpaka::AtomicXor`, etc.
 
 
 Example binning plugin usage: Laser Wakefield electron spectrometer

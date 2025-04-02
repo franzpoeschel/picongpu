@@ -26,7 +26,8 @@
 #    include "picongpu/plugins/binning/binners/ParticleBinner.hpp"
 #    include "picongpu/plugins/binning/utility.hpp"
 
-#    include <functional>
+#    include <alpaka/atomic/Op.hpp>
+
 #    include <memory>
 #    include <vector>
 
@@ -70,19 +71,15 @@ namespace picongpu
              * @return ParticleBinningData& reference to the created ParticleBinningData object.
              *         This can be used to further configure the binning setup if needed.
              */
-            template<
-                typename TAxisTuple,
-                typename TSpeciesTuple,
-                typename TDepositionData,
-                typename T_Extras = std::tuple<>>
+            template<typename T_AccumulateOp = alpaka::AtomicAdd, typename T_Extras = std::tuple<>>
             auto& addParticleBinner(
                 std::string const& binnerOutputName,
-                TAxisTuple const& axisTupleObject,
-                TSpeciesTuple const& speciesTupleObject,
-                TDepositionData const& depositionData,
+                auto const& axisTupleObject,
+                auto const& speciesTupleObject,
+                auto const& depositionData,
                 T_Extras const& extraData = {})
             {
-                auto bd = ParticleBinningData(
+                auto bd = makeParticleBinningData<T_AccumulateOp>(
                     binnerOutputName,
                     axisTupleObject,
                     speciesTupleObject,
@@ -112,19 +109,15 @@ namespace picongpu
              * @return FieldBinningData& reference to the created FieldBinningData object.
              *         This can be used to further configure the binning setup if needed.
              */
-            template<
-                typename TAxisTuple,
-                typename TFieldsTuple,
-                typename TDepositionData,
-                typename T_Extras = std::tuple<>>
-            auto& addFieldBinner(
+            template<typename T_AccumulateOp = alpaka::AtomicAdd, typename T_Extras = std::tuple<>>
+            auto addFieldBinner(
                 std::string const& binnerOutputName,
-                TAxisTuple const& axisTupleObject,
-                TFieldsTuple const& fieldsTupleObject,
-                TDepositionData const& depositionData,
+                auto const& axisTupleObject,
+                auto const& fieldsTupleObject,
+                auto const& depositionData,
                 T_Extras const& extraData = {})
             {
-                auto bd = FieldBinningData(
+                auto bd = makeFieldBinningData<T_AccumulateOp>(
                     binnerOutputName,
                     axisTupleObject,
                     fieldsTupleObject,

@@ -67,7 +67,8 @@ namespace picongpu
                     this->binningData.axisTuple,
                     [&](auto const& axis) -> decltype(auto) { return axis.getAxisKernel(); });
 
-                auto const functorBlock = FieldBinningKernel{};
+                auto const functorBlock
+                    = FieldBinningKernel<typename std::remove_cvref_t<decltype(this->binningData)>::AccumulationOp>{};
 
                 auto const userFunctorData = std::apply(
                     [&](auto&&... fields)

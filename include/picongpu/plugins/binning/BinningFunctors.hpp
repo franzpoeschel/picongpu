@@ -25,12 +25,15 @@
 #include <pmacc/dimensions/DataSpace.hpp>
 #include <pmacc/particles/algorithm/ForEach.hpp>
 
+#include <alpaka/atomic/Traits.hpp>
+
 #include <cstdint>
 
 namespace picongpu
 {
     namespace plugins::binning
     {
+        template<typename T_AtomicOp>
         struct FunctorParticle
         {
             using result_type = void;
@@ -79,13 +82,18 @@ namespace picongpu
                         [&](auto const&... extraUserData)
                         { return quantityFunctor(worker, domainInfo, particle, extraUserData...); },
                         userFunctorData);
-                    alpaka::atomicAdd(worker.getAcc(), &(histBox[idxOneD]), depositVal, ::alpaka::hierarchy::Blocks{});
+                    alpaka::atomicOp<T_AtomicOp>(
+                        worker.getAcc(),
+                        &(histBox[idxOneD]),
+                        depositVal,
+                        ::alpaka::hierarchy::Blocks{});
                 }
             }
         };
 
         /** Creates a histogram based on axis and quantity description
          */
+        template<typename T_AtomicOp>
         struct ParticleBinningKernel
         {
             using result_type = void;
@@ -116,7 +124,7 @@ namespace picongpu
                 auto const domainInfo
                     = DomainInfo<BinningType::Particle>{currentStep, globalOffset, localOffset, physicalSuperCellIdx};
 
-                auto const functorParticle = FunctorParticle{};
+                auto const functorParticle = FunctorParticle<T_AtomicOp>{};
 
                 auto forEachParticle
                     = pmacc::particles::algorithm::acc::makeForEach(worker, particlesBox, superCellIdx);
@@ -167,6 +175,7 @@ namespace picongpu
             }
         } // namespace detail
 
+        template<typename T_AtomicOp>
         struct LeavingParticleBinningKernel
         {
             using result_type = void;
@@ -204,7 +213,7 @@ namespace picongpu
 
                 auto const domainInfo
                     = DomainInfo<BinningType::Particle>{currentStep, globalOffset, localOffset, physicalSuperCellIdx};
-                auto const functorParticle = FunctorParticle{};
+                auto const functorParticle = FunctorParticle<T_AtomicOp>{};
 
                 auto forEachParticle
                     = pmacc::particles::algorithm::acc::makeForEach(worker, particlesBox, superCellIdx);
@@ -241,6 +250,7 @@ namespace picongpu
             }
         };
 
+        template<typename T_AtomicOp>
         struct FunctorCell
         {
             using result_type = void;
@@ -287,11 +297,16 @@ namespace picongpu
                         [&](auto const&... userFunctorData)
                         { return quantityFunctor(worker, domainInfo, userFunctorData...); },
                         userFunctorData);
-                    alpaka::atomicAdd(worker.getAcc(), &(histBox[idxOneD]), depositVal, ::alpaka::hierarchy::Blocks{});
+                    alpaka::atomicOp<T_AtomicOp>(
+                        worker.getAcc(),
+                        &(histBox[idxOneD]),
+                        depositVal,
+                        ::alpaka::hierarchy::Blocks{});
                 }
             }
         };
 
+        template<typename T_AtomicOp>
         struct FieldBinningKernel
         {
             using result_type = void;
@@ -320,7 +335,7 @@ namespace picongpu
 
                 using SuperCellSize = typename T_Mapping::SuperCellSize;
 
-                auto const functorCell = FunctorCell{};
+                auto const functorCell = FunctorCell<T_AtomicOp>{};
 
                 // each cell in a supercell is handled as a virtual worker
                 auto forEachCell = lockstep::makeForEach<cellsPerSupercell>(worker);
