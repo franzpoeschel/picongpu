@@ -67,13 +67,17 @@ namespace pmacc
             mustShiftVal = value;
         }
 
+        // clang-format tries to reformat this and looses the #if while the #endif persists
+        // clang-format off
         //! get number of particle in the last frame
-        HDINLINE uint32_t
-        getSizeLastFrame() /* ROCm 5.2.0 producing particle loss in KernelShiftParticles if this method is defined as
-                            * `const`. see: https://github.com/ComputationalRadiationPhysics/picongpu/issues/4305
-                            */
-            const volatile
+        HDINLINE uint32_t getSizeLastFrame() const
+#if(ALPAKA_ACC_GPU_HIP_ENABLED && (HIP_VERSION_MAJOR * 100 + HIP_VERSION_MINOR) == 502)
+            /* ROCm 5.2.0 producing particle loss in KernelShiftParticles if this method is defined as `const`.
+             * see: https://github.com/ComputationalRadiationPhysics/picongpu/issues/4305
+             */
+            volatile
 #endif
+        // clang-format on
         {
             constexpr uint32_t frameSize = T_FrameType::frameSize;
 
@@ -91,12 +95,16 @@ namespace pmacc
             return numParticles ? ((numParticles - 1u) % frameSize + 1u) : 0u;
         }
 
-        HDINLINE uint32_t
-        getNumParticles() /* ROCm 5.2.0 producing particle loss in KernelShiftParticles if this method is defined as
-                           * `const`. see: https://github.com/ComputationalRadiationPhysics/picongpu/issues/4305
-                           */
-            const volatile
+        // clang-format tries to reformat this and looses the #if while the #endif persists
+        // clang-format off
+        HDINLINE uint32_t getNumParticles() const
+#if(ALPAKA_ACC_GPU_HIP_ENABLED && (HIP_VERSION_MAJOR * 100 + HIP_VERSION_MINOR) == 502)
+            /* ROCm 5.2.0 producing particle loss in KernelShiftParticles if this method is defined as `const`.
+             * see: https://github.com/ComputationalRadiationPhysics/picongpu/issues/4305
+             */
+            volatile
 #endif
+        // clang-format on
         {
             return numParticles;
         }

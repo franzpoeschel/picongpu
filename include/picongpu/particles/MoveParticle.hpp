@@ -24,7 +24,6 @@
 
 #include <pmacc/math/operation.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -65,7 +64,17 @@ namespace picongpu
 #if (BOOST_COMP_HIP)
             // workaround for a broken HIP optimization
             // https://github.com/ComputationalRadiationPhysics/picongpu/issues/4561
-            auto volatile shift = 0.5_X;
+
+            // clang-format is trying to bring this into the form `auto volatile shift = ...` and removes the #else and
+            // #endif.
+            // clang-format off
+            volatile
+#else
+            constexpr
+#endif
+                auto shift
+                = 0.5_X;
+            // clang-format on
             floatD_X pos = newPos - shift;
 
             DataSpace<simDim> dir;
