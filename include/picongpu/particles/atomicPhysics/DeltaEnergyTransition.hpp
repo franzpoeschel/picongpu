@@ -40,12 +40,17 @@ namespace picongpu::particles::atomicPhysics
     private:
         /** actual implementation of ionization energy calculation
          *
-         * @attention arguments must fullfill lowerChargeState <= upperChargeState, otherwise wrong result
+         * @param ionizationPotentialDepression, in eV
+         *
+         * @attention arguments must fulfil lowerChargeState <= upperChargeState, otherwise wrong result
+         *
+         * @return unit: eV
          */
         template<typename T_ChargeStateDataBox>
         HDINLINE static float_X ionizationEnergyHelper(
             uint8_t const lowerChargeState,
             uint8_t const upperChargeState,
+            float_X const ionizationPotentialDepression,
             T_ChargeStateDataBox const chargeStateDataBox)
         {
             if constexpr(picongpu::atomicPhysics::debug::deltaEnergyTransition::IONIZATION_ENERGY_INVERSION_CHECK)
@@ -62,7 +67,8 @@ namespace picongpu::particles::atomicPhysics
             for(uint8_t k = lowerChargeState; k < upperChargeState; k++)
             {
                 // eV
-                sumIonizationEnergies += static_cast<float_X>(chargeStateDataBox.ionizationEnergy(k));
+                sumIonizationEnergies
+                    += (static_cast<float_X>(chargeStateDataBox.ionizationEnergy(k)) - ionizationPotentialDepression);
             }
 
             // eV
@@ -71,6 +77,8 @@ namespace picongpu::particles::atomicPhysics
 
     public:
         /** ionizationEnergy from lowerState- to upperState- chargeState
+         *
+         * @param ionizationPotentialDepression, in eV
          *
          * @return unit: eV
          */
@@ -91,6 +99,7 @@ namespace picongpu::particles::atomicPhysics
             constexpr bool isBoundFreeBased
                 = (u8(T_ProcessClassGroup) == u8(s_enums::ProcessClassGroup::boundFreeBased));
 
+            // eV
             [[maybe_unused]] float_X ionizationEnergy = 0._X;
 
             // defintion of lower and upper state depend on transition type
@@ -98,6 +107,7 @@ namespace picongpu::particles::atomicPhysics
                 ionizationEnergy = ionizationEnergyHelper<T_ChargeStateDataBox>(
                     lowerStateChargeState,
                     upperStateChargeState,
+                    ionizationPotentialDepression,
                     chargeStateDataBox);
             else
             {
@@ -109,6 +119,7 @@ namespace picongpu::particles::atomicPhysics
                     ionizationEnergy = -ionizationEnergyHelper<T_ChargeStateDataBox>(
                         upperStateChargeState,
                         lowerStateChargeState,
+                        ionizationPotentialDepression,
                         chargeStateDataBox);
                 }
                 else
@@ -117,7 +128,8 @@ namespace picongpu::particles::atomicPhysics
                 }
             }
 
-            return ionizationEnergy - ionizationPotentialDepression;
+            // eV
+            return ionizationEnergy;
         }
 
         /** get deltaEnergy of transition
@@ -127,8 +139,12 @@ namespace picongpu::particles::atomicPhysics
          *
          * @param atomicStateBox deviceDataBox giving access to atomic state property data
          * @param transitionBox deviceDataBox giving access to transition property data,
-         * @param ipdAndChargeStateDataBoxAndAddStuff optional, ionizationPotentialDepression:float_X and deviceDataBox
-         * giving access to charge state property data, required if T_ProcessClassGroup is ionizing
+         * @param ipdAndChargeStateDataBoxAndAddStuff optional, ionizationPotentialDepression:float_X, in eV, and
+         *  deviceDataBox giving access to charge state property data, required if transition data box's
+         *  T_ProcessClassGroup is ionizing
+         *
+         * @attention if the lowerState is more than one chargeState away from the upperState, this method will reuse
+         *  the ionizationPotentialDepression for all charge states
          *
          * @return unit: eV
          */
@@ -178,6 +194,8 @@ namespace picongpu::particles::atomicPhysics
                         upperStateChargeState,
                         ipdAndChargeStateDataBoxAndAddStuff...);
             }
+
+            // eV
             return deltaEnergy;
         }
     };
