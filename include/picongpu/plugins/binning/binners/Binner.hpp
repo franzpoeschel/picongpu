@@ -127,37 +127,6 @@ namespace picongpu
                                 this->histBuffer->getDeviceBuffer().getDataBox());
                     }
 
-                    // A copy in case units change during normalization, and we need the original units for OpenPMD
-                    auto outputUnits = binningData.depositionData.units;
-                    // @todo During time averaging, this normalization is not be constant across time for auto bins
-                    // Do normalization
-                    if(binningData.normalizeByBinVolume)
-                    {
-                        // @todo think about printing out the normalization too
-                        constexpr uint32_t blockSize = 256u;
-                        // ceil
-                        auto gridSize = (bufferExtent[0] + blockSize - 1) / blockSize;
-
-                        auto normKernel = BinNormalizationKernel<blockSize, TBinningData::getNAxes()>();
-
-                        auto binWidthsKernelTuple = tupleMap(
-                            binningData.axisTuple,
-                            [&](auto const& axis) -> decltype(auto) { return axis.getBinWidthKernel(); });
-
-                        PMACC_LOCKSTEP_KERNEL(normKernel)
-                            .template config<blockSize>(gridSize)(
-                                binningData.axisExtentsND,
-                                binWidthsKernelTuple,
-                                this->histBuffer->getDeviceBuffer().getDataBox());
-
-                        // change output dimensions
-                        std::apply(
-                            [&](auto const&... tupleArgs)
-                            { ((dimensionSubtraction(outputUnits, tupleArgs.units)), ...); },
-                            binningData.axisTuple);
-                    }
-
-
                     // do the mpi reduce
                     this->histBuffer->deviceToHost();
 
@@ -185,7 +154,6 @@ namespace picongpu
                                 binningData.openPMDJsonCfg},
                             std::move(hReducedBuffer),
                             binningData,
-                            outputUnits,
                             currentStep);
                     }
                     // reset device buffer
@@ -238,7 +206,6 @@ namespace picongpu
                             binningData.openPMDJsonCfg},
                         std::move(hReducedBuffer),
                         binningData,
-                        binningData.depositionData.units,
                         currentStep,
                         true,
                         accumulateCounter);

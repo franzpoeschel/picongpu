@@ -129,26 +129,6 @@ namespace picongpu
 
                 LinearAxisKernel lAK;
 
-                struct BinWidthKernel
-                {
-                    ScalingType scaling;
-                    uint32_t nBins;
-
-                    BinWidthKernel(LinearAxisKernel const& axisKernel)
-                        : scaling{axisKernel.scaling}
-                        , nBins{axisKernel.nBins}
-                    {
-                    }
-
-                    ALPAKA_FN_ACC T_Attribute getBinWidth(uint32_t idx = 0) const
-                    {
-                        PMACC_ASSERT(idx < nBins);
-                        return 1 / scaling;
-                    }
-                };
-
-                BinWidthKernel bWK;
-
                 LinearAxis(
                     AxisSplitting<T_Attribute> const& axSplit,
                     T_AttrFunctor const& attrFunctor,
@@ -158,7 +138,6 @@ namespace picongpu
                     , label{label}
                     , units{units}
                     , lAK{attrFunctor, axSplit, units}
-                    , bWK{lAK}
                 {
                 }
 
@@ -175,11 +154,6 @@ namespace picongpu
                 LinearAxisKernel getAxisKernel() const
                 {
                     return lAK;
-                }
-
-                BinWidthKernel getBinWidthKernel() const
-                {
-                    return bWK;
                 }
 
                 /**

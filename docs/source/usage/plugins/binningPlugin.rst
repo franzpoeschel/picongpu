@@ -10,7 +10,7 @@ Users can
 	- Choose which species are used for particle binning
 	- Choose which fields are used for field binning
 	- Choose how frequently they want the binning to be executed
-	- Choose if the binning should be time averaging or normalized by bin volume
+	- Choose if the binning should be time averaging
 	- Write custom output to file, for example other quantities related to the simulation which the user is interested in
 	- Execute multiple binnings at the same time
 	- Pass extra parameters as a tuple, if additional information is required by the kernels to do binning.
@@ -270,10 +270,6 @@ When dumping the accumulated output, whether or not to divide by the dump period
 
 	The user needs to set a dump period to enable time averaging.
 
-Normalize by Bin Volume
------------------------
-Since it is possible to have non-uniformly sized axes, it makes sense to normalize the binned quantity by the bin volume to enable a fair comparison between bins. Enabled by default.
-
 
 Binning Particles Leaving the Simulation Volume
 -----------------------------------------------
@@ -318,8 +314,6 @@ The OpenPMD mesh is call "Binning".
 
 The outputs in written in SI units.
 
-If normalization is enabled, the output is normalized by the bin volume.
-
 The output histogram has 2 bins more in each dimension than the user-defined ``nBins`` in that dimension, to deal with under and overflow.
 
 The number of bin edges written out for an axis is one more than the user-defined ``nBins``. These represent the bins in [min,max]. Since there are actually ``nBins + 2`` bins, two edges are not written out.
@@ -341,7 +335,6 @@ Example binning plugin usage: Laser Wakefield electron spectrometer
 The :ref:`LWFA example <LWFA-example>`  contains a sample binning plugin setup to calculate an in-situ electron spectrometer.
 The kinetic energy of the electrons :math:`E = (\gamma - 1) m_o c^2` is plotted on axis 1 and the direction of the electrons :math:`\theta = \mathrm{atan}(p_x/p_y)` is plotted on axis 2.
 The charge :math:`Q` moving in the bin direction :math:`\theta` at the bin energy :math:`E` is calculated for each bin.
-The charge is normalized to the bin volume :math:`\Delta E \cdot \Delta \theta`.
 Such spectrometers are a common tool in plasma based electron acceleration experiments [Kurz2018]_.
 
 .. note::
