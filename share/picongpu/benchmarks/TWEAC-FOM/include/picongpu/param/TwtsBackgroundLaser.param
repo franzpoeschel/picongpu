@@ -44,7 +44,8 @@ namespace picongpu
                  * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight()
                  * sim.si.getSpeedOfLight() * SI::EPS0_SI); */
                 constexpr float_64 UNITCONV_A0_to_Amplitude_SI = -2.0 * PI / WAVE_LENGTH_SI * sim.si.getElectronMass()
-                    * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight() / sim.si.getElectronCharge();
+                                                                 * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight()
+                                                                 / sim.si.getElectronCharge();
 
                 /** unit: W / m^2 */
                 /* constexpr float_64 _PEAK_INTENSITY_SI = 3.4e19 * 1.0e4; */

@@ -30,13 +30,13 @@ namespace pmacc
         event->registerHandle();
     }
 
-    ComputeEventHandle::ComputeEventHandle(const ComputeEventHandle& other)
+    ComputeEventHandle::ComputeEventHandle(ComputeEventHandle const& other)
     {
         /* register and release handle is done by the assign operator */
         *this = other;
     }
 
-    ComputeEventHandle& ComputeEventHandle::operator=(const ComputeEventHandle& other)
+    ComputeEventHandle& ComputeEventHandle::operator=(ComputeEventHandle const& other)
     {
         /* check if an old event is overwritten */
         if(event)

@@ -23,7 +23,6 @@
 
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     namespace particles
@@ -38,7 +37,7 @@ namespace pmacc
             } // namespace detail
 
             template<typename T_Dest, typename T_Src>
-            HDINLINE void assign(T_Dest& dest, const T_Src& src)
+            HDINLINE void assign(T_Dest& dest, T_Src const& src)
             {
                 detail::Assign<T_Dest, T_Src>()(dest, src);
             }

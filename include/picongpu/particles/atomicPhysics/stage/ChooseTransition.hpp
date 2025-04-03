@@ -92,13 +92,14 @@ namespace picongpu::particles::atomicPhysics::stage
             // bound-bound(upward) transitions
             if constexpr(AtomicDataType::switchElectronicExcitation)
             {
-                PMACC_LOCKSTEP_KERNEL(picongpu::particles::atomicPhysics::kernel::ChooseTransitionKernel_BoundBound<
-                                          picongpu::atomicPhysics::ElectronHistogram,
-                                          AtomicDataType::ConfigNumber::numberLevels,
-                                          s_enums::TransitionDirection::upward,
-                                          AtomicDataType::switchElectronicExcitation,
-                                          AtomicDataType::switchElectronicDeexcitation,
-                                          AtomicDataType::switchSpontaneousDeexcitation>())
+                PMACC_LOCKSTEP_KERNEL(
+                    picongpu::particles::atomicPhysics::kernel::ChooseTransitionKernel_BoundBound<
+                        picongpu::atomicPhysics::ElectronHistogram,
+                        AtomicDataType::ConfigNumber::numberLevels,
+                        s_enums::TransitionDirection::upward,
+                        AtomicDataType::switchElectronicExcitation,
+                        AtomicDataType::switchElectronicDeexcitation,
+                        AtomicDataType::switchSpontaneousDeexcitation>())
                     .config(mapper.getGridDim(), ions)(
                         mapper,
                         rngFactoryFloat,
@@ -117,13 +118,14 @@ namespace picongpu::particles::atomicPhysics::stage
             // bound-bound(downward) transitions
             if constexpr(AtomicDataType::switchElectronicDeexcitation || AtomicDataType::switchSpontaneousDeexcitation)
             {
-                PMACC_LOCKSTEP_KERNEL(picongpu::particles::atomicPhysics::kernel::ChooseTransitionKernel_BoundBound<
-                                          picongpu::atomicPhysics::ElectronHistogram,
-                                          AtomicDataType::ConfigNumber::numberLevels,
-                                          s_enums::TransitionDirection::downward,
-                                          AtomicDataType::switchElectronicExcitation,
-                                          AtomicDataType::switchElectronicDeexcitation,
-                                          AtomicDataType::switchSpontaneousDeexcitation>())
+                PMACC_LOCKSTEP_KERNEL(
+                    picongpu::particles::atomicPhysics::kernel::ChooseTransitionKernel_BoundBound<
+                        picongpu::atomicPhysics::ElectronHistogram,
+                        AtomicDataType::ConfigNumber::numberLevels,
+                        s_enums::TransitionDirection::downward,
+                        AtomicDataType::switchElectronicExcitation,
+                        AtomicDataType::switchElectronicDeexcitation,
+                        AtomicDataType::switchSpontaneousDeexcitation>())
                     .config(mapper.getGridDim(), ions)(
                         mapper,
                         rngFactoryFloat,

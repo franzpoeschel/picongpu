@@ -43,7 +43,6 @@
 #include <pmacc/particles/operations/Deselect.hpp>
 #include <pmacc/traits/HasFlag.hpp>
 
-
 namespace picongpu
 {
     /** derive new particles from a source species
@@ -291,12 +290,12 @@ namespace picongpu
             using EType = typename BoxE::ValueType;
 
             floatD_X pos = particle[position_];
-            const int particleCellIdx = particle[localCellIdx_];
+            int const particleCellIdx = particle[localCellIdx_];
 
             DataSpace<TVec::dim> localCell = pmacc::math::mapToND(TVec::toRT(), particleCellIdx);
 
-            const traits::FieldPosition<fields::YeeCell, FieldE> fieldPosE;
-            const traits::FieldPosition<fields::YeeCell, FieldB> fieldPosB;
+            traits::FieldPosition<fields::YeeCell, FieldE> const fieldPosE;
+            traits::FieldPosition<fields::YeeCell, FieldB> const fieldPosB;
 
             auto functorEfield
                 = CreateInterpolationForPusher<Field2ParticleInterpolation>()(eBox.shift(localCell), fieldPosE());

@@ -22,7 +22,6 @@
 
 #include "picongpu/particles/densityProfiles/profiles.def"
 
-
 namespace picongpu
 {
     namespace densityProfiles

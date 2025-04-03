@@ -41,8 +41,8 @@ namespace picongpu::particles::atomicPhysics::localHelperFields
         using Extent = T_Extent;
         using StorageType = T_StorageType;
 
-        constexpr static uint32_t dim = Extent::dim;
-        constexpr static uint32_t numberCells = pmacc::math::CT::volume<Extent>::type::value;
+        static constexpr uint32_t dim = Extent::dim;
+        static constexpr uint32_t numberCells = pmacc::math::CT::volume<Extent>::type::value;
 
         using CellIdx = pmacc::DataSpace<dim>;
 

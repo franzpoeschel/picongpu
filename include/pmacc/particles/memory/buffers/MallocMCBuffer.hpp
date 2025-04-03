@@ -29,7 +29,7 @@
 #include <memory>
 #include <string>
 
-#if(ALPAKA_ACC_GPU_CUDA_ENABLED || ALPAKA_ACC_GPU_HIP_ENABLED)
+#if (ALPAKA_ACC_GPU_CUDA_ENABLED || ALPAKA_ACC_GPU_HIP_ENABLED)
 
 #    include <memory>
 
@@ -44,7 +44,7 @@ namespace pmacc
         using DeviceHeap = T_DeviceHeap;
         using BufferType = ::alpaka::Buf<HostDevice, uint8_t, AlpakaDim<DIM1>, MemIdxType>;
 
-        MallocMCBuffer(const std::shared_ptr<DeviceHeap>& deviceHeap);
+        MallocMCBuffer(std::shared_ptr<DeviceHeap> const& deviceHeap);
 
         virtual ~MallocMCBuffer();
 
@@ -84,7 +84,7 @@ namespace pmacc
     class MallocMCBuffer : public ISimulationData
     {
     public:
-        MallocMCBuffer(const std::shared_ptr<T_DeviceHeap>&);
+        MallocMCBuffer(std::shared_ptr<T_DeviceHeap> const&);
 
         ~MallocMCBuffer() override = default;
 

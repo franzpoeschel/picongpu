@@ -98,9 +98,10 @@ namespace picongpu
                 static constexpr float_64 WAVE_LENGTH_SI = PARAM_WAVE_LENGTH_SI;
 
                 /** Convert the normalized laser strength parameter a0 to Volt per meter */
-                static constexpr float_64 UNITCONV_A0_to_Amplitude_SI = -2.0 * PI / WAVE_LENGTH_SI
-                    * ::picongpu::sim.si.getElectronMass() * ::picongpu::sim.si.getSpeedOfLight()
-                    * ::picongpu::sim.si.getSpeedOfLight() / ::picongpu::sim.si.getElectronCharge();
+                static constexpr float_64 UNITCONV_A0_to_Amplitude_SI
+                    = -2.0 * PI / WAVE_LENGTH_SI * ::picongpu::sim.si.getElectronMass()
+                      * ::picongpu::sim.si.getSpeedOfLight() * ::picongpu::sim.si.getSpeedOfLight()
+                      / ::picongpu::sim.si.getElectronCharge();
 
                 /** unit: none */
                 static constexpr float_64 _A0 = PARAM_A0;
@@ -241,6 +242,7 @@ namespace picongpu
                 static constexpr uint32_t numModes = 0;
                 static constexpr auto laguerreModes = floatN_X<numModes + 1>(1.0);
                 static constexpr auto laguerrePhases = floatN_X<numModes + 1>(0.0);
+
                 /** @} */
 
                 template<typename T_Self = GaussianPulseParam>
@@ -251,7 +253,6 @@ namespace picongpu
                     return profiles::defaults::GaussianPulseParam::metadata<T_Self>();
                 };
             };
-
 
             //! Laser Profile is taking plane wave param configuration and is overwriting only a few settings
             struct ExpRampWithPrepulseEnvelopeParam : public LwfaGaussianPulseBaseParams

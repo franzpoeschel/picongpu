@@ -25,7 +25,6 @@
 
 #include <mpi.h>
 
-
 namespace picongpu
 {
     namespace random

@@ -41,30 +41,31 @@ namespace pmacc
         template<>
         struct LogRankCoords<DIM1>
         {
-            void operator()(int rank, const int (&coords)[DIM1]) const
+            void operator()(int rank, int const (&coords)[DIM1]) const
             {
                 log<ggLog::MPI>("Rank: %1% ; coords %2%") % rank % coords[0];
             }
         };
+
         template<>
         struct LogRankCoords<DIM2>
         {
-            void operator()(int rank, const int (&coords)[DIM2]) const
+            void operator()(int rank, int const (&coords)[DIM2]) const
             {
                 log<ggLog::MPI>("Rank: %1% ; coords %2% %3%") % rank % coords[0] % coords[1];
             }
         };
+
         template<>
         struct LogRankCoords<DIM3>
         {
-            void operator()(int rank, const int (&coords)[DIM3]) const
+            void operator()(int rank, int const (&coords)[DIM3]) const
             {
                 log<ggLog::MPI>("Rank: %1% ; coords %2% %3% %4%") % rank % coords[0] % coords[1] % coords[2];
             }
         };
 
     } // namespace detail
-
 
     template<unsigned DIM>
     void CommunicatorMPI<DIM>::init(DataSpace<DIM3> numberProcesses, DataSpace<DIM3> periodic)
@@ -113,7 +114,7 @@ namespace pmacc
     template<unsigned DIM>
     MPI_Request* CommunicatorMPI<DIM>::startSend(
         uint32_t ex,
-        const char* send_data,
+        char const* send_data,
         size_t send_data_count,
         uint32_t tag)
     {
@@ -188,7 +189,6 @@ namespace pmacc
 
         return result;
     }
-
 
     template<unsigned DIM>
     void CommunicatorMPI<DIM>::cleanHostname(char* name)

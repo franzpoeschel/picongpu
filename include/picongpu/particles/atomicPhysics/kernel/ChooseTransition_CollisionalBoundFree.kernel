@@ -131,10 +131,11 @@ namespace picongpu::particles::atomicPhysics::kernel
             T_IonBox ionBox,
             T_IPDInput const... ipdInput) const
         {
-            PMACC_CASSERT(checkCorrectAtomicDataBoxesPassed<
-                          T_AtomicStateBoundFreeStartIndexBlockDataBox,
-                          T_AtomicStateBoundFreeNumberTransitionsDataBox,
-                          T_BoundFreeTransitionDataBox>());
+            PMACC_CASSERT(
+                checkCorrectAtomicDataBoxesPassed<
+                    T_AtomicStateBoundFreeStartIndexBlockDataBox,
+                    T_AtomicStateBoundFreeNumberTransitionsDataBox,
+                    T_BoundFreeTransitionDataBox>());
 
             pmacc::DataSpace<simDim> const superCellIdx = areaMapping.getSuperCellIndex(worker.blockDomIdxND());
             // atomicPhysics superCellFields have no guard, but areMapping includes a guard

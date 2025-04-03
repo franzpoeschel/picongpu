@@ -44,10 +44,11 @@ namespace picongpu
             std::string name;
             /** The dimensionality of the particle property (defaults to dimensionless) */
             std::array<double, numUnits> units;
+
             FunctorDescription(
-                const FunctorType func,
+                FunctorType const func,
                 std::string label,
-                const std::array<double, numUnits> uDimension)
+                std::array<double, numUnits> const uDimension)
                 : functor{func}
                 , name{label}
                 , units{uDimension}

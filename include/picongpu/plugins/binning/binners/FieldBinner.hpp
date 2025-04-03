@@ -20,7 +20,7 @@
 #pragma once
 
 // required becuase the definition of Binner is conditionally included
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/plugins/binning/BinningFunctors.hpp"
 #    include "picongpu/plugins/binning/binners/Binner.hpp"
@@ -32,7 +32,6 @@
 #    include <pmacc/mpi/reduceMethods/Reduce.hpp>
 
 #    include <cstdint>
-
 
 namespace picongpu
 {

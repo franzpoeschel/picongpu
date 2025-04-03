@@ -40,7 +40,7 @@ namespace pmacc
     public:
         using Size = DataSpace<DIM>;
 
-        constexpr SubGrid& operator=(const SubGrid&) = default;
+        constexpr SubGrid& operator=(SubGrid const&) = default;
 
         /**
          * Initialize SubGrid instance
@@ -49,7 +49,7 @@ namespace pmacc
          * @param globalSize global domain size
          * @param localOffset local domain offset (formerly 'globalOffset')
          */
-        void init(const Size& localSize, const Size& globalSize, const Size& localOffset)
+        void init(Size const& localSize, Size const& globalSize, Size const& localOffset)
         {
             totalDomain = Selection<DIM>(globalSize);
             globalDomain = Selection<DIM>(globalSize);
@@ -61,7 +61,7 @@ namespace pmacc
          *
          * @param offset offset of local domain
          */
-        void setLocalDomainOffset(const Size& offset)
+        void setLocalDomainOffset(Size const& offset)
         {
             localDomain = Selection<DIM>(localDomain.size, offset);
         }
@@ -71,7 +71,7 @@ namespace pmacc
          *
          * @param offset offset of global domain
          */
-        void setGlobalDomainOffset(const Size& offset)
+        void setGlobalDomainOffset(Size const& offset)
         {
             globalDomain = Selection<DIM>(globalDomain.size, offset);
         }
@@ -140,7 +140,7 @@ namespace pmacc
         /**
          * Constructor
          */
-        SubGrid(const SubGrid& gc)
+        SubGrid(SubGrid const& gc)
         {
         }
     };

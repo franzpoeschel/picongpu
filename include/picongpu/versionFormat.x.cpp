@@ -32,19 +32,18 @@
 #ifdef HIP_VERSION_MAJOR
 #    include <hip/hip_runtime.h>
 #endif
-#if(defined(__CUDACC_VER_MAJOR__) || defined(HIP_VERSION_MAJOR))
+#if (defined(__CUDACC_VER_MAJOR__) || defined(HIP_VERSION_MAJOR))
 #    include <mallocMC/mallocMC.hpp>
 #endif
 #include <mpi.h>
-#if(PIC_ENABLE_PNG == 1)
+#if (PIC_ENABLE_PNG == 1)
 #    include <pngwriter.h>
 #endif
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 #    include <openPMD/openPMD.hpp>
 #endif
 
 #include <sstream>
-
 
 namespace picongpu
 {
@@ -82,7 +81,7 @@ namespace picongpu
         hip << HIP_VERSION_MAJOR << "." << HIP_VERSION_MINOR << "." << HIP_VERSION_PATCH;
 #endif
 
-#if(defined(__CUDACC_VER_MAJOR__) || defined(HIP_VERSION_MAJOR))
+#if (defined(__CUDACC_VER_MAJOR__) || defined(HIP_VERSION_MAJOR))
         std::stringstream mallocMC;
         mallocMC << MALLOCMC_VERSION_MAJOR << "." << MALLOCMC_VERSION_MINOR << "." << MALLOCMC_VERSION_PATCH;
 #endif
@@ -110,13 +109,13 @@ namespace picongpu
 #endif
 
         std::stringstream pngwriter;
-#if(PIC_ENABLE_PNG == 1)
+#if (PIC_ENABLE_PNG == 1)
         pngwriter << PNGWRITER_VERSION_MAJOR << "." << PNGWRITER_VERSION_MINOR << "." << PNGWRITER_VERSION_PATCH;
 #else
         pngwriter << versionNotFound;
 #endif
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
         std::string openPMD = openPMD::getVersion();
 #else
         std::string openPMD = versionNotFound;
@@ -136,7 +135,7 @@ namespace picongpu
 #ifdef HIP_VERSION_MAJOR
         cliText << "  HIP:        " << hip.str() << std::endl;
 #endif
-#if(defined(__CUDACC_VER_MAJOR__) || defined(HIP_VERSION_MAJOR))
+#if (defined(__CUDACC_VER_MAJOR__) || defined(HIP_VERSION_MAJOR))
         cliText << "  mallocMC:   " << mallocMC.str() << std::endl;
 #endif
         cliText << "  Boost:      " << boost.str() << std::endl;
@@ -159,7 +158,7 @@ namespace picongpu
 #endif
         software.push_back(std::string("Boost/") + boost.str());
         software.push_back(mpiFlavor.str() + std::string("/") + mpiFlavorVersion.str());
-#if(defined(__CUDACC_VER_MAJOR__) || defined(HIP_VERSION_MAJOR))
+#if (defined(__CUDACC_VER_MAJOR__) || defined(HIP_VERSION_MAJOR))
         software.push_back(std::string("mallocMC/") + mallocMC.str());
 #endif
         if(pngwriter.str().compare(versionNotFound) != 0)

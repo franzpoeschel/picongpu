@@ -67,10 +67,12 @@ namespace picongpu::particles::atomicPhysics::enums
     {
         static constexpr ChooseTransitionGroup chooseTransitionGroup = ChooseTransitionGroup::noChange;
     };
+
     template<>
     struct ChooseTransitionGroupFor<TransitionType::noChange, TransitionDirection::downward>
     {
         static constexpr ChooseTransitionGroup chooseTransitionGroup = ChooseTransitionGroup::noChange;
     };
+
     //@}
 } // namespace picongpu::particles::atomicPhysics::enums

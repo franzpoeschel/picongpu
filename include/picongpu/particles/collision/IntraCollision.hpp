@@ -55,6 +55,7 @@ namespace picongpu::particles::collision
 
     private:
         PMACC_ALIGN(screeningLengthSquared, FieldTmp::DataBoxType);
+
         /* Get the duplication correction for a collision
          *
          * A particle duplication is how many times a particle collides in the current time step.
@@ -144,7 +145,8 @@ namespace picongpu::particles::collision
 
             // shuffle indices list
             forEachCell(
-                [&](uint32_t const linearIdx) {
+                [&](uint32_t const linearIdx)
+                {
                     detail::shuffle(
                         worker,
                         parCellList.particleIds(linearIdx),
@@ -285,7 +287,7 @@ namespace picongpu::particles::collision
          * @param deviceHeap A pointer to device heap for allocating particle lists.
          * @param currentStep The current simulation step.
          */
-        void operator()(const std::shared_ptr<DeviceHeap>& deviceHeap, uint32_t currentStep, IdGenerator idGen)
+        void operator()(std::shared_ptr<DeviceHeap> const& deviceHeap, uint32_t currentStep, IdGenerator idGen)
         {
             using Species = T_Species;
             using FrameType = typename Species::FrameType;
@@ -354,7 +356,7 @@ namespace picongpu::particles::collision
                 {
                     std::ofstream outFile{};
                     std::string fileName = "debug_values_collider_" + std::to_string(colliderId) + "_species_pair_"
-                        + std::to_string(pairId) + ".dat";
+                                           + std::to_string(pairId) + ".dat";
                     outFile.open(fileName.c_str(), std::ofstream::out | std::ostream::app);
                     outFile << currentStep << " "
                             << reducedAverageCoulombLog / static_cast<float_X>(reducedTimesCollided) << " "

@@ -48,7 +48,6 @@
 #include <stdexcept>
 #include <string>
 
-
 namespace picongpu
 {
     /** accumulate the kinetic and total energy
@@ -209,7 +208,6 @@ namespace picongpu
             {
             }
 
-
             void validateOptions() override
             {
                 if(notifyPeriod.size() != filter.size())
@@ -317,7 +315,6 @@ namespace picongpu
             // call the method that calls the plugin kernel
             calculateEnergyParticles<CORE + BORDER>(currentStep);
         }
-
 
         void restart(uint32_t restartStep, std::string const& restartDirectory) override
         {

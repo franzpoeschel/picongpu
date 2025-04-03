@@ -55,9 +55,9 @@ namespace pmacc
             template<unsigned T_Dim>
             struct TypeCast<int, pmacc::DataSpace<T_Dim>>
             {
-                using result = const pmacc::DataSpace<T_Dim>;
+                using result = pmacc::DataSpace<T_Dim> const;
 
-                constexpr result operator()(const pmacc::DataSpace<T_Dim>& vector) const
+                constexpr result operator()(pmacc::DataSpace<T_Dim> const& vector) const
                 {
                     return vector;
                 }
@@ -68,7 +68,7 @@ namespace pmacc
             {
                 using result = ::pmacc::math::Vector<T_CastToType, T_Dim>;
 
-                constexpr result operator()(const pmacc::DataSpace<T_Dim>& vector) const
+                constexpr result operator()(pmacc::DataSpace<T_Dim> const& vector) const
                 {
                     return result(vector);
                 }

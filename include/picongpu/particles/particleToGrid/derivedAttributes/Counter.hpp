@@ -25,7 +25,6 @@
 
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace particles
@@ -38,10 +37,10 @@ namespace picongpu
                 DINLINE float_X Counter::operator()(T_Particle& particle) const
                 {
                     /* read existing attributes */
-                    const float_X weighting = particle[weighting_];
+                    float_X const weighting = particle[weighting_];
 
                     /* calculate new attribute */
-                    const float_X particleCounter
+                    float_X const particleCounter
                         = weighting / static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle());
 
                     /* return attribute */

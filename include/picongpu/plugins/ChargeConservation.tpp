@@ -35,12 +35,12 @@
 
 #include <sstream>
 
-
 namespace picongpu
 {
     ChargeConservation::ChargeConservation()
-        : name("ChargeConservation: Print the maximum charge deviation between particles and div E to textfile "
-               "'chargeConservation.dat'")
+        : name(
+              "ChargeConservation: Print the maximum charge deviation between particles and div E to textfile "
+              "'chargeConservation.dat'")
         , prefix("chargeConservation")
         , filename("chargeConservation.dat")
         , cellDescription(nullptr)
@@ -80,7 +80,7 @@ namespace picongpu
         }
     }
 
-    void ChargeConservation::restart(uint32_t restartStep, const std::string restartDirectory)
+    void ChargeConservation::restart(uint32_t restartStep, std::string const restartDirectory)
     {
         if(this->notifyPeriod.empty())
             return;
@@ -91,7 +91,7 @@ namespace picongpu
         restoreTxtFile(this->output_file, this->filename, restartStep, restartDirectory);
     }
 
-    void ChargeConservation::checkpoint(uint32_t currentStep, const std::string checkpointDirectory)
+    void ChargeConservation::checkpoint(uint32_t currentStep, std::string const checkpointDirectory)
     {
         if(this->notifyPeriod.empty())
             return;
@@ -126,12 +126,12 @@ namespace picongpu
             template<typename Field>
             HDINLINE ValueType operator()(Field field) const
             {
-                const ValueType reciWidth = float_X(1.0) / sim.pic.getCellSize().x();
-                const ValueType reciHeight = float_X(1.0) / sim.pic.getCellSize().y();
-                const ValueType reciDepth = float_X(1.0) / sim.pic.getCellSize().z();
+                ValueType const reciWidth = float_X(1.0) / sim.pic.getCellSize().x();
+                ValueType const reciHeight = float_X(1.0) / sim.pic.getCellSize().y();
+                ValueType const reciDepth = float_X(1.0) / sim.pic.getCellSize().z();
                 return ((*field).x() - field(DataSpace<DIM3>(-1, 0, 0)).x()) * reciWidth
-                    + ((*field).y() - field(DataSpace<DIM3>(0, -1, 0)).y()) * reciHeight
-                    + ((*field).z() - field(DataSpace<DIM3>(0, 0, -1)).z()) * reciDepth;
+                       + ((*field).y() - field(DataSpace<DIM3>(0, -1, 0)).y()) * reciHeight
+                       + ((*field).z() - field(DataSpace<DIM3>(0, 0, -1)).z()) * reciDepth;
             }
         };
 
@@ -143,10 +143,10 @@ namespace picongpu
             template<typename Field>
             HDINLINE ValueType operator()(Field field) const
             {
-                const ValueType reciWidth = float_X(1.0) / sim.pic.getCellSize().x();
-                const ValueType reciHeight = float_X(1.0) / sim.pic.getCellSize().y();
+                ValueType const reciWidth = float_X(1.0) / sim.pic.getCellSize().x();
+                ValueType const reciHeight = float_X(1.0) / sim.pic.getCellSize().y();
                 return ((*field).x() - (field(DataSpace<DIM2>(-1, 0))).x()) * reciWidth
-                    + ((*field).y() - (field(DataSpace<DIM2>(0, -1))).y()) * reciHeight;
+                       + ((*field).y() - (field(DataSpace<DIM2>(0, -1))).y()) * reciHeight;
             }
         };
 
@@ -155,9 +155,9 @@ namespace picongpu
         struct ComputeChargeDensity
         {
             using SpeciesType = pmacc::particles::meta::FindByNameOrType_t<VectorAllSpecies, T_SpeciesType>;
-            static const uint32_t area = T_Area::value;
+            static uint32_t const area = T_Area::value;
 
-            HINLINE void operator()(FieldTmp& fieldTmp, const uint32_t currentStep) const
+            HINLINE void operator()(FieldTmp& fieldTmp, uint32_t const currentStep) const
             {
                 DataConnector& dc = Environment<>::get().DataConnector();
 

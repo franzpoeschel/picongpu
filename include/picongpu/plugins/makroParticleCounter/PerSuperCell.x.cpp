@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/defines.hpp"
 #    include "picongpu/particles/filter/filter.hpp"
@@ -44,7 +44,6 @@
 
 #    include <openPMD/openPMD.hpp>
 
-
 namespace picongpu
 {
     using namespace pmacc;
@@ -55,9 +54,9 @@ namespace picongpu
         template<typename ParBox, typename CounterBox, typename Mapping, typename T_Worker>
         DINLINE void operator()(T_Worker const& worker, ParBox parBox, CounterBox counterBox, Mapping mapper) const
         {
-            const DataSpace<simDim> superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
+            DataSpace<simDim> const superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
             /* counterBox has no guarding supercells*/
-            const DataSpace<simDim> superCellIdxNoGuard = superCellIdx - mapper.getGuardingSuperCells();
+            DataSpace<simDim> const superCellIdxNoGuard = superCellIdx - mapper.getGuardingSuperCells();
 
             PMACC_SMEM(worker, counterValue, uint64_cu);
 
@@ -91,6 +90,7 @@ namespace picongpu
                 });
         }
     };
+
     /** Count makro particle of a species and write down the result to a global HDF5 file.
      *
      * - count the total number of makro particle per supercell
@@ -180,7 +180,7 @@ namespace picongpu
             if(!notifyPeriod.empty())
             {
                 Environment<>::get().PluginConnector().setNotificationPeriod(this, notifyPeriod);
-                const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
                 /* local count of supercells without any guards*/
                 DataSpace<simDim> localSuperCells(subGrid.getLocalDomain().size / SuperCellSize::toRT());
                 localResult = std::make_unique<GridBufferType>(localSuperCells);
@@ -218,7 +218,7 @@ namespace picongpu
 
 
             /*############ dump data #############################################*/
-            const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
 
             DataSpace<simDim> localDomainSize(subGrid.getLocalDomain().size / SuperCellSize::toRT());
             DataSpace<simDim> localDomainOffset(subGrid.getLocalDomain().offset / SuperCellSize::toRT());
@@ -289,7 +289,7 @@ namespace picongpu
                     infix = "";
                 }
                 std::string filename = foldername + std::string("/makroParticlePerSupercell") + infix
-                    + std::string(".") + m_filenameExtension;
+                                       + std::string(".") + m_filenameExtension;
                 log<picLog::INPUT_OUTPUT>("openPMD open Series at: %1%") % filename;
 
                 m_Series = std::make_unique<::openPMD::Series>(

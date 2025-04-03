@@ -71,7 +71,7 @@ namespace picongpu
         /**
          * Load persistent simulation state from \p restartStep
          */
-        void restart(uint32_t restartStep, const std::string restartDirectory) override
+        void restart(uint32_t restartStep, std::string const restartDirectory) override
         {
             // restart simulation by loading from persistent data
             // the simulation will start after restartStep
@@ -110,11 +110,11 @@ namespace picongpu
                  * but not necessarily for derived ones.
                  */
                 using FrameType = typename T_Species::FrameType;
-                const float_32 charge = traits::frame::getCharge<FrameType>();
-                const float_32 mass = traits::frame::getMass<FrameType>();
-                const auto densityRatio = traits::GetDensityRatio<T_Species>::type::getValue();
-                const auto density = BASE_DENSITY * densityRatio;
-                const auto omegaP_dt = sqrt(density * charge / mass * charge / sim.pic.getEps0()) * sim.pic.getDt();
+                float_32 const charge = traits::frame::getCharge<FrameType>();
+                float_32 const mass = traits::frame::getMass<FrameType>();
+                auto const densityRatio = traits::GetDensityRatio<T_Species>::type::getValue();
+                auto const density = BASE_DENSITY * densityRatio;
+                auto const omegaP_dt = sqrt(density * charge / mass * charge / sim.pic.getEps0()) * sim.pic.getDt();
                 log<picLog::PHYSICS>("species %2%: omega_p * dt <= 0.1 ? (omega_p * dt = %1%)") % omegaP_dt
                     % FrameType::getName();
             }
@@ -147,7 +147,7 @@ namespace picongpu
                                      "   It does not cover other forms of initialization");
                 logOmegaP();
 
-                const int localNrOfCells = cellDescription->getGridLayout().sizeWithoutGuardND().productOfComponents();
+                int const localNrOfCells = cellDescription->getGridLayout().sizeWithoutGuardND().productOfComponents();
                 log<picLog::PHYSICS>("macro particles per device: %1%")
                     % (localNrOfCells * TYPICAL_PARTICLES_PER_CELL * (pmacc::mp_size<VectorAllSpecies>::value));
                 log<picLog::PHYSICS>("typical macro particle weighting: %1%")
@@ -217,7 +217,7 @@ namespace picongpu
                     auto const phaseVelocity = fields::incidentField::traits::getPhaseVelocity<T_Profile>();
                     auto const phaseVelocityC = phaseVelocity / sim.pic.getSpeedOfLight();
                     auto const message = std::string{"Incident field \""} + T_Profile::getName()
-                        + "\" numerical dispersion: v_phase = %1% * c";
+                                         + "\" numerical dispersion: v_phase = %1% * c";
                     log<picLog::PHYSICS>(message.c_str()) % phaseVelocityC;
                 }
             }

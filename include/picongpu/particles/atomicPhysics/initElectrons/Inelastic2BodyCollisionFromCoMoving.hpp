@@ -199,7 +199,8 @@ namespace picongpu::particles::atomicPhysics::initElectrons
             float_64 const mE_mI = static_cast<float_64>(massElectron / massIon);
             // kg * m^2/s^2 * keV/J * 1e3 = J/J * eV = eV
             float_64 const mc2_Ion = static_cast<float_64>(massIon)
-                * sim.si.conv().joule2eV(sim.unit.mass() * pmacc::math::cPow(picongpu::sim.si.getSpeedOfLight(), 2u));
+                                     * sim.si.conv().joule2eV(
+                                         sim.unit.mass() * pmacc::math::cPow(picongpu::sim.si.getSpeedOfLight(), 2u));
 
             //  eV / eV + sim.unit.mass() / sim.unit.mass() = unitless
             float_64 const A_E = deltaEnergy / mc2_Ion + mE_mI;
@@ -216,8 +217,9 @@ namespace picongpu::particles::atomicPhysics::initElectrons
             // norm of electron momentum after inelastic collision in Ion-System
             // weight * (unitless^2 - unitless) * (sim.unit.mass() * sim.unit.length()/sim.unit.time())
             // = sim.unit.mass() * sim.unit.length() / sim.unit.time(), weighted
-            float_64 const normMomentumStarElectron_IonSystem = static_cast<float_64>(electron[weighting_])
-                * mc_Electron * math::sqrt(pmacc::math::cPow(gammaStarElectron_IonSystem, u8(2u)) - 1.);
+            float_64 const normMomentumStarElectron_IonSystem
+                = static_cast<float_64>(electron[weighting_]) * mc_Electron
+                  * math::sqrt(pmacc::math::cPow(gammaStarElectron_IonSystem, u8(2u)) - 1.);
             ///@}
 
             /// choose scattering direction @{
@@ -247,8 +249,10 @@ namespace picongpu::particles::atomicPhysics::initElectrons
             // sim.unit.mass()/sim.unit.mass() = unitless
             float_64 const mI_mE = static_cast<float_64>(massIon / massElectron);
             // kg * m^2/s^2 * keV/J * 1e3 = J/J * eV = eV
-            float_64 const mc2_Electron = static_cast<float_64>(massElectron)
-                * sim.si.conv().joule2eV(sim.unit.mass() * pmacc::math::cPow(picongpu::sim.si.getSpeedOfLight(), 2u));
+            float_64 const mc2_Electron
+                = static_cast<float_64>(massElectron)
+                  * sim.si.conv().joule2eV(
+                      sim.unit.mass() * pmacc::math::cPow(picongpu::sim.si.getSpeedOfLight(), 2u));
 
             float_64 const A_I = deltaEnergy / mc2_Electron + mI_mE;
             float_64 const gammaStarIon_IonSystem = (A_I * (A_I + 2.) + (mI_mE * mI_mE)) / ((A_I + 1.) * 2. * mI_mE);
@@ -258,11 +262,13 @@ namespace picongpu::particles::atomicPhysics::initElectrons
                 = massIon * picongpu::sim.si.getSpeedOfLight() / (sim.unit.length() / sim.unit.time());
 
             // sim.unit.mass() * sim.unit.length()/sim.unit.time(), weighted
-            MatrixVector momentumStarIon_LabSystem = momentumStarElectron_LabSystem /* ion = - electron */ * -1.
-                + lorentzBoost.m_beta * (lorentzBoost.m_gamma * gammaStarIon_IonSystem * mc_Ion);
+            MatrixVector momentumStarIon_LabSystem
+                = momentumStarElectron_LabSystem /* ion = - electron */ * -1.
+                  + lorentzBoost.m_beta * (lorentzBoost.m_gamma * gammaStarIon_IonSystem * mc_Ion);
             // sim.unit.mass() * sim.unit.length() / sim.unit.time(), weighted
-            momentumStarElectron_LabSystem = momentumStarElectron_LabSystem
-                + lorentzBoost.m_beta * (lorentzBoost.m_gamma * gammaStarElectron_IonSystem * mc_Electron);
+            momentumStarElectron_LabSystem
+                = momentumStarElectron_LabSystem
+                  + lorentzBoost.m_beta * (lorentzBoost.m_gamma * gammaStarElectron_IonSystem * mc_Electron);
 
             // set to particle, @attention momentum is always 3D in picongpu!
             for(uint32_t i = 0u; i < 3u; i++)

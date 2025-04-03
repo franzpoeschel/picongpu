@@ -27,7 +27,6 @@
 
 #include <cstdint>
 
-
 namespace pmacc
 {
     namespace functor
@@ -47,7 +46,7 @@ namespace pmacc
              *
              * @param currentStep current time iteration
              */
-            HINLINE void operator()(const uint32_t currentStep)
+            HINLINE void operator()(uint32_t const currentStep)
             {
                 Functor()(currentStep);
             }

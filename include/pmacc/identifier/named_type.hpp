@@ -45,5 +45,4 @@
  *
  */
 #define named_type(in_type, name, ...)                                                                                \
-    identifier(                                                                                                       \
-        name, typedef in_type type; static std::string getName() { return std::string(#name); } __VA_ARGS__)
+    identifier(name, typedef in_type type; static std::string getName() { return std::string(#name); } __VA_ARGS__)

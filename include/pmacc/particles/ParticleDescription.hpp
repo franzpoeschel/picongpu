@@ -80,7 +80,6 @@ namespace pmacc
             isUnique<FlagsList>);
     };
 
-
     /** Get ParticleDescription with a new ValueTypeSeq
      *
      * @tparam T_OldParticleDescription base description

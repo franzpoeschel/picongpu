@@ -174,7 +174,6 @@ namespace pmacc
             Finish
         };
 
-
         Exchange<TYPE, DIM>* exchange;
         state_t state;
         size_t newBufferSize;

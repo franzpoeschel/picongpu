@@ -56,16 +56,17 @@ namespace pmacc
              * @{
              */
             template<typename T_Key>
-            HDINLINE auto& operator[](const T_Key& key)
+            HDINLINE auto& operator[](T_Key const& key)
             {
                 return static_cast<TaggedValueFor<T_Key>&>(*this).value;
             }
 
             template<typename T_Key>
-            HDINLINE const auto& operator[](const T_Key& key) const
+            HDINLINE const auto& operator[](T_Key const& key) const
             {
                 return static_cast<TaggedValueFor<T_Key>&>(*this).value;
             }
+
             /** @} */
         };
 

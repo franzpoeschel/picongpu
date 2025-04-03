@@ -23,7 +23,6 @@
 #include "picongpu/fields/MaxwellSolver/Substepping/Substepping.def"
 #include "picongpu/param/fieldSolver.param"
 
-
 namespace picongpu
 {
     namespace fields

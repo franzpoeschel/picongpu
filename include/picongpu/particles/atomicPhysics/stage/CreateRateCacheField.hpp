@@ -28,7 +28,6 @@
 #include <memory>
 #include <stdexcept>
 
-
 namespace picongpu::particles::atomicPhysics::stage
 {
     /** pre-simulation stage initiating the rateCacheField for atomicPhysics

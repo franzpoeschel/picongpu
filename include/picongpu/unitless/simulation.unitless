@@ -159,6 +159,7 @@ namespace picongpu
                 {
                     return static_cast<T_Type>(si.conv().auTime2Time(auTime) / unit.time());
                 }
+
                 /** @} */
 
                 template<typename T_Type = float_X>
@@ -180,6 +181,7 @@ namespace picongpu
                 return Convert{};
             }
         };
+
         struct SiUnits
         {
             /** unit: meter */
@@ -223,6 +225,7 @@ namespace picongpu
             {
                 return SI::BASE_MASS_SI;
             }
+
             /** base particle charge
              *
              * reference for chargeRatio in speciesDefinition.param
@@ -241,6 +244,7 @@ namespace picongpu
             {
                 return SI::ELECTRON_MASS_SI;
             }
+
             /** Electron properties
              * unit: C
              */
@@ -331,7 +335,7 @@ namespace picongpu
             constexpr float_64 getClassicalElectronRadius() const
             {
                 return getElectronCharge() * getElectronCharge()
-                    / (4.0 * PI * getEps0() * getElectronMass() * getSpeedOfLight() * getSpeedOfLight());
+                       / (4.0 * PI * getEps0() * getElectronMass() * getSpeedOfLight() * getSpeedOfLight());
             }
 
             struct Convert
@@ -468,13 +472,14 @@ namespace picongpu
             {
                 return mass() / (time() * charge());
             }
+
             /** Typical number of particles per macro particle (= typical macro particle weighting)
              *  unit: none
              */
             constexpr float_64 typicalNumParticlesPerMacroParticle() const
             {
                 return (si.getBaseDensity() * si.getCellSize().productOfComponents())
-                    / static_cast<float_64>(getTypicalNumParticlesPerCell());
+                       / static_cast<float_64>(getTypicalNumParticlesPerCell());
             }
         };
 

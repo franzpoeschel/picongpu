@@ -31,7 +31,6 @@
 
 #include <mpi.h>
 
-
 namespace pmacc
 {
     namespace mpi
@@ -58,7 +57,7 @@ namespace pmacc
              *                reduceMethods::AllReduce, reduceMethods::Reduce
              * @return if resut of operator() is valid*/
             template<class MPIMethod>
-            bool hasResult(const MPIMethod& method)
+            bool hasResult(MPIMethod const& method)
             {
                 if(!isMPICommInitialized)
                     participate(true);
@@ -144,7 +143,7 @@ namespace pmacc
              *
              */
             template<class Functor, typename Type, class ReduceMethod>
-            HINLINE void operator()(Functor func, Type* dest, Type* src, const size_t n, const ReduceMethod method)
+            HINLINE void operator()(Functor func, Type* dest, Type* src, size_t const n, ReduceMethod const method)
             {
                 if(!isMPICommInitialized)
                     participate(true);
@@ -173,7 +172,7 @@ namespace pmacc
              * @return reduced value
              */
             template<class Functor, typename Type>
-            HINLINE void operator()(Functor func, Type* dest, Type* src, const size_t n)
+            HINLINE void operator()(Functor func, Type* dest, Type* src, size_t const n)
             {
                 if(!isMPICommInitialized)
                     participate(true);

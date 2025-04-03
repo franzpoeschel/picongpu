@@ -59,10 +59,11 @@ namespace pmacc
          *             can be less than `physicalMemorySize`
          */
         Buffer(MemSpace<T_dim> size)
-            : currentSizeBufferHost(alpaka::allocMappedBufIfSupported<size_t, MemIdxType>(
-                manager::Device<HostDevice>::get().current(),
-                manager::Device<ComputeDevice>::get().getPlatform(),
-                MemSpace<DIM1>(1).toAlpakaMemVec()))
+            : currentSizeBufferHost(
+                  alpaka::allocMappedBufIfSupported<size_t, MemIdxType>(
+                      manager::Device<HostDevice>::get().current(),
+                      manager::Device<ComputeDevice>::get().getPlatform(),
+                      MemSpace<DIM1>(1).toAlpakaMemVec()))
             , m_capacityND(size)
             , isMemoryContiguous(true)
         {
@@ -169,7 +170,7 @@ namespace pmacc
                     tmp[0] = m_capacityND[0];
                     tmp[1] = m_capacityND[1];
                     tmp[2] = (current_size + (m_capacityND[0] * m_capacityND[1]) - 1u)
-                        / (m_capacityND[0] * m_capacityND[1]);
+                             / (m_capacityND[0] * m_capacityND[1]);
                 }
             }
 

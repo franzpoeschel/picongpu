@@ -26,7 +26,6 @@
 #include "pmacc/particles/frame_types.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     /** cell of a particle inside a supercell

@@ -42,6 +42,7 @@ namespace pmacc
         {
         public:
             static constexpr uint32_t defaultSharedMmemSize = 4 * 1024;
+
             /** Constructor
              *
              * The memory required to hold the reduced result on the host and device will be allocated on the first
@@ -50,7 +51,7 @@ namespace pmacc
              * @param byte how many bytes in global gpu memory can reserved for the reduce algorithm
              * @param sharedMemByte limit the usage of shared memory per block on gpu
              */
-            HINLINE Reduce(const uint32_t byte, const uint32_t sharedMemByte = defaultSharedMmemSize)
+            HINLINE Reduce(uint32_t const byte, uint32_t const sharedMemByte = defaultSharedMmemSize)
                 : byte(byte)
                 , sharedMemByte(sharedMemByte)
             {
@@ -79,8 +80,9 @@ namespace pmacc
 
                 uint32_t n_buffer = byte / sizeof(Type);
 
-                uint32_t threads = n_buffer * blockcount
-                    * 2; /* x2 is used thus we can use all byte in Buffer, after we calculate threads/2 */
+                uint32_t threads
+                    = n_buffer * blockcount
+                      * 2; /* x2 is used thus we can use all byte in Buffer, after we calculate threads/2 */
 
 
                 if(threads > n)
@@ -191,7 +193,6 @@ namespace pmacc
                 return 1;
             }
 
-
             /** start the reduce kernel
              *
              * The minimal number of elements reduced within a CUDA block is chosen at
@@ -251,7 +252,6 @@ namespace pmacc
                         .template configSMem<1u>(blocks, sharedMemSize)(args...);
                 }
             }
-
 
             /** calculate optimal number of threads per block with respect to shared memory limitations
              *

@@ -32,11 +32,9 @@
 #include <thread>
 #include <vector>
 
-
 namespace picongpu
 {
     using namespace pmacc;
-
 
     struct PngCreator
     {
@@ -76,7 +74,7 @@ namespace picongpu
             }
         }
 
-        PngCreator(const PngCreator& other)
+        PngCreator(PngCreator const& other)
         {
             m_name = other.m_name;
             m_folder = other.m_folder;
@@ -92,7 +90,7 @@ namespace picongpu
          * @param header meta information about the simulation
          */
         template<typename T_DataType>
-        void operator()(std::shared_ptr<std::vector<T_DataType>> imageVector, const MessageHeader header)
+        void operator()(std::shared_ptr<std::vector<T_DataType>> imageVector, MessageHeader const header)
         {
             if(m_isThreadActive)
             {
@@ -104,7 +102,7 @@ namespace picongpu
 
     private:
         template<typename T_DataType>
-        void createImage(std::shared_ptr<std::vector<T_DataType>> imageBuffer, const MessageHeader header);
+        void createImage(std::shared_ptr<std::vector<T_DataType>> imageBuffer, MessageHeader const header);
 
         std::string m_name;
         std::string m_folder;

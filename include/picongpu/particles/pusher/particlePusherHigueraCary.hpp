@@ -70,8 +70,8 @@ namespace picongpu
                 using MomType = momentum::type;
                 MomType const mom = particle[momentum_];
 
-                const auto bField = functorBField(pos);
-                const auto eField = functorEField(pos);
+                auto const bField = functorBField(pos);
+                auto const eField = functorEField(pos);
 
                 // update probe field if particle contains required attributes
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeB>::type::value)
@@ -102,7 +102,7 @@ namespace picongpu
                 sqrt_HC::float_X const sigma = pmacc::math::norm(gamma_minus) - pmacc::math::l2norm2(tau);
 
                 sqrt_HC::float_X const u_star = pmacc::math::dot(mom_minus, tau)
-                    / precisionCast<sqrt_HC::float_X>(mass * sim.pic.getSpeedOfLight());
+                                                / precisionCast<sqrt_HC::float_X>(mass * sim.pic.getSpeedOfLight());
 
                 sqrt_HC::float_X const gamma_plus = math::sqrt(
                     sqrt_HC::float_X(0.5)
@@ -118,8 +118,8 @@ namespace picongpu
 
                 // Rotation step
                 sqrt_HC::float3_X const mom_plus = s
-                    * (mom_minus + pmacc::math::dot(mom_minus, t_vector) * t_vector
-                       + pmacc::math::cross(mom_minus, t_vector));
+                                                   * (mom_minus + pmacc::math::dot(mom_minus, t_vector) * t_vector
+                                                      + pmacc::math::cross(mom_minus, t_vector));
 
                 // Second half electric field acceleration (Note correction mom_minus -> mom_plus here compared to
                 // Ripperda)

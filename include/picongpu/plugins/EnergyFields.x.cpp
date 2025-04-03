@@ -37,7 +37,6 @@
 #include <iostream>
 #include <memory>
 
-
 namespace picongpu
 {
     using namespace pmacc;
@@ -51,7 +50,7 @@ namespace picongpu
         {
             using result = typename TypeCast<float_64, T_Type>::result;
 
-            HDINLINE result operator()(const T_Type& value) const
+            HDINLINE result operator()(T_Type const& value) const
             {
                 return precisionCast<float_64>(value);
             }
@@ -62,7 +61,7 @@ namespace picongpu
         {
             using result = T_Type;
 
-            HDINLINE result operator()(const T_Type& value) const
+            HDINLINE result operator()(T_Type const& value) const
             {
                 return value * value;
             }
@@ -164,7 +163,7 @@ namespace picongpu
             }
         }
 
-        void restart(uint32_t restartStep, const std::string restartDirectory) override
+        void restart(uint32_t restartStep, std::string const restartDirectory) override
         {
             if(!writeToFile)
                 return;
@@ -172,7 +171,7 @@ namespace picongpu
             writeToFile = restoreTxtFile(outFile, filename, restartStep, restartDirectory);
         }
 
-        void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override
+        void checkpoint(uint32_t currentStep, std::string const checkpointDirectory) override
         {
             if(!writeToFile)
                 return;

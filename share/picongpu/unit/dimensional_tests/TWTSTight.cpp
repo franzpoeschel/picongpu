@@ -73,8 +73,8 @@ static bool isApproxEqual(T const& a, T const& b)
 template<uint32_t T_numThreadsPerBlock>
 struct GenerateEvals
 {
-    const templates::twtstight::EField testEfield;
-    const templates::twtstight::BField testBfield;
+    templates::twtstight::EField const testEfield;
+    templates::twtstight::BField const testBfield;
     using float_T = templates::twtstight::float_T;
 
     HINLINE GenerateEvals()
@@ -85,11 +85,11 @@ struct GenerateEvals
 
     template<class T_Box, typename T_Worker>
     HDINLINE void operator()(
-        const T_Worker& worker,
-        const uint32_t numValues,
-        const uint32_t numValuesPerThread,
-        const float3_64 pos,
-        const float_64 time,
+        T_Worker const& worker,
+        uint32_t const numValues,
+        uint32_t const numValuesPerThread,
+        float3_64 const pos,
+        float_64 const time,
         T_Box result) const
     {
         using namespace ::pmacc;
@@ -123,7 +123,7 @@ struct twtsTightNumberTest
     void operator()()
     {
         using namespace ::pmacc;
-        const templates::twtstight::EField testEfield = templates::twtstight::EField(
+        templates::twtstight::EField const testEfield = templates::twtstight::EField(
             0.0,
             800.0e-9,
             30.0e-15,
@@ -133,7 +133,7 @@ struct twtsTightNumberTest
             0.0,
             false,
             30. * (PI / 180.));
-        const templates::twtstight::BField testBfield = templates::twtstight::BField(
+        templates::twtstight::BField const testBfield = templates::twtstight::BField(
             0.0,
             800.0e-9,
             30.0e-15,
@@ -151,8 +151,8 @@ struct twtsTightNumberTest
         constexpr uint32_t numThreads = numBlocks * numThreadsPerBlock;
         constexpr uint32_t numValuesPerThread = 6;
         constexpr uint32_t numValues = numThreads * numValuesPerThread;
-        const float3_64 pos = float3_64{1.0e-6, 1.0e-6, 100.0 * 1.5e-6};
-        const float_64 time = float_64(1.0e-15);
+        float3_64 const pos = float3_64{1.0e-6, 1.0e-6, 100.0 * 1.5e-6};
+        float_64 const time = float_64(1.0e-15);
 
         HostBuffer<float_T, 1u> resultHost(numValues);
         DeviceBuffer<float_T, 1u> resultDevice(numValues);
@@ -176,17 +176,17 @@ struct twtsTightNumberTest
 
 // This combination of compilers has a bug that is triggered by Catch2 internally suppressing warnings.
 // See https://github.com/ComputationalRadiationPhysics/picongpu/pull/5174#issuecomment-2467890326
-#if(__GNUC__ != 11 || __CUDACC_VER_MAJOR__ != 11)
+#if (__GNUC__ != 11 || __CUDACC_VER_MAJOR__ != 11)
         const float3_64 refEfield = float3_64(0.18329124052693974, -0.009402050968104002, 0.1054028749666347);
-        const float3_64 refBfield = float3_64(3.5299706879027803e-10, 5.334111474127282e-11, -6.090365721598194e-10);
-        const float3_T refEfieldT = precisionCast<float_T>(refEfield);
-        const float3_T refBfieldT = precisionCast<float_T>(refBfield);
+        float3_64 const refBfield = float3_64(3.5299706879027803e-10, 5.334111474127282e-11, -6.090365721598194e-10);
+        float3_T const refEfieldT = precisionCast<float_T>(refEfield);
+        float3_T const refBfieldT = precisionCast<float_T>(refBfield);
         /* epsilon to compare to Mathematica implementation.
          * Note: Reduction of epsilon would require replacing complex-valued bessel function support in
          * PMacc with boost library calls that also work on device. */
-        const float_T epsilonAlgebra = std::is_same<float_T, float_64>::value ? float_T(5.0e-13) : float_T(5.0e-5);
+        float_T const epsilonAlgebra = std::is_same<float_T, float_64>::value ? float_T(5.0e-13) : float_T(5.0e-5);
         /* Epsilon to compare host implementation to device implementation */
-        const float_T epsilonHostDevice = std::is_same<float_T, float_64>::value ? float_T(5.0e-15) : float_T(5.0e-7);
+        float_T const epsilonHostDevice = std::is_same<float_T, float_64>::value ? float_T(5.0e-15) : float_T(5.0e-7);
         for(uint32_t i = 0; i < 3; i++)
         {
             CHECK(isApproxEqual(refEfieldT[i], res[i], epsilonAlgebra));

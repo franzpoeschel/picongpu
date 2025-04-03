@@ -50,20 +50,21 @@ namespace picongpu
         std::string name;
         std::string prefix;
         std::string notifyPeriod;
-        const std::string filename;
+        std::string const filename;
         MappingDesc* cellDescription;
         std::ofstream output_file;
 
         std::unique_ptr<algorithms::GlobalReduce> globalReduce;
         ::pmacc::mpi::reduceMethods::Reduce mpiReduceMethod;
 
-        HINLINE void restart(uint32_t restartStep, const std::string restartDirectory) override;
-        HINLINE void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override;
+        HINLINE void restart(uint32_t restartStep, std::string const restartDirectory) override;
+        HINLINE void checkpoint(uint32_t currentStep, std::string const checkpointDirectory) override;
 
         HINLINE void pluginLoad() override;
 
     public:
         HINLINE ChargeConservation();
+
         virtual ~ChargeConservation()
         {
         }

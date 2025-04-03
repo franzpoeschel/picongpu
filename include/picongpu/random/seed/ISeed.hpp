@@ -23,7 +23,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace random

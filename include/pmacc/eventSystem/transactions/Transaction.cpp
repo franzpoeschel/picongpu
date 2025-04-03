@@ -33,7 +33,7 @@ namespace pmacc
     {
     }
 
-    EventTask Transaction::setTransactionEvent(const EventTask& event)
+    EventTask Transaction::setTransactionEvent(EventTask const& event)
     {
         baseEvent += event;
         return baseEvent;

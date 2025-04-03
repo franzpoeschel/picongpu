@@ -24,7 +24,6 @@
 
 #include <pmacc/algorithms/math/defines/pi.hpp>
 
-
 namespace picongpu
 {
     namespace fields
@@ -79,6 +78,7 @@ namespace picongpu
                             = static_cast<float_X>(Params::PULSE_DURATION_SI / sim.unit.time());
 
                         // Some utility that is not part of public interface
+
                     private:
                         //! Return z direction in 3d or 0 in 2d
                         HDINLINE static constexpr float_64 getDirectionZ()

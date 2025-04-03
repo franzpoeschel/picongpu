@@ -21,7 +21,6 @@
 
 #include "picongpu/defines.hpp"
 
-
 namespace picongpu
 {
     namespace densityProfiles
@@ -43,7 +42,7 @@ namespace picongpu
              * @param totalCellOffset total offset including all slides [in cells]
              * @return float_X always 1.0
              */
-            HDINLINE float_X operator()(const DataSpace<simDim>& totalCellOffset)
+            HDINLINE float_X operator()(DataSpace<simDim> const& totalCellOffset)
             {
                 return float_X(1.0);
             }

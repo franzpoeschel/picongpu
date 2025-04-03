@@ -24,7 +24,6 @@
 #include <pmacc/attribute/FunctionSpecifier.hpp>
 #include <pmacc/math/math.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -39,16 +38,16 @@ namespace picongpu
             struct ShiftToValidRange
             {
                 template<typename T_MemoryType, typename T_PosType>
-                HDINLINE T_MemoryType memory(const T_MemoryType& mem, const T_PosType& pos) const
+                HDINLINE T_MemoryType memory(T_MemoryType const& mem, T_PosType const& pos) const
                 {
-                    const T_PosType pos_floor = pmacc::math::floor(pos);
+                    T_PosType const pos_floor = pmacc::math::floor(pos);
                     return mem.shift(precisionCast<int>(pos_floor));
                 }
 
                 template<typename T_PosType>
-                HDINLINE T_PosType position(const T_PosType& pos) const
+                HDINLINE T_PosType position(T_PosType const& pos) const
                 {
-                    const T_PosType pos_floor = pmacc::math::floor(pos);
+                    T_PosType const pos_floor = pmacc::math::floor(pos);
                     return pos - pos_floor;
                 }
             };

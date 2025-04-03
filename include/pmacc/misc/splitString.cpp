@@ -25,7 +25,6 @@
 #include <string>
 #include <vector>
 
-
 namespace pmacc
 {
     namespace misc

@@ -25,7 +25,6 @@
 #include <pmacc/math/Vector.hpp>
 #include <pmacc/traits/GetStringProperties.hpp>
 
-
 namespace picongpu
 {
     namespace fields

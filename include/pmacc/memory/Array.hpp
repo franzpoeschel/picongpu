@@ -23,7 +23,6 @@
 
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     namespace memory
@@ -71,6 +70,7 @@ namespace pmacc
             {
                 return reinterpret_cast<const_pointer>(m_data);
             }
+
             /** @} */
 
             /** default constructor
@@ -110,6 +110,7 @@ namespace pmacc
             {
                 return reinterpret_cast<T_Type*>(m_data)[idx];
             }
+
             /** @} */
 
         private:

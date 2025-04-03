@@ -52,15 +52,14 @@ namespace picongpu
                      * @returns weighting factor to reduce ringing effects due to
                      *          sharp spacial boundaries
                      **/
-                    HDINLINE float_X operator()(const float_X position_x, const float_X L_x) const
+                    HDINLINE float_X operator()(float_X const position_x, float_X const L_x) const
                     {
                         float_X x = position_x - float_X(0.5) * L_x;
                         return float_X(math::abs(x) <= float_X(0.5) * L_x)
-                            * (float_X(1.0) - float_X(2.0) / L_x * math::abs(x));
+                               * (float_X(1.0) - float_X(2.0) / L_x * math::abs(x));
                     }
                 };
             } // namespace radWindowFunctionTriangle
-
 
             namespace radWindowFunctionHamming
             {
@@ -80,17 +79,16 @@ namespace picongpu
                      * @returns weighting factor to reduce ringing effects due to
                      *          sharp spacial boundaries
                      **/
-                    HDINLINE float_X operator()(const float_X position_x, const float_X L_x) const
+                    HDINLINE float_X operator()(float_X const position_x, float_X const L_x) const
                     {
-                        const float_X x = position_x - L_x * float_X(0.5);
-                        const float_X a = 0.08; /* ideal parameter: -43dB reduction */
-                        const float_X cosinusValue = math::cos(pmacc::math::Pi<float_X>::value * x / L_x);
+                        float_X const x = position_x - L_x * float_X(0.5);
+                        float_X const a = 0.08; /* ideal parameter: -43dB reduction */
+                        float_X const cosinusValue = math::cos(pmacc::math::Pi<float_X>::value * x / L_x);
                         return float_X(math::abs(x) <= float_X(0.5) * L_x)
-                            * (a + (float_X(1.0) - a) * cosinusValue * cosinusValue);
+                               * (a + (float_X(1.0) - a) * cosinusValue * cosinusValue);
                     }
                 };
             } // namespace radWindowFunctionHamming
-
 
             namespace radWindowFunctionTriplett
             {
@@ -110,17 +108,16 @@ namespace picongpu
                      * @returns weighting factor to reduce ringing effects due to
                      *          sharp spacial boundaries
                      **/
-                    HDINLINE float_X operator()(const float_X position_x, const float_X L_x) const
+                    HDINLINE float_X operator()(float_X const position_x, float_X const L_x) const
                     {
-                        const float_X x = position_x - L_x * float_X(0.5);
-                        const float_X lambda = float_X(5.0) / L_x; /* larger is better, but too large means no data */
-                        const float_X cosinusValue = math::cos(pmacc::math::Pi<float_X>::value * x / L_x);
+                        float_X const x = position_x - L_x * float_X(0.5);
+                        float_X const lambda = float_X(5.0) / L_x; /* larger is better, but too large means no data */
+                        float_X const cosinusValue = math::cos(pmacc::math::Pi<float_X>::value * x / L_x);
                         return float_X(math::abs(x) <= float_X(0.5) * L_x)
-                            * (math::exp(float_X(-1.0) * lambda * math::abs(x)) * cosinusValue * cosinusValue);
+                               * (math::exp(float_X(-1.0) * lambda * math::abs(x)) * cosinusValue * cosinusValue);
                     }
                 };
             } // namespace radWindowFunctionTriplett
-
 
             namespace radWindowFunctionGauss
             {
@@ -140,17 +137,16 @@ namespace picongpu
                      * @returns weighting factor to reduce ringing effects due to
                      *          sharp spacial boundaries
                      **/
-                    HDINLINE float_X operator()(const float_X position_x, const float_X L_x) const
+                    HDINLINE float_X operator()(float_X const position_x, float_X const L_x) const
                     {
-                        const float_X x = position_x - L_x * float_X(0.5);
-                        const float_X sigma = float_X(0.4) * L_x; /* smaller is better, but too small means no data */
-                        const float_X relativePosition = x / sigma; /* optimization */
+                        float_X const x = position_x - L_x * float_X(0.5);
+                        float_X const sigma = float_X(0.4) * L_x; /* smaller is better, but too small means no data */
+                        float_X const relativePosition = x / sigma; /* optimization */
                         return float_X(math::abs(x) <= float_X(0.5) * L_x)
-                            * (math::exp(float_X(-0.5) * relativePosition * relativePosition));
+                               * (math::exp(float_X(-0.5) * relativePosition * relativePosition));
                     }
                 };
             } // namespace radWindowFunctionGauss
-
 
             namespace radWindowFunctionNone
             {
@@ -166,7 +162,7 @@ namespace picongpu
                      *                     from 0 to L_x in the chosen dimension
                      * @returns 1.0
                      **/
-                    HDINLINE float_X operator()(const float_X position_x, const float_X L_x) const
+                    HDINLINE float_X operator()(float_X const position_x, float_X const L_x) const
                     {
                         return float_X(1.0);
                     }

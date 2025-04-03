@@ -23,7 +23,6 @@
 #include "picongpu/fields/MaxwellSolver/FDTD/FDTD.def"
 #include "picongpu/fields/differentiation/Curl.def"
 
-
 namespace picongpu
 {
     namespace fields

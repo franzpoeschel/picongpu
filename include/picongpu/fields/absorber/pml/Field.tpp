@@ -29,7 +29,6 @@
 #include <cstdint>
 #include <memory>
 
-
 namespace picongpu
 {
     namespace fields
@@ -68,8 +67,9 @@ namespace picongpu
                     {
                         // All sizes are without guard, since Pml is only on the internal area
                         auto const gridDataSpace = gridLayout.sizeWithoutGuardND();
-                        auto const nonPmlDataSpace = gridDataSpace
-                            - (globalThickness.getPositiveBorder() + globalThickness.getNegativeBorder());
+                        auto const nonPmlDataSpace
+                            = gridDataSpace
+                              - (globalThickness.getPositiveBorder() + globalThickness.getNegativeBorder());
                         auto const numGridCells = gridDataSpace.productOfComponents();
                         auto const numNonPmlCells = nonPmlDataSpace.productOfComponents();
                         return numGridCells - numNonPmlCells;

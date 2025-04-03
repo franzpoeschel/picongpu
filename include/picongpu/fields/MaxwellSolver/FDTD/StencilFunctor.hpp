@@ -24,7 +24,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace fields

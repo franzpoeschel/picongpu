@@ -28,7 +28,6 @@
 #include <type_traits>
 #include <vector>
 
-
 namespace picongpu
 {
     namespace plugins::binning
@@ -63,6 +62,7 @@ namespace picongpu
                 std::string label;
                 /** Units(Dimensionality) of the axis */
                 std::array<double, numUnits> units;
+
                 struct LinearAxisKernel
                 {
                     /** Function to place particle on axis, returns same type as min and max */
@@ -171,7 +171,6 @@ namespace picongpu
                 {
                     return getConversionFactor(units);
                 }
-
 
                 LinearAxisKernel getAxisKernel() const
                 {

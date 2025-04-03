@@ -141,8 +141,8 @@ namespace pmacc
 
             DataSpace<DIM3> result;
 
-            const uint32_t x_entry(0);
-            const uint32_t z_entry(1);
+            uint32_t const x_entry(0);
+            uint32_t const z_entry(1);
             uint32_t y_entry(1);
 
             switch(directions.x())

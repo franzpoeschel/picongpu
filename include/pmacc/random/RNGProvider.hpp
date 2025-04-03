@@ -69,7 +69,7 @@ namespace pmacc
              * @param uniqueId Unique ID for this instance. If none is given the default
              *          (as returned by \ref getName()) is used
              */
-            RNGProvider(const Space& size, const std::string& uniqueId = "");
+            RNGProvider(Space const& size, std::string const& uniqueId = "");
 
             /**
              * Initializes the random number generators
@@ -84,7 +84,7 @@ namespace pmacc
              *
              * @param id SimulationDataId of the RNGProvider to use. Defaults to the default Id of the type
              */
-            static Handle createHandle(const std::string& id = getName());
+            static Handle createHandle(std::string const& id = getName());
 
             /**
              * Factory method
@@ -94,7 +94,7 @@ namespace pmacc
              * @param id SimulationDataId of the RNGProvider to use. Defaults to the default Id of the type
              */
             template<class T_Distribution>
-            static typename GetRandomType<T_Distribution>::type createRandom(const std::string& id = getName());
+            static typename GetRandomType<T_Distribution>::type createRandom(std::string const& id = getName());
 
             /**
              * Returns the default id for this type
@@ -121,9 +121,9 @@ namespace pmacc
              */
             DataBoxType getDeviceDataBox();
 
-            const Space m_size;
+            Space const m_size;
             std::unique_ptr<Buffer> buffer;
-            const std::string m_uniqueId;
+            std::string const m_uniqueId;
         };
 
     } // namespace random

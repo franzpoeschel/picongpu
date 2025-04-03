@@ -349,8 +349,8 @@ namespace picongpu
             runtimeDensityFile.init();
 
             // create factory for the random number generator
-            const uint32_t userSeed = random::seed::ISeed<random::SeedGenerator>{}();
-            const uint32_t seed = std::hash<std::string>{}(std::to_string(userSeed));
+            uint32_t const userSeed = random::seed::ISeed<random::SeedGenerator>{}();
+            uint32_t const seed = std::hash<std::string>{}(std::to_string(userSeed));
 
             using RNGFactory = pmacc::random::RNGProvider<simDim, random::Generator>;
             auto numRNGsPerSuperCell = DataSpace<simDim>::create(1);
@@ -360,7 +360,7 @@ namespace picongpu
              * the buffer will be multiplied by numFrameSlots.
              */
             auto numRngStates = (Environment<simDim>::get().SubGrid().getLocalDomain().size / SuperCellSize::toRT())
-                * numRNGsPerSuperCell;
+                                * numRNGsPerSuperCell;
             auto rngFactory = std::make_unique<RNGFactory>(numRngStates);
             if(Environment<simDim>::get().GridController().getGlobalRank() == 0)
             {
@@ -372,7 +372,7 @@ namespace picongpu
             rngFactory->init(gridCon.getScalarPosition() ^ seed);
             dc.consume(std::move(rngFactory));
 
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
             auto alpakaQueue = pmacc::eventSystem::getComputeDeviceQueue(ITask::TASK_DEVICE)->getAlpakaQueue();
             auto alpakaDevice = manager::Device<ComputeDevice>::get().current();
             /* Create an empty allocator. This one is resized after all exchanges
@@ -396,7 +396,7 @@ namespace picongpu
                 throw std::runtime_error(msg.str());
             }
 
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
             size_t heapSize = freeGpuMem - reservedGpuMemorySize;
             GridController<simDim>& gc = Environment<simDim>::get().GridController();
             if(Environment<>::get().MemoryInfo().isSharedMemoryPool(
@@ -429,7 +429,7 @@ namespace picongpu
                 log<picLog::MEMORY>("free mem after all mem is allocated %1% MiB") % (freeGpuMem / 1024 / 1024);
             }
 
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
             /* add CUDA streams to the QueueController for concurrent execution */
             Environment<>::get().QueueController().addQueues(6);
 #endif
@@ -465,8 +465,9 @@ namespace picongpu
                         {
                             if(this->tryRestart == false)
                             {
-                                throw std::runtime_error("Restart failed. You must provide the "
-                                                         "'--checkpoint.restart.step' argument. See picongpu --help.");
+                                throw std::runtime_error(
+                                    "Restart failed. You must provide the "
+                                    "'--checkpoint.restart.step' argument. See picongpu --help.");
                             }
                             else
                             {

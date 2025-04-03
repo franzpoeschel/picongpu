@@ -26,7 +26,6 @@
 
 #include <type_traits>
 
-
 namespace pmacc
 {
     namespace random

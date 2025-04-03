@@ -54,7 +54,6 @@
 #include <utility>
 #include <vector>
 
-
 namespace picongpu
 {
     //! calculates the emittance in x direction along the y axis
@@ -84,7 +83,7 @@ namespace picongpu
             T_DBox gSumMomPos,
             T_DBox gCount_e,
             DataSpace<simDim> globalOffset,
-            const int subGridY,
+            int const subGridY,
             T_Mapping mapper,
             T_Filter filter) const
         {
@@ -166,7 +165,7 @@ namespace picongpu
             // wait that all virtual threads updated the shared memory
             worker.sync();
 
-            const int gOffset
+            int const gOffset
                 = ((superCellIdx - mapper.getGuardingSuperCells()) * MappingDesc::SuperCellSize::toRT()).y();
 
             forEachSuperCellInY(
@@ -196,7 +195,6 @@ namespace picongpu
                 });
         }
     };
-
 
     template<typename ParticlesType>
     class CalcEmittance : public plugins::multi::IInstance
@@ -250,7 +248,6 @@ namespace picongpu
                 std::string const& masterPrefix = std::string{}) override
             {
             }
-
 
             void validateOptions() override
             {
@@ -380,7 +377,7 @@ namespace picongpu
                 MPI_CHECK(MPI_Comm_rank(commGather, &gatherRank));
             writeToFile = (gatherRank == 0);
 
-            const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
             gSumMom2
                 = std::make_unique<GridBuffer<float_64, DIM1>>(DataSpace<DIM1>(subGrid.getLocalDomain().size.y()));
             gSumPos2
@@ -431,7 +428,6 @@ namespace picongpu
             calculateCalcEmittance<CORE + BORDER>(currentStep);
         }
 
-
         void restart(uint32_t restartStep, std::string const& restartDirectory) override
         {
             if(!writeToFile)
@@ -470,8 +466,8 @@ namespace picongpu
             // Some variables required so that it is possible for the kernel
             // to calculate the absolute position of the particles
             DataSpace<simDim> localSize(m_cellDescription->getGridLayout().sizeWithoutGuardND());
-            const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
-            const int globalDomainSizeY = subGrid.getGlobalDomain().size.y();
+            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
+            int const globalDomainSizeY = subGrid.getGlobalDomain().size.y();
             auto movingWindow = MovingWindow::getInstance().getWindow(currentStep);
             DataSpace<simDim> globalOffset(subGrid.getLocalDomain().offset);
 
@@ -647,11 +643,11 @@ namespace picongpu
                     {
                         numElec_all += static_cast<long double>(globalCount_e.data()[i]);
                         ux2_all += static_cast<long double>(globalSumMom2.data()[i]) * sim.unit.mass()
-                            * sim.unit.mass() / (sim.si.getElectronMass() * sim.si.getElectronMass());
+                                   * sim.unit.mass() / (sim.si.getElectronMass() * sim.si.getElectronMass());
                         pos2_SI_all += static_cast<long double>(globalSumPos2.data()[i]) * sim.unit.length()
-                            * sim.unit.length();
+                                       * sim.unit.length();
                         xux_all += static_cast<long double>(globalSumMomPos.data()[i]) * sim.unit.mass()
-                            * sim.unit.length() / sim.si.getElectronMass();
+                                   * sim.unit.length() / sim.si.getElectronMass();
                     }
                     /* the scaling with normalized weighting (weighting /
                      * sim.unit.typicalNumParticlesPerMacroParticle()) is compendated by the division by
@@ -660,7 +656,7 @@ namespace picongpu
                     float_64 emit_all = math::sqrt(
                                             static_cast<float_64>(pos2_SI_all) * static_cast<float_64>(ux2_all)
                                             - static_cast<float_64>(xux_all) * static_cast<float_64>(xux_all))
-                        / static_cast<float_64>(numElec_all);
+                                        / static_cast<float_64>(numElec_all);
 
                     if(emit_all > 0.0)
                     {
@@ -675,7 +671,7 @@ namespace picongpu
                     {
                         float_64 numElec = globalCount_e.data()[i];
                         float_64 mom2_SI = globalSumMom2.data()[i] * sim.unit.mass() * sim.unit.speed()
-                            * sim.unit.mass() * sim.unit.speed();
+                                           * sim.unit.mass() * sim.unit.speed();
                         float_64 pos2_SI = globalSumPos2.data()[i] * sim.unit.length() * sim.unit.length();
                         float_64 mompos_SI
                             = globalSumMomPos.data()[i] * sim.unit.mass() * sim.unit.speed() * sim.unit.length();
@@ -683,14 +679,14 @@ namespace picongpu
                         {
                             numElec += globalCount_e.data()[j];
                             mom2_SI += globalSumMom2.data()[j] * sim.unit.mass() * sim.unit.speed() * sim.unit.mass()
-                                * sim.unit.speed();
+                                       * sim.unit.speed();
                             pos2_SI += globalSumPos2.data()[j] * sim.unit.length() * sim.unit.length();
                             mompos_SI
                                 += globalSumMomPos.data()[j] * sim.unit.mass() * sim.unit.speed() * sim.unit.length();
                         }
                         float_64 ux2 = mom2_SI
-                            / (sim.unit.speed() * sim.unit.speed() * sim.si.getElectronMass()
-                               * sim.si.getElectronMass());
+                                       / (sim.unit.speed() * sim.unit.speed() * sim.si.getElectronMass()
+                                          * sim.si.getElectronMass());
                         float_64 xux = mompos_SI / (sim.unit.speed() * sim.si.getElectronMass());
                         float_64 emit = math::sqrt((pos2_SI * ux2 - xux * xux)) / numElec;
                         if(numElec < std::numeric_limits<float_64>::epsilon())

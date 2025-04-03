@@ -33,15 +33,14 @@
 #include <type_traits>
 #include <vector>
 
-
 namespace picongpu
 {
     FieldE::FieldE(MappingDesc const& cellDescription)
         : fields::EMFieldBase(
-            cellDescription,
-            getName(),
-            picongpu::traits::GetLowerMargin<fields::Solver, FieldE>::type::toRT(),
-            picongpu::traits::GetUpperMargin<fields::Solver, FieldE>::type::toRT())
+              cellDescription,
+              getName(),
+              picongpu::traits::GetLowerMargin<fields::Solver, FieldE>::type::toRT(),
+              picongpu::traits::GetUpperMargin<fields::Solver, FieldE>::type::toRT())
     {
     }
 

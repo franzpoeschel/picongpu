@@ -21,7 +21,6 @@
 
 #include "picongpu/defines.hpp"
 
-
 namespace picongpu
 {
     /** calculate the gamma of a particle

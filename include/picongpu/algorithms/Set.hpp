@@ -39,6 +39,6 @@ namespace picongpu
         }
 
     private:
-        PMACC_ALIGN(value, const Type_);
+        PMACC_ALIGN(value, Type_ const);
     };
 } // namespace picongpu

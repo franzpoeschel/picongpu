@@ -42,6 +42,73 @@ details. Some hints:
 - In urgent cases, you can skip the checks via `git commit [...] --no-verify`. Be aware that similar things will be
   checked in CI during your PR and fail then at latest.
 
+### Rebasing onto a change of convention/formatting
+
+Updates in conventions and formatting occasionally happen on purpose or due to version updates in the tooling.
+If you've started some branch before such changes took place,
+they can lead to basically all your changes being marked as conflicts once you try to merge/rebase.
+With `pre-commit` being the ground truth for following the conventions,
+there's a relatively straightforward way to rectify this.
+
+Let's assume we have a situation where you have a branch `conflicting-changes`
+and a `mainline/dev` has a commit `change-formatting` that introduced some formatting changes
+by altering `.pre-commit-config.yaml` in the root of the repository.
+For simplicity, you can find out the hash of that commit and use
+
+```bash
+git branch change-formatting <hash-of-change-formatting>
+```
+
+to create a label for reference.
+
+Applying a change in convention is conveniently bundled in the following three commands
+that I'd suggest to store in a file `apply-change-of-convention.sh`
+
+```bash
+git restore --source change-formatting .pre-commit-config.yaml
+pre-commit run --all-files
+git restore .pre-commit-config.yaml
+```
+
+0. Rebase `conflicting-changes` to `change-formatting~1` (right before `change-formatting`).
+You might see real conflicts that you really have to resolve yourself.
+
+```bash
+git checkout conflicting-changes
+git rebase change-formatting~1
+```
+
+1. Now, we start lifting you over the formatting change. Start an interactive rebase
+
+```bash
+git rebase -i change-formatting
+```
+
+2. Inside of the editor that opened up, mark all commits as `edit`
+
+```
+edit 43cebfdceb Conflicting change
+edit 75d366bca3 Conflicting change 2
+# and so on...
+```
+
+3. No patch will apply cleanly because the formatting gets in the way.
+But instead of resolving all the conflicts manually,
+we know precisely what change to apply:
+
+```bash
+git restore --source REBASE_HEAD .
+# If you decided against creating that file, paste the lines from above:
+bash apply-change-of-convention.sh
+git add -u
+# make sure you're doing the right thing:
+# git diff --staged
+git rebase --continue
+```
+
+Unfortunately, I haven't found a convenient way to automate this within an (interactive) rebase.
+It would surely be doable within a script but having a little more control is probably also nice.
+
 Manually Formatting Code
 ------------------------
 
@@ -57,24 +124,25 @@ black -l 120
 
 The following describes formatting of C++ code.
 
-- Install *ClangFormat 12* from LLVM 12.0.1
+- Install *ClangFormat 20* from LLVM 20.1.0
 - To format all files in your working copy, you can run this command in bash from the root folder of PIConGPU:
+
   ```bash
   find include/ share/picongpu/ share/pmacc -iname "*.def" \
   -o -iname "*.h" -o -iname "*.cpp" -o -iname "*.cu" \
   -o -iname "*.hpp" -o -iname "*.tpp" -o -iname "*.kernel" \
   -o -iname "*.loader" -o -iname "*.param" -o -iname "*.unitless" \
-  | xargs clang-format-12 -i
+  | xargs clang-format-20 -i
   ```
- 
-Instead of using the bash command above you can use *Git* together with *ClangFormat* to format your patched code only. 
+
+Instead of using the bash command above you can use *Git* together with *ClangFormat* to format your patched code only.
 Before applying this command, you must extend your local git configuration **once** with all file endings used in *PIConGPU*:
 
 ```
 git config --local clangFormat.extensions def,h,cpp,cu,hpp,tpp,kernel,loader,param,unitless
 ```
 
-For only formatting lines you added using `git add`, call `git clang-format-12` before you create a commit.
+For only formatting lines you added using `git add`, call `git clang-format-20` before you create a commit.
 Please be aware that un-staged changes will not be formatted.
 
 Commit Messages
@@ -83,13 +151,12 @@ Commit Messages
 Let's go for an example:
 
 > Use the 1st line as a topic, stay <= 50 chars
-> 
+>
 > - the blank line between the "topic" and this "body" is MANDATORY
 > - use several key points with - or * for additional information
 > - stay <= 72 characters in this "body" section
 > - avoid blank lines in the body
-> - Why? Pls refer to http://stopwritingramblingcommitmessages.com/
-
+> - Why? Pls refer to <http://stopwritingramblingcommitmessages.com/>
 
 Compile Tests
 -------------

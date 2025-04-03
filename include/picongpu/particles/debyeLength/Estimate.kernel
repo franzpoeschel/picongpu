@@ -29,7 +29,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace particles
@@ -202,8 +201,9 @@ namespace picongpu
                     float3_64 const momentumVariance,
                     T_EstimateBox estimateBox) const
                 {
-                    auto const supercellVolume = sim.pic.getCellSize().productOfComponents()
-                        * precisionCast<float_64>(SuperCellSize::toRT().productOfComponents());
+                    auto const supercellVolume
+                        = sim.pic.getCellSize().productOfComponents()
+                          * precisionCast<float_64>(SuperCellSize::toRT().productOfComponents());
                     auto const electronDensity = sumWeighting / supercellVolume;
 
                     /* For the Maxwell-Boltzmann distribution,

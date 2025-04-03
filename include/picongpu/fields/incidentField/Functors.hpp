@@ -31,7 +31,6 @@
 #include <string>
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace fields
@@ -130,6 +129,7 @@ namespace picongpu
                 {
                     static constexpr Origin value = T::FOCUS_ORIGIN_Z;
                 };
+
                 /**@}*/
 
                 /** Base class for calculating incident E functors
@@ -326,8 +326,8 @@ namespace picongpu
                                 auto const minPosition
                                     = (static_cast<float_X>(POSITION[axis][0]) + 0.75_X) * sim.pic.getCellSize()[axis];
                                 auto const maxPositionIdx = (POSITION[axis][1] > 0)
-                                    ? POSITION[axis][1]
-                                    : globalDomainCells[axis] + POSITION[axis][1];
+                                                                ? POSITION[axis][1]
+                                                                : globalDomainCells[axis] + POSITION[axis][1];
                                 auto const maxPosition
                                     = (static_cast<float_X>(maxPositionIdx) - 0.75_X) * sim.pic.getCellSize()[axis];
                                 /* First we find intersection of line(p) with continuations of the generation planes
@@ -374,6 +374,7 @@ namespace picongpu
 
                         );
                     }
+
                     /** @} */
 
                     /** Get value of phase velocity
@@ -454,14 +455,14 @@ namespace picongpu
                         auto const transversal = functor.getTransversal(totalCellIdx);
                         if(T_SeparableFunctor::Unitless::Polarisation == PolarisationType::Linear)
                             return functor.getLinearPolarizationVector()
-                                * (functor.getLongitudinal(time, 0.0_X) * transversal);
+                                   * (functor.getLongitudinal(time, 0.0_X) * transversal);
                         else
                         {
                             auto const phaseShift = pmacc::math::Pi<float_X>::halfValue;
                             return functor.getCircularPolarizationVector1()
-                                * (functor.getLongitudinal(time, phaseShift) * transversal)
-                                + functor.getCircularPolarizationVector2()
-                                * (functor.getLongitudinal(time, 0.0_X) * transversal);
+                                       * (functor.getLongitudinal(time, phaseShift) * transversal)
+                                   + functor.getCircularPolarizationVector2()
+                                         * (functor.getLongitudinal(time, 0.0_X) * transversal);
                         }
                     }
                 };

@@ -40,7 +40,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace particles

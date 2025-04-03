@@ -34,7 +34,6 @@
 
 #include <pmacc/math/operation.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -56,6 +55,7 @@ namespace picongpu
                  */
                 static constexpr uint32_t numParticlesPerCell = 25u;
             };
+
             /** Definition of start position functor that randomly distributes macro-particles within a cell
              * and randomly distributes weightings across macro-particles within a cell.
              */
@@ -76,6 +76,7 @@ namespace picongpu
                 //! local index of cell in each superCell whose macro particles to keep
                 using idxCellToKeep = pmacc::math::CT::shrinkTo<pmacc::math::CT::Int<1, 1, 1>, picongpu::simDim>::type;
             };
+
             using Sparse = picongpu::particles::manipulators::unary::SparserMacroParticlesPerSuperCell<SparserParam>;
 
         } // namespace manipulators

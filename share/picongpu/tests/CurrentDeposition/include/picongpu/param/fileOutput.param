@@ -28,7 +28,6 @@
 #include "picongpu/particles/particleToGrid/CombinedDerive.def"
 #include "picongpu/particles/particleToGrid/ComputeGridValuePerFrame.def"
 
-
 namespace picongpu
 {
     /** FieldTmp output (calculated at runtime) *******************************

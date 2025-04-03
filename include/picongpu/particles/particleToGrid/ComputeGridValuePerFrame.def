@@ -47,7 +47,6 @@
 
 #include <vector>
 
-
 namespace picongpu
 {
     namespace particles
@@ -96,7 +95,7 @@ namespace picongpu
                 DINLINE void operator()(
                     T_Worker const& worker,
                     T_Particle& particle,
-                    const TVecSuperCell superCell,
+                    TVecSuperCell const superCell,
                     T_AccFilter& accFilter,
                     BoxTmp& tmpBox);
             };
@@ -119,6 +118,7 @@ namespace picongpu
                 {
                     using type = shapes::Counter;
                 };
+
                 template<typename T_Species>
                 struct GetAttributeShape<T_Species, derivedAttributes::MacroCounter>
                 {
@@ -155,6 +155,7 @@ namespace picongpu
                 using OperationPerFrame = ComputeGridValuePerFrame<shapeType, T_DerivedAttribute>;
                 using type = FieldTmpOperation<OperationPerFrame, T_Species, T_Filter>;
             };
+
             template<typename T_Species, typename T_DerivedAttribute, typename T_Filter = filter::All>
             using CreateFieldTmpOperation_t =
                 typename CreateFieldTmpOperation<T_Species, T_DerivedAttribute, T_Filter>::type;
@@ -163,6 +164,7 @@ namespace picongpu
             //!  CreateFieldTmpOperation interface for using the SpeciesFilter class
             template<typename T_FilteredSpecies, typename T_DerivedAttribute>
             struct GetFieldTmpOperationForFilteredSpecies;
+
             template<typename T_DerivedAttribute, typename... T>
             struct GetFieldTmpOperationForFilteredSpecies<plugins::misc::SpeciesFilter<T...>, T_DerivedAttribute>
             {
@@ -171,6 +173,7 @@ namespace picongpu
                     T_DerivedAttribute,
                     typename plugins::misc::SpeciesFilter<T...>::Filter>;
             };
+
             template<typename T_FilteredSpecies, typename T_DerivedAttribute>
             using GetFieldTmpOperationForFilteredSpecies_t =
                 typename GetFieldTmpOperationForFilteredSpecies<T_FilteredSpecies, T_DerivedAttribute>::type;

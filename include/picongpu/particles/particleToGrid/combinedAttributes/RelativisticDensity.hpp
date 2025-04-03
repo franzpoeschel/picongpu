@@ -27,6 +27,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+
 namespace picongpu
 {
     namespace particles
@@ -48,26 +49,26 @@ namespace picongpu
                      * @param energyDensity  energy density value
                      */
                     template<typename T_Worker>
-                    HDINLINE void operator()(T_Worker const& worker, float1_X& density, const float1_X& energyDensity)
+                    HDINLINE void operator()(T_Worker const& worker, float1_X& density, float1_X const& energyDensity)
                         const
                     {
-                        const float_X densityPICUnits
+                        float_X const densityPICUnits
                             = density[0] * static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle());
                         // avoid dividing by zero.
                         if(densityPICUnits > std::numeric_limits<float_X>::min())
                         {
-                            const float_X averageEnergy = energyDensity[0] / densityPICUnits;
-                            const float_X particleMass
+                            float_X const averageEnergy = energyDensity[0] / densityPICUnits;
+                            float_X const particleMass
                                 = picongpu::traits::frame::getMass<typename T_Species::FrameType>();
-                            const float_X averageGamma = averageEnergy
-                                    / (particleMass * sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight())
-                                + 1.0_X;
-                            const float_X invAverageGammaSquared = 1.0_X / averageGamma / averageGamma;
+                            float_X const averageGamma
+                                = averageEnergy
+                                      / (particleMass * sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight())
+                                  + 1.0_X;
+                            float_X const invAverageGammaSquared = 1.0_X / averageGamma / averageGamma;
                             density *= invAverageGammaSquared;
                         }
                     }
                 };
-
 
                 struct RelativisticDensityDescription
                 {

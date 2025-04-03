@@ -85,7 +85,7 @@ struct PositionShift
     template<bool isEven>
     HDINLINE float_X shift(float_X pos)
     {
-        const float_X v_pos = pos - 0.5_X;
+        float_X const v_pos = pos - 0.5_X;
         int intShift;
         if constexpr(isEven)
         {
@@ -100,7 +100,6 @@ struct PositionShift
         return v_pos - float_X(intShift) + float_X{0.5};
     }
 };
-
 
 /** Test a shape
  *
@@ -148,7 +147,7 @@ struct TestShape
                         for(int g = Shape::begin; g <= Shape::end; ++g)
                         {
                             // shift the particle position into a valid range to be used to query the shape
-                            auto p = positionShift.template shift<Shape::support % 2 == 0>(positions[valueIdx]);
+                            auto p = positionShift.template shift < Shape::support % 2 == 0 > (positions[valueIdx]);
                             result[valueIdx] += shape(g - p);
                         }
                     }

@@ -40,10 +40,11 @@ namespace pmacc
             /** get stored string */
             static auto str() -> std::string
             {
-                return std::string(std::array<char, sizeof...(T_c) + 1>({T_c...,
-                                                                         // at terminal zero to support empty strings
-                                                                         0})
-                                       .data());
+                return std::string(
+                    std::array<char, sizeof...(T_c) + 1>({T_c...,
+                                                          // at terminal zero to support empty strings
+                                                          0})
+                        .data());
             }
         };
 

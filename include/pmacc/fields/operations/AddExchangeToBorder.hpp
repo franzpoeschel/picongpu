@@ -32,7 +32,6 @@
 
 #include <boost/core/ignore_unused.hpp>
 
-
 namespace pmacc
 {
     namespace fields
@@ -127,7 +126,6 @@ namespace pmacc
                 }
             };
 
-
             /** add a exchange buffer to the border of the local buffer
              *
              * CopyGuardToExchange is the opposite operation for the neighboring
@@ -173,7 +171,7 @@ namespace pmacc
 
                     ExchangeMapping<GUARD, MappingDesc> mapper(mappingDesc, exchangeType);
 
-                    const DataSpace<dim> direction = Mask::getRelativeDirections<dim>(mapper.getExchangeType());
+                    DataSpace<dim> const direction = Mask::getRelativeDirections<dim>(mapper.getExchangeType());
 
                     PMACC_LOCKSTEP_KERNEL(KernelAddExchangeToBorder{})
                         .config(mapper.getGridDim(), SuperCellSize{})(

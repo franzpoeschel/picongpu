@@ -27,7 +27,6 @@
 #include <cstdint>
 #include <string>
 
-
 namespace picongpu::fields::incidentField
 {
     namespace profiles
@@ -41,7 +40,6 @@ namespace picongpu::fields::incidentField
                 return "ExpRampWithPrepulse";
             }
         };
-
 
         namespace detail
         {
@@ -102,18 +100,18 @@ namespace picongpu::fields::incidentField
                  * split into parts; the checked condition is "rounded down", i.e. it's weaker in every point
                  * of those ranges except one.
                  */
-                static constexpr bool intensity_too_big = (ratio_dt >= 3._X && ri1 * ri1 * ri1 > ri2)
-                    || (ratio_dt >= 2._X && ri1 * ri1 > ri2) || (ratio_dt >= 1.5_X && ri1 * ri1 * ri1 > ri2 * ri2)
-                    || (ratio_dt >= 1._X && ri1 > ri2)
-                    || (ratio_dt >= 0.8_X && ri1 * ri1 * ri1 * ri1 > ri2 * ri2 * ri2 * ri2 * ri2)
-                    || (ratio_dt >= 0.75_X && ri1 * ri1 * ri1 > ri2 * ri2 * ri2 * ri2)
-                    || (ratio_dt >= 0.67_X && ri1 * ri1 > ri2 * ri2 * ri2)
-                    || (ratio_dt >= 0.6_X && ri1 * ri1 * ri1 > ri2 * ri2 * ri2 * ri2 * ri2)
-                    || (ratio_dt >= 0.5_X && ri1 > ri2 * ri2)
-                    || (ratio_dt >= 0.4_X && ri1 * ri1 > ri2 * ri2 * ri2 * ri2 * ri2)
-                    || (ratio_dt >= 0.33_X && ri1 > ri2 * ri2 * ri2)
-                    || (ratio_dt >= 0.25_X && ri1 > ri2 * ri2 * ri2 * ri2)
-                    || (ratio_dt >= 0.2_X && ri1 > ri2 * ri2 * ri2 * ri2 * ri2);
+                static constexpr bool intensity_too_big
+                    = (ratio_dt >= 3._X && ri1 * ri1 * ri1 > ri2) || (ratio_dt >= 2._X && ri1 * ri1 > ri2)
+                      || (ratio_dt >= 1.5_X && ri1 * ri1 * ri1 > ri2 * ri2) || (ratio_dt >= 1._X && ri1 > ri2)
+                      || (ratio_dt >= 0.8_X && ri1 * ri1 * ri1 * ri1 > ri2 * ri2 * ri2 * ri2 * ri2)
+                      || (ratio_dt >= 0.75_X && ri1 * ri1 * ri1 > ri2 * ri2 * ri2 * ri2)
+                      || (ratio_dt >= 0.67_X && ri1 * ri1 > ri2 * ri2 * ri2)
+                      || (ratio_dt >= 0.6_X && ri1 * ri1 * ri1 > ri2 * ri2 * ri2 * ri2 * ri2)
+                      || (ratio_dt >= 0.5_X && ri1 > ri2 * ri2)
+                      || (ratio_dt >= 0.4_X && ri1 * ri1 > ri2 * ri2 * ri2 * ri2 * ri2)
+                      || (ratio_dt >= 0.33_X && ri1 > ri2 * ri2 * ri2)
+                      || (ratio_dt >= 0.25_X && ri1 > ri2 * ri2 * ri2 * ri2)
+                      || (ratio_dt >= 0.2_X && ri1 > ri2 * ri2 * ri2 * ri2 * ri2);
 
                 /* a symmetric pulse will be initialized at generation plane for
                  * a time of RAMP_INIT * PULSE_DURATION + LASER_NOFOCUS_CONSTANT = INIT_TIME.
@@ -136,7 +134,6 @@ namespace picongpu::fields::incidentField
                 //! User SI parameters
                 using Params = T_Params;
             };
-
 
             /** Exponential ramp with prepulse incident E functor
              *
@@ -242,7 +239,7 @@ namespace picongpu::fields::incidentField
                     //}
 
                     env += (1._X - ramp_when_peakpulse)
-                        * gauss(runTime - Unitless::endUpramp, Unitless::PULSE_DURATION);
+                           * gauss(runTime - Unitless::endUpramp, Unitless::PULSE_DURATION);
                     env += AMP_PREPULSE * gauss(runTime - Unitless::TIME_PREPULSE, Unitless::PREPULSE_DURATION);
                     if(during_first_exp)
                         env += extrapolateExpo(Unitless::TIME_1, AMP_1, Unitless::TIME_2, AMP_2, runTime);

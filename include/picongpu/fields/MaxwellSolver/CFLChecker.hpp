@@ -21,7 +21,6 @@
 
 #include "picongpu/defines.hpp"
 
-
 namespace picongpu
 {
     namespace fields

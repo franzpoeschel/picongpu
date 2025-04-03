@@ -27,7 +27,6 @@
 
 #include <pmacc/math/vector/compile-time/Vector.hpp>
 
-
 namespace picongpu
 {
     namespace particlePusherComposite

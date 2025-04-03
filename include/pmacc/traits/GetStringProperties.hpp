@@ -56,7 +56,7 @@ namespace pmacc
              * @param key name of the key
              * @param propertyValue value of the property
              */
-            StringProperty(const std::string& key, const std::string& propertyValue) : value(propertyValue)
+            StringProperty(std::string const& key, std::string const& propertyValue) : value(propertyValue)
             {
                 (*this)[key] = propertyValue;
             }
@@ -66,7 +66,7 @@ namespace pmacc
              * @param propertyValue new value
              * @return the property itself
              */
-            StringProperty& operator=(const std::string& propertyValue)
+            StringProperty& operator=(std::string const& propertyValue)
             {
                 value = propertyValue;
                 return *this;
@@ -78,7 +78,7 @@ namespace pmacc
 
         /** stream operator for a StringProperty
          */
-        HINLINE std::ostream& operator<<(std::ostream& out, const StringProperty& property)
+        HINLINE std::ostream& operator<<(std::ostream& out, StringProperty const& property)
         {
             out << property.value;
             return out;
@@ -100,7 +100,6 @@ namespace pmacc
                 return T_Type::getStringProperties();
             }
         };
-
 
         /** get the properties of an object
          *
@@ -125,7 +124,7 @@ namespace pmacc
          * @return StringProperty of the given instance
          */
         template<typename T_Type>
-        HINLINE StringProperty getStringProperties(const T_Type&)
+        HINLINE StringProperty getStringProperties(T_Type const&)
         {
             return GetStringProperties<T_Type>()();
         }

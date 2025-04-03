@@ -27,7 +27,6 @@
 
 #include <utility>
 
-
 namespace pmacc::particles::algorithm::acc
 {
     namespace detail
@@ -48,6 +47,7 @@ namespace pmacc::particles::algorithm::acc
         struct FrameFunctorInterface
         {
             T_FrameFunctor m_functor;
+
             DINLINE FrameFunctorInterface(T_FrameFunctor&& functor) : m_functor(std::forward<T_FrameFunctor>(functor))
             {
             }
@@ -78,6 +78,7 @@ namespace pmacc::particles::algorithm::acc
             {
                 m_functor(worker, frameIterCtx);
             }
+
             /**@}*/
         };
 
@@ -103,6 +104,7 @@ namespace pmacc::particles::algorithm::acc
         struct ParticleFunctorInterface
         {
             T_ParticleFunctor m_functor;
+
             DINLINE ParticleFunctorInterface(T_ParticleFunctor&& functor)
                 : m_functor(std::forward<T_ParticleFunctor>(functor))
             {

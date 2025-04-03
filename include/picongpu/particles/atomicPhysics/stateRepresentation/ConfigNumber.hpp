@@ -156,7 +156,7 @@ namespace picongpu::particles::atomicPhysics::stateRepresentation
             uint8_t const current_n)
         {
             return currentStepLength
-                * static_cast<T_DataType>(ConfigNumber::numberOfOccupationNumberValuesInShell(current_n));
+                   * static_cast<T_DataType>(ConfigNumber::numberOfOccupationNumberValuesInShell(current_n));
         }
 
         /** returns stepLength(current_n-1) based on stepLength(current_n) and current_n
@@ -176,7 +176,7 @@ namespace picongpu::particles::atomicPhysics::stateRepresentation
             uint8_t const current_n)
         {
             return currentStepLength
-                / static_cast<T_DataType>(ConfigNumber::numberOfOccupationNumberValuesInShell(current_n - 1u));
+                   / static_cast<T_DataType>(ConfigNumber::numberOfOccupationNumberValuesInShell(current_n - 1u));
         }
 
     public:

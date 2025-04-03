@@ -35,7 +35,6 @@
 #include <cstdint>
 #include <cstdlib>
 
-
 namespace picongpu::particles::debyeLength
 {
     namespace detail
@@ -143,7 +142,7 @@ namespace picongpu::particles::debyeLength
                                          "macroparticles each")
                         % estimate.numUsedSupercells % minMacroparticlesPerSupercell;
                     auto const ratioFailingSupercells = 100.0f * static_cast<float>(estimate.numFailingSupercells)
-                        / static_cast<float>(estimate.numUsedSupercells);
+                                                        / static_cast<float>(estimate.numUsedSupercells);
                     log<picLog::PHYSICS>("%1% (%2% %3%) supercells had local Debye length estimate not resolved"
                                          " by a single cell")
                         % estimate.numFailingSupercells % ratioFailingSupercells % "%";

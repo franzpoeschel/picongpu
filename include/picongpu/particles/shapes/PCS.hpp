@@ -26,7 +26,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace particles
@@ -61,7 +60,7 @@ namespace picongpu
                          *     = 1/96 * (55 + 4 * x * (5 - 2 * x * (15 + 2 * x * (-5 + x))))
                          */
                         return 1._X / 96._X
-                            * (55._X + 4._X * x * (5._X - 2._X * x * (15._X + 2._X * x * (-5._X + x))));
+                               * (55._X + 4._X * x * (5._X - 2._X * x * (15._X + 2._X * x * (-5._X + x))));
                     }
 
                     HDINLINE static float_X ff_3rd_radius(float_X const x)

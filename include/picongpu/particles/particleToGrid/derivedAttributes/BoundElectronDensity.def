@@ -27,7 +27,6 @@
 
 #include <vector>
 
-
 namespace picongpu
 {
     namespace particles

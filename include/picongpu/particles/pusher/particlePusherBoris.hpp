@@ -40,11 +40,11 @@ namespace picongpu
 
             template<typename T_FunctorFieldE, typename T_FunctorFieldB, typename T_Particle, typename T_Pos>
             HDINLINE void operator()(
-                const T_FunctorFieldB functorBField,
-                const T_FunctorFieldE functorEField,
+                T_FunctorFieldB const functorBField,
+                T_FunctorFieldE const functorEField,
                 T_Particle& particle,
                 T_Pos& pos,
-                const uint32_t)
+                uint32_t const)
             {
                 float_X const weighting = particle[weighting_];
                 float_X const mass = picongpu::traits::attribute::getMass(weighting, particle);
@@ -53,8 +53,8 @@ namespace picongpu
                 using MomType = momentum::type;
                 MomType const mom = particle[momentum_];
 
-                const auto bField = functorBField(pos);
-                const auto eField = functorEField(pos);
+                auto const bField = functorBField(pos);
+                auto const eField = functorEField(pos);
 
                 // update probe field if particle contains required attributes
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeB>::type::value)
@@ -62,26 +62,26 @@ namespace picongpu
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeE>::type::value)
                     particle[probeE_] = eField;
 
-                const float_X QoM = charge / mass;
+                float_X const QoM = charge / mass;
 
-                const float_X deltaT = sim.pic.getDt();
+                float_X const deltaT = sim.pic.getDt();
 
-                const MomType mom_minus = mom + float_X(0.5) * charge * eField * deltaT;
+                MomType const mom_minus = mom + float_X(0.5) * charge * eField * deltaT;
 
                 Gamma gamma;
-                const float_X gamma_reci = float_X(1.0) / gamma(mom_minus, mass);
-                const float3_X t = float_X(0.5) * QoM * bField * gamma_reci * deltaT;
+                float_X const gamma_reci = float_X(1.0) / gamma(mom_minus, mass);
+                float3_X const t = float_X(0.5) * QoM * bField * gamma_reci * deltaT;
                 auto s = float_X(2.0) * t * (float_X(1.0) / (float_X(1.0) + pmacc::math::l2norm2(t)));
 
-                const MomType mom_prime = mom_minus + pmacc::math::cross(mom_minus, t);
-                const MomType mom_plus = mom_minus + pmacc::math::cross(mom_prime, s);
+                MomType const mom_prime = mom_minus + pmacc::math::cross(mom_minus, t);
+                MomType const mom_plus = mom_minus + pmacc::math::cross(mom_prime, s);
 
-                const MomType new_mom = mom_plus + float_X(0.5) * charge * eField * deltaT;
+                MomType const new_mom = mom_plus + float_X(0.5) * charge * eField * deltaT;
 
                 particle[momentum_] = new_mom;
 
                 Velocity velocity;
-                const float3_X vel = velocity(new_mom, mass);
+                float3_X const vel = velocity(new_mom, mass);
 
                 for(uint32_t d = 0; d < simDim; ++d)
                 {

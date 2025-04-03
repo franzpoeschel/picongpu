@@ -23,7 +23,6 @@
 
 #include <functional>
 
-
 namespace picongpu
 {
     namespace particles

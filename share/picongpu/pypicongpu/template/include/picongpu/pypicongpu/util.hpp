@@ -41,7 +41,7 @@ namespace pmacc
         template<>
         struct Call<picongpu::particles::pypicongpu::nop>
         {
-            HINLINE void operator()(const uint32_t currentStep)
+            HINLINE void operator()(uint32_t const currentStep)
             {
                 // do nothing!
                 // (default for pmacc Call: schedule given functor to GPU)

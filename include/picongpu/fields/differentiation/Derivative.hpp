@@ -28,7 +28,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu::fields::differentiation
 {
     /** Interface of field derivative functors created by makeDerivativeFunctor()

@@ -54,7 +54,6 @@ namespace pmacc
             return pop();
         }
 
-
         /** add ComputeEvent to the pool
          *
          * the pool takes the ownership of the pointer

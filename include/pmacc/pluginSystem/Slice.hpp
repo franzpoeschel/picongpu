@@ -27,7 +27,6 @@
 #include <cstdint>
 #include <string>
 
-
 namespace pmacc
 {
     namespace pluginSystem

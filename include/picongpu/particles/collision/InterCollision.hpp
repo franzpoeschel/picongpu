@@ -42,7 +42,6 @@
 #include <cstddef>
 #include <cstdio>
 
-
 namespace picongpu::particles::collision
 {
     template<bool useScreeningLength>
@@ -66,6 +65,7 @@ namespace picongpu::particles::collision
 
     private:
         PMACC_ALIGN(screeningLengthSquared, FieldTmp::DataBoxType);
+
         /* Get the duplication correction for a collision
          *
          * A particle duplication is how many times a particle collides in the current time step.
@@ -185,8 +185,8 @@ namespace picongpu::particles::collision
                     uint32_t maxListLength = math::max(parCellList0.size(linearIdx), parCellList1.size(linearIdx));
 
                     uint32_t* parIdListLong = parCellList0.size(linearIdx) == maxListLength
-                        ? parCellList0.particleIds(linearIdx)
-                        : parCellList1.particleIds(linearIdx);
+                                                  ? parCellList0.particleIds(linearIdx)
+                                                  : parCellList1.particleIds(linearIdx);
                     detail::shuffle(worker, parIdListLong, maxListLength, rngHandle);
                 });
 
@@ -229,7 +229,7 @@ namespace picongpu::particles::collision
                 forEachCell(
                     [&](uint32_t idx, auto const& collisionFunctor)
                     {
-                        const auto timesUsed = static_cast<uint64_t>(collisionFunctor.timesUsed);
+                        auto const timesUsed = static_cast<uint64_t>(collisionFunctor.timesUsed);
                         if(timesUsed > 0u)
                         {
                             alpaka::atomicAdd(
@@ -275,7 +275,6 @@ namespace picongpu::particles::collision
                     });
             }
         }
-
 
         template<
             typename T_Worker,
@@ -348,7 +347,7 @@ namespace picongpu::particles::collision
          * @param deviceHeap A pointer to device heap for allocating particle lists.
          * @param currentStep The current simulation step.
          */
-        HINLINE void operator()(const std::shared_ptr<DeviceHeap>& deviceHeap, uint32_t currentStep, IdGenerator idGen)
+        HINLINE void operator()(std::shared_ptr<DeviceHeap> const& deviceHeap, uint32_t currentStep, IdGenerator idGen)
         {
             using Species0 = T_Species0;
             using FrameType0 = typename Species0::FrameType;
@@ -424,7 +423,7 @@ namespace picongpu::particles::collision
                 {
                     std::ofstream outFile{};
                     std::string fileName = "debug_values_collider_" + std::to_string(colliderId) + "_species_pair_"
-                        + std::to_string(pairId) + ".dat";
+                                           + std::to_string(pairId) + ".dat";
                     outFile.open(fileName.c_str(), std::ofstream::out | std::ostream::app);
                     outFile << currentStep << " "
                             << reducedAverageCoulombLog / static_cast<float_X>(reducedTimesCollided) << " "

@@ -42,10 +42,10 @@ namespace pmacc
 {
     template<typename T_ParticleBox, typename T_SuperCellIdxType, typename T_Worker>
     DINLINE typename T_ParticleBox::FramePtr getPreviousFrameAndRemoveLastFrame(
-        const T_Worker& worker,
-        const typename T_ParticleBox::FramePtr& frame,
+        T_Worker const& worker,
+        typename T_ParticleBox::FramePtr const& frame,
         T_ParticleBox& pb,
-        const T_SuperCellIdxType& superCellIdx)
+        T_SuperCellIdxType const& superCellIdx)
     {
         typename T_ParticleBox::FramePtr result = pb.getPreviousFrame(frame);
         pb.removeLastFrame(worker, superCellIdx);

@@ -21,7 +21,6 @@
 
 #include "picongpu/defines.hpp"
 
-
 namespace picongpu
 {
     namespace densityProfiles
@@ -45,14 +44,14 @@ namespace picongpu
              *
              * @param totalCellOffset total offset including all slides [in cells]
              */
-            HDINLINE float_X operator()(const DataSpace<simDim>& totalCellOffset)
+            HDINLINE float_X operator()(DataSpace<simDim> const& totalCellOffset)
             {
-                const float_X vacuum_y = float_X(ParamClass::vacuumCellsY) * sim.pic.getCellSize().y();
-                const float_X gas_a = ParamClass::gasA_SI * sim.unit.length();
-                const float_X gas_d = ParamClass::gasD_SI * sim.unit.length();
-                const float_X gas_y_max = ParamClass::gasYMax_SI / sim.unit.length();
+                float_X const vacuum_y = float_X(ParamClass::vacuumCellsY) * sim.pic.getCellSize().y();
+                float_X const gas_a = ParamClass::gasA_SI * sim.unit.length();
+                float_X const gas_d = ParamClass::gasD_SI * sim.unit.length();
+                float_X const gas_y_max = ParamClass::gasYMax_SI / sim.unit.length();
 
-                const floatD_X globalCellPos(
+                floatD_X const globalCellPos(
                     precisionCast<float_X>(totalCellOffset) * sim.pic.getCellSize().shrink<simDim>());
                 auto density = float_X(0.0);
 

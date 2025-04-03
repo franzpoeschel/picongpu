@@ -29,7 +29,6 @@
 #include <pmacc/mappings/kernel/MappingDescription.hpp>
 #include <pmacc/mappings/simulation/SubGrid.hpp>
 
-
 namespace picongpu
 {
     namespace cellwiseOperation

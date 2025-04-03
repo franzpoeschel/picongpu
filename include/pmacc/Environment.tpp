@@ -37,9 +37,9 @@
  * @todo find a better way to access native cuda/Hip functions or try to avoid accessing these at all.
  */
 #    include "pmacc/ppFunctions.hpp"
-#    if(BOOST_LANG_CUDA)
+#    if (BOOST_LANG_CUDA)
 #        define ALPAKA_API_PREFIX(name) PMACC_JOIN(cuda, name)
-#    elif(BOOST_LANG_HIP)
+#    elif (BOOST_LANG_HIP)
 #        define ALPAKA_API_PREFIX(name) PMACC_JOIN(hip, name)
 #    endif
 #endif
@@ -64,7 +64,6 @@ namespace pmacc
             return EnvironmentController::getInstance();
         }
 
-
         pmacc::Factory& Environment::Factory()
         {
             PMACC_ASSERT_MSG(
@@ -82,18 +81,15 @@ namespace pmacc
             return EventPool::getInstance();
         }
 
-
         pmacc::ParticleFactory& Environment::ParticleFactory()
         {
             return ParticleFactory::getInstance();
         }
 
-
         pmacc::DataConnector& Environment::DataConnector()
         {
             return DataConnector::getInstance();
         }
-
 
         pmacc::PluginConnector& Environment::PluginConnector()
         {
@@ -185,7 +181,6 @@ namespace pmacc
         PluginConnector();
     }
 
-
     namespace detail
     {
         void EnvironmentContext::init()
@@ -254,7 +249,7 @@ namespace pmacc
         {
             int numAvailableDevices = manager::Device<ComputeDevice>::get().count();
 
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
             // check if device is found
             if(numAvailableDevices < 1)
             {
@@ -274,14 +269,14 @@ namespace pmacc
                 /* Modulo 'numAvailableDevices' avoids invalid device indices for systems where the environment
                  * variable `CUDA_VISIBLE_DEVICES` is used to pre-select a device.
                  */
-                const int tryDeviceId = (deviceOffset + deviceNumber) % numAvailableDevices;
+                int const tryDeviceId = (deviceOffset + deviceNumber) % numAvailableDevices;
 
                 log<ggLog::CUDA_RT>("Trying to allocate device %1%.") % tryDeviceId;
 
-#if(BOOST_LANG_CUDA || BOOST_LANG_HIP)
-#    if(BOOST_LANG_CUDA)
+#if (BOOST_LANG_CUDA || BOOST_LANG_HIP)
+#    if (BOOST_LANG_CUDA)
                 cudaDeviceProp devProp;
-#    elif(BOOST_LANG_HIP)
+#    elif (BOOST_LANG_HIP)
                 hipDeviceProp_t devProp;
 #    endif
 
@@ -306,7 +301,7 @@ namespace pmacc
                 {
                     manager::Device<ComputeDevice>::get().device(tryDeviceId);
                 }
-                catch(const std::system_error& e)
+                catch(std::system_error const& e)
                 {
                     errorOccured = true;
                 }
@@ -321,7 +316,7 @@ namespace pmacc
                     {
                         auto testStream = ComputeDeviceQueue(manager::Device<ComputeDevice>::get().current());
                     }
-                    catch(const std::system_error& e)
+                    catch(std::system_error const& e)
                     {
                         errorOccured = true;
                     }

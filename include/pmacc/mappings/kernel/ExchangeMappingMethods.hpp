@@ -40,15 +40,15 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM> getGridDim(const Base& base, uint32_t exchangeType)
+        HINLINE static DataSpace<DIM> getGridDim(Base const& base, uint32_t exchangeType)
         {
             return base.getGridSuperCells();
         }
 
         template<class Base>
         HDINLINE static DataSpace<DIM> getSuperCellIndex(
-            const Base& base,
-            const DataSpace<DIM>& _blockIdx,
+            Base const& base,
+            DataSpace<DIM> const& _blockIdx,
             uint32_t exchangeType)
         {
             return _blockIdx;
@@ -62,12 +62,12 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM> getGridDim(const Base& base, uint32_t exchangeType)
+        HINLINE static DataSpace<DIM> getGridDim(Base const& base, uint32_t exchangeType)
         {
-            const DataSpace<DIM> guardingSupercells = base.getGuardingSuperCells();
+            DataSpace<DIM> const guardingSupercells = base.getGuardingSuperCells();
             DataSpace<DIM> result(base.getGridSuperCells() - 2 * guardingSupercells);
 
-            const DataSpace<DIM> directions = Mask::getRelativeDirections<DIM>(exchangeType);
+            DataSpace<DIM> const directions = Mask::getRelativeDirections<DIM>(exchangeType);
 
             for(uint32_t d = 0; d < DIM; ++d)
             {
@@ -80,14 +80,14 @@ namespace pmacc
 
         template<class Base>
         HDINLINE static DataSpace<DIM> getSuperCellIndex(
-            const Base& base,
-            const DataSpace<DIM>& _blockIdx,
+            Base const& base,
+            DataSpace<DIM> const& _blockIdx,
             uint32_t exchangeType)
         {
             DataSpace<DIM> result(_blockIdx);
 
-            const DataSpace<DIM> directions = Mask::getRelativeDirections<DIM>(exchangeType);
-            const DataSpace<DIM> guardingSupercells = base.getGuardingSuperCells();
+            DataSpace<DIM> const directions = Mask::getRelativeDirections<DIM>(exchangeType);
+            DataSpace<DIM> const guardingSupercells = base.getGuardingSuperCells();
 
             for(uint32_t d = 0; d < DIM; ++d)
             {
@@ -101,7 +101,6 @@ namespace pmacc
         }
     };
 
-
     // areaType == BORDER
 
     template<unsigned DIM>
@@ -109,7 +108,7 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM> getGridDim(const Base& base, uint32_t exchangeType)
+        HINLINE static DataSpace<DIM> getGridDim(Base const& base, uint32_t exchangeType)
         {
             // skip 2 x (border + guard) == 4 x guard
             DataSpace<DIM> result(base.getGridSuperCells() - 4 * base.getGuardingSuperCells());
@@ -127,8 +126,8 @@ namespace pmacc
 
         template<class Base>
         HDINLINE static DataSpace<DIM> getSuperCellIndex(
-            const Base& base,
-            const DataSpace<DIM>& _blockIdx,
+            Base const& base,
+            DataSpace<DIM> const& _blockIdx,
             uint32_t exchangeType)
         {
             DataSpace<DIM> result(_blockIdx);

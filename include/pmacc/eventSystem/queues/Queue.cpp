@@ -42,7 +42,7 @@ namespace pmacc
         return queue;
     }
 
-    void Queue::waitOn(const ComputeEventHandle& ev)
+    void Queue::waitOn(ComputeEventHandle const& ev)
     {
         if(queue != ev.getStream())
         {

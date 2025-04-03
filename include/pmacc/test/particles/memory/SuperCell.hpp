@@ -25,7 +25,6 @@
 
 #include <pmacc/math/vector/compile-time/Vector.hpp>
 
-
 namespace pmacc
 {
     namespace test

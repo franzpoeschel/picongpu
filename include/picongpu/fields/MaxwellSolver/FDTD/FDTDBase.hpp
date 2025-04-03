@@ -38,7 +38,6 @@
 #include <cstdint>
 #include <memory>
 
-
 namespace picongpu
 {
     namespace fields

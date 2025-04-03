@@ -40,7 +40,6 @@
 #include <iostream>
 #include <string>
 
-
 namespace picongpu
 {
     namespace plugins
@@ -235,8 +234,9 @@ namespace picongpu
                                                 floatD_X const pos = par[position_];
 
                                                 // calculate global position of cell
-                                                DataSpace<simDim> const globalPos = superCellOffset
-                                                    + pmacc::math::mapToND(SuperCellSize::toRT(), cellIdx);
+                                                DataSpace<simDim> const globalPos
+                                                    = superCellOffset
+                                                      + pmacc::math::mapToND(SuperCellSize::toRT(), cellIdx);
 
                                                 // add global position of cell with local position of particle in cell
                                                 float3_X particleLocation;
@@ -308,10 +308,11 @@ namespace picongpu
                                 {
                                     complex_X const formfactor
                                         = transitionRadiation::calcFormFactor(omega, formfactorExponent_s[j])
-                                        * macroParticleFormFactor(radWeighting_s[j]);
+                                          * macroParticleFormFactor(radWeighting_s[j]);
 
-                                    itrSum += radWeighting_s[j]
-                                        * (energyPerp_s[j] * energyPerp_s[j] + energyPara_s[j] * energyPara_s[j]);
+                                    itrSum
+                                        += radWeighting_s[j]
+                                           * (energyPerp_s[j] * energyPerp_s[j] + energyPara_s[j] * energyPara_s[j]);
                                     totalParticles += radWeighting_s[j];
 
                                     ctrSumPara += energyPara_s[j] * formfactor;

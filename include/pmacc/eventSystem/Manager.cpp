@@ -29,7 +29,7 @@
 #include <iostream>
 #include <set>
 
-//#define DEBUG_EVENTS
+// #define DEBUG_EVENTS
 
 namespace pmacc
 {
@@ -159,7 +159,6 @@ namespace pmacc
         }
     }
 
-
     void Manager::waitForAllTasks()
     {
         while(tasks.size() != 0 || passiveTasks.size() != 0)
@@ -182,7 +181,6 @@ namespace pmacc
         task->addObserver(this);
         passiveTasks[task->getId()] = task;
     }
-
 
     std::size_t Manager::getCount()
     {

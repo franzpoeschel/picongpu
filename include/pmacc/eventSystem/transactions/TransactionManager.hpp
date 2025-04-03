@@ -67,7 +67,7 @@ namespace pmacc
          * @param event event to add to base event
          * @return new base event
          */
-        EventTask setTransactionEvent(const EventTask& event);
+        EventTask setTransactionEvent(EventTask const& event);
 
         /**
          * Returns the base event of the top-most transaction.
@@ -84,7 +84,7 @@ namespace pmacc
             return instance;
         }
 
-        TransactionManager(const TransactionManager& cc) = delete;
+        TransactionManager(TransactionManager const& cc) = delete;
 
     private:
         TransactionManager();

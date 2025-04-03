@@ -35,7 +35,6 @@ namespace picongpu::fields::incidentField::profiles
         static constexpr bool value = false;
     };
 
-
     /** short hand notation for @see MakePeriodicTransversalHuygensSurfaceContiguous */
     template<typename T_Profile>
     constexpr bool makePeriodicTransversalHuygensSurfaceContiguous

@@ -44,13 +44,13 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM> getGridDim(const Base& base)
+        HINLINE static DataSpace<DIM> getGridDim(Base const& base)
         {
             return base.getGridSuperCells();
         }
 
         template<class Base>
-        HDINLINE static DataSpace<DIM> shift(const Base& base, const DataSpace<DIM>& value)
+        HDINLINE static DataSpace<DIM> shift(Base const& base, DataSpace<DIM> const& value)
         {
             return value;
         }
@@ -63,14 +63,14 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM> getGridDim(const Base& base)
+        HINLINE static DataSpace<DIM> getGridDim(Base const& base)
         {
             // skip 2 x (border + guard) == 4 x guard
             return base.getGridSuperCells() - 4 * base.getGuardingSuperCells();
         }
 
         template<class Base>
-        HDINLINE static DataSpace<DIM> shift(const Base& base, const DataSpace<DIM>& value)
+        HDINLINE static DataSpace<DIM> shift(Base const& base, DataSpace<DIM> const& value)
         {
             // skip guard + border == 2 x guard
             return value + 2 * base.getGuardingSuperCells();
@@ -84,13 +84,13 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM> getGridDim(const Base& base)
+        HINLINE static DataSpace<DIM> getGridDim(Base const& base)
         {
             return base.getGridSuperCells() - 2 * base.getGuardingSuperCells();
         }
 
         template<class Base>
-        HDINLINE static DataSpace<DIM> shift(const Base& base, const DataSpace<DIM>& value)
+        HDINLINE static DataSpace<DIM> shift(Base const& base, DataSpace<DIM> const& value)
         {
             return value + base.getGuardingSuperCells();
         }

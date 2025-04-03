@@ -101,7 +101,7 @@ namespace gol
 
                         Type isLife = cache(cellIdx);
                         isLife = static_cast<bool>(((!isLife) * (1 << (neighbors + 9))) & rule)
-                            + static_cast<bool>((isLife * (1 << (neighbors))) & rule);
+                                 + static_cast<bool>((isLife * (1 << (neighbors))) & rule);
 
                         buffWrite(blockCell + cellIdx) = isLife;
                     });

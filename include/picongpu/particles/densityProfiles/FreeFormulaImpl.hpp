@@ -24,7 +24,6 @@
 #include "picongpu/particles/functor/User.hpp"
 #include "picongpu/simulation/control/MovingWindow.hpp"
 
-
 namespace picongpu
 {
     namespace densityProfiles

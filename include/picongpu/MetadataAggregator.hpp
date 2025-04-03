@@ -34,7 +34,6 @@
 #include <nlohmann/json.hpp>
 #include <picongpu/traits/GetMetadata.hpp>
 
-
 namespace picongpu
 {
     /** Aggregate metadata to dump
@@ -67,12 +66,15 @@ namespace picongpu
         void notify(uint32_t currentStep) override
         {
         }
-        void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override
+
+        void checkpoint(uint32_t currentStep, std::string const checkpointDirectory) override
         {
         }
-        void restart(uint32_t restartStep, const std::string restartDirectory) override
+
+        void restart(uint32_t restartStep, std::string const restartDirectory) override
         {
         }
+
         void dump() const
         {
             if(thisIsSupposedToRun)
@@ -81,6 +83,7 @@ namespace picongpu
                 dumpTo(file);
             }
         }
+
         void dumpTo(std::ostream& stream) const
         {
             stream << metadata.dump(2) << "\n";
@@ -88,12 +91,12 @@ namespace picongpu
 
         bool thisIsSupposedToRun{false};
         stdfs::path filename{""};
-        const stdfs::path defaultFilename{
+        stdfs::path const defaultFilename{
             // doc-include-start: metadata default filename
             "picongpu-metadata.json"
             // doc-include-end: metadata default filename
         };
-        inline static nlohmann::json metadata = nlohmann::json::object();
+        static inline nlohmann::json metadata = nlohmann::json::object();
     };
 
     /** Add metadata to the MetadataAggregator

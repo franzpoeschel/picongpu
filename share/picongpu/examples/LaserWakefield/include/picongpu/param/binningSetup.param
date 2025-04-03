@@ -117,7 +117,7 @@ namespace picongpu
             auto getParticleCharge
                 = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, auto const& particle) -> float_X
             {
-                const float_X charge = picongpu::traits::attribute::getCharge(particle[weighting_], particle);
+                float_X const charge = picongpu::traits::attribute::getCharge(particle[weighting_], particle);
                 return charge;
             };
 

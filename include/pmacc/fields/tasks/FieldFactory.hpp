@@ -78,7 +78,7 @@ namespace pmacc
         FieldFactory() = default;
         ;
 
-        FieldFactory(const FieldFactory&) = default;
+        FieldFactory(FieldFactory const&) = default;
         ;
     };
 

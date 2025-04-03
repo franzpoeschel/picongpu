@@ -32,7 +32,6 @@
 #include <pmacc/particles/frame_types.hpp>
 #include <pmacc/particles/memory/boxes/ParticlesBox.hpp>
 
-
 namespace picongpu
 {
     using namespace pmacc;

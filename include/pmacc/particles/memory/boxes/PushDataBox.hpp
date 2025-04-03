@@ -49,7 +49,7 @@ namespace pmacc
          */
         HDINLINE PushDataBox(VALUE* data, TYPE* currentSize, DataSpace<DIM1> offset = {})
             : DataBox<PitchedBox<VALUE, DIM1>>(
-                DataBox<PitchedBox<VALUE, DIM1>>{PitchedBox<VALUE, DIM1>(data)}.shift(offset))
+                  DataBox<PitchedBox<VALUE, DIM1>>{PitchedBox<VALUE, DIM1>(data)}.shift(offset))
             , currentSize(currentSize)
             , maxSize(0) /*\todo implement max size*/
         {

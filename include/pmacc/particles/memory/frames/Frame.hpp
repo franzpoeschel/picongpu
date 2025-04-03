@@ -86,13 +86,13 @@ namespace pmacc
 
     public:
         /** access the Nth particle*/
-        HDINLINE ParticleType operator[](const uint32_t idx)
+        HDINLINE ParticleType operator[](uint32_t const idx)
         {
             return ParticleType(*this, idx);
         }
 
         /** access the Nth particle*/
-        HDINLINE const ParticleType operator[](const uint32_t idx) const
+        HDINLINE const ParticleType operator[](uint32_t const idx) const
         {
             return ParticleType(*this, idx);
         }
@@ -104,7 +104,7 @@ namespace pmacc
          * @return result of operator[] of MapTupel
          */
         template<typename T_Key>
-        HDINLINE auto& getIdentifier(const T_Key)
+        HDINLINE auto& getIdentifier(T_Key const)
         {
             using Key = typename GetKeyFromAlias<ValueTypeSeq, T_Key, errorHandlerPolicies::ThrowValueNotFound>::type;
             return BaseType::operator[](Key());
@@ -112,7 +112,7 @@ namespace pmacc
 
         /** const version of method getIdentifier(const T_Key) */
         template<typename T_Key>
-        HDINLINE const auto& getIdentifier(const T_Key) const
+        HDINLINE const auto& getIdentifier(T_Key const) const
         {
             using Key = typename GetKeyFromAlias<ValueTypeSeq, T_Key, errorHandlerPolicies::ThrowValueNotFound>::type;
             return BaseType::operator[](Key());

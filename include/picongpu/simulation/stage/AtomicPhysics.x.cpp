@@ -72,7 +72,6 @@
 
 #include <iostream>
 
-
 namespace picongpu::simulation::stage
 {
     namespace detail
@@ -150,9 +149,10 @@ namespace picongpu::simulation::stage
                 constexpr bool isChooseTransition = (T_Loop == enums::Loop::ChooseTransition);
                 constexpr bool isRejectOverSubscription = (T_Loop == enums::Loop::RejectOverSubscription);
 
-                constexpr bool isActive = (isSubStepLoop)
-                    || (isChooseTransition && debug::kernel::recordSuggestedChanges::PRINT_DEBUG_TO_CONSOLE)
-                    || (isRejectOverSubscription && debug::kernel::rollForOverSubscription::PRINT_DEBUG_TO_CONSOLE);
+                constexpr bool isActive
+                    = (isSubStepLoop)
+                      || (isChooseTransition && debug::kernel::recordSuggestedChanges::PRINT_DEBUG_TO_CONSOLE)
+                      || (isRejectOverSubscription && debug::kernel::rollForOverSubscription::PRINT_DEBUG_TO_CONSOLE);
 
                 return isActive;
             }
@@ -235,6 +235,7 @@ namespace picongpu::simulation::stage
                         mappingDesc,
                         "FieldEnergyUseCacheField");
             }
+
             //!@}
 
             //! reset the histogram on device side
@@ -669,7 +670,7 @@ namespace picongpu::simulation::stage
                            pmacc::math::operation::Max(),
                            linearizedTimeRemainingBox,
                            fieldGridLayoutTimeRemaining.productOfComponents())
-                    <= 0._X;
+                       <= 0._X;
             }
 
         public:
@@ -773,7 +774,6 @@ namespace picongpu::simulation::stage
         };
     } // namespace detail
 
-
     void AtomicPhysics::loadAtomicInputData(DataConnector& dataConnector)
     {
         pmacc::meta::ForEach<
@@ -782,7 +782,6 @@ namespace picongpu::simulation::stage
             ForEachIonSpeciesLoadAtomicInputData;
         ForEachIonSpeciesLoadAtomicInputData(dataConnector);
     }
-
 
     AtomicPhysics::AtomicPhysics(picongpu::MappingDesc const mappingDesc)
     {

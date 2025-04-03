@@ -165,7 +165,7 @@ namespace picongpu::particles::manipulators::unary::acc
             auto const cellSize_SI = precisionCast<float_64>(sim.pic.getCellSize()) * unitLength;
             auto const position_SI
                 = (precisionCast<float_64>(totalCellOffset) + precisionCast<float_64>(particle[position_]))
-                * cellSize_SI.shrink<simDim>();
+                  * cellSize_SI.shrink<simDim>();
             auto const temperatureKeV = UserFunctor::operator()(position_SI, cellSize_SI);
             Base::operator()(uniformRng, particle, temperatureKeV);
         }

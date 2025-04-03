@@ -42,7 +42,7 @@ namespace picongpu
                 using float_COLL = PARAM_COLLISION_PRECISION;
             } // namespace precision
 
-#if(PARAM_DYNAMIC_LOG_INTER == 1 || PARAM_DYNAMIC_LOG_INTRA == 1)
+#if (PARAM_DYNAMIC_LOG_INTER == 1 || PARAM_DYNAMIC_LOG_INTRA == 1)
             using CollisionScreeningSpecies = VectorAllSpecies;
 #else
             using CollisionScreeningSpecies = MakeSeq_t<>;
@@ -58,19 +58,21 @@ namespace picongpu
             {
                 static constexpr float_X coulombLog = 5.0_X;
             };
+
             struct Params2
             {
                 static constexpr float_X coulombLog = 1000.0_X;
             };
+
             using Pairs1 = MakeSeq_t<Pair<Electrons, Ions>>;
             using Pairs2 = MakeSeq_t<Pair<Electrons, Electrons>, Pair<Ions, Ions>>;
 
-#if(PARAM_DYNAMIC_LOG_INTER == 1)
+#if (PARAM_DYNAMIC_LOG_INTER == 1)
             using InterCollider = Collider<relativistic::RelativisticCollisionDynamicLog<true>, Pairs1>;
 #else
             using InterCollider = Collider<relativistic::RelativisticCollisionConstLog<Params1, true>, Pairs1>;
 #endif
-#if(PARAM_DYNAMIC_LOG_INTRA == 1)
+#if (PARAM_DYNAMIC_LOG_INTRA == 1)
             using IntraCollider = Collider<relativistic::RelativisticCollisionDynamicLog<true>, Pairs2>;
 #else
             using IntraCollider = Collider<relativistic::RelativisticCollisionConstLog<Params2, true>, Pairs2>;

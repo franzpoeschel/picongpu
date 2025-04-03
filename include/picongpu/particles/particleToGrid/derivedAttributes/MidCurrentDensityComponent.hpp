@@ -28,7 +28,6 @@
 
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace particles
@@ -42,20 +41,20 @@ namespace picongpu
                 DINLINE float_X MidCurrentDensityComponent<T_direction>::operator()(T_Particle& particle) const
                 {
                     /* read existing attributes */
-                    const float_X weighting = particle[weighting_];
-                    const float_X charge = picongpu::traits::attribute::getCharge(weighting, particle);
-                    const float3_X mom = particle[momentum_];
-                    const float_X momCom = mom[T_direction];
-                    const float_X mass = picongpu::traits::attribute::getMass(weighting, particle);
+                    float_X const weighting = particle[weighting_];
+                    float_X const charge = picongpu::traits::attribute::getCharge(weighting, particle);
+                    float3_X const mom = particle[momentum_];
+                    float_X const momCom = mom[T_direction];
+                    float_X const mass = picongpu::traits::attribute::getMass(weighting, particle);
 
                     /* calculate new attribute */
                     Gamma<float_X> calcGamma;
-                    const typename Gamma<float_X>::valueType gamma = calcGamma(mom, mass);
+                    typename Gamma<float_X>::valueType const gamma = calcGamma(mom, mass);
 
                     /* calculate new attribute */
-                    const float_X particleCurrentDensity = charge / sim.pic.getCellSize().productOfComponents()
-                        * /* rho */
-                        momCom / (gamma * mass); /* v_component */
+                    float_X const particleCurrentDensity = charge / sim.pic.getCellSize().productOfComponents()
+                                                           * /* rho */
+                                                           momCom / (gamma * mass); /* v_component */
 
                     /* return attribute */
                     return particleCurrentDensity;

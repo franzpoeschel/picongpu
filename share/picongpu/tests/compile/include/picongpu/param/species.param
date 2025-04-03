@@ -34,7 +34,6 @@
 #include "picongpu/fields/currentDeposition/Solver.def"
 #include "picongpu/particles/shapes.hpp"
 
-
 namespace picongpu
 {
 /** select macroparticle shape

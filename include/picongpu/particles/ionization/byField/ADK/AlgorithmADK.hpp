@@ -70,7 +70,7 @@ namespace picongpu
                  */
                 template<typename EType, typename BType, typename ParticleType>
                 HDINLINE IonizerReturn
-                operator()(const BType bField, const EType eField, ParticleType& parentIon, float_X randNr)
+                operator()(BType const bField, EType const eField, ParticleType& parentIon, float_X randNr)
                 {
                     float_X const protonNumber
                         = picongpu::traits::GetAtomicNumbers<ParticleType>::type::numberOfProtons;
@@ -95,13 +95,14 @@ namespace picongpu
                         float_X const nEff = effectiveCharge / math::sqrt(float_X(2.0) * iEnergy);
                         /* nameless variable for convenience dFromADK*/
                         float_X const dBase = float_X(4.0) * math::exp(1._X) * util::cube(effectiveCharge)
-                            / (eInAU * util::quad(nEff));
+                                              / (eInAU * util::quad(nEff));
                         float_X const dFromADK = math::pow(dBase, nEff);
 
                         /* ionization rate (for CIRCULAR polarization)*/
                         float_X rateADK = eInAU * util::square(dFromADK) / (float_X(8.0) * pi * effectiveCharge)
-                            * math::exp(float_X(-2.0) * util::cube(effectiveCharge)
-                                        / (float_X(3.0) * util::cube(nEff) * eInAU));
+                                          * math::exp(
+                                              float_X(-2.0) * util::cube(effectiveCharge)
+                                              / (float_X(3.0) * util::cube(nEff) * eInAU));
 
                         /* in case of linear polarization the rate is modified by an additional factor */
                         if(T_linPol)

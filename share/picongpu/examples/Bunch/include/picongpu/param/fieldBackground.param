@@ -40,7 +40,7 @@ namespace picongpu
         static constexpr bool InfluenceParticlePusher = PARAM_INCLUDE_FIELDBACKGROUND;
 
         /** We use this to calculate your SI input back to our unit system */
-        PMACC_ALIGN(m_unitField, const float3_64);
+        PMACC_ALIGN(m_unitField, float3_64 const);
 
         /** TWTS E-fields need to be initialized on host,
          *  so they can look up global grid dimensions.
@@ -55,7 +55,7 @@ namespace picongpu
 #endif
 
         /** Constructor is host-only, because of subGrid and halfSimSize initialization */
-        HINLINE FieldBackgroundE(const float3_64 unitField)
+        HINLINE FieldBackgroundE(float3_64 const unitField)
             : m_unitField(unitField)
             , twtsFieldE(
                   /* focus_y [m], the distance to the laser focus in y-direction */
@@ -81,20 +81,21 @@ namespace picongpu
         {
         }
 
-        HDINLINE FieldBackgroundE(const FieldBackgroundE&) = default;
+        HDINLINE FieldBackgroundE(FieldBackgroundE const&) = default;
 
         /** Specify your background field E(r,t) here
          *
          * @param cellIdx The total cell id counted from the start at t=0
          * @param currentStep The current time step */
-        HDINLINE float3_X operator()(const DataSpace<simDim>& cellIdx, const uint32_t currentStep) const
+        HDINLINE float3_X operator()(DataSpace<simDim> const& cellIdx, uint32_t const currentStep) const
         {
             /* unit: meter */
             constexpr float_64 WAVE_LENGTH_SI = 0.8e-6;
 
             /* UNITCONV */
             constexpr float_64 UNITCONV_A0_to_Amplitude_SI = -2.0 * PI / WAVE_LENGTH_SI * sim.si.getElectronMass()
-                * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight() / sim.si.getElectronCharge();
+                                                             * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight()
+                                                             / sim.si.getElectronCharge();
 
             /* unit: W / m^2 */
             // calculate: _A0 = 8.549297e-6 * sqrt( Intensity[W/m^2] ) * wavelength[m] (linearly polarized)
@@ -105,14 +106,14 @@ namespace picongpu
             /* unit: Volt /meter
              *\todo #738 implement math::vector, native type operations
              */
-            const float3_64 invUnitField = float3_64(1.0 / m_unitField[0], 1.0 / m_unitField[1], 1.0 / m_unitField[2]);
+            float3_64 const invUnitField = float3_64(1.0 / m_unitField[0], 1.0 / m_unitField[1], 1.0 / m_unitField[2]);
 
             /* laser amplitude in picongpu units [ unit: (Volt /meter) / unitField-factor ]
              * Note: the laser amplitude is included in all field components
              * polarization and other properties are established by the peak amplitude
              * normalized twtsFieldE(...)
              */
-            const float3_X amplitude
+            float3_X const amplitude
                 = precisionCast<float_X>(float_64(_A0 * UNITCONV_A0_to_Amplitude_SI) * invUnitField);
 
             /* Note: twtsFieldE(...) is normalized, such that peak amplitude equals unity. */
@@ -127,7 +128,7 @@ namespace picongpu
         static constexpr bool InfluenceParticlePusher = PARAM_INCLUDE_FIELDBACKGROUND;
 
         /** We use this to calculate your SI input back to our unit system */
-        PMACC_ALIGN(m_unitField, const float3_64);
+        PMACC_ALIGN(m_unitField, float3_64 const);
 
         /** TWTS B-fields need to be initialized on host,
          *  so they can look up global grid dimensions.
@@ -167,20 +168,21 @@ namespace picongpu
         {
         }
 
-        HDINLINE FieldBackgroundB(const FieldBackgroundB&) = default;
+        HDINLINE FieldBackgroundB(FieldBackgroundB const&) = default;
 
         /** Specify your background field B(r,t) here
          *
          * @param cellIdx The total cell id counted from the start at t=0
          * @param currentStep The current time step */
-        HDINLINE float3_X operator()(const DataSpace<simDim>& cellIdx, const uint32_t currentStep) const
+        HDINLINE float3_X operator()(DataSpace<simDim> const& cellIdx, uint32_t const currentStep) const
         {
             /* unit: meter */
             constexpr float_64 WAVE_LENGTH_SI = 0.8e-6;
 
             /* UNITCONV */
             constexpr float_64 UNITCONV_A0_to_Amplitude_SI = -2.0 * PI / WAVE_LENGTH_SI * sim.si.getElectronMass()
-                * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight() / sim.si.getElectronCharge();
+                                                             * sim.si.getSpeedOfLight() * sim.si.getSpeedOfLight()
+                                                             / sim.si.getElectronCharge();
 
             /* unit: W / m^2 */
             // calculate: _A0 = 8.549297e-6 * sqrt( Intensity[W/m^2] ) * wavelength[m] (linearly polarized)
@@ -189,14 +191,14 @@ namespace picongpu
             constexpr float_64 _A0 = 1.0;
 
             /** unit: Volt /meter */
-            const float3_64 invUnitField = float3_64(1.0 / m_unitField[0], 1.0 / m_unitField[1], 1.0 / m_unitField[2]);
+            float3_64 const invUnitField = float3_64(1.0 / m_unitField[0], 1.0 / m_unitField[1], 1.0 / m_unitField[2]);
 
             /* laser amplitude in picongpu units [ unit: (Volt/meter) / unitField-factor ]
              * Note: the laser amplitude is included in all field components
              * polarization and other properties are established by the peak amplitude
              * normalized twtsFieldB(...)
              */
-            const float3_X amplitude
+            float3_X const amplitude
                 = precisionCast<float_X>(float_64(_A0 * UNITCONV_A0_to_Amplitude_SI) * invUnitField);
 
             /* Note: twtsFieldB(...) is normalized, such that peak amplitude equals unity. */
@@ -211,19 +213,19 @@ namespace picongpu
         static constexpr bool activated = false;
 
         /** We use this to calculate your SI input back to our unit system */
-        PMACC_ALIGN(m_unitField, const float3_64);
+        PMACC_ALIGN(m_unitField, float3_64 const);
 
-        HINLINE FieldBackgroundJ(const float3_64 unitField) : m_unitField(unitField)
+        HINLINE FieldBackgroundJ(float3_64 const unitField) : m_unitField(unitField)
         {
         }
 
-        HDINLINE FieldBackgroundJ(const FieldBackgroundJ&) = default;
+        HDINLINE FieldBackgroundJ(FieldBackgroundJ const&) = default;
 
         /** Specify your background field J(r,t) here
          *
          * @param cellIdx The total cell id counted from the start at t=0
          * @param currentStep The current time step */
-        HDINLINE float3_X operator()(const DataSpace<simDim>& cellIdx, const uint32_t currentStep) const
+        HDINLINE float3_X operator()(DataSpace<simDim> const& cellIdx, uint32_t const currentStep) const
         {
             return float3_X(0.0, 0.0, 0.0);
         }

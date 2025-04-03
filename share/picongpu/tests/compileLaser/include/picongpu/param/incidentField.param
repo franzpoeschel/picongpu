@@ -73,11 +73,11 @@ namespace picongpu
             class ZeroField
             {
             public:
-                HINLINE ZeroField(float_X const /*currentStep*/, const float3_64 /*unitField*/)
+                HINLINE ZeroField(float_X const /*currentStep*/, float3_64 const /*unitField*/)
                 {
                 }
 
-                HDINLINE float3_X operator()(const floatD_X& totalCellIdx) const
+                HDINLINE float3_X operator()(floatD_X const& totalCellIdx) const
                 {
                     return float3_X::create(0);
                 }

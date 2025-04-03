@@ -62,7 +62,6 @@
 #include "pmacc/math/ConstVector.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     namespace math

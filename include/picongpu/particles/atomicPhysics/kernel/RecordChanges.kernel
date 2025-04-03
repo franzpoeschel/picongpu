@@ -85,8 +85,9 @@ namespace picongpu::particles::atomicPhysics::kernel
             T_TransitionDataBox const transitionBox,
             T_ChargeStateBoxAndIPDInput... chargeStateBoxAndIPDInput) const
         {
-            PMACC_CASSERT(CheckSetOfAtomicDataBoxes::
-                              transitionDataBoxMatchesProcessClass<T_ProcessClass, T_TransitionDataBox>());
+            PMACC_CASSERT(
+                CheckSetOfAtomicDataBoxes::
+                    transitionDataBoxMatchesProcessClass<T_ProcessClass, T_TransitionDataBox>());
 
             constexpr bool isCollisional
                 = s_enums::IsProcess<s_enums::ProcessClassGroup::electronicCollisional>::check(u8(T_ProcessClass));

@@ -36,7 +36,6 @@
 
 #include <nlohmann/json.hpp>
 
-
 namespace picongpu::fields::incidentField
 {
     namespace profiles
@@ -107,7 +106,6 @@ namespace picongpu::fields::incidentField
                 static constexpr float_X rayleighLength
                     = pmacc::math::Pi<float_X>::value * W0 * W0 / Base::WAVE_LENGTH;
             };
-
 
             /** GaussianPulse incident E functor
              *
@@ -193,7 +191,7 @@ namespace picongpu::fields::incidentField
                     {
                         auto const phaseShift = pmacc::math::Pi<float_X>::halfValue;
                         return this->getCircularPolarizationVector1() * getValue(totalCellIdx, phaseShift)
-                            + this->getCircularPolarizationVector2() * getValue(totalCellIdx, 0.0_X);
+                               + this->getCircularPolarizationVector2() * getValue(totalCellIdx, 0.0_X);
                     }
                 }
 
@@ -234,20 +232,22 @@ namespace picongpu::fields::incidentField
                     // Distance from the current cell to the focus in laser propagation direction.
                     float_X const focusPos = distanceFocusRelativeToOrigin - pos[0];
                     // beam waist at the generation plane so that at focus we will get W0
-                    float_X const w = Unitless::W0
-                        * math::sqrt(1.0_X
-                                     + (focusPos / Unitless::rayleighLength) * (focusPos / Unitless::rayleighLength));
+                    float_X const w
+                        = Unitless::W0
+                          * math::sqrt(
+                              1.0_X + (focusPos / Unitless::rayleighLength) * (focusPos / Unitless::rayleighLength));
 
 
                     auto const phase = Unitless::w * (time - focusPos / sim.pic.getSpeedOfLight())
-                        + Unitless::LASER_PHASE + phaseShift;
+                                       + Unitless::LASER_PHASE + phaseShift;
 
                     // Apply tilt if needed
                     if constexpr(Unitless::TILT_AXIS_1 || Unitless::TILT_AXIS_2)
                     {
                         auto const tiltTimeShift = phase / Unitless::w + focusPos / sim.pic.getSpeedOfLight();
-                        auto const tiltPositionShift = sim.pic.getSpeedOfLight() * tiltTimeShift
-                            / pmacc::math::dot(this->getDirection(), float3_X{sim.pic.getCellSize()});
+                        auto const tiltPositionShift
+                            = sim.pic.getSpeedOfLight() * tiltTimeShift
+                              / pmacc::math::dot(this->getDirection(), float3_X{sim.pic.getCellSize()});
                         auto const tilt1 = Unitless::TILT_AXIS_1;
                         pos[1] += math::tan(tilt1) * tiltPositionShift;
                         auto const tilt2 = Unitless::TILT_AXIS_2;
@@ -274,7 +274,7 @@ namespace picongpu::fields::incidentField
                     for(uint32_t m = 0; m < laguerreModes.size(); ++m)
                     {
                         etrans += laguerreModes[m] * simpleLaguerre(m, 2.0_X * r2OverW2) * math::exp(-r2OverW2)
-                            * math::cos(
+                                  * math::cos(
                                       pmacc::math::Pi<float_X>::doubleValue / Unitless::WAVE_LENGTH * focusPos
                                       - pmacc::math::Pi<float_X>::doubleValue / Unitless::WAVE_LENGTH * r
                                       + (2._X * float_X(m) + 1._X) * xi + phase + laguerrePhases[m]);
@@ -315,7 +315,7 @@ namespace picongpu::fields::incidentField
                         // Core statement of the algorithm
                         laguerreNPlus1 = ((2.0_X * float_X(currentN) + 1.0_X - x) * laguerreN
                                           - float_X(currentN) * laguerreNMinus1)
-                            / float_X(currentN + 1u);
+                                         / float_X(currentN + 1u);
                         // Advance by one order
                         laguerreNMinus1 = laguerreN;
                         laguerreN = laguerreNPlus1;
@@ -325,7 +325,6 @@ namespace picongpu::fields::incidentField
                 }
             };
         } // namespace detail
-
 
         /** Gaussian temporal laser envelope
          *
@@ -352,11 +351,11 @@ namespace picongpu::fields::incidentField
             }
         };
 
-
         template<typename T_Params, typename T_LongitudinalEnvelope>
         struct GaussianPulse
         {
             using LongitudinalEnvelope = T_LongitudinalEnvelope;
+
             //! Get text name of the incident field profile
             HINLINE static std::string getName()
             {

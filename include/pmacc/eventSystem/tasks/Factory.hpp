@@ -151,7 +151,7 @@ namespace pmacc
         Factory() = default;
         ;
 
-        Factory(const Factory&) = default;
+        Factory(Factory const&) = default;
         ;
 
         static Factory& getInstance()

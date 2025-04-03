@@ -248,8 +248,9 @@ namespace picongpu
                                                 floatD_X const pos = par[position_];
 
                                                 // calculate global position of cell
-                                                DataSpace<simDim> const globalPos = superCellOffset
-                                                    + pmacc::math::mapToND(SuperCellSize::toRT(), cellIdx);
+                                                DataSpace<simDim> const globalPos
+                                                    = superCellOffset
+                                                      + pmacc::math::mapToND(SuperCellSize::toRT(), cellIdx);
 
                                                 /* add global position of cell with local position of particle
                                                  * in cell
@@ -310,8 +311,9 @@ namespace picongpu
                                                 /* compute real amplitude of macro-particle with a charge of
                                                  * a single electron
                                                  */
-                                                real_amplitude_s[saveParticleAt] = amplitude3.getVector(look)
-                                                    * particle_charge * picongpu::float_64(sim.pic.getDt());
+                                                real_amplitude_s[saveParticleAt]
+                                                    = amplitude3.getVector(look) * particle_charge
+                                                      * picongpu::float_64(sim.pic.getDt());
 
                                                 // retarded time stored in shared memory
                                                 t_ret_s[saveParticleAt]

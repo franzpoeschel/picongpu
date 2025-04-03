@@ -82,6 +82,7 @@ namespace pmacc
         {
             return m_ptr;
         }
+
         HDINLINE ValueType* getPointer()
         {
             return m_ptr;

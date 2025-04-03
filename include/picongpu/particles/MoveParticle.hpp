@@ -24,7 +24,6 @@
 
 #include <pmacc/math/operation.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -62,15 +61,20 @@ namespace picongpu
              * direction the particle is leaving the cell.
              * The floating point precision is equal for -0.5 and 0.5.
              */
-#if(BOOST_COMP_HIP)
+#if (BOOST_COMP_HIP)
             // workaround for a broken HIP optimization
             // https://github.com/ComputationalRadiationPhysics/picongpu/issues/4561
+
+            // clang-format is trying to bring this into the form `auto volatile shift = ...` and removes the #else and
+            // #endif.
+            // clang-format off
             volatile
 #else
             constexpr
 #endif
                 auto shift
                 = 0.5_X;
+            // clang-format on
             floatD_X pos = newPos - shift;
 
             DataSpace<simDim> dir;
@@ -99,7 +103,7 @@ namespace picongpu
              */
             if(dir != DataSpace<simDim>::create(0))
             {
-                const int particleCellIdx = particle[localCellIdx_];
+                int const particleCellIdx = particle[localCellIdx_];
 
                 DataSpace<TVec::dim> localCell = pmacc::math::mapToND(TVec::toRT(), particleCellIdx);
                 /* new local cell position after particle move

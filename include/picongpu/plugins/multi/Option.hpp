@@ -26,7 +26,6 @@
 #include <string>
 #include <vector>
 
-
 namespace picongpu
 {
     namespace plugins
@@ -47,7 +46,6 @@ namespace picongpu
 
                 //! type of the value
                 using ValueType = T_ValueType;
-
 
                 /** create a option with a default value
                  *
@@ -181,9 +179,10 @@ namespace picongpu
                     if(!optionDefined(idx))
                     {
                         if(!m_hasDefaultValue)
-                            throw std::runtime_error(std::string(
-                                "There is no default value defined for the option " + getName()
-                                + " and idx is out of range"));
+                            throw std::runtime_error(
+                                std::string(
+                                    "There is no default value defined for the option " + getName()
+                                    + " and idx is out of range"));
                         return m_defaultValue;
                     }
 

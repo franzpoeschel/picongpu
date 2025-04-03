@@ -46,7 +46,6 @@ namespace pmacc
         uint64_t* nextId;
     };
 
-
     class IdProvider : public ISimulationData
     {
     public:

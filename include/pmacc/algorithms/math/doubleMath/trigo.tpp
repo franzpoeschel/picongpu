@@ -27,7 +27,6 @@
 #include <cfloat>
 #include <cmath>
 
-
 namespace pmacc
 {
     namespace math
@@ -48,13 +47,12 @@ namespace pmacc
             }
         };
 
-
         template<>
         struct Sinc<double>
         {
             using result = double;
 
-            HDINLINE double operator()(const double& value)
+            HDINLINE double operator()(double const& value)
             {
                 if(pmacc::math::abs(value) < DBL_EPSILON)
                     return 1.0;

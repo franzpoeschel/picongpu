@@ -50,7 +50,6 @@ namespace pmacc
         using type = LinearInheritFork<Head, typename LinearInherit<Vec>::type>;
     };
 
-
     /** Rule if head is a class which can inherit from other class
      */
     template<template<class> class Head, class Vec>
@@ -58,7 +57,6 @@ namespace pmacc
     {
         using type = Head<typename LinearInherit<Vec>::type>;
     };
-
 
     /** Rule if Vec is empty but Head is valid
      *
@@ -69,7 +67,6 @@ namespace pmacc
     {
         using type = Head;
     };
-
 
     /** Create a data structure which inherit linearly
      * @tparam vec_ boost mpl vector with classes

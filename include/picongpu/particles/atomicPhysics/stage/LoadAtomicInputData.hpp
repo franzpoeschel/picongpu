@@ -37,7 +37,6 @@
 #include <stdexcept>
 #include <string>
 
-
 namespace picongpu::particles::atomicPhysics::stage
 {
     /** pre-simulation stage for loading the user provided atomic input data
@@ -115,8 +114,9 @@ namespace picongpu::particles::atomicPhysics::stage
 
             if(numberAtomicStatesOfSpecies != static_cast<uint16_t>(atomicData->getNumberAtomicStates()))
             {
-                throw std::runtime_error("atomicPhysics ERROR: numberAtomicStates flag and number of atomic states in "
-                                         "input file do not match");
+                throw std::runtime_error(
+                    "atomicPhysics ERROR: numberAtomicStates flag and number of atomic states in "
+                    "input file do not match");
             }
 
             dataConnector.consume(std::move(atomicData));

@@ -35,7 +35,6 @@
 #include <pmacc/math/operation.hpp>
 #include <pmacc/random/distributions/Uniform.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -45,7 +44,6 @@ namespace picongpu
          *
          *  unit: none */
         constexpr float_X MIN_WEIGHTING = 10.0;
-
 
         namespace manipulators
         {
@@ -57,11 +55,11 @@ namespace picongpu
                  */
                 static constexpr auto driftDirection = float3_X(1.0, 0.0, 0.0);
             };
+
             /** Definition of manipulator that assigns a drift in X
              *  using parameters from struct DriftParam.
              */
             using AssignXDrift = unary::Drift<DriftParam, pmacc::math::operation::Assign>;
-
 
             /** Define initial particle temperature. */
             struct TemperatureParam
@@ -71,11 +69,11 @@ namespace picongpu
                  */
                 static constexpr float_64 temperature = 0.0;
             };
+
             /** Definition of manipulator assigning a temperature
              *  using parameters from struct TemperatureParam.
              */
             using AddTemperature = unary::Temperature<TemperatureParam>;
-
 
             /** Define initial particle temperature as a function of position.
              *  This is a functor which needs to follow the requirements of param::TemperatureFunctor.
@@ -96,16 +94,16 @@ namespace picongpu
                  *
                  * @param totalCellOffset total offset including all slides [in cells]
                  */
-                HDINLINE float_X operator()(const DataSpace<simDim>& totalCellOffset)
+                HDINLINE float_X operator()(DataSpace<simDim> const& totalCellOffset)
                 {
                     return 0.0_X;
                 }
             };
+
             /** Definition of manipulator that assigns a temperature
              *  according to the functor defined by struct TemperaturFunctor.
              */
             using AddFreeTemperature = unary::FreeTemperature<TemperatureFunctor>;
-
 
             /** Unary particle manipulator: double each weighting. */
             struct DoubleWeightingFunctor
@@ -116,9 +114,9 @@ namespace picongpu
                     particle[weighting_] *= 2.0_X;
                 }
             };
+
             /** Definition of the free particle manipulator which doubles each weighting.*/
             using DoubleWeighting = generic::Free<DoubleWeightingFunctor>;
-
 
             /** Define mask which randomly marks macro-particles used
              *  by the radiation plugin to calculate far field radiation.
@@ -132,6 +130,7 @@ namespace picongpu
                     particle[radiationMask_] = rng() < 0.1_X;
                 }
             };
+
             /** Definition of manipulator that selects macro-particles for Radiation plugin. */
             using RandomEnabledRadiation
                 = generic::FreeRng<RandomEnabledRadiationFunctor, pmacc::random::distributions::Uniform<float_X>>;
@@ -164,6 +163,7 @@ namespace picongpu
                  */
                 static constexpr uint32_t numParticlesPerCell = TYPICAL_PARTICLES_PER_CELL;
             };
+
             /** Definition of start position functor that randomly distributes macro-particles within a cell. */
             using Random = RandomImpl<RandomParameter>;
 
@@ -172,7 +172,6 @@ namespace picongpu
              * and randomly distributes weightings across macro-particles within a cell.
              */
             using RandomPositionAndWeighting = RandomPositionAndWeightingImpl<RandomParameter>;
-
 
             /** Define target number for marco-particles per cell along a direction.
              * To be used in Quiet start position functor.
@@ -190,11 +189,11 @@ namespace picongpu
                 using numParticlesPerDimension
                     = mCT::shrinkTo<mCT::Int<1, TYPICAL_PARTICLES_PER_CELL, 1>, simDim>::type;
             };
+
             /** Definition of Quiet start position functor that positions macro-particles regularly on the grid.
              * No random number generator used.
              */
             using Quiet = QuietImpl<QuietParam>;
-
 
             /** Configuration of initial in-cell particle position
              *
@@ -218,6 +217,7 @@ namespace picongpu
                  */
                 static constexpr auto inCellOffset = float3_X(0., 0., 0.);
             };
+
             /** Definition of OnePosition start position functor that
              * places macro-particles at the initial in-cell position defined above.
              */

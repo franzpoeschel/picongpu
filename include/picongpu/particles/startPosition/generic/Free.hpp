@@ -97,8 +97,8 @@ namespace picongpu
                     HINLINE Free(
                         uint32_t currentStep,
                         std::enable_if_t<
-                            !std::is_default_constructible_v<
-                                DeferFunctor> && std::is_constructible_v<DeferFunctor, uint32_t>>* = 0)
+                            !std::is_default_constructible_v<DeferFunctor>
+                            && std::is_constructible_v<DeferFunctor, uint32_t>>* = 0)
                         : Functor(currentStep)
                     {
                     }

@@ -35,7 +35,6 @@
 #include <string>
 #include <vector>
 
-
 namespace picongpu
 {
     /** Representation of the temporary scalar field for plugins and temporary

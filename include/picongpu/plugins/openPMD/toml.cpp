@@ -96,8 +96,9 @@ namespace
                         }
                         catch(toml::type_error const&)
                         {
-                            throw std::runtime_error("[openPMD plugin] Data sources in TOML "
-                                                     "file must be a string or a vector of strings.");
+                            throw std::runtime_error(
+                                "[openPMD plugin] Data sources in TOML "
+                                "file must be a string or a vector of strings.");
                         }
                     }();
                     dataSources.push_back(std::move(dataSource));
@@ -114,8 +115,9 @@ namespace
                     }
                     catch(toml::type_error const&)
                     {
-                        throw std::runtime_error("[openPMD plugin] Data sources in TOML "
-                                                 "file must be a string or a vector of strings.");
+                        throw std::runtime_error(
+                            "[openPMD plugin] Data sources in TOML "
+                            "file must be a string or a vector of strings.");
                     }
                 }();
                 dataSources.push_back(std::move(dataSource));
@@ -262,7 +264,6 @@ namespace
         return parseTomlFile(dataSources, tomlParameters, fileContents, path);
     }
 } // namespace
-
 
 namespace picongpu
 {

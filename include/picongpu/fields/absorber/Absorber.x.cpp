@@ -30,7 +30,6 @@
 #include <sstream>
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace fields
@@ -82,7 +81,7 @@ namespace picongpu
                 for(uint32_t axis = 0u; axis < 3u; axis++)
                     for(uint32_t direction = 0u; direction < 2u; direction++)
                         thickness(axis, direction) = numCells[axis][direction];
-                const DataSpace<DIM3> isPeriodicBoundary
+                DataSpace<DIM3> const isPeriodicBoundary
                     = Environment<simDim>::get().EnvironmentController().getCommunicator().getPeriodic();
                 for(uint32_t axis = 0u; axis < 3u; axis++)
                     if(isPeriodicBoundary[axis])
@@ -129,7 +128,7 @@ namespace picongpu
                 auto& absorber = get();
                 auto const thickness = absorber.getGlobalThickness();
                 pmacc::traits::StringProperty propList;
-                const DataSpace<DIM3> periodic
+                DataSpace<DIM3> const periodic
                     = Environment<simDim>::get().EnvironmentController().getCommunicator().getPeriodic();
 
                 for(uint32_t i = 1; i < NumberOfExchanges<simDim>::value; ++i)
@@ -137,8 +136,8 @@ namespace picongpu
                     // for each planar direction: left right top bottom back front
                     if(FRONT % i == 0)
                     {
-                        const std::string directionName = ExchangeTypeNames()[i];
-                        const DataSpace<DIM3> relDir = Mask::getRelativeDirections<DIM3>(i);
+                        std::string const directionName = ExchangeTypeNames()[i];
+                        DataSpace<DIM3> const relDir = Mask::getRelativeDirections<DIM3>(i);
 
                         bool isPeriodic = false;
                         uint32_t axis = 0; // x(0) y(1) z(2)

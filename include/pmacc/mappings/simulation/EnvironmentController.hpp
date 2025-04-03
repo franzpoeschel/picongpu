@@ -25,7 +25,6 @@
 #include "pmacc/communication/ICommunicator.hpp"
 #include "pmacc/memory/dataTypes/Mask.hpp"
 
-
 namespace pmacc
 {
     class EnvironmentController
@@ -39,15 +38,13 @@ namespace pmacc
             return *comm;
         }
 
-
         /*! Get Mask with all GPU neighbar
          * @return Mask with neighbar
          */
-        const Mask& getCommunicationMask() const
+        Mask const& getCommunicationMask() const
         {
             return comm->getCommunicationMask();
         }
-
 
         /*! Set MPI communicator
          * @param comm A instance of ICommunicator

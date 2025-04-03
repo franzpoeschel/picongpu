@@ -28,7 +28,6 @@
 
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace particles
@@ -41,8 +40,8 @@ namespace picongpu
                 template<typename T_Particle>
                 DINLINE float_X WeightedVelocity<T_direction>::operator()(T_Particle& particle) const
                 {
-                    const float_X weighting = particle[weighting_];
-                    const float_X mass = picongpu::traits::attribute::getMass(weighting, particle);
+                    float_X const weighting = particle[weighting_];
+                    float_X const mass = picongpu::traits::attribute::getMass(weighting, particle);
 
                     return weighting * (picongpu::Velocity{}(particle[momentum_], mass))[T_direction];
                 }

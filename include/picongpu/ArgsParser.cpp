@@ -32,7 +32,6 @@
 #include <iostream>
 #include <sstream>
 
-
 namespace picongpu
 {
     namespace
@@ -60,7 +59,7 @@ namespace picongpu
     }
 
     template<class T>
-    bool from_string(T& t, const std::string& s, std::ios_base& (*f)(std::ios_base&) )
+    bool from_string(T& t, std::string const& s, std::ios_base& (*f)(std::ios_base&) )
     {
         std::istringstream iss(s);
         if((iss >> f >> t).fail())
@@ -151,7 +150,7 @@ namespace picongpu
                 return Status::successExit;
             }
         }
-        catch(const po::error& e)
+        catch(po::error const& e)
         {
             std::cerr << e.what() << std::endl;
             return Status::error;

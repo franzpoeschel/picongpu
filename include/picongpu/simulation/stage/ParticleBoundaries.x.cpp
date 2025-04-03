@@ -35,7 +35,6 @@
 #include <string>
 #include <vector>
 
-
 namespace picongpu
 {
     namespace simulation
@@ -200,7 +199,6 @@ namespace picongpu
                 };
 
             } // namespace detail
-
 
             void ParticleBoundaries::registerHelp(boost::program_options::options_description& desc)
             {

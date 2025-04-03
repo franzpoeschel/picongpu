@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    pragma once
 
@@ -58,9 +58,9 @@ namespace picongpu
                 std::unique_ptr<HostBuffer<T_Type, 1u>> hReducedBuffer,
                 T_BinningData const& binningData,
                 std::array<double, numUnits> const& outputUnits,
-                const uint32_t currentStep,
-                const bool isCheckpoint = false,
-                const uint32_t accumulateCounter = 0)
+                uint32_t const currentStep,
+                bool const isCheckpoint = false,
+                uint32_t const accumulateCounter = 0)
             {
                 using Type = T_Type;
 
@@ -102,7 +102,7 @@ namespace picongpu
                 auto& series = *maybe_series;
 
                 /* begin recommended openPMD global attributes */
-                const std::string software("PIConGPU");
+                std::string const software("PIConGPU");
                 std::stringstream softwareVersion;
                 softwareVersion << PICONGPU_VERSION_MAJOR << "." << PICONGPU_VERSION_MINOR << "."
                                 << PICONGPU_VERSION_PATCH;
@@ -122,7 +122,7 @@ namespace picongpu
 
                 /* begin required openPMD global attributes */
                 iteration.setDt<float_X>(sim.pic.getDt());
-                const float_X time = float_X(currentStep) * sim.pic.getDt();
+                float_X const time = float_X(currentStep) * sim.pic.getDt();
                 iteration.setTime(time);
                 iteration.setTimeUnitSI(sim.unit.time());
                 /* end required openPMD global attributes */

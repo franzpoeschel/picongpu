@@ -20,7 +20,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/defines.hpp"
 #    include "picongpu/particles/traits/GetShape.hpp"
@@ -148,7 +148,7 @@ namespace picongpu
 
                 pmacc::particles::operations::ConcatListOfFrames concatListOfFrames{};
 
-#    if(ALPAKA_ACC_GPU_CUDA_ENABLED || ALPAKA_ACC_GPU_HIP_ENABLED)
+#    if (ALPAKA_ACC_GPU_CUDA_ENABLED || ALPAKA_ACC_GPU_HIP_ENABLED)
                 auto mallocMCBuffer
                     = rp.dc.template get<MallocMCBuffer<DeviceHeap>>(MallocMCBuffer<DeviceHeap>::getName());
                 auto particlesBox = rp.speciesTmp->getHostParticlesBox(mallocMCBuffer->getOffset());
@@ -262,22 +262,22 @@ namespace picongpu
                 AbstractJsonMatcher& matcher,
                 std::string const& basename)
             {
-                const float_64 particleShape(picongpu::traits::GetShape<ThisSpecies>::type::assignmentFunctionOrder);
+                float_64 const particleShape(picongpu::traits::GetShape<ThisSpecies>::type::assignmentFunctionOrder);
                 record.setAttribute("particleShape", particleShape);
 
                 traits::GetSpeciesFlagName<ThisSpecies, current<>> currentDepositionName;
-                const std::string currentDeposition(currentDepositionName());
+                std::string const currentDeposition(currentDepositionName());
                 record.setAttribute("currentDeposition", currentDeposition.c_str());
 
                 traits::GetSpeciesFlagName<ThisSpecies, particlePusher<>> particlePushName;
-                const std::string particlePush(particlePushName());
+                std::string const particlePush(particlePushName());
                 record.setAttribute("particlePush", particlePush.c_str());
 
                 traits::GetSpeciesFlagName<ThisSpecies, interpolation<>> particleInterpolationName;
-                const std::string particleInterpolation(particleInterpolationName());
+                std::string const particleInterpolation(particleInterpolationName());
                 record.setAttribute("particleInterpolation", particleInterpolation.c_str());
 
-                const std::string particleSmoothing("none");
+                std::string const particleSmoothing("none");
                 record.setAttribute("particleSmoothing", particleSmoothing.c_str());
 
                 // now we have a map in a writeable format with all zeroes
@@ -292,7 +292,7 @@ namespace picongpu
                 plugins::output::GetMassOrZero<FrameType> const getMassOrZero;
                 if(getMassOrZero.hasMassRatio)
                 {
-                    const float_64 mass(getMassOrZero());
+                    float_64 const mass(getMassOrZero());
                     auto& massRecord = record["mass"];
                     auto& massComponent = massRecord[::openPMD::RecordComponent::SCALAR];
                     dataSet.options = matcher.get(basename + "/mass");
@@ -312,7 +312,7 @@ namespace picongpu
                 plugins::output::GetChargeOrZero<FrameType> const getChargeOrZero;
                 if(!hasBoundElectrons::value && getChargeOrZero.hasChargeRatio)
                 {
-                    const float_64 charge(getChargeOrZero());
+                    float_64 const charge(getChargeOrZero());
                     auto& chargeRecord = record["charge"];
                     auto& chargeComponent = chargeRecord[::openPMD::RecordComponent::SCALAR];
                     dataSet.options = matcher.get(basename + "/charge");
@@ -331,7 +331,7 @@ namespace picongpu
             HINLINE void operator()(
                 ThreadParams* params,
                 uint32_t const currentStep,
-                const DataSpace<simDim> particleToTotalDomainOffset)
+                DataSpace<simDim> const particleToTotalDomainOffset)
             {
                 log<picLog::INPUT_OUTPUT>("openPMD: (begin) write species: %1%") % T_SpeciesFilter::getName();
                 params->m_dumpTimes.now<std::chrono::milliseconds>(
@@ -343,11 +343,11 @@ namespace picongpu
                 uint64_t mpiRank = gc.getGlobalRank();
                 /* load particle without copy particle data to host */
                 auto speciesTmp = dc.get<ThisSpecies>(ThisSpecies::FrameType::getName());
-                const std::string speciesGroup(T_Species::getName());
+                std::string const speciesGroup(T_Species::getName());
 
                 ::openPMD::Series& series = *params->openPMDSeries;
                 ::openPMD::Iteration iteration = series.writeIterations()[currentStep];
-                const std::string basename = series.particlesPath() + speciesGroup;
+                std::string const basename = series.particlesPath() + speciesGroup;
 
                 auto idProvider = dc.get<IdProvider>("globalId");
 
@@ -371,7 +371,7 @@ namespace picongpu
                         decltype(speciesTmp),
                         decltype(filter),
                         decltype(particleFilter),
-                        const DataSpace<simDim>>;
+                        DataSpace<simDim> const>;
 
                     using AStrategy = Strategy<NewParticleDescription, RunParameters_T>;
                     std::unique_ptr<AStrategy> strategy;

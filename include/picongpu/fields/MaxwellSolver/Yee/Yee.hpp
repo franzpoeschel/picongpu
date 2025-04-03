@@ -29,7 +29,6 @@
 
 #include <pmacc/traits/GetStringProperties.hpp>
 
-
 namespace picongpu
 {
     namespace fields

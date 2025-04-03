@@ -170,7 +170,6 @@ namespace pmacc
         return task;
     }
 
-
     inline EventTask Factory::startTask(ITask& task, ITask* registeringTask)
     {
         if(registeringTask != nullptr)

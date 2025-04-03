@@ -147,8 +147,9 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
                 if(S_ConfigNumber::getChargeState(upperStateConfigNumber)
                    < S_ConfigNumber::getChargeState(lowerStateConfigNumber))
                 {
-                    printf("atomicPhysics ERROR: upper and lower state inverted in "
-                           "collisionalIonizationCrossSection() call\n");
+                    printf(
+                        "atomicPhysics ERROR: upper and lower state inverted in "
+                        "collisionalIonizationCrossSection() call\n");
                     return 0._X;
                 }
             }

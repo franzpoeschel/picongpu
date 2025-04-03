@@ -46,9 +46,9 @@ namespace picongpu
 
             template<typename T_Worker, typename T_DataSpace, typename T_DepositedQuantity, typename T_DataBox>
             HDINLINE void operator()(
-                const T_Worker& worker,
-                const T_DataSpace& extentsDataspace,
-                const T_DepositedQuantity factor,
+                T_Worker const& worker,
+                T_DataSpace const& extentsDataspace,
+                T_DepositedQuantity const factor,
                 T_DataBox dataBox) const
             {
                 auto blockIdx = worker.blockDomIdxND().x() * blockSize;
@@ -62,7 +62,6 @@ namespace picongpu
                     });
             }
         };
-
 
         /**
          * Functor to do volume normaliztion
@@ -82,9 +81,9 @@ namespace picongpu
             // @todo check if type stored in histBox is same as axisKernelTuple Type
             template<typename T_Worker, typename T_DataSpace, typename T_BinWidthKernelTuple, typename T_DataBox>
             HDINLINE void operator()(
-                const T_Worker& worker,
-                const T_DataSpace& extentsDataspace,
-                const T_BinWidthKernelTuple& binWidthsKernelTuple,
+                T_Worker const& worker,
+                T_DataSpace const& extentsDataspace,
+                T_BinWidthKernelTuple const& binWidthsKernelTuple,
                 T_DataBox histBox) const
             {
                 // @todo check normDataBox shape is same as histBox

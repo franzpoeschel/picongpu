@@ -41,6 +41,7 @@
 namespace picongpu::particles::creation
 {
     namespace s_conv = picongpu::particles::atomicPhysics;
+
     namespace detail
     {
         //! helper struct for named index acess

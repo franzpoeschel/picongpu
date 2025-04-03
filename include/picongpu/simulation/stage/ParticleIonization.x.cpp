@@ -34,7 +34,6 @@
 
 #include <cstdint>
 
-
 namespace picongpu
 {
     namespace particles
@@ -65,7 +64,7 @@ namespace picongpu
              * @param currentStep The current time step
              */
             template<typename T_CellDescription>
-            HINLINE void operator()(T_CellDescription cellDesc, const uint32_t currentStep) const
+            HINLINE void operator()(T_CellDescription cellDesc, uint32_t const currentStep) const
             {
                 DataConnector& dc = Environment<>::get().DataConnector();
 
@@ -108,7 +107,7 @@ namespace picongpu
              * @param currentStep The current time step
              */
             template<typename T_CellDescription>
-            HINLINE void operator()(T_CellDescription cellDesc, const uint32_t currentStep) const
+            HINLINE void operator()(T_CellDescription cellDesc, uint32_t const currentStep) const
             {
                 // only if an ionizer has been specified, this is executed
                 using hasIonizers = typename HasFlag<FrameType, ionizers<>>::type;
@@ -121,6 +120,7 @@ namespace picongpu
             }
         };
     } // namespace particles
+
     namespace simulation
     {
         namespace stage

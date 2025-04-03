@@ -34,7 +34,6 @@
 
 #include <algorithm>
 
-
 namespace picongpu
 {
     namespace fields
@@ -127,16 +126,16 @@ namespace picongpu
 
                         // smoothing operator applied after the derivative
                         return alpha * forwardDerivative(data)
-                            + betaDir1 * forwardDerivative(data.shift(upperNeighborDir1))
-                            + betaDir1 * forwardDerivative(data.shift(-upperNeighborDir1))
+                               + betaDir1 * forwardDerivative(data.shift(upperNeighborDir1))
+                               + betaDir1 * forwardDerivative(data.shift(-upperNeighborDir1))
 
-                            + betaDir2 * forwardDerivative(data.shift(upperNeighborDir2))
-                            + betaDir2 * forwardDerivative(data.shift(-upperNeighborDir2))
+                               + betaDir2 * forwardDerivative(data.shift(upperNeighborDir2))
+                               + betaDir2 * forwardDerivative(data.shift(-upperNeighborDir2))
 
-                            + gammaDir12 * forwardDerivative(data.shift(upperNeighborDir1 + upperNeighborDir2))
-                            + gammaDir12 * forwardDerivative(data.shift(upperNeighborDir1 - upperNeighborDir2))
-                            + gammaDir12 * forwardDerivative(data.shift(-upperNeighborDir1 + upperNeighborDir2))
-                            + gammaDir12 * forwardDerivative(data.shift(-upperNeighborDir1 - upperNeighborDir2));
+                               + gammaDir12 * forwardDerivative(data.shift(upperNeighborDir1 + upperNeighborDir2))
+                               + gammaDir12 * forwardDerivative(data.shift(upperNeighborDir1 - upperNeighborDir2))
+                               + gammaDir12 * forwardDerivative(data.shift(-upperNeighborDir1 + upperNeighborDir2))
+                               + gammaDir12 * forwardDerivative(data.shift(-upperNeighborDir1 - upperNeighborDir2));
                     }
                 };
 

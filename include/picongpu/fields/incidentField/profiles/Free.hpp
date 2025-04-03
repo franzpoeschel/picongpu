@@ -76,6 +76,7 @@ namespace picongpu
                     }
                 };
             } // namespace profiles
+
             namespace traits
             {
                 namespace detail

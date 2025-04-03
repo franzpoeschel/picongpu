@@ -30,7 +30,6 @@
 #include <cstdint>
 #include <string>
 
-
 namespace picongpu
 {
     namespace fields

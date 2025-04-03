@@ -28,14 +28,14 @@
 
 namespace pmacc
 {
-    void Filesystem::createDirectory(const std::string dir) const
+    void Filesystem::createDirectory(std::string const dir) const
     {
         /* using `create_directories` instead of `create_directory` because the former does not throw if the directory
          * exists or has been created */
         stdfs::create_directories(dir);
     }
 
-    void Filesystem::setDirectoryPermissions(const std::string dir) const
+    void Filesystem::setDirectoryPermissions(std::string const dir) const
     {
         using namespace stdfs;
         /* set permissions */
@@ -44,7 +44,7 @@ namespace pmacc
             perms::owner_all | perms::group_read | perms::group_exec | perms::others_read | perms::others_exec);
     }
 
-    void Filesystem::createDirectoryWithPermissions(const std::string dir) const
+    void Filesystem::createDirectoryWithPermissions(std::string const dir) const
     {
         auto const mpiRank = Environment<>::get().EnvironmentController().getCommunicator().getRank();
         bool const isRootRank = mpiRank == 0;
@@ -57,7 +57,7 @@ namespace pmacc
         }
     }
 
-    std::string Filesystem::basename(const std::string pathFilename) const
+    std::string Filesystem::basename(std::string const pathFilename) const
     {
         return stdfs::path(pathFilename).filename().string();
     }

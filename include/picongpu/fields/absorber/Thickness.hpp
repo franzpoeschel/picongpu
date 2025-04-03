@@ -27,7 +27,6 @@
 #include <memory>
 #include <string>
 
-
 namespace picongpu::fields::absorber
 {
     //! Thickness of the absorbing layer

@@ -21,7 +21,6 @@
 
 #include "picongpu/fields/differentiation/Derivative.def"
 
-
 namespace picongpu
 {
     namespace fields

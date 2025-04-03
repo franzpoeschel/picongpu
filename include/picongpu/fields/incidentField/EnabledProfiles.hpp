@@ -28,7 +28,6 @@
 #include <cstdint>
 #include <type_traits>
 
-
 namespace picongpu::fields::incidentField
 {
     //! Typelist of all enabled profiles, can contain duplicates

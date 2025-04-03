@@ -24,7 +24,6 @@
 #include "pmacc/device/threadInfo.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc::lockstep
 {
     template<typename T_BlockSize>

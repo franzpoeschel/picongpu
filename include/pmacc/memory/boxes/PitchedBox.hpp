@@ -57,6 +57,7 @@ namespace pmacc
         {
             return this->m_ptr;
         }
+
         /** @} */
 
         /*Object must init by copy a valid instance*/
@@ -152,6 +153,7 @@ namespace pmacc
         {
             return this->m_ptr;
         }
+
         /** @} */
 
         /*Object must init by copy a valid instance*/

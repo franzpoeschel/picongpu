@@ -38,16 +38,16 @@ namespace picongpu::simulation::stage
     {
         using SpeciesRepresentingAtomicPhysicsIons = particles::atomicPhysics::traits::
             FilterByParticleType_t<VectorAllSpecies, picongpu::particles::atomicPhysics::Tags::Ion>;
-        auto static constexpr numberAtomicPhysicsIonSpecies
+        static constexpr auto numberAtomicPhysicsIonSpecies
             = pmacc::mp_size<SpeciesRepresentingAtomicPhysicsIons>::value;
 
         // check at least one electron species defined if atomicPhyiscs is active
         using SpeciesRepresentingAtomicPhysicsElectrons = particles::atomicPhysics::traits::
             FilterByParticleType_t<VectorAllSpecies, picongpu::particles::atomicPhysics::Tags::Electron>;
-        auto static constexpr numberAtomicPhysicsElectronSpecies
+        static constexpr auto numberAtomicPhysicsElectronSpecies
             = pmacc::mp_size<SpeciesRepresentingAtomicPhysicsElectrons>::value;
 
-        static bool constexpr atomicPhysicsActive
+        static constexpr bool atomicPhysicsActive
             = (numberAtomicPhysicsIonSpecies > 0 && numberAtomicPhysicsElectronSpecies > 0);
 
         PMACC_CASSERT_MSG(

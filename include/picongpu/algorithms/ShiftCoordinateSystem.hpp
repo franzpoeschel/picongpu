@@ -51,7 +51,7 @@ namespace picongpu
          * - Odd Support: vector is always [-0.5;0.5)
          */
         template<typename T_DataBox, typename T_Vector, typename T_FieldType>
-        HDINLINE void operator()(T_DataBox& dataBox, T_Vector& pos, const T_FieldType& fieldPos)
+        HDINLINE void operator()(T_DataBox& dataBox, T_Vector& pos, T_FieldType const& fieldPos)
         {
             constexpr uint32_t dim = T_Vector::dim;
             using ValueType = typename T_Vector::type;
@@ -62,7 +62,7 @@ namespace picongpu
             PMACC_UNROLL(dim)
             for(uint32_t d = 0; d < dim; ++d)
             {
-                const ValueType v_pos = pos[d] - fieldPos[d] - ValueType{0.5};
+                ValueType const v_pos = pos[d] - fieldPos[d] - ValueType{0.5};
                 if constexpr(isEven)
                 {
                     // pos range [-1.0;0.5)

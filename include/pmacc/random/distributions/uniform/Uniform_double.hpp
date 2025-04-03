@@ -118,7 +118,7 @@ namespace pmacc
                     {
                         do
                         {
-                            const double randomValue
+                            double const randomValue
                                 = pmacc::random::distributions::Uniform<uniform::ExcludeZero<double>, RNGMethod>()(
                                     worker,
                                     state);

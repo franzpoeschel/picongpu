@@ -60,9 +60,9 @@ namespace picongpu::particles::atomicPhysics::localHelperFields
 
         RateCacheField(T_MappingDescription const& mappingDesc)
             : SuperCellField<
-                RateCache<picongpu::traits::GetNumberAtomicStates<T_IonSpecies>::value>,
-                T_MappingDescription,
-                false /*no guards*/>(mappingDesc)
+                  RateCache<picongpu::traits::GetNumberAtomicStates<T_IonSpecies>::value>,
+                  T_MappingDescription,
+                  false /*no guards*/>(mappingDesc)
         {
         }
 

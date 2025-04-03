@@ -45,23 +45,23 @@ namespace picongpu
              *
              * @param totalCellOffset total offset including all slides [in cells]
              */
-            HDINLINE float_X operator()(const DataSpace<simDim>& totalCellOffset)
+            HDINLINE float_X operator()(DataSpace<simDim> const& totalCellOffset)
             {
-                const float_64 unit_length = sim.unit.length();
-                const float_X vacuum_y = float_X(ParamClass::vacuumCellsY) * sim.pic.getCellSize().y();
-                const floatD_X center = precisionCast<float_32>(ParamClass::center_SI / unit_length);
-                const float_X r = ParamClass::r_SI / unit_length;
-                const float_X ri = ParamClass::ri_SI / unit_length;
-                const float_X exponent = ParamClass::exponent_SI * unit_length;
+                float_64 const unit_length = sim.unit.length();
+                float_X const vacuum_y = float_X(ParamClass::vacuumCellsY) * sim.pic.getCellSize().y();
+                floatD_X const center = precisionCast<float_32>(ParamClass::center_SI / unit_length);
+                float_X const r = ParamClass::r_SI / unit_length;
+                float_X const ri = ParamClass::ri_SI / unit_length;
+                float_X const exponent = ParamClass::exponent_SI * unit_length;
 
 
-                const floatD_X globalCellPos(
+                floatD_X const globalCellPos(
                     precisionCast<float_X>(totalCellOffset) * sim.pic.getCellSize().shrink<simDim>());
 
                 if(globalCellPos.y() < vacuum_y)
                     return float_X(0.0);
 
-                const float_X distance = pmacc::math::l2norm(globalCellPos - center);
+                float_X const distance = pmacc::math::l2norm(globalCellPos - center);
 
                 /* "shell": inner radius */
                 if(distance < ri)

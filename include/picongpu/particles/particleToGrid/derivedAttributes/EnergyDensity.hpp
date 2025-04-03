@@ -27,7 +27,6 @@
 
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace particles
@@ -40,9 +39,9 @@ namespace picongpu
                 DINLINE float_X EnergyDensity::operator()(T_Particle& particle) const
                 {
                     /* read existing attributes */
-                    const float_X weighting = particle[weighting_];
-                    const float3_X mom = particle[momentum_];
-                    const float_X mass = picongpu::traits::attribute::getMass(weighting, particle);
+                    float_X const weighting = particle[weighting_];
+                    float3_X const mom = particle[momentum_];
+                    float_X const mass = picongpu::traits::attribute::getMass(weighting, particle);
 
                     constexpr float_X invCellVolume = float_X(1.0) / sim.pic.getCellSize().productOfComponents();
 

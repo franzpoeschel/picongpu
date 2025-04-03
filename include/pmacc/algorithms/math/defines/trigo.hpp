@@ -33,7 +33,6 @@ namespace pmacc
         template<typename Type>
         struct Sinc;
 
-
         template<typename ArgType, typename SinType, typename CosType>
         HDINLINE typename SinCos<ArgType, SinType, CosType>::result sincos(
             ArgType arg,

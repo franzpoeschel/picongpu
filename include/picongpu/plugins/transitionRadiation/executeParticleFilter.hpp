@@ -28,7 +28,6 @@
 
 #include <memory>
 
-
 namespace picongpu::plugins::transitionRadiation
 {
     /** execute the particle filter on a species
@@ -41,7 +40,7 @@ namespace picongpu::plugins::transitionRadiation
      * @param species species to be filtered
      */
     template<typename T_Species>
-    inline void executeParticleFilter(std::shared_ptr<T_Species>& species, const uint32_t currentStep)
+    inline void executeParticleFilter(std::shared_ptr<T_Species>& species, uint32_t const currentStep)
     {
         constexpr bool hasTransitionRadiationFilter
             = pmacc::traits::HasIdentifier<typename T_Species::FrameType, transitionRadiationMask>::type::value;

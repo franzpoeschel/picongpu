@@ -30,7 +30,6 @@ namespace picongpu
 {
     using namespace pmacc;
 
-
     template<typename T_Attribute>
     struct MallocMappedMemory
     {
@@ -63,7 +62,7 @@ namespace picongpu
     struct MallocHostMemory
     {
         template<typename T_Buffers, typename T_Frame>
-        HINLINE void operator()(T_Buffers& buffers, T_Frame& frame, const size_t size) const
+        HINLINE void operator()(T_Buffers& buffers, T_Frame& frame, size_t const size) const
         {
             using Attribute = T_Attribute;
             using type = typename pmacc::traits::Resolve<Attribute>::type::type;
@@ -78,7 +77,6 @@ namespace picongpu
             }
         }
     };
-
 
     /** copy species to host memory
      *

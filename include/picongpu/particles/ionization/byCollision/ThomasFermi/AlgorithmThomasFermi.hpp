@@ -102,7 +102,7 @@ namespace picongpu
                     constexpr float_64 TFBeta_temp = thomasFermi::TFBeta;
 
                     float_64 const A = thomasFermi::TFA1 * math::pow(T_0, TFA2_temp)
-                        + thomasFermi::TFA3 * math::pow(T_0, TFA4_temp);
+                                       + thomasFermi::TFA3 * math::pow(T_0, TFA4_temp);
 
                     float_64 const B = -math::exp(
                         thomasFermi::TFB0 + thomasFermi::TFB1 * T_F

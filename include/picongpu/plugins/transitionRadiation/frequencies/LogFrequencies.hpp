@@ -22,7 +22,6 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/plugins/transitionRadiation/param.hpp"
 
-
 namespace picongpu
 {
     namespace plugins
@@ -40,12 +39,12 @@ namespace picongpu
                         delta_omega_log = (math::log(omegaMax) - omega_log_min) / float_X(nOmega - 1);
                     }
 
-                    HDINLINE float_X operator()(const int ID)
+                    HDINLINE float_X operator()(int const ID)
                     {
                         return math::exp(omega_log_min + (float_X(ID)) * delta_omega_log);
                     }
 
-                    HINLINE float_X get(const int ID)
+                    HINLINE float_X get(int const ID)
                     {
                         return operator()(ID);
                     }
@@ -55,23 +54,20 @@ namespace picongpu
                     float_X delta_omega_log;
                 }; // FreqFunctor
 
-
                 class InitFreqFunctor
                 {
                 public:
                     InitFreqFunctor(void) = default;
 
-                    HINLINE void Init(const std::string path)
+                    HINLINE void Init(std::string const path)
                     {
                     }
-
 
                     HINLINE FreqFunctor getFunctor(void)
                     {
                         return {};
                     }
                 }; // InitFreqFunctor
-
 
                 //! @return frequency params as string
                 HINLINE

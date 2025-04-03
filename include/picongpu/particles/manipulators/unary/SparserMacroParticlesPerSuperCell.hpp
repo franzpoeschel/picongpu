@@ -37,7 +37,6 @@ namespace picongpu::particles::manipulators::unary::acc
         };
     } // namespace detail
 
-
     /** functor marking for deletion all passed macro particles which are not in a specified cell of a superCell and
      * updating the weight of the remaining particles to approximately keep the total density per superCell constant
      * under the assumption of homogenous density distribution within each superCell.

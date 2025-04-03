@@ -23,7 +23,6 @@
 
 #pragma once
 
-
 namespace pmacc
 {
     namespace type

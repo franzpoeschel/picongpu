@@ -75,15 +75,16 @@ namespace pmacc
             struct Tuple<T, Ts...>
             {
                 template<typename U, typename... Us>
-                    requires(!std::same_as<std::remove_cvref_t<U>, Tuple> && sizeof...(Us) == sizeof...(Ts))
+                requires(!std::same_as<std::remove_cvref_t<U>, Tuple> && sizeof...(Us) == sizeof...(Ts))
                 HDINLINE constexpr Tuple(U&& u, Us&&... us) noexcept
                     : head(std::forward<U>(u))
                     , tail(std::forward<Us>(us)...)
                 {
                 }
-                HDINLINE constexpr Tuple(const Tuple&) noexcept = default;
+
+                HDINLINE constexpr Tuple(Tuple const&) noexcept = default;
                 HDINLINE constexpr Tuple(Tuple&&) noexcept = default;
-                HDINLINE constexpr Tuple& operator=(const Tuple&) noexcept = default;
+                HDINLINE constexpr Tuple& operator=(Tuple const&) noexcept = default;
                 HDINLINE constexpr Tuple& operator=(Tuple&&) noexcept = default;
 
                 T head;
@@ -99,7 +100,6 @@ namespace pmacc
             // Deduction guide for Tuple to contruct with values
             template<typename T, typename... Ts>
             Tuple(T&&, Ts&&...) -> Tuple<std::remove_cvref_t<T>, std::remove_cvref_t<Ts>...>;
-
 
             /// @brief Extracts the Kth element from the tuple.
             /// @tparam K The index of the element to extract (0-based).
@@ -122,7 +122,7 @@ namespace pmacc
 
             /// Const version of `get`
             template<size_t k, typename T, typename... Ts>
-            HDINLINE constexpr decltype(auto) get(const Tuple<T, Ts...>& t)
+            HDINLINE constexpr decltype(auto) get(Tuple<T, Ts...> const& t)
             {
                 if constexpr(k == 0)
                 {
@@ -173,9 +173,9 @@ namespace pmacc
             /// @param args Variables to create the tuple of references from.
             /// @return Tuple<Args&...> A tuple of references to the provided const variables.
             template<typename... Args>
-            HDINLINE constexpr auto tie(const Args&... args)
+            HDINLINE constexpr auto tie(Args const&... args)
             {
-                return Tuple<const Args&...>(args...);
+                return Tuple<Args const&...>(args...);
             }
 
             /// @struct tuple_size

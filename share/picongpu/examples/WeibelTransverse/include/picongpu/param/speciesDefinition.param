@@ -28,7 +28,6 @@
 #include <pmacc/particles/Identifier.hpp>
 #include <pmacc/particles/traits/FilterByFlag.hpp>
 
-
 namespace picongpu
 {
     /*########################### define particle attributes #####################*/

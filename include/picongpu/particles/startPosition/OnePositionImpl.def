@@ -39,7 +39,6 @@ namespace picongpu
 
             } // namespace acc
 
-
             /** Set the in cell position
              *
              * All macro particles are set to the same in cell position defined in

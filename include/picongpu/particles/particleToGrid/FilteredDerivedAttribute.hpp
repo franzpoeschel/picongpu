@@ -43,6 +43,7 @@ namespace picongpu
                 using Filter = T_Filter;
             };
         } // namespace particleToGrid
+
         namespace traits
         {
             template<typename T_Species, typename T_DerivedAttribute, typename T_Filter>

@@ -21,7 +21,7 @@
 // required for SIMDIM definition
 #include "picongpu/defines.hpp"
 
-#if(ENABLE_ISAAC == 1) && (SIMDIM == DIM3)
+#if (ENABLE_ISAAC == 1) && (SIMDIM == DIM3)
 
 #    include "picongpu/param/isaac.param"
 #    include "picongpu/particles/filter/filter.hpp"
@@ -49,7 +49,6 @@
 
 #    include <isaac.hpp>
 
-
 namespace picongpu
 {
     namespace isaacP
@@ -58,20 +57,22 @@ namespace picongpu
         using namespace ::isaac;
 
         ISAAC_NO_HOST_DEVICE_WARNING
+
         template<typename FieldType>
         class TFieldSource
         {
         public:
-            static const size_t featureDim = 3;
+            static size_t const featureDim = 3;
             static const ISAAC_IDX_TYPE guardSize = 0;
-            static const bool persistent = !std::is_same_v<FieldType, FieldJ>;
+            static bool const persistent = !std::is_same_v<FieldType, FieldJ>;
             typename FieldType::DataBoxType shifted;
             MappingDesc* cellDescription;
+
             TFieldSource() : cellDescription(nullptr)
             {
             }
 
-            TFieldSource(const TFieldSource&) = default;
+            TFieldSource(TFieldSource const&) = default;
 
             void init(MappingDesc* cellDescription)
             {
@@ -101,7 +102,7 @@ namespace picongpu
             }
 
             ISAAC_NO_HOST_DEVICE_WARNING
-            ISAAC_HOST_DEVICE_INLINE isaac_float_dim<featureDim> operator[](const isaac_int3& nIndex) const
+            ISAAC_HOST_DEVICE_INLINE isaac_float_dim<featureDim> operator[](isaac_int3 const& nIndex) const
             {
                 auto value = shifted(DataSpace<DIM3>(nIndex.x, nIndex.y, nIndex.z));
                 return isaac_float_dim<featureDim>(value.x(), value.y(), value.z());
@@ -109,13 +110,14 @@ namespace picongpu
         };
 
         ISAAC_NO_HOST_DEVICE_WARNING
+
         template<typename FrameSolver, typename ParticleType, typename ParticleFilter>
         class TFieldSource<FieldTmpOperation<FrameSolver, ParticleType, ParticleFilter>>
         {
         public:
-            static const size_t featureDim = 1;
+            static size_t const featureDim = 1;
             static const ISAAC_IDX_TYPE guardSize = 0;
-            static const bool persistent = false;
+            static bool const persistent = false;
             typename FieldTmp::DataBoxType shifted;
             MappingDesc* cellDescription;
 
@@ -123,7 +125,7 @@ namespace picongpu
             {
             }
 
-            TFieldSource(const TFieldSource&) = default;
+            TFieldSource(TFieldSource const&) = default;
 
             void init(MappingDesc* cellDescription)
             {
@@ -133,7 +135,7 @@ namespace picongpu
             static std::string getName()
             {
                 return ParticleType::FrameType::getName() + std::string(" ") + ParticleFilter::getName()
-                    + std::string(" ") + FrameSolver().getName();
+                       + std::string(" ") + FrameSolver().getName();
             }
 
             void update(bool enabled, void* pointer)
@@ -167,7 +169,7 @@ namespace picongpu
             }
 
             ISAAC_NO_HOST_DEVICE_WARNING
-            ISAAC_HOST_DEVICE_INLINE isaac_float_dim<featureDim> operator[](const isaac_int3& nIndex) const
+            ISAAC_HOST_DEVICE_INLINE isaac_float_dim<featureDim> operator[](isaac_int3 const& nIndex) const
             {
                 auto value = shifted(DataSpace<DIM3>(nIndex.x, nIndex.y, nIndex.z));
                 return isaac_float_dim<featureDim>(value.x());
@@ -175,20 +177,22 @@ namespace picongpu
         };
 
         ISAAC_NO_HOST_DEVICE_WARNING
+
         template<typename FieldType>
         class TVectorFieldSource
         {
         public:
-            static const size_t featureDim = 3;
+            static size_t const featureDim = 3;
             static const ISAAC_IDX_TYPE guardSize = 0;
-            static const bool persistent = !std::is_same_v<FieldType, FieldJ>;
+            static bool const persistent = !std::is_same_v<FieldType, FieldJ>;
             typename FieldType::DataBoxType shifted;
             MappingDesc* cellDescription;
+
             TVectorFieldSource() : cellDescription(nullptr)
             {
             }
 
-            TVectorFieldSource(const TVectorFieldSource&) = default;
+            TVectorFieldSource(TVectorFieldSource const&) = default;
 
             void init(MappingDesc* cellDescription)
             {
@@ -218,13 +222,12 @@ namespace picongpu
             }
 
             ISAAC_NO_HOST_DEVICE_WARNING
-            ISAAC_HOST_DEVICE_INLINE isaac_float_dim<featureDim> operator[](const isaac_int3& nIndex) const
+            ISAAC_HOST_DEVICE_INLINE isaac_float_dim<featureDim> operator[](isaac_int3 const& nIndex) const
             {
                 auto value = shifted(DataSpace<DIM3>(nIndex.x, nIndex.y, nIndex.z));
                 return isaac_float_dim<featureDim>(value.x(), value.y(), value.z());
             }
         };
-
 
         template<size_t featureDim, typename ParticlesBoxType>
         class ParticleIterator
@@ -261,10 +264,10 @@ namespace picongpu
                 auto const particle = frame[i];
 
                 // storage number in the actual frame
-                const int frameCellNr = particle[localCellIdx_];
+                int const frameCellNr = particle[localCellIdx_];
 
                 // offset in the actual superCell = cell offset in the supercell
-                const DataSpace<simDim> frameCellOffset
+                DataSpace<simDim> const frameCellOffset
                     = pmacc::math::mapToND(MappingDesc::SuperCellSize::toRT(), frameCellNr);
 
                 // added offsets
@@ -287,7 +290,6 @@ namespace picongpu
                 return isaac_float_dim<featureDim>(mom[0], mom[1], mom[2]);
             }
 
-
             // returns constant radius
             ISAAC_HOST_DEVICE_INLINE isaac_float getRadius() const
             {
@@ -301,8 +303,8 @@ namespace picongpu
             int i;
         };
 
-
         ISAAC_NO_HOST_DEVICE_WARNING
+
         template<typename ParticlesType>
         class ParticleSource
         {
@@ -311,7 +313,7 @@ namespace picongpu
             using FrameType = typename ParticlesBoxType::FrameType;
 
         public:
-            static const size_t featureDim = 3;
+            static size_t const featureDim = 3;
             DataSpace<simDim> guarding;
 
             ISAAC_HOST_INLINE static std::string getName()
@@ -337,7 +339,7 @@ namespace picongpu
             // returns particleIterator with correct featureDim and cell specific particlebox
             ISAAC_NO_HOST_DEVICE_WARNING
             ISAAC_HOST_DEVICE_INLINE ParticleIterator<featureDim, ParticlesBoxType> getIterator(
-                const isaac_uint3& local_grid_coord) const
+                isaac_uint3 const& local_grid_coord) const
             {
                 DataSpace<simDim> const superCellIdx(
                     local_grid_coord.x + guarding[0],
@@ -350,11 +352,10 @@ namespace picongpu
             }
         };
 
-
         struct SourceInitIterator
         {
             template<typename TSource, typename TCellDescription>
-            void operator()(const int I, TSource& s, TCellDescription& c) const
+            void operator()(int const I, TSource& s, TCellDescription& c) const
             {
                 s.init(c);
             }
@@ -382,15 +383,15 @@ namespace picongpu
                 VectorFieldSourceList,
                 ParticleList,
                 textureDim,
-#    if(ISAAC_STEREO == 0)
+#    if (ISAAC_STEREO == 0)
                 isaac::DefaultController,
                 isaac::DefaultCompositor
 #    else
                 isaac::StereoController,
-#        if(ISAAC_STEREO == 1)
+#        if (ISAAC_STEREO == 1)
                 isaac::StereoCompositorSideBySide<isaac::StereoController>
 #        else
-                isaac::StereoCompositorAnaglyph<isaac::StereoController, 0x000000FF, 0x00FFFF00>
+                isaac::StereoCompositorAnaglyph<isaac::StereoController, 0x0000'00FF, 0x00FF'FF00>
 #        endif
 #    endif
                 >;
@@ -512,7 +513,7 @@ namespace picongpu
                         {
                             Window window(MovingWindow::getInstance().getWindow(currentStep));
                             isaac_int3 position;
-                            const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
                             GridController<simDim>& gc = Environment<simDim>::get().GridController();
 
                             for(ISAAC_IDX_TYPE i = 0; i < 3; ++i)
@@ -520,8 +521,8 @@ namespace picongpu
                                 if(gc.getPosition()[1] == 0) // first gpu
                                 {
                                     position[i] = isaac_int(window.localDimensions.offset[i])
-                                        + isaac_int(window.localDimensions.size[i])
-                                        - isaac_int(subGrid.getLocalDomain().size[i]);
+                                                  + isaac_int(window.localDimensions.size[i])
+                                                  - isaac_int(subGrid.getLocalDomain().size[i]);
                                 }
                                 else
                                 {
@@ -689,7 +690,7 @@ namespace picongpu
                         sim.pic.getCellSize()[1] / minCellSize,
                         sim.pic.getCellSize()[2] / minCellSize);
 
-                    const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                    SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
 
                     isaac_size2 framebuffer_size = {pmacc::IdxType(width), pmacc::IdxType(height)};
 
@@ -775,11 +776,11 @@ namespace picongpu
                     }
                     else
                     {
-                        const int localNrOfCells
+                        int const localNrOfCells
                             = cellDescription->getGridLayout().sizeWithoutGuardND().productOfComponents();
                         cellCount = localNrOfCells * numProc;
                         particleCount = localNrOfCells * TYPICAL_PARTICLES_PER_CELL
-                            * (pmacc::mp_size<VectorAllSpecies>::type::value) * numProc;
+                                        * (pmacc::mp_size<VectorAllSpecies>::type::value) * numProc;
                         lastNotify = getTicksUs();
                         if(rank == 0)
                         {

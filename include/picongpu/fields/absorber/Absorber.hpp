@@ -28,7 +28,6 @@
 #include <memory>
 #include <string>
 
-
 namespace picongpu
 {
     namespace fields
@@ -115,13 +114,13 @@ namespace picongpu
             namespace exponential
             {
                 class ExponentialImpl;
-            }
+            } // namespace exponential
 
             // Forward declaration for AbsorberImpl::asPmlImpl()
             namespace pml
             {
                 class PmlImpl;
-            }
+            } // namespace pml
 
 
         } // namespace absorber

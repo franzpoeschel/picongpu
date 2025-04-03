@@ -31,7 +31,6 @@
 
 #include <picongpu/fields/MaxwellSolver/ArbitraryOrderFDTD/Weights.hpp>
 
-
 namespace picongpu
 {
     namespace fields
@@ -117,7 +116,6 @@ namespace picongpu
                     };
                 } // namespace detail
 
-
                 /**@{*/
                 /** Functors for forward and backward derivative along the given direction used in ArbitraryOrderFDTD
                  * solver
@@ -181,13 +179,13 @@ namespace picongpu
                 {
                 };
 
-
                 template<uint32_t T_neighbors, uint32_t T_direction>
                 struct DerivativeFunctor<maxwellSolver::aoFDTD::Backward<T_neighbors>, T_direction>
                     : pmacc::meta::accessors::Identity<
                           maxwellSolver::aoFDTD::BackwardDerivativeFunctor<T_neighbors, T_direction>>
                 {
                 };
+
                 /**@}*/
 
             } // namespace traits

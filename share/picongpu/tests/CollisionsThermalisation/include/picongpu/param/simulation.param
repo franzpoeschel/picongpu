@@ -42,7 +42,6 @@
 
 #pragma once
 
-
 namespace picongpu
 {
     namespace SI
@@ -78,7 +77,7 @@ namespace picongpu
          */
         // reference density from smilei simulations
         constexpr float_64 BASE_DENSITY_SI = EPS0_SI * ELECTRON_MASS_SI * REFERENCE_OMEGA_SI * REFERENCE_OMEGA_SI
-            / ELECTRON_CHARGE_SI / ELECTRON_CHARGE_SI;
+                                             / ELECTRON_CHARGE_SI / ELECTRON_CHARGE_SI;
     } // namespace SI
 
     /** (Approximate) Number of maximum macro-particles per cell.

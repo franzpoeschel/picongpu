@@ -23,7 +23,6 @@
 
 #include <pmacc/meta/String.hpp>
 
-
 namespace pmacc
 {
     namespace traits

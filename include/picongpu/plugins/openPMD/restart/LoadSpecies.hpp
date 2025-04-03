@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/defines.hpp"
 #    include "picongpu/plugins/ISimulationPlugin.hpp"
@@ -70,14 +70,13 @@ namespace picongpu
             using NewParticleDescription =
                 typename ReplaceValueTypeSeq<ParticleDescription, ParticleNewAttributeList>::type;
 
-
             /** Load species from openPMD checkpoint storage
              *
              * @param params thread params
              * @param restartChunkSize number of particles processed in one kernel
              * call
              */
-            HINLINE void operator()(ThreadParams* params, uint32_t const currentStep, const uint32_t restartChunkSize)
+            HINLINE void operator()(ThreadParams* params, uint32_t const currentStep, uint32_t const restartChunkSize)
             {
                 std::string const speciesName = FrameType::getName();
                 log<picLog::INPUT_OUTPUT>("openPMD: (begin) load species: %1%") % speciesName;
@@ -89,7 +88,7 @@ namespace picongpu
                     = series.iterations[currentStep].open().particles;
                 ::openPMD::ParticleSpecies particleSpecies = particles[speciesName];
 
-                const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
                 DataSpace<simDim> cellOffsetToTotalDomain
                     = subGrid.getLocalDomain().offset + subGrid.getGlobalDomain().offset;
 
@@ -201,7 +200,7 @@ namespace picongpu
             HINLINE size_t
             getPatchIdx(ThreadParams* params, ::openPMD::ParticleSpecies particleSpecies, size_t numRanks)
             {
-                const std::string name_lookup[] = {"x", "y", "z"};
+                std::string const name_lookup[] = {"x", "y", "z"};
 
                 std::vector<DataSpace<simDim>> offsets(numRanks);
                 std::vector<DataSpace<simDim>> extents(numRanks);
@@ -221,9 +220,9 @@ namespace picongpu
                     }
                 }
 
-                const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
-                const pmacc::Selection<simDim> localDomain = subGrid.getLocalDomain();
-                const pmacc::Selection<simDim> globalDomain = subGrid.getGlobalDomain();
+                SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
+                pmacc::Selection<simDim> const localDomain = subGrid.getLocalDomain();
+                pmacc::Selection<simDim> const globalDomain = subGrid.getGlobalDomain();
                 /* Offset to transform local particle offsets into total offsets for all particles within the
                  * current local domain.
                  * @attention A window can be the full simulation domain or the moving window.

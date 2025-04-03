@@ -34,15 +34,14 @@ namespace pmacc
             {
                 using result = CastToType;
 
-                constexpr result operator()(const Type& value) const
+                constexpr result operator()(Type const& value) const
                 {
                     return static_cast<result>(value);
                 }
             };
 
-
             template<typename CastToType, typename Type>
-            constexpr typename TypeCast<CastToType, Type>::result precisionCast(const Type& value)
+            constexpr typename TypeCast<CastToType, Type>::result precisionCast(Type const& value)
             {
                 return TypeCast<CastToType, Type>()(value);
             }

@@ -26,6 +26,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+
 namespace picongpu
 {
     namespace particles
@@ -47,7 +48,7 @@ namespace picongpu
                 HDINLINE void ScreeningInvSquaredOperation::operator()(
                     T_Acc const& acc,
                     float1_X& chargeDensity,
-                    const float1_X& energyDensity) const
+                    float1_X const& energyDensity) const
                 {
                     // charge density = 0 means either neutral particles or no particles
                     // in that case set the inverse to zero so that it is not contributing to the total Debye length
@@ -65,9 +66,8 @@ namespace picongpu
                     else
                         // T = 2/3 average_energy
                         chargeDensity = (3.0_X / 2.0_X) * (1.0_X / sim.pic.getEps0()) * chargeDensity * chargeDensity
-                            / energyDensity;
+                                        / energyDensity;
                 }
-
 
                 struct ScreeningInvSquaredDescription
                 {

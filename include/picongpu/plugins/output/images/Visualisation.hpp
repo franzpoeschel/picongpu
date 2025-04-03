@@ -59,7 +59,6 @@
 #include <string>
 #include <vector>
 
-
 namespace picongpu
 {
     // normalize EM fields to typical laser or plasma quantities
@@ -106,11 +105,12 @@ namespace picongpu
             return float3_X(float_X(1.0), float_X(1.0), float_X(1.0));
 #else
             constexpr auto baseCharge = sim.pic.getBaseCharge();
-            const float_X lambda_pl = pmacc::math::Pi<float_X>::doubleValue * sim.pic.getSpeedOfLight()
-                * sqrt(sim.pic.getBaseMass() * sim.pic.getEps0() / BASE_DENSITY / baseCharge / baseCharge);
-            const float_X tyEField = lambda_pl * BASE_DENSITY / 3.0f / sim.pic.getEps0();
-            const float_X tyBField = tyEField * sim.pic.getMue0Eps0();
-            const float_X tyCurrent = tyBField / sim.pic.getMue0();
+            float_X const lambda_pl
+                = pmacc::math::Pi<float_X>::doubleValue * sim.pic.getSpeedOfLight()
+                  * sqrt(sim.pic.getBaseMass() * sim.pic.getEps0() / BASE_DENSITY / baseCharge / baseCharge);
+            float_X const tyEField = lambda_pl * BASE_DENSITY / 3.0f / sim.pic.getEps0();
+            float_X const tyBField = tyEField * sim.pic.getMue0Eps0();
+            float_X const tyCurrent = tyBField / sim.pic.getMue0();
 
             return float3_X(tyBField, tyEField, tyCurrent);
 #endif
@@ -152,11 +152,11 @@ namespace picongpu
             return float3_X::create(1.0_X);
 #else
             constexpr auto baseCharge = sim.pic.getBaseCharge();
-            const float_X tyCurrent = TYPICAL_PARTICLES_PER_CELL
-                * static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle()) * math::abs(baseCharge)
-                / sim.pic.getDt();
-            const float_X tyEField = getAmplitude() + FLT_MIN;
-            const float_X tyBField = tyEField * sim.pic.getMue0Eps0();
+            float_X const tyCurrent = TYPICAL_PARTICLES_PER_CELL
+                                      * static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle())
+                                      * math::abs(baseCharge) / sim.pic.getDt();
+            float_X const tyEField = getAmplitude() + FLT_MIN;
+            float_X const tyBField = tyEField * sim.pic.getMue0Eps0();
             return float3_X(tyBField, tyEField, tyCurrent);
 #endif
         }
@@ -319,7 +319,7 @@ namespace picongpu
 
                     // multiply with the area size of each plane to get current
                     auto field_current = field_j * float3_X::create(sim.pic.getCellSize().productOfComponents())
-                        / sim.pic.getCellSize();
+                                         / sim.pic.getCellSize();
 
                     /* reset picture to black
                      *   color range for each RGB channel: [0.0, 1.0]
@@ -438,10 +438,11 @@ namespace picongpu
             float_X* shBlock = ::alpaka::getDynSharedMem<float_X>(worker.getAcc());
 
             // shared memory box for particle counter
-            SharedMem counter(PitchedBox<float_X, DIM2>(
-                (float_X*) shBlock,
-                // pitch in byte
-                DataSpace<DIM2>{sizeof(float_X), SuperCellSize::toRT()[transpose.x()] * sizeof(float_X)}));
+            SharedMem counter(
+                PitchedBox<float_X, DIM2>(
+                    (float_X*) shBlock,
+                    // pitch in byte
+                    DataSpace<DIM2>{sizeof(float_X), SuperCellSize::toRT()[transpose.x()] * sizeof(float_X)}));
 
             forEachCell(
                 [&](int32_t const idx, bool const isImageThread)
@@ -578,7 +579,6 @@ namespace picongpu
             }
         };
 
-
         /** convert channel value to an RGB color
          *
          * @tparam T_blockSize number of elements which will be handled
@@ -679,12 +679,12 @@ namespace picongpu
         void notify(uint32_t currentStep) override
         {
             PMACC_ASSERT(cellDescription != nullptr);
-            const DataSpace<simDim> localSize(cellDescription->getGridLayout().sizeWithoutGuardND());
+            DataSpace<simDim> const localSize(cellDescription->getGridLayout().sizeWithoutGuardND());
             Window window(MovingWindow::getInstance().getWindow(currentStep));
 
             /*sliceOffset is only used in 3D*/
             sliceOffset = (int) ((float_32) (window.globalDimensions.size[sliceDim]) * m_slicePoint)
-                + window.globalDimensions.offset[sliceDim];
+                          + window.globalDimensions.offset[sliceDim];
 
             if(!doDrawing())
             {
@@ -742,20 +742,20 @@ namespace picongpu
 
             constexpr uint32_t cellsPerSupercell = pmacc::math::CT::volume<SuperCellSize>::type::value;
 
-#if(EM_FIELD_SCALE_CHANNEL1 == -1 || EM_FIELD_SCALE_CHANNEL2 == -1 || EM_FIELD_SCALE_CHANNEL3 == -1)
+#if (EM_FIELD_SCALE_CHANNEL1 == -1 || EM_FIELD_SCALE_CHANNEL2 == -1 || EM_FIELD_SCALE_CHANNEL3 == -1)
             // reduce with functor max
             float3_X max = reduce(pmacc::math::operation::Max(), d1access, elements);
             // reduce with functor min
             // float3_X min = reduce(pmacc::math::operation::Min(),
             //                    d1access,
             //                    elements);
-#    if(EM_FIELD_SCALE_CHANNEL1 != -1)
+#    if (EM_FIELD_SCALE_CHANNEL1 != -1)
             max.x() = float_X(1.0);
 #    endif
-#    if(EM_FIELD_SCALE_CHANNEL2 != -1)
+#    if (EM_FIELD_SCALE_CHANNEL2 != -1)
             max.y() = float_X(1.0);
 #    endif
-#    if(EM_FIELD_SCALE_CHANNEL3 != -1)
+#    if (EM_FIELD_SCALE_CHANNEL3 != -1)
             max.z() = float_X(1.0);
 #    endif
 
@@ -839,11 +839,11 @@ namespace picongpu
             if(!m_notifyPeriod.empty())
             {
                 PMACC_ASSERT(cellDescription != nullptr);
-                const DataSpace<simDim> localSize(cellDescription->getGridLayout().sizeWithoutGuardND());
+                DataSpace<simDim> const localSize(cellDescription->getGridLayout().sizeWithoutGuardND());
 
                 Window window(MovingWindow::getInstance().getWindow(0));
                 sliceOffset = (int) ((float_32) (window.globalDimensions.size[sliceDim]) * m_slicePoint)
-                    + window.globalDimensions.offset[sliceDim];
+                              + window.globalDimensions.offset[sliceDim];
 
                 bool isDrawing = doDrawing();
 
@@ -869,18 +869,17 @@ namespace picongpu
         bool doDrawing()
         {
             PMACC_ASSERT(cellDescription != nullptr);
-            const DataSpace<simDim> globalRootCellPos(Environment<simDim>::get().SubGrid().getLocalDomain().offset);
+            DataSpace<simDim> const globalRootCellPos(Environment<simDim>::get().SubGrid().getLocalDomain().offset);
             if constexpr(simDim == DIM3)
             {
-                const bool tmp = globalRootCellPos[sliceDim]
-                            + Environment<simDim>::get().SubGrid().getLocalDomain().size[sliceDim]
-                        > sliceOffset
-                    && globalRootCellPos[sliceDim] <= sliceOffset;
+                bool const tmp = globalRootCellPos[sliceDim]
+                                         + Environment<simDim>::get().SubGrid().getLocalDomain().size[sliceDim]
+                                     > sliceOffset
+                                 && globalRootCellPos[sliceDim] <= sliceOffset;
                 return tmp;
             }
             return true;
         }
-
 
         MappingDesc* cellDescription;
         SimulationDataId particleTag;

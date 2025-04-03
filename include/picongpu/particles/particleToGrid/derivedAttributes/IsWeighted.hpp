@@ -21,7 +21,6 @@
 
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace particles

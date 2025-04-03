@@ -18,7 +18,7 @@
  */
 
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 #    include "picongpu/defines.hpp"
 #    include "picongpu/particles/filter/filter.hpp"
 #    include "picongpu/particles/traits/SpeciesEligibleForSolver.hpp"
@@ -47,7 +47,6 @@
 #    include <utility>
 
 #    include <mpi.h>
-
 
 namespace picongpu
 {
@@ -130,7 +129,6 @@ namespace picongpu
                 std::string const& masterPrefix = std::string{}) override
             {
             }
-
 
             void validateOptions() override
             {
@@ -238,10 +236,10 @@ namespace picongpu
             MappingDesc cellDesc;
 
             StartBlockFunctor(
-                const TParticlesBox& pb,
+                TParticlesBox const& pb,
                 pmacc::DataBox<PitchedBox<float_PS, 2>> phaseSpaceDeviceBox,
-                const uint32_t p_dir,
-                const phaseSpace::Pair<float_X, float_X>& p_range,
+                uint32_t const p_dir,
+                phaseSpace::Pair<float_X, float_X> const& p_range,
                 MappingDesc const& cellDescription)
                 : particlesBox(pb)
                 , phaseSpaceBox(phaseSpaceDeviceBox)
@@ -323,7 +321,7 @@ namespace picongpu
                 /** create dir */
                 pmacc::Filesystem::get().createDirectoryWithPermissions("phaseSpace");
 
-                const uint32_t r_element = axis_element.space;
+                uint32_t const r_element = axis_element.space;
 
                 /* CORE + BORDER elements for spatial bins */
                 this->r_bins = this->m_cellDescription->getGridLayout().sizeWithoutGuardND()[r_element];
@@ -449,8 +447,8 @@ namespace picongpu
                 return;
 
             /* write to file */
-            const float_64 UNIT_VOLUME = sim.unit.length() * sim.unit.length() * sim.unit.length();
-            const float_64 unit = sim.unit.charge() / UNIT_VOLUME;
+            float_64 const UNIT_VOLUME = sim.unit.length() * sim.unit.length() * sim.unit.length();
+            float_64 const unit = sim.unit.charge() / UNIT_VOLUME;
 
             /* (momentum) p range: unit is m_species * c
              *   During the kernels we calculate with a typical single/real
@@ -485,7 +483,7 @@ namespace picongpu
         }
 
         template<uint32_t r_dir>
-        void calcPhaseSpace(const uint32_t currentStep)
+        void calcPhaseSpace(uint32_t const currentStep)
         {
             /* register particle species observer */
             DataConnector& dc = Environment<>::get().DataConnector();

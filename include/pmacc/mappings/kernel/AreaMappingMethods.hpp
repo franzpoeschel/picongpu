@@ -43,16 +43,16 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM> getGridDim(const Base&, const DataSpace<DIM>& gBlocks)
+        HINLINE static DataSpace<DIM> getGridDim(Base const&, DataSpace<DIM> const& gBlocks)
         {
             return gBlocks;
         }
 
         template<class Base>
         HDINLINE static DataSpace<DIM> getSuperCellIndex(
-            const Base&,
-            const DataSpace<DIM>&,
-            const DataSpace<DIM>& _blockIdx)
+            Base const&,
+            DataSpace<DIM> const&,
+            DataSpace<DIM> const& _blockIdx)
         {
             return _blockIdx;
         }
@@ -65,7 +65,7 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM> getGridDim(const Base& base, const DataSpace<DIM>& gBlocks)
+        HINLINE static DataSpace<DIM> getGridDim(Base const& base, DataSpace<DIM> const& gBlocks)
         {
             // skip 2 x (border + guard) == 4 x guard
             return gBlocks - 4 * base.getGuardingSuperCells();
@@ -73,9 +73,9 @@ namespace pmacc
 
         template<class Base>
         HDINLINE static DataSpace<DIM> getSuperCellIndex(
-            const Base& base,
-            const DataSpace<DIM>& gBlocks,
-            const DataSpace<DIM>& _blockIdx)
+            Base const& base,
+            DataSpace<DIM> const& gBlocks,
+            DataSpace<DIM> const& _blockIdx)
         {
             // skip guard + border == 2 x guard
             return _blockIdx + 2 * base.getGuardingSuperCells();
@@ -89,7 +89,7 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM> getGridDim(const Base& base, const DataSpace<DIM>& gBlocks)
+        HINLINE static DataSpace<DIM> getGridDim(Base const& base, DataSpace<DIM> const& gBlocks)
         {
             // remove guard + border == 2 x guard
             return gBlocks - 2 * base.getGuardingSuperCells();
@@ -97,15 +97,14 @@ namespace pmacc
 
         template<class Base>
         HDINLINE static DataSpace<DIM> getSuperCellIndex(
-            const Base& base,
-            const DataSpace<DIM>& gBlocks,
-            const DataSpace<DIM>& _blockIdx)
+            Base const& base,
+            DataSpace<DIM> const& gBlocks,
+            DataSpace<DIM> const& _blockIdx)
         {
             // skip guarding supercells
             return _blockIdx + base.getGuardingSuperCells();
         }
     };
-
 
     // dim 2D
 
@@ -116,30 +115,30 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM2> getGridDim(const Base& base, const DataSpace<DIM2>& gBlocks)
+        HINLINE static DataSpace<DIM2> getGridDim(Base const& base, DataSpace<DIM2> const& gBlocks)
         {
-            const int x = gBlocks.x();
-            const int y_ = gBlocks.y() - 2 * base.getGuardingSuperCells().y();
+            int const x = gBlocks.x();
+            int const y_ = gBlocks.y() - 2 * base.getGuardingSuperCells().y();
 
-            const int xArea = x * base.getGuardingSuperCells().y();
-            const int y_Area = y_ * base.getGuardingSuperCells().x();
+            int const xArea = x * base.getGuardingSuperCells().y();
+            int const y_Area = y_ * base.getGuardingSuperCells().x();
 
             return DataSpace<DIM2>(xArea + y_Area, 2);
         }
 
         template<class Base>
         HDINLINE static DataSpace<DIM2> getSuperCellIndex(
-            const Base& base,
-            const DataSpace<DIM2>& gBlocks,
-            const DataSpace<DIM2>& _blockIdx)
+            Base const& base,
+            DataSpace<DIM2> const& gBlocks,
+            DataSpace<DIM2> const& _blockIdx)
         {
-            const int x = gBlocks.x();
+            int const x = gBlocks.x();
 
-            const int xArea = x * base.getGuardingSuperCells().y();
+            int const xArea = x * base.getGuardingSuperCells().y();
 
             if(_blockIdx.x() < xArea)
             {
-                const int tmp_x = _blockIdx.x();
+                int const tmp_x = _blockIdx.x();
                 return DataSpace<DIM2>(
                     tmp_x % x,
                     tmp_x / x +
@@ -148,7 +147,7 @@ namespace pmacc
             }
             else
             {
-                const int tmp_x = _blockIdx.x() - xArea;
+                int const tmp_x = _blockIdx.x() - xArea;
                 return DataSpace<DIM2>(
                     tmp_x % base.getGuardingSuperCells().x() +
                         // if _blockIdx.y() == 1 means right plane
@@ -165,26 +164,26 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM2> getGridDim(const Base& base, const DataSpace<DIM2>& gBlocks)
+        HINLINE static DataSpace<DIM2> getGridDim(Base const& base, DataSpace<DIM2> const& gBlocks)
         {
             // removes the guard, than BORDER is the new GUARD and we can reuse the GUARD mapper
-            const DataSpace<DIM2> sizeWithoutGuard(gBlocks - 2 * base.getGuardingSuperCells());
+            DataSpace<DIM2> const sizeWithoutGuard(gBlocks - 2 * base.getGuardingSuperCells());
 
             return AreaMappingMethods<GUARD, DIM2>{}.getGridDim(base, sizeWithoutGuard);
         }
 
         template<class Base>
         HDINLINE static DataSpace<DIM2> getSuperCellIndex(
-            const Base& base,
-            const DataSpace<DIM2>& gBlocks,
-            const DataSpace<DIM2>& _blockIdx)
+            Base const& base,
+            DataSpace<DIM2> const& gBlocks,
+            DataSpace<DIM2> const& _blockIdx)
         {
             // removes the guard, than BORDER is the new GUARD and we can reuse the GUARD mapper
-            const DataSpace<DIM2> sizeWithoutGuard(gBlocks - 2 * base.getGuardingSuperCells());
+            DataSpace<DIM2> const sizeWithoutGuard(gBlocks - 2 * base.getGuardingSuperCells());
 
             // use result of the shrinked domain and skip guarding supercells
             return AreaMappingMethods<GUARD, DIM2>{}.getSuperCellIndex(base, sizeWithoutGuard, _blockIdx)
-                + base.getGuardingSuperCells();
+                   + base.getGuardingSuperCells();
         }
     };
 
@@ -193,39 +192,39 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM3> getGridDim(const Base& base, const DataSpace<DIM3>& gBlocks)
+        HINLINE static DataSpace<DIM3> getGridDim(Base const& base, DataSpace<DIM3> const& gBlocks)
         {
-            const int x = gBlocks.x();
-            const int x_ = gBlocks.x() - 2 * base.getGuardingSuperCells().x();
-            const int y = gBlocks.y();
-            const int z_ = gBlocks.z() - 2 * base.getGuardingSuperCells().z();
+            int const x = gBlocks.x();
+            int const x_ = gBlocks.x() - 2 * base.getGuardingSuperCells().x();
+            int const y = gBlocks.y();
+            int const z_ = gBlocks.z() - 2 * base.getGuardingSuperCells().z();
 
-            const int xyVolume = x * y * base.getGuardingSuperCells().z();
-            const int z_yVolume = z_ * y * base.getGuardingSuperCells().x();
-            const int z_x_Volume = z_ * x_ * base.getGuardingSuperCells().y();
+            int const xyVolume = x * y * base.getGuardingSuperCells().z();
+            int const z_yVolume = z_ * y * base.getGuardingSuperCells().x();
+            int const z_x_Volume = z_ * x_ * base.getGuardingSuperCells().y();
 
             return DataSpace<DIM3>(xyVolume + z_x_Volume + z_yVolume, 2, 1);
         }
 
         template<class Base>
         HDINLINE static DataSpace<DIM3> getSuperCellIndex(
-            const Base& base,
-            const DataSpace<DIM3>& gBlocks,
-            const DataSpace<DIM3>& _blockIdx)
+            Base const& base,
+            DataSpace<DIM3> const& gBlocks,
+            DataSpace<DIM3> const& _blockIdx)
         {
-            const int x = gBlocks.x();
-            const int x_ = gBlocks.x() - 2 * base.getGuardingSuperCells().x();
-            const int y = gBlocks.y();
-            const int z_ = gBlocks.z() - 2 * base.getGuardingSuperCells().z();
+            int const x = gBlocks.x();
+            int const x_ = gBlocks.x() - 2 * base.getGuardingSuperCells().x();
+            int const y = gBlocks.y();
+            int const z_ = gBlocks.z() - 2 * base.getGuardingSuperCells().z();
 
-            const int xyVolume = x * y * base.getGuardingSuperCells().z();
-            const int z_yVolume = z_ * y * base.getGuardingSuperCells().x();
+            int const xyVolume = x * y * base.getGuardingSuperCells().z();
+            int const z_yVolume = z_ * y * base.getGuardingSuperCells().x();
 
             if(_blockIdx.x() < xyVolume)
             {
                 /* area is x*y */
-                const int xyPlane = x * y;
-                const int tmp_x = _blockIdx.x();
+                int const xyPlane = x * y;
+                int const tmp_x = _blockIdx.x();
 
                 return DataSpace<DIM3>(
                     tmp_x % x,
@@ -237,8 +236,8 @@ namespace pmacc
             else if(_blockIdx.x() >= xyVolume && _blockIdx.x() < xyVolume + z_yVolume)
             {
                 /* area is z_*y */
-                const int z_yPlane = z_ * y;
-                const int tmp_x = _blockIdx.x() - xyVolume;
+                int const z_yPlane = z_ * y;
+                int const tmp_x = _blockIdx.x() - xyVolume;
 
                 return DataSpace<DIM3>(
                     tmp_x / z_yPlane +
@@ -250,8 +249,8 @@ namespace pmacc
             else
             {
                 /* area is x_*z_ */
-                const int x_z_Plane = x_ * z_;
-                const int tmp_x = _blockIdx.x() - xyVolume - z_yVolume;
+                int const x_z_Plane = x_ * z_;
+                int const tmp_x = _blockIdx.x() - xyVolume - z_yVolume;
                 return DataSpace<DIM3>(
                     (tmp_x % x_) + base.getGuardingSuperCells().x(),
                     tmp_x / x_z_Plane +
@@ -267,26 +266,26 @@ namespace pmacc
     {
     public:
         template<class Base>
-        HINLINE static DataSpace<DIM3> getGridDim(const Base& base, const DataSpace<DIM3>& gBlocks)
+        HINLINE static DataSpace<DIM3> getGridDim(Base const& base, DataSpace<DIM3> const& gBlocks)
         {
             // removes the guard, than BORDER is the new GUARD and we can reuse the GUARD mapper
-            const DataSpace<DIM3> sizeWithoutGuard(gBlocks - 2 * base.getGuardingSuperCells());
+            DataSpace<DIM3> const sizeWithoutGuard(gBlocks - 2 * base.getGuardingSuperCells());
 
             return AreaMappingMethods<GUARD, DIM3>{}.getGridDim(base, sizeWithoutGuard);
         }
 
         template<class Base>
         HDINLINE static DataSpace<DIM3> getSuperCellIndex(
-            const Base& base,
-            const DataSpace<DIM3>& gBlocks,
-            const DataSpace<DIM3>& _blockIdx)
+            Base const& base,
+            DataSpace<DIM3> const& gBlocks,
+            DataSpace<DIM3> const& _blockIdx)
         {
             // removes the guard, than BORDER is the new GUARD and we can reuse the GUARD mapper
-            const DataSpace<DIM3> sizeWithoutGuard(gBlocks - 2 * base.getGuardingSuperCells());
+            DataSpace<DIM3> const sizeWithoutGuard(gBlocks - 2 * base.getGuardingSuperCells());
 
             // use result of the shrinked domain and skip guarding supercells
             return AreaMappingMethods<GUARD, DIM3>{}.getSuperCellIndex(base, sizeWithoutGuard, _blockIdx)
-                + base.getGuardingSuperCells();
+                   + base.getGuardingSuperCells();
         }
     };
 

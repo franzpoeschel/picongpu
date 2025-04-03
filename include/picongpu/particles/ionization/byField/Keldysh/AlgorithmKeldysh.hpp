@@ -62,9 +62,9 @@ namespace picongpu
                  */
                 template<typename EType, typename BType, typename ParticleType>
                 HDINLINE IonizerReturn
-                operator()(const BType bField, const EType eField, ParticleType& parentIon, float_X randNr)
+                operator()(BType const bField, EType const eField, ParticleType& parentIon, float_X randNr)
                 {
-                    const float_X protonNumber
+                    float_X const protonNumber
                         = picongpu::traits::GetAtomicNumbers<ParticleType>::type::numberOfProtons;
                     float_X chargeState = picongpu::traits::attribute::getChargeState(parentIon);
 
@@ -72,7 +72,7 @@ namespace picongpu
                     if(chargeState < protonNumber)
                     {
                         uint32_t const cs = pmacc::math::float2int_rd(chargeState);
-                        const float_X iEnergy =
+                        float_X const iEnergy =
                             typename picongpu::traits::GetIonizationEnergies<ParticleType>::type{}[cs];
 
                         constexpr float_X pi = pmacc::math::Pi<float_X>::value;
@@ -80,17 +80,18 @@ namespace picongpu
                         float_X eInAU = sim.pic.conv().eField2auEField(pmacc::math::l2norm(eField));
 
                         /* factor two avoid calculation math::pow(2,5./4.); */
-                        const float_X twoToFiveQuarters = 2.3784142300054;
+                        float_X const twoToFiveQuarters = 2.3784142300054;
 
                         /* characteristic exponential function argument */
-                        const float_X charExpArg = math::sqrt(util::cube(float_X(2.) * iEnergy)) / eInAU;
+                        float_X const charExpArg = math::sqrt(util::cube(float_X(2.) * iEnergy)) / eInAU;
 
                         /* ionization rate */
                         float_X rateKeldysh = math::sqrt(float_X(6.) * pi) / twoToFiveQuarters * iEnergy
-                            * math::sqrt(float_X(1.) / charExpArg) * math::exp(-float_X(2. / 3.) * charExpArg);
+                                              * math::sqrt(float_X(1.) / charExpArg)
+                                              * math::exp(-float_X(2. / 3.) * charExpArg);
 
                         /* simulation time step in atomic units */
-                        const auto timeStepAU = sim.pic.conv().time2auTime(sim.pic.getDt());
+                        auto const timeStepAU = sim.pic.conv().time2auTime(sim.pic.getDt());
                         /* ionization probability
                          *
                          * probability = rate * time step

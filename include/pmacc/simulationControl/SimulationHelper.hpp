@@ -32,7 +32,6 @@
 #include <string>
 #include <vector>
 
-
 namespace pmacc
 {
     /**
@@ -137,11 +136,11 @@ namespace pmacc
         {
         }
 
-        void restart(uint32_t, const std::string) override
+        void restart(uint32_t, std::string const) override
         {
         }
 
-        void checkpoint(uint32_t, const std::string) override
+        void checkpoint(uint32_t, std::string const) override
         {
         }
 
@@ -185,7 +184,7 @@ namespace pmacc
         bool restartRequested{false};
 
         /* filename for checkpoint master file with all checkpoint timesteps */
-        const std::string CHECKPOINT_MASTER_FILE;
+        std::string const CHECKPOINT_MASTER_FILE;
 
         /* author that runs the simulation */
         std::string author;
@@ -220,7 +219,7 @@ namespace pmacc
          *
          * @param checkpointStep current checkpoint step
          */
-        void writeCheckpointStep(const uint32_t checkpointStep);
+        void writeCheckpointStep(uint32_t const checkpointStep);
 
     protected:
         /**

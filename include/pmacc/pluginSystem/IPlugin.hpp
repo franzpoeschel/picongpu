@@ -39,7 +39,7 @@ namespace pmacc
     class PluginException : public std::runtime_error
     {
     public:
-        PluginException(const char* message) : std::runtime_error(message)
+        PluginException(char const* message) : std::runtime_error(message)
         {
         }
 
@@ -81,7 +81,7 @@ namespace pmacc
          * @param currentStep cuurent simulation iteration step
          * @param checkpointDirectory common directory for checkpoints
          */
-        virtual void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) = 0;
+        virtual void checkpoint(uint32_t currentStep, std::string const checkpointDirectory) = 0;
 
         /**
          * Restart notification callback.
@@ -90,7 +90,7 @@ namespace pmacc
          * @param restartStep simulation iteration step to restart from
          * @param restartDirectory common restart directory (contains checkpoints)
          */
-        virtual void restart(uint32_t restartStep, const std::string restartDirectory) = 0;
+        virtual void restart(uint32_t restartStep, std::string const restartDirectory) = 0;
 
         /**
          * Register command line parameters for this plugin.
@@ -119,7 +119,7 @@ namespace pmacc
          * @param speciesName name of the particle species
          * @param direction the direction the particles are leaving the simulation
          */
-        virtual void onParticleLeave(const std::string& /*speciesName*/, const int32_t /*direction*/)
+        virtual void onParticleLeave(std::string const& /*speciesName*/, int32_t const /*direction*/)
         {
         }
 

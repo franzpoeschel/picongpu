@@ -167,9 +167,9 @@ namespace pmacc
             DataSpace<T_dim> localDomainSize,
             DataSpace<T_dim> localDomainOffset);
 
-        Environment(const Environment&) = delete;
+        Environment(Environment const&) = delete;
 
-        Environment& operator=(const Environment&) = delete;
+        Environment& operator=(Environment const&) = delete;
 
     private:
         Environment() = default;

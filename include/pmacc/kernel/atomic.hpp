@@ -31,7 +31,6 @@
 #include <climits>
 #include <type_traits>
 
-
 namespace pmacc
 {
     namespace kernel
@@ -42,7 +41,7 @@ namespace pmacc
             struct AtomicAllInc
             {
                 template<typename T_Acc, typename T_Hierarchy>
-                HDINLINE T_Type operator()(const T_Acc& acc, T_Type* ptr, const T_Hierarchy& hierarchy)
+                HDINLINE T_Type operator()(T_Acc const& acc, T_Type* ptr, T_Hierarchy const& hierarchy)
                 {
                     return ::alpaka::atomicOp<::alpaka::AtomicAdd>(acc, ptr, T_Type(1), hierarchy);
                 }
@@ -56,10 +55,9 @@ namespace pmacc
             template<typename T>
             struct AtomicAllIncIsOptimized
             {
-                inline static constexpr bool value
-                    = std::is_same_v<
-                          T,
-                          int> || std::is_same_v<T, unsigned int> || std::is_same_v<T, long long int> || std::is_same_v<T, unsigned long long int> || std::is_same_v<T, float>;
+                static inline constexpr bool value
+                    = std::is_same_v<T, int> || std::is_same_v<T, unsigned int> || std::is_same_v<T, long long int>
+                      || std::is_same_v<T, unsigned long long int> || std::is_same_v<T, float>;
             };
 
             /**
@@ -84,17 +82,17 @@ namespace pmacc
             struct AtomicAllIncKepler<T_Type, true>
             {
                 template<typename T_Acc, typename T_Hierarchy>
-                HDINLINE T_Type operator()(const T_Acc& acc, T_Type* ptr, const T_Hierarchy& hierarchy)
+                HDINLINE T_Type operator()(T_Acc const& acc, T_Type* ptr, T_Hierarchy const& hierarchy)
                 {
                     /* @attention mask must be used in any warp operation which supports a mask.
                      * On CUDA calling activemask again could result int different results because warps are not
                      * implicitly synchronized. This is different to HIP and old CUDA GPUs before Volta.
                      */
-                    const auto mask = alpaka::warp::activemask(acc);
-                    const auto leader = alpaka::ffs(acc, static_cast<std::make_signed_t<decltype(mask)>>(mask)) - 1;
+                    auto const mask = alpaka::warp::activemask(acc);
+                    auto const leader = alpaka::ffs(acc, static_cast<std::make_signed_t<decltype(mask)>>(mask)) - 1;
 
                     auto result = T_Type{};
-                    const int laneId = getLaneId();
+                    int const laneId = getLaneId();
                     /* Get the start value for this warp */
                     if(laneId == leader)
                         result = ::alpaka::atomicOp<::alpaka::AtomicAdd>(
@@ -105,7 +103,7 @@ namespace pmacc
                     result = warpBroadcast(mask, result, leader);
                     /* Add offset per thread */
                     return result
-                        + static_cast<T_Type>(
+                           + static_cast<T_Type>(
                                alpaka::popcount(acc, mask & ((static_cast<decltype(mask)>(1u) << laneId) - 1u)));
                 }
             };
@@ -120,10 +118,10 @@ namespace pmacc
             {
                 template<typename T_Acc, typename T_Hierarchy>
                 HDINLINE long long int operator()(
-                    const T_Acc& acc,
+                    T_Acc const& acc,
                     long long int* ptr,
-                    const T_Hierarchy&,
-                    const T_Hierarchy& hierarchy)
+                    T_Hierarchy const&,
+                    T_Hierarchy const& hierarchy)
                 {
                     return static_cast<long long int>(AtomicAllIncKepler<unsigned long long int>()(
                         acc,
@@ -151,7 +149,7 @@ namespace pmacc
          *
          */
         template<typename T, typename T_Worker, typename T_Hierarchy>
-        HDINLINE T atomicAllInc(const T_Worker& worker, T* ptr, const T_Hierarchy& hierarchy)
+        HDINLINE T atomicAllInc(T_Worker const& worker, T* ptr, T_Hierarchy const& hierarchy)
         {
             return detail::AtomicAllInc<T, (PMACC_CUDA_ARCH >= 300 || BOOST_COMP_HIP)>()(
                 worker.getAcc(),
@@ -191,14 +189,14 @@ namespace pmacc
          */
         template<typename T_Type, typename T_Worker, typename T_Hierarchy>
         DINLINE void atomicAllExch(
-            const T_Worker& worker,
+            T_Worker const& worker,
             T_Type* ptr,
-            const T_Type value,
-            const T_Hierarchy& hierarchy)
+            T_Type const value,
+            T_Hierarchy const& hierarchy)
         {
 #if PMACC_DEVICE_COMPILE == 1 && (BOOST_LANG_CUDA || BOOST_COMP_HIP)
             const auto mask = alpaka::warp::activemask(worker.getAcc());
-            const auto leader
+            auto const leader
                 = alpaka::ffs(worker.getAcc(), static_cast<std::make_signed_t<decltype(mask)>>(mask)) - 1;
             if(getLaneId() == leader)
 #endif

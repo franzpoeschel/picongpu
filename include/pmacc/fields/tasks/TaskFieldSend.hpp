@@ -95,7 +95,6 @@ namespace pmacc
             WaitForSend
         };
 
-
         Field& m_buffer;
         state_t m_state;
         EventTask tmpEvent;

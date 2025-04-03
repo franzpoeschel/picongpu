@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/plugins/common/openPMDDefaultExtension.hpp"
 
@@ -115,18 +115,21 @@ namespace picongpu
                 this->timeAveraging = timeAv;
                 return interpretAsChild();
             }
+
             /** @brief Defaults to true */
             Child& setNormalizeByBinVolume(bool normalize)
             {
                 this->normalizeByBinVolume = normalize;
                 return interpretAsChild();
             }
+
             /** @brief The periodicity of the output. Defaults to 1 */
             Child& setNotifyPeriod(std::string notify)
             {
                 this->notifyPeriod = std::move(notify);
                 return interpretAsChild();
             }
+
             /** @brief The number of notify steps to accumulate over. Dump at the end. Defaults to 1. */
             Child& setDumpPeriod(uint32_t dumpXNotifys)
             {
@@ -174,7 +177,6 @@ namespace picongpu
             }
         };
 
-
         template<typename T_AxisTuple, typename T_SpeciesTuple, typename T_DepositionData, typename T_Extras>
         struct ParticleBinningData
             : public BinningDataBase<
@@ -193,10 +195,10 @@ namespace picongpu
                 T_DepositionData const& depositData,
                 T_Extras const& extraData)
                 : BinningDataBase<ParticleBinningData, T_AxisTuple, T_DepositionData, T_Extras>(
-                    binnerName,
-                    axes,
-                    depositData,
-                    extraData)
+                      binnerName,
+                      axes,
+                      depositData,
+                      extraData)
                 , speciesTuple{species}
             {
             }
@@ -207,12 +209,14 @@ namespace picongpu
                 particleRegion = particleRegion | region;
                 return *this;
             }
+
             // disable a region in the bitmask
             ParticleBinningData& disableRegion(ParticleRegion const region)
             {
                 particleRegion = particleRegion & ~region;
                 return *this;
             }
+
             // Check if a region is enabled in the bitmask
             bool isRegionEnabled(ParticleRegion const region) const
             {
@@ -237,10 +241,10 @@ namespace picongpu
                 T_DepositionData const& depositData,
                 T_Extras const& extraData)
                 : BinningDataBase<FieldBinningData, T_AxisTuple, T_DepositionData, T_Extras>(
-                    binnerName,
-                    axes,
-                    depositData,
-                    extraData)
+                      binnerName,
+                      axes,
+                      depositData,
+                      extraData)
                 , fieldsTuple{fields}
             {
             }

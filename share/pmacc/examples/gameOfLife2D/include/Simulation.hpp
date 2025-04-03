@@ -106,7 +106,7 @@ namespace gol
              * local SimulationSize and where the local SimArea is in the greater
              * scheme using Offsets from global LEFT, TOP, FRONT
              */
-            const SubGrid<DIM2>& subGrid = Environment<DIM2>::get().SubGrid();
+            SubGrid<DIM2> const& subGrid = Environment<DIM2>::get().SubGrid();
 
             /* The following sets up the local layout which consists of the actual
              * grid cells and some surrounding cells, called guards.
@@ -213,7 +213,7 @@ namespace gol
              * a complete picture discarding the guards.                          */
             if(gather->isParticipating())
             {
-                const SubGrid<DIM2>& subGrid = Environment<DIM2>::get().SubGrid();
+                SubGrid<DIM2> const& subGrid = Environment<DIM2>::get().SubGrid();
                 auto bufferLayout = write->getGridLayout();
                 auto localDataExtents = bufferLayout.sizeWithoutGuardND();
                 auto view = std::make_unique<DeviceBuffer<uint8_t, DIM2>>(

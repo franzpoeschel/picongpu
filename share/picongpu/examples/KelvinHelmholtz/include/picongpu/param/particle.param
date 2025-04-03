@@ -34,7 +34,6 @@
 
 #include <pmacc/math/operation.hpp>
 
-
 namespace picongpu
 {
     namespace particles
@@ -58,6 +57,7 @@ namespace picongpu
                     mCT::Int<TYPICAL_PARTICLES_PER_CELL / 5, TYPICAL_PARTICLES_PER_CELL / 5, 1>,
                     simDim>::type;
             };
+
             /** Definition of Quiet start position functor that positions macro-particles regularly on the grid.
              * No random number generator used.
              */
@@ -81,6 +81,7 @@ namespace picongpu
                  */
                 static constexpr auto driftDirection = float3_X(1.0, 0.0, 0.0);
             };
+
             /** Definition of manipulator that assigns a drift in +X
              *  using parameters from struct DriftParamPositive.
              */
@@ -94,11 +95,11 @@ namespace picongpu
                  */
                 static constexpr auto driftDirection = float3_X(-1.0, 0.0, 0.0);
             };
+
             /** Definition of manipulator that assigns a drift in -X
              *  using parameters from struct DriftParamNegative.
              */
             using AssignXDriftNegative = unary::Drift<DriftParamNegative, pmacc::math::operation::Assign>;
-
 
             /** Define initial particle temperature. */
             struct TemperatureParam
@@ -108,6 +109,7 @@ namespace picongpu
                  */
                 static constexpr float_64 temperature = 0.0005;
             };
+
             /** Definition of manipulator assigning a temperature
              *  using parameters from struct TemperatureParam.
              */

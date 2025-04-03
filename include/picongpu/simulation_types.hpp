@@ -36,12 +36,12 @@ namespace picongpu
     namespace precision32Bit
     {
         using precisionType = float;
-    }
+    } // namespace precision32Bit
 
     namespace precision64Bit
     {
         using precisionType = double;
-    }
+    } // namespace precision64Bit
 
     namespace math = pmacc::math;
     /** g++ 9 creates compile issues when pulling definitions into picongpu namepsace via 'using namespace

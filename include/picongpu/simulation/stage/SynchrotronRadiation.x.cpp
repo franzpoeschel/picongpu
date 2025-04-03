@@ -66,7 +66,7 @@ namespace picongpu::simulation::stage
         template<typename T_CellDescription>
         HINLINE void operator()(
             T_CellDescription cellDesc,
-            const uint32_t currentStep,
+            uint32_t const currentStep,
             GridBuffer<float_X, 2>::DataBoxType F1F2DeviceBuff,
             std::shared_ptr<GridBuffer<int32_t, 1>> failedRequirementQ) const
         {
@@ -132,7 +132,7 @@ namespace picongpu::simulation::stage
         //! from zq to logEnd
         float_64 const log_start = std::log2(zq);
         float_64 const log_step = (FirstSynchrotronFunctionParams::logEnd - log_start)
-            / (FirstSynchrotronFunctionParams::numberSamplePoints - 1);
+                                  / (FirstSynchrotronFunctionParams::numberSamplePoints - 1);
 
         float_64 integral = 0.;
 
@@ -216,12 +216,13 @@ namespace picongpu::simulation::stage
                 {
                     if((failedRequirementPrinted) == false)
                     {
-                        printf("Synchrotron Extension requirement1 or requirement2 failed; should be less than 0.1 "
-                               "-> "
-                               "reduce the timestep. \n\tCheck the requrement by specifying the predicted maxHeff "
-                               "and "
-                               "maxGamma in"
-                               "\n\tpicongpu/lib/python/synchrotronRadiationExtension/synchrotronRequirements.py\n");
+                        printf(
+                            "Synchrotron Extension requirement1 or requirement2 failed; should be less than 0.1 "
+                            "-> "
+                            "reduce the timestep. \n\tCheck the requrement by specifying the predicted maxHeff "
+                            "and "
+                            "maxGamma in"
+                            "\n\tpicongpu/lib/python/synchrotronRadiationExtension/synchrotronRequirements.py\n");
                         printf("This warning is printed only once per simulation. Next warnings are dots.\n");
                         failedRequirementPrinted = true;
                     }

@@ -89,7 +89,6 @@ namespace pmacc
          */
         void init(DataSpace<DIM3> numberProcesses, DataSpace<DIM3> periodic);
 
-
         /*! returns a rank number (0-n) for each host
          *
          * E.g. if 8 GPUs are on 2 Hosts (4 GPUs each), the GPUs on each host will get hostrank 0 to 3
@@ -102,7 +101,7 @@ namespace pmacc
 
         // description in ICommunicator
 
-        const Mask& getCommunicationMask() const override
+        Mask const& getCommunicationMask() const override
         {
             return communicationMask;
         }
@@ -112,13 +111,13 @@ namespace pmacc
          * Coordinates are between [0-cx, 0-cy, 0-cz]
          *
          */
-        const DataSpace<DIM> getCoordinates() const
+        DataSpace<DIM> const getCoordinates() const
         {
             return this->coordinates;
         }
 
         //! description in ICommunicator
-        MPI_Request* startSend(uint32_t ex, const char* send_data, size_t send_data_count, uint32_t tag) override;
+        MPI_Request* startSend(uint32_t ex, char const* send_data, size_t send_data_count, uint32_t tag) override;
 
 
         //! description in ICommunicator
@@ -130,7 +129,6 @@ namespace pmacc
 
 
         bool setStateAfterSlides(size_t numSlides) override;
-
 
         /*! converts an exchangeType (e.g. RIGHT) to an MPI-rank
          */

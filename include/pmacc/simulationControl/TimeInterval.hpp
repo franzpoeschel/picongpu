@@ -29,7 +29,6 @@
 #include <sstream>
 #include <string>
 
-
 namespace pmacc
 {
     class TimeIntervall

@@ -53,6 +53,7 @@ namespace picongpu
                      */
                     static constexpr uint32_t numberSamplePoints = 8096u;
                 };
+
                 /* parameters of precomputation of interpolation table -> the table
                  * "tableValuesF1F2" is in simulation/stage/SynchrotronRadiation.hpp
                  */

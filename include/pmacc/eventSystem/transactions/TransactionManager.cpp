@@ -26,7 +26,6 @@
 
 #include <iostream>
 
-
 namespace pmacc
 {
     TransactionManager::~TransactionManager() /*noexcept(false)*/
@@ -80,7 +79,7 @@ namespace pmacc
         return transactions.top().getComputeDeviceQueue(op);
     }
 
-    EventTask TransactionManager::setTransactionEvent(const EventTask& event)
+    EventTask TransactionManager::setTransactionEvent(EventTask const& event)
     {
         if(transactions.size() == 0)
             throw std::runtime_error("Calling setTransactionEvent on empty transaction stack is not allowed");

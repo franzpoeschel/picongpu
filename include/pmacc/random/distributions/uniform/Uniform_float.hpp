@@ -48,8 +48,8 @@ namespace pmacc
                     template<typename T_Worker>
                     DINLINE float operator()(T_Worker const& worker, StateType& state) const
                     {
-                        const float value2pow32Inv = 2.3283064e-10f;
-                        const uint32_t random = RNGMethod().get32Bits(worker, state);
+                        float const value2pow32Inv = 2.3283064e-10f;
+                        uint32_t const random = RNGMethod().get32Bits(worker, state);
                         return static_cast<float>(random) * value2pow32Inv + (value2pow32Inv / 2.0f);
                     }
                 };
@@ -69,7 +69,7 @@ namespace pmacc
                     template<typename T_Worker>
                     DINLINE float operator()(T_Worker const& worker, StateType& state) const
                     {
-                        const float randomValue
+                        float const randomValue
                             = pmacc::random::distributions::Uniform<uniform::ExcludeZero<float>, RNGMethod>()(
                                 worker,
                                 state);
@@ -94,8 +94,8 @@ namespace pmacc
                     template<typename T_Worker>
                     DINLINE float operator()(T_Worker const& worker, StateType& state) const
                     {
-                        const float value2pow24Inv = 5.9604645e-08f;
-                        const float randomValue24Bit = RNGMethod().get32Bits(worker, state) >> 8;
+                        float const value2pow24Inv = 5.9604645e-08f;
+                        float const randomValue24Bit = RNGMethod().get32Bits(worker, state) >> 8;
                         return static_cast<float>(randomValue24Bit) * value2pow24Inv;
                     }
                 };
@@ -118,7 +118,7 @@ namespace pmacc
                     {
                         do
                         {
-                            const float randomValue
+                            float const randomValue
                                 = pmacc::random::distributions::Uniform<uniform::ExcludeZero<float>, RNGMethod>()(
                                     worker,
                                     state);

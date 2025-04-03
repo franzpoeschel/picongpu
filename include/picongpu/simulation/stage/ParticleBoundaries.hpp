@@ -21,7 +21,6 @@
 
 #include <boost/program_options.hpp>
 
-
 namespace picongpu
 {
     namespace simulation

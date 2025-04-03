@@ -64,7 +64,7 @@ namespace picongpu::particles2::atomicPhysics::rateCalculation
 
         // DeltaE * sigma * rho_e/DeltaE * v_e
         return energyElectronBinWidth * sigma * conversion_Factor_sigma * densityElectrons * c_internal
-            * math::sqrt(1._X - 1._X / (pmacc::math::cPow(1._X + energyElectron / electronRestMassEnergy, 2u)));
+               * math::sqrt(1._X - 1._X / (pmacc::math::cPow(1._X + energyElectron / electronRestMassEnergy, 2u)));
         // eV * 1e6b * sim.unit.length()^2/(1e6b) * 1/(sim.unit.length()^3*eV) * sim.unit.length()/sim.unit.time()
         //    * sqrt( unitless - [(unitless + (eV)/(eV))^2] )
         // = (eV)/(eV) * sim.unit.length()^2 *^1/sim.unit.length()^3 * sim.unit.length()/sim.unit.time()

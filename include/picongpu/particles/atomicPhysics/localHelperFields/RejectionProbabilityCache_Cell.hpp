@@ -106,8 +106,9 @@ namespace picongpu::particles::atomicPhysics::localHelperFields
             if constexpr(picongpu::atomicPhysics::debug::rejectionProbabilityCache::BIN_INDEX_RANGE_CHECK)
                 if(linearCellIndex >= numberCells)
                 {
-                    printf("atomicPhysics ERROR: out of range linear cell index in call to "
-                           "RejectionProbabilityCache_Cell\n");
+                    printf(
+                        "atomicPhysics ERROR: out of range linear cell index in call to "
+                        "RejectionProbabilityCache_Cell\n");
                     return true;
                 }
             return false;

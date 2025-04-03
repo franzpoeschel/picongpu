@@ -24,7 +24,6 @@
 #include "picongpu/fields/currentDeposition/Esirkepov/TrajectoryAssignmentShapeFunction.hpp"
 #include "picongpu/fields/currentDeposition/PermutatedFieldValueAccess.hpp"
 
-
 namespace picongpu
 {
     namespace currentSolver
@@ -38,8 +37,8 @@ namespace picongpu
                 DINLINE void operator()(
                     T_Worker const& worker,
                     T_DataBox fieldJ,
-                    const Line<float3_X>& line,
-                    const float_X chargeDensity) const
+                    Line<float3_X> const& line,
+                    float_X const chargeDensity) const
                 {
                     /**
                      * \brief the following three calls separate the 3D current deposition
@@ -77,8 +76,8 @@ namespace picongpu
                 DINLINE void cptCurrent1D(
                     T_Worker const& worker,
                     PermutatedFieldValueAccess<T_DataBox, T_Permutation> jField,
-                    const T_Line& line,
-                    const float_X currentSurfaceDensity) const
+                    T_Line const& line,
+                    float_X const currentSurfaceDensity) const
                 {
                     if(line.m_pos0[2] == line.m_pos1[2])
                         return;
@@ -101,15 +100,16 @@ namespace picongpu
                      */
                     for(int i = T_begin; i < T_end; ++i)
                     {
-                        const float_X s0i = shapeI.S0(i);
-                        const float_X dsi = shapeI.S1(i) - s0i;
+                        float_X const s0i = shapeI.S0(i);
+                        float_X const dsi = shapeI.S1(i) - s0i;
                         for(int j = T_begin; j < T_end; ++j)
                         {
-                            const float_X s0j = shapeJ.S0(j);
-                            const float_X dsj = shapeJ.S1(j) - s0j;
+                            float_X const s0j = shapeJ.S0(j);
+                            float_X const dsj = shapeJ.S1(j) - s0j;
 
-                            float_X tmp = -currentSurfaceDensity
-                                * (s0i * s0j + 0.5_X * (dsi * s0j + s0i * dsj) + (1.0_X / 3.0_X) * dsj * dsi);
+                            float_X tmp
+                                = -currentSurfaceDensity
+                                  * (s0i * s0j + 0.5_X * (dsi * s0j + s0i * dsj) + (1.0_X / 3.0_X) * dsj * dsi);
 
                             auto accumulated_J = 0.0_X;
                             for(int k = T_begin; k < T_end - 1; ++k)
@@ -118,7 +118,7 @@ namespace picongpu
                                  * from Esirkepov paper. All coordinates are rotated before thus we can always use C
                                  * style W(i,j,k,2).
                                  */
-                                const float_X W = shapeK.DS(k) * tmp;
+                                float_X const W = shapeK.DS(k) * tmp;
                                 accumulated_J += W;
                                 auto const atomicOp = typename T_Strategy::BlockReductionOp{};
                                 atomicOp(worker, jField.template get<2>(i, j, k), accumulated_J);
@@ -141,8 +141,8 @@ namespace picongpu
                 DINLINE void operator()(
                     T_Worker const& worker,
                     T_DataBox fieldJ,
-                    const Line<float2_X>& line,
-                    const float_X chargeDensity) const
+                    Line<float2_X> const& line,
+                    float_X const chargeDensity) const
                 {
                     cptCurrent1D(
                         worker,
@@ -166,8 +166,8 @@ namespace picongpu
                 DINLINE void cptCurrent1D(
                     T_Worker const& worker,
                     PermutatedFieldValueAccess<T_DataBox, T_Permutation> jField,
-                    const T_Line& line,
-                    const float_X currentSurfaceDensity) const
+                    T_Line const& line,
+                    float_X const currentSurfaceDensity) const
                 {
                     if(line.m_pos0[0] == line.m_pos1[0])
                         return;
@@ -182,8 +182,8 @@ namespace picongpu
 
                     for(int j = T_begin; j < T_end; ++j)
                     {
-                        const float_X s0j = shapeJ.S0(j);
-                        const float_X dsj = shapeJ.S1(j) - s0j;
+                        float_X const s0j = shapeJ.S0(j);
+                        float_X const dsj = shapeJ.S1(j) - s0j;
 
                         float_X tmp = -currentSurfaceDensity * (s0j + 0.5_X * dsj);
 
@@ -194,7 +194,7 @@ namespace picongpu
                              * Esirkepov paper. All coordinates are rotated before thus we can
                              * always use C style W(i,j,k,0).
                              */
-                            const float_X W = shapeI.DS(i) * tmp;
+                            float_X const W = shapeI.DS(i) * tmp;
                             accumulated_J += W;
                             auto const atomicOp = typename T_Strategy::BlockReductionOp{};
                             atomicOp(worker, jField.template get<0>(i, j), accumulated_J);
@@ -219,8 +219,8 @@ namespace picongpu
                 DINLINE void computeCurrentZ(
                     T_Worker const& worker,
                     T_JField jField,
-                    const T_Line& line,
-                    const float_X currentSurfaceDensityZ) const
+                    T_Line const& line,
+                    float_X const currentSurfaceDensityZ) const
                 {
                     if(currentSurfaceDensityZ == 0.0_X)
                         return;
@@ -235,15 +235,15 @@ namespace picongpu
 
                     for(int j = T_begin; j < T_end; ++j)
                     {
-                        const float_X s0j = shapeJ.S0(j);
-                        const float_X dsj = shapeJ.S1(j) - s0j;
+                        float_X const s0j = shapeJ.S0(j);
+                        float_X const dsj = shapeJ.S1(j) - s0j;
                         for(int i = T_begin; i < T_end; ++i)
                         {
-                            const float_X s0i = shapeI.S0(i);
-                            const float_X dsi = shapeI.S1(i) - s0i;
+                            float_X const s0i = shapeI.S0(i);
+                            float_X const dsi = shapeI.S1(i) - s0i;
                             float_X W = s0i * s0j + 0.5_X * (dsi * s0j + s0i * dsj) + (1.0_X / 3.0_X) * dsi * dsj;
 
-                            const float_X j_z = W * currentSurfaceDensityZ;
+                            float_X const j_z = W * currentSurfaceDensityZ;
                             auto const atomicOp = typename T_Strategy::BlockReductionOp{};
                             atomicOp(worker, jField(DataSpace<DIM2>(i, j)).z(), j_z);
                         }

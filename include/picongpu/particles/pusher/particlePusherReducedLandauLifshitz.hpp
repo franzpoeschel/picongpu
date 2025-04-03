@@ -53,11 +53,11 @@ namespace picongpu
 
             template<typename T_FunctorFieldE, typename T_FunctorFieldB, typename T_Particle, typename T_Pos>
             HDINLINE void operator()(
-                const T_FunctorFieldB functorBField, /* at t=0 */
-                const T_FunctorFieldE functorEField, /* at t=0 */
+                T_FunctorFieldB const functorBField, /* at t=0 */
+                T_FunctorFieldE const functorEField, /* at t=0 */
                 T_Particle& particle,
                 T_Pos& pos, /* at t=0 */
-                const uint32_t)
+                uint32_t const)
             {
                 float_X const weighting = particle[weighting_];
                 float_X const mass = picongpu::traits::attribute::getMass(weighting, particle);
@@ -73,8 +73,8 @@ namespace picongpu
 
                 TypeMomentum mom = particle[momentum_];
 
-                const auto bField = functorBField(pos);
-                const auto eField = functorEField(pos);
+                auto const bField = functorBField(pos);
+                auto const eField = functorEField(pos);
 
                 // update probe field if particle contains required attributes
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeB>::type::value)
@@ -82,8 +82,8 @@ namespace picongpu
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeE>::type::value)
                     particle[probeE_] = eField;
 
-                const float_X deltaT = sim.pic.getDt();
-                const uint32_t dimMomentum = GetNComponents<TypeMomentum>::value;
+                float_X const deltaT = sim.pic.getDt();
+                uint32_t const dimMomentum = GetNComponents<TypeMomentum>::value;
                 // the transver data type adjust to 3D3V, 2D3V, 2D2V, ...
                 using VariableType = pmacc::math::Vector<picongpu::float_X, simDim + dimMomentum>;
                 VariableType var;
@@ -150,7 +150,6 @@ namespace picongpu
                 using VelocityType = T_Velocity;
                 using GammaType = T_Gamma;
 
-
                 HDINLINE DiffEquation(
                     EFieldFuncType funcE,
                     BFieldFuncType funcB,
@@ -185,34 +184,35 @@ namespace picongpu
                         picongpu::particles::interpolationMemoryPolicy::ShiftToValidRange());
 
                     // transfer momentum
-                    const uint32_t dimMomentum = GetNComponents<MomentumType>::value;
+                    uint32_t const dimMomentum = GetNComponents<MomentumType>::value;
                     for(uint32_t i = 0; i < dimMomentum; ++i)
                         mom[i] = var[simDim + i];
 
                     VelocityType velocityCalc;
                     GammaType gammaCalc;
-                    const float_X c = sim.pic.getSpeedOfLight();
-                    const float3_X velocity = velocityCalc(mom, mass);
-                    const float_X gamma = gammaCalc(mom, mass);
-                    const float_X conversionMomentum2Beta = 1.0 / (gamma * mass * c);
+                    float_X const c = sim.pic.getSpeedOfLight();
+                    float3_X const velocity = velocityCalc(mom, mass);
+                    float_X const gamma = gammaCalc(mom, mass);
+                    float_X const conversionMomentum2Beta = 1.0 / (gamma * mass * c);
 
-                    const float_X c2 = c * c;
-                    const float_X charge2 = charge * charge;
+                    float_X const c2 = c * c;
+                    float_X const charge2 = charge * charge;
 
-                    const float_X prefactorRR
+                    float_X const prefactorRR
                         = 2. / 3. * charge2 * charge2 / (4. * PI * sim.pic.getEps0() * mass * mass * c2 * c2);
-                    const float3_X lorentz = fieldE + conversionMomentum2Beta * c * pmacc::math::cross(mom, fieldB);
-                    const float_X fieldETimesBeta = pmacc::math::dot(fieldE, mom) * conversionMomentum2Beta;
-                    const float3_X radReactionVec = c
-                            * (pmacc::math::cross(fieldE, fieldB)
-                               + c * conversionMomentum2Beta
-                                   * pmacc::math::cross(fieldB, pmacc::math::cross(fieldB, mom)))
-                        + conversionMomentum2Beta * fieldE * pmacc::math::dot(mom, fieldE)
-                        - gamma * gamma * conversionMomentum2Beta
-                            * (mom * (pmacc::math::dot(lorentz, lorentz) - fieldETimesBeta * fieldETimesBeta));
+                    float3_X const lorentz = fieldE + conversionMomentum2Beta * c * pmacc::math::cross(mom, fieldB);
+                    float_X const fieldETimesBeta = pmacc::math::dot(fieldE, mom) * conversionMomentum2Beta;
+                    float3_X const radReactionVec
+                        = c
+                              * (pmacc::math::cross(fieldE, fieldB)
+                                 + c * conversionMomentum2Beta
+                                       * pmacc::math::cross(fieldB, pmacc::math::cross(fieldB, mom)))
+                          + conversionMomentum2Beta * fieldE * pmacc::math::dot(mom, fieldE)
+                          - gamma * gamma * conversionMomentum2Beta
+                                * (mom * (pmacc::math::dot(lorentz, lorentz) - fieldETimesBeta * fieldETimesBeta));
 
-                    const float3_X diffMom = charge * lorentz + (prefactorRR / weighting) * radReactionVec;
-                    const float3_X diffPos = velocity;
+                    float3_X const diffMom = charge * lorentz + (prefactorRR / weighting) * radReactionVec;
+                    float3_X const diffPos = velocity;
 
                     VariableType returnVar;
                     for(uint32_t i = 0; i < picongpu::simDim; ++i)

@@ -33,7 +33,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-
 namespace pmacc
 {
     namespace test
@@ -45,7 +44,7 @@ namespace pmacc
             {
                 template<class T_Box, typename T_IdGenerator, typename T_Worker>
                 HDINLINE void operator()(
-                    const T_Worker& worker,
+                    T_Worker const& worker,
                     T_Box outputbox,
                     T_IdGenerator idGenerator,
                     uint32_t numThreads,
@@ -81,7 +80,7 @@ namespace pmacc
              *         the value is found and shouldFind is false, otherwise a True-Value
              */
             template<class T_Collection, typename T>
-            bool checkDuplicate(const T_Collection& col, const T& value, bool shouldFind)
+            bool checkDuplicate(T_Collection const& col, T const& value, bool shouldFind)
             {
                 if((std::find(col.begin(), col.end(), value) != col.end()) != shouldFind)
                 {
@@ -99,7 +98,6 @@ namespace pmacc
 
                 return true;
             }
-
 
             template<unsigned T_dim>
             struct IdProviderTest
@@ -128,7 +126,7 @@ namespace pmacc
                     // Generate some IDs using the function
                     for(int i = 0; i < numIds; i++)
                     {
-                        const uint64_t newId = idProvider.getNewIdHost();
+                        uint64_t const newId = idProvider.getNewIdHost();
                         REQUIRE(checkDuplicate(ids, newId, false));
                         ids.insert(newId);
                     }

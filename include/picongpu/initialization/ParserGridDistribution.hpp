@@ -23,7 +23,6 @@
 #include <string> // std::string
 #include <vector> // std::vector
 
-
 namespace picongpu
 {
     class ParserGridDistribution
@@ -45,6 +44,7 @@ namespace picongpu
             // count of how often the subdomain shall be repeated
             uint32_t count;
         };
+
         using value_type = std::vector<SubdomainPair>;
 
     public:

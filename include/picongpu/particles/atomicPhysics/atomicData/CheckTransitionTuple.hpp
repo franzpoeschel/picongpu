@@ -80,8 +80,9 @@ namespace picongpu::particles::atomicPhysics::atomicData
         detail::checkForUnphysicalChargeStates<T_ConfigNumber::atomicNumber>(upperChargeState, "upper");
 
         if(!(lowerChargeState == upperChargeState))
-            throw std::runtime_error("atomicPhysics ERROR: bound-bound transitions lower and upper state must have"
-                                     "the same charge state");
+            throw std::runtime_error(
+                "atomicPhysics ERROR: bound-bound transitions lower and upper state must have"
+                "the same charge state");
     }
 
     //! version for bound-free transitions
@@ -97,8 +98,9 @@ namespace picongpu::particles::atomicPhysics::atomicData
         detail::checkForUnphysicalChargeStates<T_ConfigNumber::atomicNumber>(upperChargeState, "upper");
 
         if(!(upperChargeState > lowerChargeState))
-            throw std::runtime_error("atomicPhysics ERROR: bound-free transitions lower state chargeState must be > "
-                                     "upper state chargeState");
+            throw std::runtime_error(
+                "atomicPhysics ERROR: bound-free transitions lower state chargeState must be > "
+                "upper state chargeState");
     }
 
     //! version for autonomous transitions
@@ -114,7 +116,8 @@ namespace picongpu::particles::atomicPhysics::atomicData
         detail::checkForUnphysicalChargeStates<T_ConfigNumber::atomicNumber>(upperChargeState, "upper");
 
         if(!(upperChargeState < lowerChargeState))
-            throw std::runtime_error("atomicPhysics ERROR: autonomous transitions upper state chargeState must be < "
-                                     "lower state chargeState");
+            throw std::runtime_error(
+                "atomicPhysics ERROR: autonomous transitions upper state chargeState must be < "
+                "lower state chargeState");
     }
 } // namespace picongpu::particles::atomicPhysics::atomicData

@@ -43,7 +43,7 @@ namespace picongpu
 
             using namespace picongpu::plugins;
 
-#if(PARAM_DYNAMIC_LOG == 1)
+#if (PARAM_DYNAMIC_LOG == 1)
             using CollisionScreeningSpecies = MakeSeq_t<
                 misc::SpeciesFilter<IonsMore, filter::LowerXPosition>,
                 misc::SpeciesFilter<ElectronsMore, filter::LowerXPosition>,
@@ -55,6 +55,7 @@ namespace picongpu
             using CollisionScreeningSpecies = MakeSeq_t<>;
 #endif
             constexpr bool debugScreeningLength = true;
+
             // not ideal, better would be to combine filters with an AND but it is ok
 
 
@@ -63,7 +64,7 @@ namespace picongpu
                 static constexpr float_X coulombLog = 3.0_X;
             };
 
-#if(PARAM_DYNAMIC_LOG == 1)
+#if (PARAM_DYNAMIC_LOG == 1)
             using ColliderFunctor = relativistic::RelativisticCollisionDynamicLog<true>;
 #else
             using ColliderFunctor = relativistic::RelativisticCollisionConstLog<Params, true>;

@@ -20,12 +20,11 @@
 
 #pragma once
 
-
 namespace picongpu
 
 {
     constexpr float_X BASE_DENSITY
         = float_X(SI::BASE_DENSITY_SI * sim.unit.length() * sim.unit.length() * sim.unit.length());
-}
+} // namespace picongpu
 
 #include "picongpu/particles/densityProfiles/profiles.hpp"

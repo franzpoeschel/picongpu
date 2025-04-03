@@ -38,7 +38,7 @@ namespace picongpu
          * @return Two values within [-1,1]
          */
         HDINLINE float2_X
-        mapYawPitchToNormedRange(const float_X yaw, const float_X pitch, const float_X maxYaw, const float_X maxPitch)
+        mapYawPitchToNormedRange(float_X const yaw, float_X const pitch, float_X const maxYaw, float_X const maxPitch)
         {
             return float2_X(0.5_X + 0.5_X * yaw / maxYaw, 0.5_X + 0.5_X * pitch / maxPitch);
         }

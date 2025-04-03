@@ -42,7 +42,7 @@ namespace pmacc
              */
             template<typename T_Functor, typename T_Variable, typename T_Time>
             HDINLINE T_Variable
-            operator()(const T_Functor diffEq, const T_Variable var, const T_Time time, const T_Time deltaTime)
+            operator()(T_Functor const diffEq, T_Variable const var, T_Time const time, T_Time const deltaTime)
             {
                 // use typenames instead of template types
                 using FunctorType = T_Functor;
@@ -50,19 +50,19 @@ namespace pmacc
                 using TimeType = T_Time;
 
                 // calculate all 4 steps of the Runge Kutta 4th order
-                const VariableType k_1 = diffEq(time, var);
-                const VariableType k_2
+                VariableType const k_1 = diffEq(time, var);
+                VariableType const k_2
                     = diffEq(time + TimeType(0.5) * deltaTime, var + (TimeType(0.5) * deltaTime) * k_1);
-                const VariableType k_3
+                VariableType const k_3
                     = diffEq(time + TimeType(0.5) * deltaTime, var + (TimeType(0.5) * deltaTime) * k_2);
-                const VariableType k_4 = diffEq(time + deltaTime, var + deltaTime * k_3);
+                VariableType const k_4 = diffEq(time + deltaTime, var + deltaTime * k_3);
 
                 // combine all 4 steps
-                const VariableType diff
+                VariableType const diff
                     = deltaTime / TimeType(6.) * (k_1 + TimeType(2.) * k_2 + TimeType(2.) * k_3 + k_4);
 
                 // current var + difference = new var
-                const VariableType out = var + diff;
+                VariableType const out = var + diff;
                 return out;
             }
         };

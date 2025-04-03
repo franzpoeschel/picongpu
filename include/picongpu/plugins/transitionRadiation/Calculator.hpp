@@ -21,7 +21,6 @@
 
 #include "Particle.hpp"
 
-
 namespace picongpu
 {
     namespace plugins
@@ -173,7 +172,7 @@ namespace picongpu
 
                     float_X const a = detectorSinTheta * parMomSinTheta * math::cos(parMomPhi - detectorPhi);
                     float_X const b = -(particle.getPosPara())
-                        * (1 / particle.getVel() - a / sim.pic.getSpeedOfLight()) / (parMomCosTheta);
+                                      * (1 / particle.getVel() - a / sim.pic.getSpeedOfLight()) / (parMomCosTheta);
                     float_X const c
                         = -detectorSinTheta * particle.getPosPerp() * math::cos(particle.getPosPhi() - detectorPhi);
 
@@ -197,9 +196,9 @@ namespace picongpu
             complex_X calcFormFactor(float_X const omega, complex_X const exponent)
             {
                 // preventing division by 0
-                const bool longMovingParticle = exponent.real() == -1.0;
+                bool const longMovingParticle = exponent.real() == -1.0;
                 return float_X(longMovingParticle) * complex_X(0.0, 0.0)
-                    + float_X(!longMovingParticle) * complex_X(math::exp(exponent * omega));
+                       + float_X(!longMovingParticle) * complex_X(math::exp(exponent * omega));
             }
 
         } // namespace transitionRadiation

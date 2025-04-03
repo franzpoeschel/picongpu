@@ -54,7 +54,6 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
             return 0._X;
         }
 
-
         //! no input required, therefore straight pass through
         template<typename T_Kernel, uint32_t T_chunkSize, typename... T_KernelInput>
         HINLINE static void callKernelWithIPDInput(

@@ -62,14 +62,15 @@ namespace picongpu::templates::twtstight
         , dt(sim.si.getDt())
         , unit_length(sim.unit.length())
         , auto_tdelay(auto_tdelay)
-        , tdelay(detail::getInitialTimeDelay_SI(
-              auto_tdelay,
-              tdelay_user_SI,
-              halfSimSize,
-              pulselength_SI,
-              focus_y_SI,
-              phi,
-              beta_0))
+        , tdelay(
+              detail::getInitialTimeDelay_SI(
+                  auto_tdelay,
+                  tdelay_user_SI,
+                  halfSimSize,
+                  pulselength_SI,
+                  focus_y_SI,
+                  phi,
+                  beta_0))
         , polAngle(polAngle)
         , I(complex_T(0, 1))
         , basicTWTSHelperVariables(defineBasicHelperVariables(phi, beta_0, wavelength_SI, pulselength_SI, w_x_SI))
@@ -322,17 +323,18 @@ namespace picongpu::templates::twtstight
         auto const [floatHelpers, complexHelpers] = defineCommonHelperVariables(minimalCoordinates);
         auto const [x2, tauG2, psi0, w02, beta02, nu, xi, besselI0const] = floatHelpers;
 
-        complex_T const zeroOrder = (beta0 * tauG)
-            / (math::sqrt(float_T(2.0))
-               * math::exp(
-                   beta02 * omega0 * math::cPow(t - nu + xi, static_cast<uint32_t>(2u))
-                   / (beta02 * omega0 * tauG2 - complex_T(0, 2) * (beta02 * (nu - xi) * cotPhi * cotPhi)
-                      + complex_T(0, 2) * (beta0 * (float_T(2.0) * nu - xi) * cotPhi / sinPhi)
-                      - complex_T(0, 2) * (nu / sinPhi_2)))
-               * math::sqrt(
-                   ((beta02 * omega0 * tauG2) / float_T(2.0) - I * (beta02 * (nu - xi) * cotPhi * cotPhi)
-                    + I * (beta0 * (float_T(2.0) * nu - xi) * cotPhi / sinPhi) - I * (nu / sinPhi_2))
-                   / omega0));
+        complex_T const zeroOrder
+            = (beta0 * tauG)
+              / (math::sqrt(float_T(2.0))
+                 * math::exp(
+                     beta02 * omega0 * math::cPow(t - nu + xi, static_cast<uint32_t>(2u))
+                     / (beta02 * omega0 * tauG2 - complex_T(0, 2) * (beta02 * (nu - xi) * cotPhi * cotPhi)
+                        + complex_T(0, 2) * (beta0 * (float_T(2.0) * nu - xi) * cotPhi / sinPhi)
+                        - complex_T(0, 2) * (nu / sinPhi_2)))
+                 * math::sqrt(
+                     ((beta02 * omega0 * tauG2) / float_T(2.0) - I * (beta02 * (nu - xi) * cotPhi * cotPhi)
+                      + I * (beta0 * (float_T(2.0) * nu - xi) * cotPhi / sinPhi) - I * (nu / sinPhi_2))
+                     / omega0));
 
         return zeroOrder;
     }

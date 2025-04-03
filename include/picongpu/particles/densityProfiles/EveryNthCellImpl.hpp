@@ -24,7 +24,6 @@
 
 #include <pmacc/math/Vector.hpp>
 
-
 namespace picongpu
 {
     namespace densityProfiles

@@ -28,7 +28,6 @@
 
 #include <boost/mpl/apply.hpp>
 
-
 namespace picongpu
 {
     namespace particles

@@ -20,7 +20,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/defines.hpp"
 #    include "picongpu/plugins/openPMD/GetComponentsType.hpp"
@@ -63,25 +63,25 @@ namespace picongpu
                 ThreadParams* params,
                 FrameType& frame,
                 ::openPMD::ParticleSpecies particleSpecies,
-                const uint64_t particlesOffset,
-                const uint64_t elements)
+                uint64_t const particlesOffset,
+                uint64_t const elements)
             {
                 using Identifier = T_Identifier;
                 using ValueType = typename pmacc::traits::Resolve<Identifier>::type::type;
-                const uint32_t components = GetNComponents<ValueType>::value;
+                uint32_t const components = GetNComponents<ValueType>::value;
                 using ComponentType = typename GetComponentsType<ValueType>::type;
                 picongpu::traits::OpenPMDName<Identifier> openPMDName;
 
                 log<picLog::INPUT_OUTPUT>("openPMD: ( begin ) load species attribute: %1%") % openPMDName();
 
-                const std::string name_lookup[] = {"x", "y", "z"};
+                std::string const name_lookup[] = {"x", "y", "z"};
 
                 std::shared_ptr<ComponentType> loadBfr;
                 if(elements > 0)
                 {
-                    loadBfr = std::shared_ptr<ComponentType>{new ComponentType[elements], [](ComponentType* ptr) {
-                                                                 delete[] ptr;
-                                                             }};
+                    loadBfr = std::shared_ptr<ComponentType>{
+                        new ComponentType[elements],
+                        [](ComponentType* ptr) { delete[] ptr; }};
                 }
 
                 for(uint32_t n = 0; n < components; ++n)

@@ -136,7 +136,7 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             constexpr T_ReturnType pi = pmacc::math::Pi<T_ReturnType>::value;
 
             float_64 subTerm = pmacc::math::cPow(dFromADK, 2u)
-                * math::exp(float_64(-2._X * ZCubed / (3._X * nEffCubed * eFieldNorm_AU)));
+                               * math::exp(float_64(-2._X * ZCubed / (3._X * nEffCubed * eFieldNorm_AU)));
 
             // explicitly deal with overflows
             constexpr auto maxValueT_Return = std::numeric_limits<T_ReturnType>::max();
@@ -145,8 +145,8 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
 
             // 1/sim.atomicUnit.time()
             T_ReturnType rateADK_AU = eFieldNorm_AU
-                / (static_cast<T_ReturnType>(8.) * pi * static_cast<T_ReturnType>(Z))
-                * static_cast<T_ReturnType>(subTerm);
+                                      / (static_cast<T_ReturnType>(8.) * pi * static_cast<T_ReturnType>(Z))
+                                      * static_cast<T_ReturnType>(subTerm);
 
             // factor from averaging over one laser cycle with LINEAR polarization
             if constexpr(

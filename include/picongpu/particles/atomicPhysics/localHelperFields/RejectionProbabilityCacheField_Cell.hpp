@@ -48,9 +48,9 @@ namespace picongpu::particles::atomicPhysics::localHelperFields
 
         RejectionProbabilityCacheField_Cell(T_MappingDescription const& mappingDesc)
             : SuperCellField<
-                RejectionProbabilityCache_Cell<pmacc::math::CT::volume<picongpu::SuperCellSize>::type::value>,
-                T_MappingDescription,
-                false /*no guards*/>(mappingDesc)
+                  RejectionProbabilityCache_Cell<pmacc::math::CT::volume<picongpu::SuperCellSize>::type::value>,
+                  T_MappingDescription,
+                  false /*no guards*/>(mappingDesc)
         {
         }
 

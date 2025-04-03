@@ -43,6 +43,7 @@ namespace picongpu::particles::atomicPhysics::kernel
     struct CheckForFieldEnergyOverSubscriptionKernel
     {
         using VectorIdx = DataSpace<picongpu::simDim>;
+
         /** call operator
          *
          * called by CheckForOverSubscription atomic physics sub-stage

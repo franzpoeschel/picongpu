@@ -32,7 +32,6 @@
 #include <memory>
 #include <vector>
 
-
 namespace picongpu
 {
     using namespace pmacc;

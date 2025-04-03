@@ -59,7 +59,7 @@ namespace pmacc
             /**
              * Constructor
              */
-            UniquTag(const UniquTag&)
+            UniquTag(UniquTag const&)
             {
             }
 
@@ -93,7 +93,7 @@ namespace pmacc
          * @param gridLayout layout of the buffers, including border-cells
          * @param sizeOnDevice if true, size information exists on device, too.
          */
-        GridBuffer(const GridLayout<DIM>& gridLayout, bool sizeOnDevice = false)
+        GridBuffer(GridLayout<DIM> const& gridLayout, bool sizeOnDevice = false)
             : Parent(gridLayout.sizeND(), sizeOnDevice)
             , hasOneExchange(false)
             , gridLayout(gridLayout)
@@ -112,7 +112,7 @@ namespace pmacc
          *        performance on host-device copies, but some algorithms on the device
          *        might need to know the size of the buffer)
          */
-        GridBuffer(const DataSpace<DIM>& dataSpace, bool sizeOnDevice = false)
+        GridBuffer(DataSpace<DIM> const& dataSpace, bool sizeOnDevice = false)
             : Parent(dataSpace, sizeOnDevice)
             , hasOneExchange(false)
             , gridLayout(dataSpace)
@@ -134,7 +134,7 @@ namespace pmacc
          */
         GridBuffer(
             DeviceBuffer<TYPE, DIM>& otherDeviceBuffer,
-            const GridLayout<DIM>& gridLayout,
+            GridLayout<DIM> const& gridLayout,
             bool sizeOnDevice = false)
             : Parent(otherDeviceBuffer, gridLayout.sizeND(), sizeOnDevice)
             , hasOneExchange(false)
@@ -146,10 +146,10 @@ namespace pmacc
 
         GridBuffer(
             HostBuffer<TYPE, DIM>& otherHostBuffer,
-            const DataSpace<DIM>& offsetHost,
+            DataSpace<DIM> const& offsetHost,
             DeviceBuffer<TYPE, DIM>& otherDeviceBuffer,
-            const DataSpace<DIM>& offsetDevice,
-            const GridLayout<DIM>& gridLayout,
+            DataSpace<DIM> const& offsetDevice,
+            GridLayout<DIM> const& gridLayout,
             bool sizeOnDevice = false)
             : Parent(otherHostBuffer, offsetHost, otherDeviceBuffer, offsetDevice, gridLayout.sizeND(), sizeOnDevice)
             , hasOneExchange(false)
@@ -183,7 +183,7 @@ namespace pmacc
          */
         void addExchange(
             uint32_t dataPlace,
-            const Mask& receive,
+            Mask const& receive,
             DataSpace<DIM> guardingCells,
             uint32_t communicationTag,
             bool sizeOnDeviceSend,
@@ -266,7 +266,7 @@ namespace pmacc
          */
         void addExchange(
             uint32_t dataPlace,
-            const Mask& receive,
+            Mask const& receive,
             DataSpace<DIM> guardingCells,
             uint32_t communicationTag,
             bool sizeOnDevice = false)
@@ -292,8 +292,8 @@ namespace pmacc
          *        size additionally on the device
          */
         void addExchangeBuffer(
-            const Mask& receive,
-            const DataSpace<DIM>& dataSpace,
+            Mask const& receive,
+            DataSpace<DIM> const& dataSpace,
             uint32_t communicationTag,
             bool sizeOnDeviceSend,
             bool sizeOnDeviceReceive)
@@ -369,8 +369,8 @@ namespace pmacc
          *        might need to know the size of the buffer)
          */
         void addExchangeBuffer(
-            const Mask& receive,
-            const DataSpace<DIM>& dataSpace,
+            Mask const& receive,
+            DataSpace<DIM> const& dataSpace,
             uint32_t communicationTag,
             bool sizeOnDevice = false)
         {

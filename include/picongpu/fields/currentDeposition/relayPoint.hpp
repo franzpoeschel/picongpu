@@ -45,7 +45,7 @@ namespace picongpu::currentSolver
      * @return relay point for particle trajectory
      */
     template<bool isEvenSupport>
-    DINLINE float_X relayPoint(int& i_1, int& i_2, const float_X x_1, const float_X x_2)
+    DINLINE float_X relayPoint(int& i_1, int& i_2, float_X const x_1, float_X const x_2)
     {
         using namespace pmacc;
         constexpr bool value = isEvenSupport;

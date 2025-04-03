@@ -106,7 +106,6 @@ namespace pmacc
             WaitForSend
         };
 
-
         Particles& parBase;
         state_t state;
         EventTask tmpEvent;

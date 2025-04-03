@@ -53,7 +53,7 @@ namespace picongpu::simulation::stage
             using SpeciesType = pmacc::particles::meta::FindByNameOrType_t<VectorAllSpecies, T_SpeciesType>;
             using FrameType = typename SpeciesType::FrameType;
 
-            HINLINE void operator()(const uint32_t currentStep) const
+            HINLINE void operator()(uint32_t const currentStep) const
             {
                 DataConnector& dc = Environment<>::get().DataConnector();
                 auto species = dc.get<SpeciesType>(FrameType::getName());
@@ -68,7 +68,7 @@ namespace picongpu::simulation::stage
              *
              * @param currentStep current simulation step
              */
-            HINLINE void operator()(const uint32_t currentStep) const
+            HINLINE void operator()(uint32_t const currentStep) const
             {
                 using VectorSpeciesWithPusher =
                     typename pmacc::particles::traits::FilterByFlag<VectorAllSpecies, particlePusher<>>::type;

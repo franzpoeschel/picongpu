@@ -22,7 +22,6 @@
 #include "picongpu/algorithms/Gamma.def"
 #include "picongpu/defines.hpp"
 
-
 namespace picongpu
 {
     template<typename T_PrecisionType>

@@ -53,7 +53,7 @@ namespace pmacc
          *
          * @param alpakaEvent
          */
-        void setComputeEventHandle(const ComputeEventHandle& alpakaEvent);
+        void setComputeEventHandle(ComputeEventHandle const& alpakaEvent);
 
         /** Returns if this task is finished.
          *

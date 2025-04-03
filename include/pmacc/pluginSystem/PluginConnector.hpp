@@ -31,7 +31,6 @@
 #include <string>
 #include <vector>
 
-
 namespace pmacc
 {
     namespace po = boost::program_options;
@@ -94,7 +93,7 @@ namespace pmacc
          * @param currentStep current simulation iteration step
          * @param checkpointDirectory common directory for checkpoints
          */
-        void checkpointPlugins(uint32_t currentStep, const std::string checkpointDirectory);
+        void checkpointPlugins(uint32_t currentStep, std::string const checkpointDirectory);
 
         /**
          * Notifies plugins that a restart is required.
@@ -102,7 +101,7 @@ namespace pmacc
          * @param restartStep simulation iteration to restart from
          * @param restartDirectory common restart directory (contains checkpoints)
          */
-        void restartPlugins(uint32_t restartStep, const std::string restartDirectory);
+        void restartPlugins(uint32_t restartStep, std::string const restartDirectory);
 
         /**
          * Get a vector of pointers of all registered plugin instances of a given type.
@@ -124,7 +123,6 @@ namespace pmacc
                 return result;
             }
         }
-
 
         /**
          * Return a copied list of pointers to all registered plugins.

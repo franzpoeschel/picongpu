@@ -30,7 +30,6 @@
 #include <pmacc/algorithms/math/defines/pi.hpp>
 #include <pmacc/traits/GetStringProperties.hpp>
 
-
 namespace picongpu
 {
     namespace fields

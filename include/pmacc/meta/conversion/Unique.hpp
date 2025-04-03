@@ -29,7 +29,6 @@
 #include <boost/mpl/remove.hpp>
 #include <boost/mpl/size.hpp>
 
-
 namespace pmacc
 {
     /** Make a sequence out of the input sequence with the duplicates of elements removed

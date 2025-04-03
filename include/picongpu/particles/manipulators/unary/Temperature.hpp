@@ -79,7 +79,7 @@ namespace picongpu
                                     = static_cast<float_X>(math::sqrt(precisionCast<sqrt_X>(macroEnergy * macroMass)));
                                 float3_X const mom
                                     = float3_X(standardNormalRng(), standardNormalRng(), standardNormalRng())
-                                    * standardDeviation;
+                                      * standardDeviation;
                                 T_ValueFunctor::operator()(particle[momentum_], mom);
                             }
                         };
@@ -149,7 +149,7 @@ namespace picongpu
                             auto const cellSize_SI = precisionCast<float_64>(sim.pic.getCellSize()) * unitLength;
                             auto const position_SI = (precisionCast<float_64>(totalCellOffset)
                                                       + precisionCast<float_64>(particle[position_]))
-                                * cellSize_SI.shrink<simDim>();
+                                                     * cellSize_SI.shrink<simDim>();
                             auto const temperatureKeV = UserFunctor::operator()(position_SI, cellSize_SI);
                             Base::operator()(standardNormalRng, particle, temperatureKeV);
                         }

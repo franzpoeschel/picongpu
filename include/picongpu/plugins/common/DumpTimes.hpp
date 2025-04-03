@@ -23,7 +23,7 @@ namespace picongpu
                 std::time_t now_c = Clock::to_time_t(currentTime);
                 res << std::put_time(std::localtime(&now_c), "%F %T") << '.' << std::setfill('0') << std::setw(3)
                     << std::chrono::duration_cast<std::chrono::milliseconds>(currentTime.time_since_epoch()).count()
-                        % 1000;
+                           % 1000;
                 return res.str();
             }
 
@@ -45,7 +45,7 @@ namespace picongpu
             using TimeFormatter = typename TimeFormatters<Clock>::TimeFormatter;
             using Ret_t = std::pair<time_point, duration>;
 
-            const std::string filename;
+            std::string const filename;
 
             DumpTimes(std::string filename);
             ~DumpTimes();
@@ -133,9 +133,11 @@ namespace picongpu
         {
         public:
             using Ret_t = void;
+
             DumpTimes()
             {
             }
+
             DumpTimes(std::string)
             {
             }

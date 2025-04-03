@@ -41,10 +41,10 @@ namespace pmacc
          * @param msg user defined error message
          */
         inline void abortWithError(
-            const std::string exp,
-            const std::string filename,
-            const uint32_t lineNumber,
-            const std::string msg = std::string())
+            std::string const exp,
+            std::string const filename,
+            uint32_t const lineNumber,
+            std::string const msg = std::string())
         {
             std::stringstream line;
             line << lineNumber;

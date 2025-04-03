@@ -45,7 +45,7 @@ namespace pmacc
                     Functor,
                     Type* dest,
                     Type* src,
-                    const size_t count,
+                    size_t const count,
                     MPI_Datatype type,
                     MPI_Op op,
                     MPI_Comm comm) const

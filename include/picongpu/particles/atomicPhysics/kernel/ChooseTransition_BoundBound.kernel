@@ -146,10 +146,11 @@ namespace picongpu::particles::atomicPhysics::kernel
             T_IonBox ionBox) const
         {
             // check that correct databoxes are given
-            PMACC_CASSERT(checkAtomicDataBoxes<
-                          T_AtomicStateBoundBoundStartIndexBlockDataBox,
-                          T_AtomicStateBoundBoundNumberTransitionsDataBox,
-                          T_BoundBoundTransitionDataBox>());
+            PMACC_CASSERT(
+                checkAtomicDataBoxes<
+                    T_AtomicStateBoundBoundStartIndexBlockDataBox,
+                    T_AtomicStateBoundBoundNumberTransitionsDataBox,
+                    T_BoundBoundTransitionDataBox>());
 
             pmacc::DataSpace<simDim> const superCellIdx = areaMapping.getSuperCellIndex(worker.blockDomIdxND());
             // atomicPhysics superCellFields have no guard, but areMapping includes a guard
@@ -263,8 +264,9 @@ namespace picongpu::particles::atomicPhysics::kernel
                                 {
                                     if(cumSum - 1._X > 1.e-5)
                                     {
-                                        printf("atomicPhyiscs ERROR: cumSum overflow in chooseTranstion_BoundBound "
-                                               "collisional\n");
+                                        printf(
+                                            "atomicPhyiscs ERROR: cumSum overflow in chooseTranstion_BoundBound "
+                                            "collisional\n");
                                         printf("    chooseTransitionGroup = %u\n", u32(chooseTransitionGroup));
                                         printf("    stateIndex = %u\n", atomicStateCollectionIndex);
                                         printf("    transitionID = %u\n", transitionID);
@@ -281,9 +283,9 @@ namespace picongpu::particles::atomicPhysics::kernel
                                 // inclusive limit, to make sure that r==1 is assigned a transition
                                 if(r <= cumSum)
                                 {
-                                    constexpr auto processClass = isUpward
-                                        ? u8(s_enums::ProcessClass::electronicExcitation)
-                                        : u8(s_enums::ProcessClass::electronicDeexcitation);
+                                    constexpr auto processClass
+                                        = isUpward ? u8(s_enums::ProcessClass::electronicExcitation)
+                                                   : u8(s_enums::ProcessClass::electronicDeexcitation);
                                     // found chosen transition
                                     updateIon(ion, processClass, transitionID + startIndexTransitionBlock, binIndex);
                                     return;
@@ -313,8 +315,9 @@ namespace picongpu::particles::atomicPhysics::kernel
                             {
                                 if(cumSum - 1 > 1.e5)
                                 {
-                                    printf("atomicPhyiscs ERROR: cumSum overflow in chooseTranstion_BoundBound "
-                                           "spontaneous\n");
+                                    printf(
+                                        "atomicPhyiscs ERROR: cumSum overflow in chooseTranstion_BoundBound "
+                                        "spontaneous\n");
                                     printf("    chooseTransitionGroup = %u\n", u32(chooseTransitionGroup));
                                     printf("    stateIndex = %u\n", atomicStateCollectionIndex);
                                     printf("    transitionID = %u\n", transitionID);

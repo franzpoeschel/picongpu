@@ -27,7 +27,6 @@
 #include <pmacc/traits/HasFlag.hpp>
 #include <pmacc/traits/HasIdentifier.hpp>
 
-
 namespace picongpu::traits::attribute
 {
     /** get the charge state of a macro particle
@@ -40,7 +39,7 @@ namespace picongpu::traits::attribute
      * @return charge of the macro particle
      */
     template<typename T_Particle>
-    HDINLINE float_X getChargeState(const T_Particle& particle)
+    HDINLINE float_X getChargeState(T_Particle const& particle)
     {
         constexpr bool hasBoundElectrons = pmacc::traits::HasIdentifier<T_Particle, boundElectrons>::type::value;
         PMACC_CASSERT_MSG(
@@ -52,7 +51,7 @@ namespace picongpu::traits::attribute
             Having_boundElectrons_particle_attribute_requires_atomicNumbers_flag,
             T_Particle,
             HasAtomicNumbers::value);
-        const float_X protonNumber = picongpu::traits::GetAtomicNumbers<T_Particle>::type::numberOfProtons;
+        float_X const protonNumber = picongpu::traits::GetAtomicNumbers<T_Particle>::type::numberOfProtons;
         return protonNumber - particle[boundElectrons_];
     }
 } // namespace picongpu::traits::attribute

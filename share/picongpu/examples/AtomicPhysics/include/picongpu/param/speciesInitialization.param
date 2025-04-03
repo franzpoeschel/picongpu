@@ -30,7 +30,6 @@
 
 #include "picongpu/particles/InitFunctors.hpp"
 
-
 // init of particles with
 namespace picongpu::particles
 {

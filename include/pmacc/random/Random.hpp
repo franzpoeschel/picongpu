@@ -49,7 +49,7 @@ namespace pmacc
 
             /** This can be constructed with either the RNGBox (like the RNGHandle) or from an RNGHandle instance */
             template<class T_RNGBoxOrHandle>
-            HINLINE explicit Random(const T_RNGBoxOrHandle& rngBox) : RNGHandle(rngBox)
+            HINLINE explicit Random(T_RNGBoxOrHandle const& rngBox) : RNGHandle(rngBox)
             {
             }
 
@@ -59,7 +59,7 @@ namespace pmacc
              * @param cellIdx index into the underlying RNG Provider
              */
             template<typename T_Offset>
-            HDINLINE void init(const T_Offset& cellIdx)
+            HDINLINE void init(T_Offset const& cellIdx)
             {
                 RNGHandle::init(cellIdx);
             }

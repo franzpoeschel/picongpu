@@ -41,7 +41,7 @@
 #    define PMACC_COUNT_ARGS_DEF(type, ...) (PMACC_PP_VARIADIC_SIZE(__VA_ARGS__))
 #else
 // A fallback implementation using compound literals, supported by some compilers
-#    define PMACC_COUNT_ARGS_DEF(type, ...) (sizeof((type[]){type{}, ##__VA_ARGS__}) / sizeof(type) - 1u)
+#    define PMACC_COUNT_ARGS_DEF(type, ...) (sizeof((type[]) {type{}, ##__VA_ARGS__}) / sizeof(type) - 1u)
 #endif
 
 /**

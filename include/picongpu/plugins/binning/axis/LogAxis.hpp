@@ -111,7 +111,6 @@ namespace picongpu
                         }
                     }
 
-
                     template<typename... Args>
                     ALPAKA_FN_ACC std::pair<bool, uint32_t> getBinIdx(Args const&... args) const
                     {
@@ -218,7 +217,6 @@ namespace picongpu
                     return getConversionFactor(units);
                 }
 
-
                 LogAxisKernel getAxisKernel() const
                 {
                     return lAK;
@@ -258,7 +256,6 @@ namespace picongpu
                     return binEdges;
                 }
             };
-
 
             /**
              * @details Creates a log Axis

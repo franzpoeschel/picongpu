@@ -47,8 +47,7 @@ namespace pmacc
     template<
         uint32_t areaType,
         uint32_t T_stride,
-        template<unsigned, class>
-        class baseClass,
+        template<unsigned, class> class baseClass,
         unsigned DIM,
         class SuperCellSize_>
     class StrideMapping<areaType, T_stride, baseClass<DIM, SuperCellSize_>> : public baseClass<DIM, SuperCellSize_>
@@ -65,14 +64,13 @@ namespace pmacc
             Dim = BaseClass::Dim,
         };
 
-
         using SuperCellSize = typename BaseClass::SuperCellSize;
 
         HINLINE StrideMapping(BaseClass base) : BaseClass(base), offset()
         {
         }
 
-        StrideMapping(const StrideMapping&) = default;
+        StrideMapping(StrideMapping const&) = default;
 
         /** Generate grid dimension information for alpaka kernel calls
          *
@@ -92,9 +90,9 @@ namespace pmacc
          * @return mapped SuperCell index including guards
          */
         template<uint32_t T_origin = GUARD>
-        HDINLINE DataSpace<DIM> getSuperCellIndex(const DataSpace<DIM>& blockIdx) const
+        HDINLINE DataSpace<DIM> getSuperCellIndex(DataSpace<DIM> const& blockIdx) const
         {
-            const DataSpace<DIM> blockId((blockIdx * stride) + offset);
+            DataSpace<DIM> const blockId((blockIdx * stride) + offset);
             auto result = StrideMappingMethods<areaType, DIM>::shift(*this, blockId);
             if constexpr(T_origin == CORE)
             {
@@ -112,7 +110,7 @@ namespace pmacc
             return offset;
         }
 
-        HDINLINE void setOffset(const DataSpace<DIM> offset)
+        HDINLINE void setOffset(DataSpace<DIM> const offset)
         {
             this->offset = offset;
         }

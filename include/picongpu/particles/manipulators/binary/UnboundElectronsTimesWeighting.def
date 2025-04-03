@@ -23,7 +23,6 @@
 #include "picongpu/particles/manipulators/generic/Free.def"
 #include "picongpu/particles/traits/GetAtomicNumbers.hpp"
 
-
 namespace picongpu
 {
     namespace particles

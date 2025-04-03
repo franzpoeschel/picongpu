@@ -82,6 +82,7 @@ inline void iotaGerneric(T_DeviceBuffer& devBuffer)
     uint32_t const numBlocks = bufferSize / T_chunkSize / 2u;
     PMACC_LOCKSTEP_KERNEL(IotaGenericKernel{}).config<T_chunkSize>(numBlocks)(devBuffer.getDataBox(), bufferSize);
 }
+
 // doc-include-end: lockstep generic kernel
 
 // doc-include-start: lockstep generic kernel buffer selected domain size
@@ -102,6 +103,7 @@ inline void iotaGernericBufferDerivedChunksize(T_DeviceBuffer& devBuffer)
     constexpr uint32_t numBlocks = 9;
     PMACC_LOCKSTEP_KERNEL(IotaGenericKernel{}).config(numBlocks, devBuffer)(devBuffer.getDataBox(), bufferSize);
 }
+
 // doc-include-end: lockstep generic kernel buffer selected domain size
 
 // doc-include-start: lockstep generic kernel hard coded domain size
@@ -143,6 +145,7 @@ inline void iotaFixedChunkSize(T_DeviceBuffer& devBuffer)
     constexpr uint32_t numBlocks = 10;
     PMACC_LOCKSTEP_KERNEL(IotaFixedChunkSizeKernel{}).config(numBlocks)(devBuffer.getDataBox(), bufferSize);
 }
+
 // doc-include-end: lockstep generic kernel hard coded domain size
 
 // doc-include-start: lockstep generic kernel hard coded N dimensional domain size
@@ -186,6 +189,7 @@ inline void iotaFixedChunkSizeND(T_DeviceBuffer& devBuffer)
     constexpr uint32_t numBlocks = 11;
     PMACC_LOCKSTEP_KERNEL(IotaFixedChunkSizeKernelND{}).config(numBlocks)(devBuffer.getDataBox(), bufferSize);
 }
+
 // doc-include-end: lockstep generic kernel hard coded N dimensional domain size
 
 // doc-include-start: lockstep generic kernel with dynamic shared memory
@@ -230,6 +234,7 @@ inline void iotaGernericWithDynSharedMem(T_DeviceBuffer& devBuffer)
     PMACC_LOCKSTEP_KERNEL(IotaGenericKernelWithDynSharedMem{})
         .configSMem<T_chunkSize>(numBlocks, requiredSharedMemBytes)(devBuffer.getDataBox(), bufferSize);
 }
+
 // doc-include-end: lockstep generic kernel with dynamic shared memory
 
 template<typename T_HostBuffer>

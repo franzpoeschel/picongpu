@@ -97,7 +97,7 @@ namespace pmacc
          *
          * @return number of nodes
          */
-        const DataSpace<DIM> getGpuNodes() const
+        DataSpace<DIM> const getGpuNodes() const
         {
             return gpuNodes;
         }
@@ -107,7 +107,7 @@ namespace pmacc
          *
          * @return current GPU position
          * */
-        const DataSpace<DIM> getPosition() const
+        DataSpace<DIM> const getPosition() const
         {
             return comm.getCoordinates();
         }
@@ -206,7 +206,7 @@ namespace pmacc
          *
          * @return Mask with all neighbors
          */
-        const Mask& getCommunicationMask() const
+        Mask const& getCommunicationMask() const
         {
             return Environment<DIM>::get().EnvironmentController().getCommunicationMask();
         }
@@ -223,6 +223,7 @@ namespace pmacc
 
     private:
         friend class Environment<DIM>;
+
         /**
          * Constructor
          */
@@ -233,7 +234,7 @@ namespace pmacc
         /**
          * Constructor
          */
-        GridController(const GridController& gc)
+        GridController(GridController const& gc)
         {
         }
 
@@ -253,7 +254,7 @@ namespace pmacc
              * (only change slide direction Y)
              */
             int gpuOffset_y = this->getPosition().y();
-            const SubGrid<DIM>& subGrid = Environment<DIM>::get().SubGrid();
+            SubGrid<DIM> const& subGrid = Environment<DIM>::get().SubGrid();
             DataSpace<DIM> localDomainOffset(subGrid.getLocalDomain().offset);
             DataSpace<DIM> globalDomainOffset(subGrid.getGlobalDomain().offset);
             /* this is allowed in the case that we use sliding window

@@ -106,8 +106,9 @@ namespace picongpu::particles::atomicPhysics::kernel
                                      CHECK_TOTAL_LOSS_RATE_POSITIVE)
                         if(lossRateState < 0._X)
                         {
-                            printf("atomicPhysics ERROR: encountered negative loss rate in "
-                                   "calculateStepLength kernel\n");
+                            printf(
+                                "atomicPhysics ERROR: encountered negative loss rate in "
+                                "calculateStepLength kernel\n");
                             // 1/sim.unit.time()
                             lossRateState = picongpu::atomicPhysics::RateSolverParam::timeStepAlpha / sim.pic.getDt();
                         }

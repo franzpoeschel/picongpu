@@ -25,7 +25,6 @@
 
 #pragma once
 
-
 namespace picongpu
 {
     struct particlePusherAccelerationParam
@@ -78,6 +77,7 @@ namespace picongpu
             LINEAR = 1u,
             NONLINEAR = 2u
         };
+
         constexpr TrajectoryInterpolationType TrajectoryInterpolation = LINEAR;
 
     } // namespace particlePusherAxel

@@ -54,7 +54,6 @@ namespace pmacc
     } // namespace traits
 } // namespace pmacc
 
-
 namespace pmacc
 {
     namespace math
@@ -68,7 +67,7 @@ namespace pmacc
             using myType = ::pmacc::math::Vector<Type, DIM3>;
             using result = myType;
 
-            HDINLINE myType operator()(const myType& lhs, const myType& rhs)
+            HDINLINE myType operator()(myType const& lhs, myType const& rhs)
             {
                 return myType(
                     lhs.y() * rhs.z() - lhs.z() * rhs.y(),
@@ -84,7 +83,7 @@ namespace pmacc
             using myType = ::pmacc::math::Vector<Type, dim>;
             using result = Type;
 
-            HDINLINE result operator()(const myType& a, const myType& b)
+            HDINLINE result operator()(myType const& a, myType const& b)
             {
                 PMACC_CASSERT(dim > 0);
                 result tmp = a.x() * b.x();
@@ -101,7 +100,7 @@ namespace pmacc
         {
             using result = typename ::pmacc::math::Vector<Type, dim>::type;
 
-            HDINLINE result operator()(const ::pmacc::math::Vector<Type, dim, T_Storage>& vector)
+            HDINLINE result operator()(::pmacc::math::Vector<Type, dim, T_Storage> const& vector)
             {
                 result tmp = pmacc::math::norm(vector.x());
                 for(uint32_t i = 1; i < dim; ++i)
@@ -117,7 +116,7 @@ namespace pmacc
         {
             using result = typename ::pmacc::math::Vector<Type, dim>::type;
 
-            HDINLINE result operator()(const ::pmacc::math::Vector<Type, dim>& vector)
+            HDINLINE result operator()(::pmacc::math::Vector<Type, dim> const& vector)
             {
                 result tmp = pmacc::math::l2norm2(vector);
                 return pmacc::math::sqrt(tmp);
@@ -133,7 +132,6 @@ namespace pmacc
 
     } // namespace math
 } // namespace pmacc
-
 
 /* Using the free alpaka functions `alpaka::math::*` will result into `__host__ __device__`
  * errors, therefore the alpaka math trait must be used.
@@ -343,7 +341,7 @@ namespace pmacc
                 using result = ::pmacc::math::Vector<CastToType, dim>;
                 using ParamType = ::pmacc::math::Vector<OldType, dim, T_Storage>;
 
-                constexpr result operator()(const ParamType& vector) const
+                constexpr result operator()(ParamType const& vector) const
                 {
                     return result(vector);
                 }

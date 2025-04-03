@@ -22,7 +22,6 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/fields/MaxwellSolver/DispersionRelation.hpp"
 
-
 namespace picongpu
 {
     namespace fields

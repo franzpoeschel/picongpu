@@ -22,7 +22,6 @@
 
 #include "picongpu/initialization/IInitPlugin.hpp"
 
-
 namespace picongpu
 {
     using namespace pmacc;

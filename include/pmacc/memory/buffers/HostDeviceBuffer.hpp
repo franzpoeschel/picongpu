@@ -28,7 +28,6 @@
 #include <memory>
 #include <type_traits>
 
-
 namespace pmacc
 {
     /** Buffer that contains a host and device buffer and allows synchronizing those 2 */
@@ -57,14 +56,14 @@ namespace pmacc
          *        performance on host-device copies, but some algorithms on the device
          *        might need to know the size of the buffer)
          */
-        HostDeviceBuffer(const DataSpace<T_dim>& size, bool sizeOnDevice = false);
+        HostDeviceBuffer(DataSpace<T_dim> const& size, bool sizeOnDevice = false);
 
         /**
          * Constructor that reuses the given device buffer instead of creating an own one.
          * Sizes should match. If size is smaller than the buffer size, then only the part near the origin is used.
          * Passing a size bigger than the buffer is undefined.
          */
-        HostDeviceBuffer(DBuffer& otherDeviceBuffer, const DataSpace<T_dim>& size, bool sizeOnDevice = false);
+        HostDeviceBuffer(DBuffer& otherDeviceBuffer, DataSpace<T_dim> const& size, bool sizeOnDevice = false);
 
         /**
          * Constructor that reuses the given buffers instead of creating own ones.
@@ -73,10 +72,10 @@ namespace pmacc
          */
         HostDeviceBuffer(
             HBuffer& otherHostBuffer,
-            const DataSpace<T_dim>& offsetHost,
+            DataSpace<T_dim> const& offsetHost,
             DBuffer& otherDeviceBuffer,
-            const DataSpace<T_dim>& offsetDevice,
-            const GridLayout<T_dim> size,
+            DataSpace<T_dim> const& offsetDevice,
+            GridLayout<T_dim> const size,
             bool sizeOnDevice = false);
 
         /**

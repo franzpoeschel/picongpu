@@ -26,7 +26,6 @@
 #include "picongpu/particles/ionization/byField/IonizationCurrent/JIonizationAssignment.hpp"
 #include "picongpu/particles/ionization/byField/IonizationCurrent/JIonizationCalc.hpp"
 
-
 namespace picongpu
 {
     namespace particles
@@ -89,6 +88,7 @@ namespace picongpu
                     floatD_X const)
                 {
                 }
+
                 /**@}*/
             };
         } // namespace ionization

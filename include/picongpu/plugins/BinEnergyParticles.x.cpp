@@ -51,7 +51,6 @@
 #include <string>
 #include <vector>
 
-
 namespace picongpu
 {
     using namespace pmacc;
@@ -144,7 +143,7 @@ namespace picongpu
                         int binNumber
                             = math::floor(
                                   (localEnergy - minEnergy) / (maxEnergy - minEnergy) * static_cast<float_X>(numBins))
-                            + 1;
+                              + 1;
 
                         int const maxBin = numBins + 1;
 
@@ -245,7 +244,6 @@ namespace picongpu
                 std::string const& masterPrefix = std::string{}) override
             {
             }
-
 
             void validateOptions() override
             {

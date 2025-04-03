@@ -30,7 +30,6 @@
 
 #include <nlohmann/json.hpp>
 
-
 namespace picongpu
 {
     namespace fields
@@ -53,6 +52,7 @@ namespace picongpu
                     }
                 };
             } // namespace profiles
+
             namespace traits
             {
                 namespace detail
@@ -82,6 +82,7 @@ namespace picongpu
                     };
 
                 } // namespace detail
+
                 //! Specialization for None profile which has no amplitude
                 template<>
                 struct GetAmplitude<profiles::None>

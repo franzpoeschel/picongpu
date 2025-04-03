@@ -40,11 +40,11 @@ namespace picongpu
 
             template<typename T_FunctorFieldE, typename T_FunctorFieldB, typename T_Particle, typename T_Pos>
             HDINLINE void operator()(
-                const T_FunctorFieldB functorBField,
-                const T_FunctorFieldE functorEField,
+                T_FunctorFieldB const functorBField,
+                T_FunctorFieldE const functorEField,
                 T_Particle& particle,
                 T_Pos& pos,
-                const uint32_t)
+                uint32_t const)
             {
                 float_X const weighting = particle[weighting_];
                 float_X const mass = picongpu::traits::attribute::getMass(weighting, particle);
@@ -52,8 +52,8 @@ namespace picongpu
                 using MomType = momentum::type;
                 MomType const mom = particle[momentum_];
 
-                const auto bField = functorBField(pos);
-                const auto eField = functorEField(pos);
+                auto const bField = functorBField(pos);
+                auto const eField = functorEField(pos);
 
                 // update probe field if particle contains required attributes
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeB>::type::value)
@@ -62,7 +62,7 @@ namespace picongpu
                     particle[probeE_] = eField;
 
                 Velocity velocity;
-                const MomType vel = velocity(mom, mass);
+                MomType const vel = velocity(mom, mass);
 
 
                 for(uint32_t d = 0; d < simDim; ++d)

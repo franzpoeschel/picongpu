@@ -39,7 +39,7 @@ namespace picongpu::particles::atomicPhysics
             // unit: unitless * unitless / unit_time = 1/unit_time
             return static_cast<T_ReturnType>(
                        RateSolverParam::timeStepAlpha * float_X(RateSolverParam::maximumNumberSubStepsPerPICTimeStep))
-                / picongpu::sim.pic.getDt<T_ReturnType>();
+                   / picongpu::sim.pic.getDt<T_ReturnType>();
         }
     };
 } // namespace picongpu::particles::atomicPhysics

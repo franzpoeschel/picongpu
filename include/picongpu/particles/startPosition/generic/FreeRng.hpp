@@ -27,7 +27,6 @@
 #include <type_traits>
 #include <utility>
 
-
 namespace picongpu
 {
     namespace particles
@@ -105,8 +104,8 @@ namespace picongpu
                     HINLINE FreeRng(
                         uint32_t currentStep,
                         std::enable_if_t<
-                            !std::is_default_constructible_v<
-                                DeferFunctor> && std::is_constructible_v<DeferFunctor, uint32_t>>* = 0)
+                            !std::is_default_constructible_v<DeferFunctor>
+                            && std::is_constructible_v<DeferFunctor, uint32_t>>* = 0)
                         : Functor(currentStep)
                         , RngGenerator(currentStep)
                     {

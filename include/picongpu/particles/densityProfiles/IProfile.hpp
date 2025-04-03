@@ -24,7 +24,6 @@
 
 #include <cstdlib>
 
-
 namespace picongpu
 {
     namespace densityProfiles
@@ -55,8 +54,8 @@ namespace picongpu
                 uint32_t currentStep,
                 IdGenerator,
                 std::enable_if_t<
-                    !std::is_default_constructible_v<
-                        DeferFunctor> && std::is_constructible_v<DeferFunctor, uint32_t>>* = 0)
+                    !std::is_default_constructible_v<DeferFunctor>
+                    && std::is_constructible_v<DeferFunctor, uint32_t>>* = 0)
                 : T_Profile(currentStep)
             {
             }
@@ -66,8 +65,8 @@ namespace picongpu
                 uint32_t currentStep,
                 IdGenerator idGen,
                 std::enable_if_t<
-                    !std::is_default_constructible_v<
-                        DeferFunctor> && std::is_constructible_v<DeferFunctor, uint32_t, IdGenerator>>* = 0)
+                    !std::is_default_constructible_v<DeferFunctor>
+                    && std::is_constructible_v<DeferFunctor, uint32_t, IdGenerator>>* = 0)
                 : T_Profile(currentStep, idGen)
             {
             }

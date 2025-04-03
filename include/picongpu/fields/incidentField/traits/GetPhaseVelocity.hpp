@@ -31,7 +31,6 @@
 #include <cstdint>
 #include <type_traits>
 
-
 namespace picongpu::fields::incidentField::traits
 {
     namespace detail
@@ -45,7 +44,7 @@ namespace picongpu::fields::incidentField::traits
         HINLINE float_X calculatePhaseVelocity()
         {
             auto const omega = pmacc::math::Pi<float_64>::doubleValue
-                * static_cast<float_64>(sim.pic.getSpeedOfLight() / T_Unitless::WAVE_LENGTH);
+                               * static_cast<float_64>(sim.pic.getSpeedOfLight() / T_Unitless::WAVE_LENGTH);
             // Assume propagation along y as all laser profiles do it
             auto const direction = float3_64{T_Unitless::DIR_X, T_Unitless::DIR_Y, T_Unitless::DIR_Z};
             auto const absK = maxwellSolver::DispersionRelationSolver<Solver>{}(omega, direction);

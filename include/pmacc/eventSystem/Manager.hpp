@@ -91,7 +91,7 @@ namespace pmacc
 
         std::size_t getCount();
 
-        Manager(const Manager& cc) = delete;
+        Manager(Manager const& cc) = delete;
 
         static Manager& getInstance()
         {

@@ -34,7 +34,6 @@
 #include <list>
 #include <stdexcept>
 
-
 namespace picongpu
 {
     namespace particles

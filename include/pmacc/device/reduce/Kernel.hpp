@@ -31,7 +31,6 @@
 
 #include <pmacc/math/operation.hpp>
 
-
 namespace pmacc
 {
     namespace device
@@ -189,7 +188,7 @@ namespace pmacc
                             [&](uint32_t const linearIdx, bool& isActive, uint32_t linearReduceThreadIdx)
                             {
                                 isActive = (linearReduceThreadIdx < bufferSize)
-                                    && !(linearIdx != 0u && linearIdx >= active_threads);
+                                           && !(linearIdx != 0u && linearIdx >= active_threads);
                                 if(isActive)
                                     func(worker, sharedMem[linearIdx], sharedMem[linearIdx + chunk_count]);
                             },

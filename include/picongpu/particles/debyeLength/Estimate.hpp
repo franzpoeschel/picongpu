@@ -31,7 +31,6 @@
 #include <pmacc/mpi/MPIReduce.hpp>
 #include <pmacc/mpi/reduceMethods/AllReduce.hpp>
 
-
 namespace picongpu
 {
     namespace particles

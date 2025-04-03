@@ -27,7 +27,6 @@
 
 #include <cstdint>
 
-
 //! @file gathers atomic data storage implementations and implements filling them on runtime
 
 namespace picongpu::particles::atomicPhysics::atomicData

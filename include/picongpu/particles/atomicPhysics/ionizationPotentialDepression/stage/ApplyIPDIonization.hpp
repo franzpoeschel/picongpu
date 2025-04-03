@@ -81,9 +81,10 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::sta
         auto& fieldE = *dc.get<FieldE>(FieldE::getName());
 
         // macro for call of kernel on every superCell, see pull request #4321
-        PMACC_LOCKSTEP_KERNEL(s_IPD::kernel::ApplyIPDIonizationKernel<
-                                  T_IPDModel,
-                                  std::integral_constant<bool, AtomicDataType::switchFieldIonization>>())
+        PMACC_LOCKSTEP_KERNEL(
+            s_IPD::kernel::ApplyIPDIonizationKernel<
+                T_IPDModel,
+                std::integral_constant<bool, AtomicDataType::switchFieldIonization>>())
             .config(mapper.getGridDim(), ions)(
                 mapper,
                 idProvider->getDeviceGenerator(),

@@ -38,7 +38,7 @@ namespace pmacc
          *
          * returns a mask with neighbors, e.g. if there is a right neighbor result.isSet(RIGHT) returns true
          */
-        virtual const Mask& getCommunicationMask() const = 0;
+        virtual Mask const& getCommunicationMask() const = 0;
 
         /*! moves all GPUs from top to bottom (y-coordinate)
          *
@@ -64,7 +64,7 @@ namespace pmacc
          * startSend and startReceive must use the same tag) @returns an request for testing if this operation has
          * already finished
          */
-        virtual MPI_Request* startSend(uint32_t ex, const char* send_data, size_t send_data_count, uint32_t tag) = 0;
+        virtual MPI_Request* startSend(uint32_t ex, char const* send_data, size_t send_data_count, uint32_t tag) = 0;
 
         /*! starts receiving via MPI (non-blocking)
          *

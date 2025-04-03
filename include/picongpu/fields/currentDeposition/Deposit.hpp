@@ -27,7 +27,6 @@
 #include <pmacc/math/Vector.hpp>
 #include <pmacc/types.hpp>
 
-
 namespace picongpu
 {
     namespace currentSolver

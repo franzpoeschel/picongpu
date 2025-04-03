@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/defines.hpp"
 #    include "picongpu/fields/MaxwellSolver/Solvers.hpp"
@@ -37,7 +37,6 @@
 #    include <string>
 
 #    include <openPMD/openPMD.hpp>
-
 
 namespace picongpu
 {
@@ -113,13 +112,13 @@ namespace picongpu
                 series.setOpenPMDextension(openPMDExtensionMask);
 
                 /*   recommended */
-                const std::string author = Environment<>::get().SimulationDescription().getAuthor();
+                std::string const author = Environment<>::get().SimulationDescription().getAuthor();
                 if(author.length() > 0)
                 {
                     series.setAuthor(author);
                 }
 
-                const std::string software("PIConGPU");
+                std::string const software("PIConGPU");
 
                 std::stringstream softwareVersion;
                 softwareVersion << PICONGPU_VERSION_MAJOR << "." << PICONGPU_VERSION_MINOR << "."
@@ -135,7 +134,7 @@ namespace picongpu
                 // don't write this if a previous run already wrote it
                 if(!series.containsAttribute("date"))
                 {
-                    const std::string date = helper::getDateString("%F %T %z");
+                    std::string const date = helper::getDateString("%F %T %z");
                     series.setDate(date);
                 }
 
@@ -149,12 +148,12 @@ namespace picongpu
                 if(writeFieldMeta)
                 {
                     GetStringProperties<fields::Solver> fieldSolverProps;
-                    const std::string fieldSolver(fieldSolverProps["name"].value);
+                    std::string const fieldSolver(fieldSolverProps["name"].value);
                     meshes.setAttribute("fieldSolver", fieldSolver);
 
                     if(fieldSolverProps.find("param") != fieldSolverProps.end())
                     {
-                        const std::string fieldSolverParam(fieldSolverProps["param"].value);
+                        std::string const fieldSolverParam(fieldSolverProps["param"].value);
                         meshes.setAttribute("fieldSolverParameters", fieldSolverParam);
                     }
 
@@ -187,16 +186,16 @@ namespace picongpu
                     writeMeta::ofAllSpecies(series, currentStep);
 
                     GetStringProperties<fields::currentInterpolation::CurrentInterpolation> currentSmoothingProp;
-                    const std::string currentSmoothing(currentSmoothingProp["name"].value);
+                    std::string const currentSmoothing(currentSmoothingProp["name"].value);
                     meshes.setAttribute("currentSmoothing", currentSmoothing);
 
                     if(currentSmoothingProp.find("param") != currentSmoothingProp.end())
                     {
-                        const std::string currentSmoothingParam(currentSmoothingProp["param"].value);
+                        std::string const currentSmoothingParam(currentSmoothingProp["param"].value);
                         meshes.setAttribute("currentSmoothingParameters", currentSmoothingParam);
                     }
 
-                    const std::string chargeCorrection("none");
+                    std::string const chargeCorrection("none");
                     meshes.setAttribute("chargeCorrection", chargeCorrection);
                 }
 

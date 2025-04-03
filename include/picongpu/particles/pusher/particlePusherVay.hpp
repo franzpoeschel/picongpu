@@ -41,11 +41,11 @@ namespace picongpu
 
             template<typename T_FunctorFieldE, typename T_FunctorFieldB, typename T_Particle, typename T_Pos>
             HDINLINE void operator()(
-                const T_FunctorFieldB functorBField, /* at t=0 */
-                const T_FunctorFieldE functorEField, /* at t=0 */
+                T_FunctorFieldB const functorBField, /* at t=0 */
+                T_FunctorFieldE const functorEField, /* at t=0 */
                 T_Particle& particle,
                 T_Pos& pos, /* at t=0 */
-                const uint32_t)
+                uint32_t const)
             {
                 float_X const weighting = particle[weighting_];
                 float_X const mass = picongpu::traits::attribute::getMass(weighting, particle);
@@ -54,8 +54,8 @@ namespace picongpu
                 using MomType = momentum::type;
                 MomType const mom = particle[momentum_];
 
-                const auto bField = functorBField(pos);
-                const auto eField = functorEField(pos);
+                auto const bField = functorBField(pos);
+                auto const eField = functorEField(pos);
 
                 // update probe field if particle contains required attributes
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeB>::type::value)
@@ -69,40 +69,40 @@ namespace picongpu
                      Here the real (PIConGPU) momentum (p) is used, not the momentum from the Vay paper (u)
                      p = m_0 * u
                 */
-                const float_X deltaT = sim.pic.getDt();
-                const float_X factor = 0.5 * charge * deltaT;
+                float_X const deltaT = sim.pic.getDt();
+                float_X const factor = 0.5 * charge * deltaT;
                 Gamma gamma;
                 Velocity velocity;
 
                 // first step in Vay paper:
-                const float3_X velocity_atMinusHalf = velocity(mom, mass);
+                float3_X const velocity_atMinusHalf = velocity(mom, mass);
                 // mom /(mass*mass + abs2(mom)/(sim.pic.getSpeedOfLight()*sim.pic.getSpeedOfLight()));
-                const MomType momentum_atZero
+                MomType const momentum_atZero
                     = mom + factor * (eField + pmacc::math::cross(velocity_atMinusHalf, bField));
 
                 // second step in Vay paper:
-                const MomType momentum_prime = momentum_atZero + factor * eField;
-                const float_X gamma_prime = gamma(momentum_prime, mass);
+                MomType const momentum_prime = momentum_atZero + factor * eField;
+                float_X const gamma_prime = gamma(momentum_prime, mass);
 
-                const sqrt_Vay::float3_X tau(factor / mass * bField);
-                const sqrt_Vay::float_X u_star
+                sqrt_Vay::float3_X const tau(factor / mass * bField);
+                sqrt_Vay::float_X const u_star
                     = pmacc::math::dot(precisionCast<sqrt_Vay::float_X>(momentum_prime), tau)
-                    / precisionCast<sqrt_Vay::float_X>(sim.pic.getSpeedOfLight() * mass);
-                const sqrt_Vay::float_X sigma = gamma_prime * gamma_prime - pmacc::math::l2norm2(tau);
-                const sqrt_Vay::float_X gamma_atPlusHalf = math::sqrt(
+                      / precisionCast<sqrt_Vay::float_X>(sim.pic.getSpeedOfLight() * mass);
+                sqrt_Vay::float_X const sigma = gamma_prime * gamma_prime - pmacc::math::l2norm2(tau);
+                sqrt_Vay::float_X const gamma_atPlusHalf = math::sqrt(
                     sqrt_Vay::float_X(0.5)
                     * (sigma
                        + math::sqrt(
                            sigma * sigma + sqrt_Vay::float_X(4.0) * (pmacc::math::l2norm2(tau) + u_star * u_star))));
-                const float3_X t(tau * (float_X(1.0) / gamma_atPlusHalf));
-                const float_X s = float_X(1.0) / (float_X(1.0) + pmacc::math::l2norm2(t));
-                const MomType momentum_atPlusHalf = s
-                    * (momentum_prime + pmacc::math::dot(momentum_prime, t) * t
-                       + pmacc::math::cross(momentum_prime, t));
+                float3_X const t(tau * (float_X(1.0) / gamma_atPlusHalf));
+                float_X const s = float_X(1.0) / (float_X(1.0) + pmacc::math::l2norm2(t));
+                MomType const momentum_atPlusHalf = s
+                                                    * (momentum_prime + pmacc::math::dot(momentum_prime, t) * t
+                                                       + pmacc::math::cross(momentum_prime, t));
 
                 particle[momentum_] = momentum_atPlusHalf;
 
-                const float3_X vel = velocity(momentum_atPlusHalf, mass);
+                float3_X const vel = velocity(momentum_atPlusHalf, mass);
 
                 for(uint32_t d = 0; d < simDim; ++d)
                 {

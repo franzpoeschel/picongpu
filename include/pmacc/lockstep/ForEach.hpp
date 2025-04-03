@@ -271,10 +271,11 @@ namespace pmacc
                 this->operator()(
                     [&](Idx const& idx)
                     {
-                        tmp[idx] = std::move(detail::FunctorWrapper{}(
-                            std::forward<T_Functor>(functor),
-                            idx,
-                            std::forward<T_CtxVars>(ctxVars)...));
+                        tmp[idx] = std::move(
+                            detail::FunctorWrapper{}(
+                                std::forward<T_Functor>(functor),
+                                idx,
+                                std::forward<T_CtxVars>(ctxVars)...));
                     });
                 return tmp;
             }

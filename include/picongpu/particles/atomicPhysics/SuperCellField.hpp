@@ -55,7 +55,7 @@ namespace picongpu::particles::atomicPhysics
         //! type of entry
         using entryType = T_Entry;
 
-        constexpr static bool hasGuards = T_withGuards;
+        static constexpr bool hasGuards = T_withGuards;
 
         /* from SimulationFieldHelper<T_MappingDescription>:
          * protected:

@@ -28,6 +28,7 @@ PMACC_CASSERT_MSG(
 PMACC_CASSERT_MSG(
     The_Nyquist_limit_needs_to_be_larger_than_zero,
     (picongpu::plugins::radiation::radiationNyquist::NyquistFactor > 0.0));
+
 namespace picongpu
 {
     namespace plugins

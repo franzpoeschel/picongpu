@@ -32,7 +32,6 @@
 #include <string>
 #include <type_traits>
 
-
 namespace pmacc
 {
     namespace functor
@@ -127,8 +126,8 @@ namespace pmacc
                 uint32_t const currentStep,
                 [[maybe_unused]] IdGenerator idGen,
                 std::enable_if_t<
-                    !std::is_default_constructible_v<
-                        DeferFunctor> && std::is_constructible_v<DeferFunctor, uint32_t>>* = nullptr)
+                    !std::is_default_constructible_v<DeferFunctor>
+                    && std::is_constructible_v<DeferFunctor, uint32_t>>* = nullptr)
                 : UserFunctor(currentStep)
             {
             }
@@ -138,8 +137,8 @@ namespace pmacc
                 uint32_t const currentStep,
                 IdGenerator idGen,
                 std::enable_if_t<
-                    !std::is_default_constructible_v<
-                        DeferFunctor> && std::is_constructible_v<DeferFunctor, uint32_t, IdGenerator>>* = nullptr)
+                    !std::is_default_constructible_v<DeferFunctor>
+                    && std::is_constructible_v<DeferFunctor, uint32_t, IdGenerator>>* = nullptr)
                 : UserFunctor(currentStep, idGen)
             {
             }

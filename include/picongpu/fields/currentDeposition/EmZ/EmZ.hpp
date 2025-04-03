@@ -43,14 +43,13 @@ namespace picongpu
                 __EmZ_supercell_or_number_of_guard_supercells_is_too_small_for_stencil,
                 sizeof(T_ParticleShape*) // defer assert evaluation
                     && pmacc::math::CT::min<typename pmacc::math::CT::mul<SuperCellSize, GuardSize>::type>::type::value
-                        >= currentLowerMargin
+                           >= currentLowerMargin
                     && pmacc::math::CT::min<typename pmacc::math::CT::mul<SuperCellSize, GuardSize>::type>::type::value
-                        >= currentUpperMargin);
+                           >= currentUpperMargin);
 
             static constexpr int begin = ParticleAssign::begin;
             static constexpr int end = begin + supp;
             static_assert(ParticleAssign::end + 1 == end);
-
 
             /** deposit the current of a particle
              *
@@ -77,7 +76,7 @@ namespace picongpu
                     deltaPos[d] = (velocity[d] * sim.pic.getDt()) / sim.pic.getCellSize()[d];
 
                 /*note: all positions are normalized to the grid*/
-                const floatD_X posStart(posEnd - deltaPos);
+                floatD_X const posStart(posEnd - deltaPos);
 
                 // Grid shifts for the start and end positions
                 DataSpace<simDim> shiftStart, shiftEnd;
@@ -92,7 +91,7 @@ namespace picongpu
                 }
 
                 Line<floatD_X> line;
-                const float_X chargeDensity = charge / sim.pic.getCellSize().productOfComponents();
+                float_X const chargeDensity = charge / sim.pic.getCellSize().productOfComponents();
 
                 /* Esirkepov implementation for the current deposition */
                 emz::DepositCurrent<T_Strategy, ParticleAssign, begin, end> deposit;
@@ -107,7 +106,7 @@ namespace picongpu
                 deposit(worker, dataBoxJ.shift(shiftStart), line, chargeDensity);
 
                 /* detect if there is a second virtual particle */
-                const bool twoParticlesNeeded = (shiftStart != shiftEnd);
+                bool const twoParticlesNeeded = (shiftStart != shiftEnd);
                 if(twoParticlesNeeded)
                 {
                     /* calculate positions for the second virtual particle */

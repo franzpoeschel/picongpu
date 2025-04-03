@@ -139,6 +139,7 @@ namespace picongpu::particles::atomicPhysics
         //! short hand
         template<typename T_ParticleType, typename T_ParticleTypeTag>
         using IsParticleType_t = typename IsParticleType<T_ParticleType, T_ParticleTypeTag>::type;
+
         //@}
 
         template<typename T_FrameType>
@@ -147,6 +148,7 @@ namespace picongpu::particles::atomicPhysics
             using type = typename pmacc::traits::Resolve<
                 typename pmacc::traits::GetFlagType<T_FrameType, atomicPhysicsParticle<>>::type>::type;
         };
+
         //! short hand
         template<typename T_FrameType>
         using GetParticleType_t = typename GetParticleType<T_FrameType>::type;
@@ -167,6 +169,7 @@ namespace picongpu::particles::atomicPhysics
 
             return hasParticleType && IsParticleType<GetParticleType_t<FrameType>, T_ParticleTypeTag>::value;
         }
+
         //!@}
 
         //! filter species list by ParticleTypeTag

@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 // clang-format off
 #include "picongpu/particles/param.hpp"
@@ -85,7 +85,7 @@ namespace picongpu
                 this->cellDescription = cellDesc;
             }
 
-            void restart(uint32_t restartStep, const std::string restartDirectory) override
+            void restart(uint32_t restartStep, std::string const restartDirectory) override
             {
                 /* restart from a checkpoint here
                  * will be called only once per simulation and before notify() */
@@ -95,7 +95,7 @@ namespace picongpu
                 }
             }
 
-            void checkpoint(uint32_t currentStep, const std::string restartDirectory) override
+            void checkpoint(uint32_t currentStep, std::string const restartDirectory) override
             {
                 /* create a persistent checkpoint here
                  * will be called before notify() if both will be called for the same timestep */

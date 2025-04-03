@@ -28,7 +28,6 @@
 #include "pmacc/eventSystem/tasks/MPITask.hpp"
 #include "pmacc/fields/tasks/FieldFactory.hpp"
 
-
 namespace pmacc
 {
     template<class Field>
@@ -96,7 +95,6 @@ namespace pmacc
             WaitForReceive,
             Finished
         };
-
 
         Field& m_buffer;
         state_t m_state;

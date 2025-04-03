@@ -56,13 +56,13 @@ namespace pmacc
         Manager::getInstance().waitForFinished(taskId);
     }
 
-    EventTask EventTask::operator+(const EventTask& other)
+    EventTask EventTask::operator+(EventTask const& other)
     {
         EventTask tmp = *this;
         return tmp += other;
     }
 
-    EventTask& EventTask::operator+=(const EventTask& other)
+    EventTask& EventTask::operator+=(EventTask const& other)
     {
         // If one of the two tasks is already finished, the other task is returned.
         // Otherwise, a TaskLogicalAnd is created and added to the Manager's queue.

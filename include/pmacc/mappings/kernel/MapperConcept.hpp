@@ -57,8 +57,7 @@ namespace pmacc
      */
     template<
         uint32_t T_areaType,
-        template<unsigned, typename>
-        class T_MappingDescription,
+        template<unsigned, typename> class T_MappingDescription,
         unsigned T_dim,
         typename T_SupercellSize>
     class MapperConcept : public T_MappingDescription<T_dim, T_SupercellSize>
@@ -89,7 +88,7 @@ namespace pmacc
          * @param blockIdx alpaka block index
          * @return mapped SuperCell index including guards
          */
-        HDINLINE DataSpace<T_dim> getSuperCellIndex(const DataSpace<T_dim>& blockIdx) const;
+        HDINLINE DataSpace<T_dim> getSuperCellIndex(DataSpace<T_dim> const& blockIdx) const;
     };
 
     /** Concept for mapper factory

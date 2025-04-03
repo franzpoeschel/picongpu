@@ -39,27 +39,27 @@ namespace pmacc
          *
          * @param dir name of directory
          */
-        void createDirectory(const std::string dir) const;
+        void createDirectory(std::string const dir) const;
         /**
          * Set 755 permissions for a directory
          *
          * @param dir name of directory
          */
-        void setDirectoryPermissions(const std::string dir) const;
+        void setDirectoryPermissions(std::string const dir) const;
 
         /**
          * Create directory and set 755 permissions by root rank.
          *
          * @param dir name of directory
          */
-        void createDirectoryWithPermissions(const std::string dir) const;
+        void createDirectoryWithPermissions(std::string const dir) const;
 
         /**
          * Strip path from absolute or relative paths to filenames
          *
          * @param path and filename
          */
-        std::string basename(const std::string pathFilename) const;
+        std::string basename(std::string const pathFilename) const;
 
         /**
          * Returns the instance of the filesystem class.
@@ -83,7 +83,7 @@ namespace pmacc
         /**
          * Constructor
          */
-        Filesystem(const Filesystem& fs) = default;
+        Filesystem(Filesystem const& fs) = default;
     };
 
 } // namespace pmacc

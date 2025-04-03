@@ -56,7 +56,7 @@ namespace pmacc::eventSystem
      * @param event event to add to base event
      * @return new base event
      */
-    EventTask setTransactionEvent(const EventTask& event);
+    EventTask setTransactionEvent(EventTask const& event);
 
     /**
      * Returns the base event of the top-most transaction.

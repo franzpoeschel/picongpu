@@ -25,7 +25,6 @@
 #include "pmacc/assert.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     /** Wrapper for ComputeDeviceEvent

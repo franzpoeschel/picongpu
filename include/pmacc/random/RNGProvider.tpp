@@ -27,7 +27,6 @@
 
 #include <memory>
 
-
 namespace pmacc
 {
     namespace random
@@ -38,7 +37,7 @@ namespace pmacc
             struct InitRNGProvider
             {
                 template<typename T_Worker, typename T_RNGBox, typename T_Space>
-                DINLINE void operator()(T_Worker const& worker, T_RNGBox rngBox, uint32_t seed, const T_Space size)
+                DINLINE void operator()(T_Worker const& worker, T_RNGBox rngBox, uint32_t seed, T_Space const size)
                     const
                 {
                     // each virtual worker initialize one rng state
@@ -60,7 +59,7 @@ namespace pmacc
         } // namespace kernel
 
         template<uint32_t T_dim, class T_RNGMethod>
-        RNGProvider<T_dim, T_RNGMethod>::RNGProvider(const Space& size, const std::string& uniqueId)
+        RNGProvider<T_dim, T_RNGMethod>::RNGProvider(Space const& size, std::string const& uniqueId)
             : m_size(size)
             , buffer(std::make_unique<Buffer>(size))
             , m_uniqueId(uniqueId.empty() ? getName() : uniqueId)
@@ -74,7 +73,7 @@ namespace pmacc
         {
             constexpr uint32_t blockSize = 256;
 
-            const uint32_t gridSize = (m_size.productOfComponents() + blockSize - 1u) / blockSize; // Round up
+            uint32_t const gridSize = (m_size.productOfComponents() + blockSize - 1u) / blockSize; // Round up
 
             auto bufferBox = buffer->getDeviceBuffer().getDataBox();
 
@@ -84,7 +83,7 @@ namespace pmacc
 
         template<uint32_t T_dim, class T_RNGMethod>
         typename RNGProvider<T_dim, T_RNGMethod>::Handle RNGProvider<T_dim, T_RNGMethod>::createHandle(
-            const std::string& id)
+            std::string const& id)
         {
             auto provider = Environment<>::get().DataConnector().get<RNGProvider>(id);
             Handle result(provider->getDeviceDataBox());
@@ -95,7 +94,7 @@ namespace pmacc
         template<class T_Distribution>
         typename RNGProvider<T_dim, T_RNGMethod>::template GetRandomType<T_Distribution>::type RNGProvider<
             T_dim,
-            T_RNGMethod>::createRandom(const std::string& id)
+            T_RNGMethod>::createRandom(std::string const& id)
         {
             using ResultType = typename GetRandomType<T_Distribution>::type;
             return ResultType(createHandle());
@@ -124,7 +123,7 @@ namespace pmacc
         {
             /* generate a unique name (for this type!) to use as a default ID */
             return std::string("RNGProvider") + char('0' + dim) /* valid for 0..9 */
-                + RNGMethod::getName();
+                   + RNGMethod::getName();
         }
 
         template<uint32_t T_dim, class T_RNGMethod>

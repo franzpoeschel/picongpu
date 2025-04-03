@@ -59,7 +59,6 @@ namespace pmacc::lockstep
                 }
             };
 
-
             /** Wraps a user kernel functor to prepare the execution on the device.
              *
              * This objects contains the kernel functor, kernel meta information.

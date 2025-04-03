@@ -34,7 +34,6 @@
 #include "picongpu/fields/currentDeposition/Solver.def"
 #include "picongpu/particles/shapes.hpp"
 
-
 namespace picongpu
 {
     // Use NGP together with central particle in cell position to ensure that all derived quantities are calculated

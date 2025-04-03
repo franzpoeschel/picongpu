@@ -26,7 +26,6 @@
 
 #include <type_traits>
 
-
 namespace picongpu
 {
     namespace particles
@@ -43,9 +42,10 @@ namespace picongpu
                     float_X const boundElectrons = particle[boundElectrons_];
 
                     // calculate new attribute
-                    float_X const boundElectronDensity = weighting * boundElectrons
-                        / (static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle())
-                           * sim.pic.getCellSize().productOfComponents());
+                    float_X const boundElectronDensity
+                        = weighting * boundElectrons
+                          / (static_cast<float_X>(sim.unit.typicalNumParticlesPerMacroParticle())
+                             * sim.pic.getCellSize().productOfComponents());
 
                     return boundElectronDensity;
                 }

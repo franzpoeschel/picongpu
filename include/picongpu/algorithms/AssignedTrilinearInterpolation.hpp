@@ -89,7 +89,7 @@ namespace picongpu
         template<int T_begin, int T_end, class T_FieldAccessorFunctor, class T_AssignmentFunction>
         HDINLINE static auto interpolate(
             T_FieldAccessorFunctor const& fieldAccess,
-            const pmacc::memory::Array<T_AssignmentFunction, 2>& shapeFunctors)
+            pmacc::memory::Array<T_AssignmentFunction, 2> const& shapeFunctors)
         {
             [[maybe_unused]] constexpr int iterations = T_end - T_begin + 1;
 

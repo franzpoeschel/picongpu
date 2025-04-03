@@ -28,7 +28,6 @@
 
 #include <vector>
 
-
 /** \file speciesAttributes.unitless
  *
  * This file describes the particle attributes defined in
@@ -71,6 +70,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<typename T_Type>
         struct UnitDimension<position<T_Type>>
         {
@@ -87,6 +87,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<typename T_Type>
         struct MacroWeighted<position<T_Type>>
         {
@@ -96,6 +97,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<typename T_Type>
         struct WeightingPower<position<T_Type>>
         {
@@ -116,6 +118,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<radiationMask>
         {
@@ -127,6 +130,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<>
         struct MacroWeighted<radiationMask>
         {
@@ -136,6 +140,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<radiationMask>
         {
@@ -156,6 +161,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<transitionRadiationMask>
         {
@@ -167,6 +173,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<>
         struct MacroWeighted<transitionRadiationMask>
         {
@@ -176,6 +183,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<transitionRadiationMask>
         {
@@ -191,7 +199,7 @@ namespace picongpu
         {
             static std::vector<double> get()
             {
-                const uint32_t components = GetNComponents<typename momentum::type>::value;
+                uint32_t const components = GetNComponents<typename momentum::type>::value;
 
                 std::vector<double> unit(components);
                 for(uint32_t i = 0; i < components; ++i)
@@ -200,6 +208,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<momentum>
         {
@@ -218,6 +227,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<>
         struct MacroWeighted<momentum>
         {
@@ -227,6 +237,7 @@ namespace picongpu
                 return true;
             }
         };
+
         template<>
         struct WeightingPower<momentum>
         {
@@ -244,7 +255,7 @@ namespace picongpu
         {
             static std::vector<double> get()
             {
-                const uint32_t components = GetNComponents<typename momentumPrev1::type>::value;
+                uint32_t const components = GetNComponents<typename momentumPrev1::type>::value;
 
                 std::vector<double> unit(components);
                 for(uint32_t i = 0; i < components; ++i)
@@ -253,6 +264,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<momentumPrev1>
         {
@@ -271,6 +283,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<>
         struct MacroWeighted<momentumPrev1>
         {
@@ -280,6 +293,7 @@ namespace picongpu
                 return true;
             }
         };
+
         template<>
         struct WeightingPower<momentumPrev1>
         {
@@ -302,6 +316,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<weighting>
         {
@@ -313,6 +328,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<>
         struct MacroWeighted<weighting>
         {
@@ -322,6 +338,7 @@ namespace picongpu
                 return true;
             }
         };
+
         template<>
         struct WeightingPower<weighting>
         {
@@ -344,6 +361,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<weightingDampingFactor>
         {
@@ -355,6 +373,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<>
         struct MacroWeighted<weightingDampingFactor>
         {
@@ -364,6 +383,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<weightingDampingFactor>
         {
@@ -386,6 +406,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<probeE>
         {
@@ -405,6 +426,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<>
         struct MacroWeighted<probeE>
         {
@@ -413,6 +435,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<probeE>
         {
@@ -435,6 +458,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<probeB>
         {
@@ -453,6 +477,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<>
         struct MacroWeighted<probeB>
         {
@@ -461,6 +486,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<probeB>
         {
@@ -481,6 +507,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<particleId>
         {
@@ -490,6 +517,7 @@ namespace picongpu
                 return std::vector<float_64>(NUnitDimension, 0.0);
             }
         };
+
         template<>
         struct MacroWeighted<particleId>
         {
@@ -499,6 +527,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<particleId>
         {
@@ -519,6 +548,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<totalCellIdx>
         {
@@ -531,6 +561,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<>
         struct MacroWeighted<totalCellIdx>
         {
@@ -540,6 +571,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<totalCellIdx>
         {
@@ -560,6 +592,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<boundElectrons>
         {
@@ -571,6 +604,7 @@ namespace picongpu
                 return unitDimension;
             }
         };
+
         template<>
         struct MacroWeighted<boundElectrons>
         {
@@ -580,6 +614,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<boundElectrons>
         {
@@ -602,6 +637,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<atomicStateCollectionIndex>
         {
@@ -611,6 +647,7 @@ namespace picongpu
                 return std::vector<float_64>(NUnitDimension, 0.0);
             }
         };
+
         template<>
         struct MacroWeighted<atomicStateCollectionIndex>
         {
@@ -620,6 +657,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<atomicStateCollectionIndex>
         {
@@ -640,6 +678,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<processClass>
         {
@@ -649,6 +688,7 @@ namespace picongpu
                 return std::vector<float_64>(NUnitDimension, 0.0);
             }
         };
+
         template<>
         struct MacroWeighted<processClass>
         {
@@ -658,6 +698,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<processClass>
         {
@@ -678,6 +719,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<transitionIndex>
         {
@@ -687,6 +729,7 @@ namespace picongpu
                 return std::vector<float_64>(NUnitDimension, 0.0);
             }
         };
+
         template<>
         struct MacroWeighted<transitionIndex>
         {
@@ -696,6 +739,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<transitionIndex>
         {
@@ -716,6 +760,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<binIndex>
         {
@@ -725,6 +770,7 @@ namespace picongpu
                 return std::vector<float_64>(NUnitDimension, 0.0);
             }
         };
+
         template<>
         struct MacroWeighted<binIndex>
         {
@@ -734,6 +780,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<binIndex>
         {
@@ -754,6 +801,7 @@ namespace picongpu
                 return unit;
             }
         };
+
         template<>
         struct UnitDimension<accepted>
         {
@@ -763,6 +811,7 @@ namespace picongpu
                 return std::vector<float_64>(NUnitDimension, 0.0);
             }
         };
+
         template<>
         struct MacroWeighted<accepted>
         {
@@ -772,6 +821,7 @@ namespace picongpu
                 return false;
             }
         };
+
         template<>
         struct WeightingPower<accepted>
         {

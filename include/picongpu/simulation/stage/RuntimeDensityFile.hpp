@@ -35,7 +35,6 @@
 #include <string>
 #include <vector>
 
-
 namespace picongpu
 {
     namespace simulation
@@ -64,7 +63,7 @@ namespace picongpu
                     void operator()(po::options_description& desc)
                     {
                         // Density from openPMD is conditionally enabled, so use same condition
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
                         auto* filename = &densityProfiles::RuntimeDensityFile<T_Species>::get();
                         desc.add_options()(
                             (prefix + "_runtimeDensityFile").c_str(),

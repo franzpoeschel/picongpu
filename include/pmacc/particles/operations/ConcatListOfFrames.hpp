@@ -75,9 +75,9 @@ namespace pmacc
                     int& counter,
                     T_DestFrame destFrame,
                     T_SrcBox srcBox,
-                    const T_Filter particleFilter,
-                    const T_Space domainOffset,
-                    const T_Identifier domainCellIdxIdentifier,
+                    T_Filter const particleFilter,
+                    T_Space const domainOffset,
+                    T_Identifier const domainCellIdxIdentifier,
                     T_Mapping mapper,
                     T_ParticleFilter& parFilter)
                 {
@@ -99,11 +99,11 @@ namespace pmacc
                         typedef typename Mapping::SuperCellSize SuperCellSize;
 
 
-                        const int particlesPerFrame = T_SrcBox::frameSize;
+                        int const particlesPerFrame = T_SrcBox::frameSize;
                         int localIdxs[particlesPerFrame];
 
-                        const DataSpace<Mapping::Dim> superCellIdx = mapper.getSuperCellIndex(blockIndexND);
-                        const DataSpace<Mapping::Dim> superCellPosition(
+                        DataSpace<Mapping::Dim> const superCellIdx = mapper.getSuperCellIndex(blockIndexND);
+                        DataSpace<Mapping::Dim> const superCellPosition(
                             (superCellIdx - mapper.getGuardingSuperCells()) * mapper.getSuperCellSize());
                         filter.setSuperCellPosition(superCellPosition);
                         auto accParFilter = parFilter(

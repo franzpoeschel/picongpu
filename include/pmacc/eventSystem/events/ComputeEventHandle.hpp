@@ -45,7 +45,7 @@ namespace pmacc
          */
         ComputeEventHandle(ComputeEvent* const evPointer);
 
-        ComputeEventHandle(const ComputeEventHandle& other);
+        ComputeEventHandle(ComputeEventHandle const& other);
 
         /** assign an event handle
          *
@@ -54,7 +54,7 @@ namespace pmacc
          * @param other event handle
          * @return this handle
          */
-        ComputeEventHandle& operator=(const ComputeEventHandle& other);
+        ComputeEventHandle& operator=(ComputeEventHandle const& other);
 
         /** Destructor */
         ~ComputeEventHandle();

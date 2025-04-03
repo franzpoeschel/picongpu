@@ -193,7 +193,7 @@ namespace picongpu
 
     template<typename T_Name, typename T_Flags, typename T_Attributes>
     Particles<T_Name, T_Flags, T_Attributes>::Particles(
-        const std::shared_ptr<DeviceHeap>& heap,
+        std::shared_ptr<DeviceHeap> const& heap,
         picongpu::MappingDesc cellDescription,
         SimulationDataId datasetID)
         : ParticlesBase<SpeciesParticleDescription, picongpu::MappingDesc, DeviceHeap>(heap, cellDescription)
@@ -212,7 +212,7 @@ namespace picongpu
 
         size_t sizeOfExchanges = 0u;
 
-        const uint32_t commTag = pmacc::traits::getUniqueId();
+        uint32_t const commTag = pmacc::traits::getUniqueId();
         log<picLog::MEMORY>("communication tag for species %1%: %2%") % FrameType::getName() % commTag;
 
         auto const numExchanges = NumberOfExchanges<simDim>::value;

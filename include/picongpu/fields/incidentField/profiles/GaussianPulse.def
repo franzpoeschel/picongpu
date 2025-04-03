@@ -56,6 +56,7 @@ namespace picongpu::fields::incidentField::profiles
             static constexpr uint32_t numModes = 0;
             static constexpr auto laguerreModes = floatN_X<numModes + 1>(1.0);
             static constexpr auto laguerrePhases = floatN_X<numModes + 1>(0.0);
+
             /** This is just an example for a more complicated set of Laguerre modes
              *
              * @code{.cpp}

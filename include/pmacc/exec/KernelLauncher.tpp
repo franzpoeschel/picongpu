@@ -37,7 +37,7 @@
 /*if this flag is defined all kernel calls would be checked and synchronize
  * this flag must set by the compiler or inside of the Makefile
  */
-#if(PMACC_SYNC_KERNEL == 1)
+#if (PMACC_SYNC_KERNEL == 1)
 #    define PMACC_CHECK_KERNEL_MSG(...) PMACC_CHECK_ALPAKA_CALL_MSG(__VA_ARGS__)
 #else
 /*no synchronize and check of kernel calls*/
@@ -90,10 +90,11 @@ namespace pmacc::exec::detail
         {
             std::string const kernelName = typeid(m_kernel).name();
             std::string const kernelInfo = kernelName + std::string(" [") + m_file + std::string(":")
-                + std::to_string(m_line) + std::string(" ]");
+                                           + std::to_string(m_line) + std::string(" ]");
 
-            PMACC_CHECK_KERNEL_MSG(alpaka::wait(manager::Device<ComputeDevice>::get().current());
-                                   , std::string("Crash before kernel call ") + kernelInfo);
+            PMACC_CHECK_KERNEL_MSG(
+                alpaka::wait(manager::Device<ComputeDevice>::get().current());
+                , std::string("Crash before kernel call ") + kernelInfo);
 
             pmacc::TaskKernel* taskKernel = pmacc::Environment<>::get().Factory().createTaskKernel(kernelName);
 
@@ -110,11 +111,13 @@ namespace pmacc::exec::detail
 
             ::alpaka::enqueue(queue, kernelTask);
 
-            PMACC_CHECK_KERNEL_MSG(alpaka::wait(manager::Device<ComputeDevice>::get().current());
-                                   , std::string("Crash after kernel launch ") + kernelInfo);
+            PMACC_CHECK_KERNEL_MSG(
+                alpaka::wait(manager::Device<ComputeDevice>::get().current());
+                , std::string("Crash after kernel launch ") + kernelInfo);
             taskKernel->activateChecks();
-            PMACC_CHECK_KERNEL_MSG(alpaka::wait(manager::Device<ComputeDevice>::get().current());
-                                   , std::string("Crash after kernel activation") + kernelInfo);
+            PMACC_CHECK_KERNEL_MSG(
+                alpaka::wait(manager::Device<ComputeDevice>::get().current());
+                , std::string("Crash after kernel activation") + kernelInfo);
         }
     };
 

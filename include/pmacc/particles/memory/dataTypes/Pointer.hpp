@@ -22,7 +22,6 @@
 
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     /** Wrapper for a raw pointer that propagates its constness onto the pointee. Similar to
@@ -36,7 +35,7 @@ namespace pmacc
     public:
         using type = T_Type;
         using PtrType = type*;
-        using ConstPtrType = const type*;
+        using ConstPtrType = type const*;
 
         HDINLINE Pointer() = default;
 
@@ -44,9 +43,9 @@ namespace pmacc
         {
         }
 
-        HDINLINE Pointer(const Pointer& other) = default;
+        HDINLINE Pointer(Pointer const& other) = default;
 
-        HDINLINE Pointer& operator=(const Pointer& other) = default;
+        HDINLINE Pointer& operator=(Pointer const& other) = default;
 
         /** dereference the pointer*/
         HDINLINE type& operator*()
@@ -73,13 +72,13 @@ namespace pmacc
         }
 
         /** compare if two pointers point to the same memory address*/
-        HDINLINE bool operator==(const Pointer<type>& other) const
+        HDINLINE bool operator==(Pointer<type> const& other) const
         {
             return ptr == other.ptr;
         }
 
         /** check if the memory address of two pointers are different*/
-        HDINLINE bool operator!=(const Pointer<type>& other) const
+        HDINLINE bool operator!=(Pointer<type> const& other) const
         {
             return ptr != other.ptr;
         }
@@ -92,7 +91,7 @@ namespace pmacc
             return ptr != nullptr;
         }
 
-        PMACC_ALIGN(ptr, PtrType){nullptr};
+        PMACC_ALIGN(ptr, PtrType) { nullptr };
     };
 
 } // namespace pmacc

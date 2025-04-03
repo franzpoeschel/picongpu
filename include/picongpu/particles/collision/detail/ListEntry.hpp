@@ -26,7 +26,7 @@
 #include <pmacc/random/distributions/Uniform.hpp>
 #include <pmacc/verify.hpp>
 
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
 #    include <mallocMC/mallocMC.hpp>
 #endif
 
@@ -93,7 +93,7 @@ namespace picongpu::particles::collision
                  */
                 DINLINE auto operator[](uint32_t idx) const
                 {
-                    const uint32_t inSuperCellIdx = m_parIdxList[idx];
+                    uint32_t const inSuperCellIdx = m_parIdxList[idx];
                     return m_framePtrList[inSuperCellIdx / frameSize][inSuperCellIdx % frameSize];
                 }
             };
@@ -225,7 +225,7 @@ namespace picongpu::particles::collision
                     {
                         if(framePtr != nullptr)
                         {
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
                             deviceHeapHandle.free(worker.getAcc(), (void*) framePtr);
 #else
                             delete(framePtr);
@@ -240,7 +240,7 @@ namespace picongpu::particles::collision
                     {
                         if(particleList[cellIdx] != nullptr)
                         {
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
                             deviceHeapHandle.free(worker.getAcc(), (void*) particleList[cellIdx]);
 #else
                             delete(particleList[cellIdx]);
@@ -249,7 +249,6 @@ namespace picongpu::particles::collision
                         }
                     });
             }
-
 
             /** Creates an accessor to access particles within a cell
              *
@@ -279,10 +278,10 @@ namespace picongpu::particles::collision
                 uint32_t const allocBytes = numChunks * T_chunkBytes;
                 if(bytes != 0u)
                 {
-                    const int maxTries = 13; // magic number is not performance critical
+                    int const maxTries = 13; // magic number is not performance critical
                     for(int numTries = 0; numTries < maxTries; ++numTries)
                     {
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
                         ptr = deviceHeapHandle.malloc(worker.getAcc(), allocBytes);
 #else // No cuda or hip means the device heap is the host heap.
                         return (void**) new uint8_t[allocBytes];

@@ -25,7 +25,6 @@
 #include "pmacc/random/distributions/Uniform.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     namespace random

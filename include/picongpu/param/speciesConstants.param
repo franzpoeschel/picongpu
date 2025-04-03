@@ -27,7 +27,6 @@
 
 #pragma once
 
-
 namespace picongpu
 {
     /** Threshold between relativistic and non-relativistic regime

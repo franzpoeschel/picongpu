@@ -69,7 +69,7 @@ namespace pmacc
         {
         }
 
-        IntervalMapping(const IntervalMapping&) = default;
+        IntervalMapping(IntervalMapping const&) = default;
 
         /** Generate grid dimension information for alpaka kernel calls
          *

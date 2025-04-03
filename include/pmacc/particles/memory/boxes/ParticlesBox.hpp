@@ -22,7 +22,7 @@
 
 #pragma once
 
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
 #    include <mallocMC/mallocMC.hpp>
 #endif
 #include "pmacc/dimensions/DataSpace.hpp"
@@ -49,7 +49,7 @@ namespace pmacc
     {
     private:
         PMACC_ALIGN(m_deviceHeapHandle, T_DeviceHeapHandle);
-        PMACC_ALIGN(hostMemoryOffset, int64_t){0};
+        PMACC_ALIGN(hostMemoryOffset, int64_t) { 0 };
 
     public:
         using FrameType = T_Frame;
@@ -70,8 +70,8 @@ namespace pmacc
         HDINLINE ParticlesBox() = default;
 
         HDINLINE ParticlesBox(
-            const DataBox<PitchedBox<SuperCellType, DIM>>& superCells,
-            const DeviceHeapHandle& deviceHeapHandle)
+            DataBox<PitchedBox<SuperCellType, DIM>> const& superCells,
+            DeviceHeapHandle const& deviceHeapHandle)
             : BaseType(superCells)
             , m_deviceHeapHandle(deviceHeapHandle)
 
@@ -79,8 +79,8 @@ namespace pmacc
         }
 
         HDINLINE ParticlesBox(
-            const DataBox<PitchedBox<SuperCellType, DIM>>& superCells,
-            const DeviceHeapHandle& deviceHeapHandle,
+            DataBox<PitchedBox<SuperCellType, DIM>> const& superCells,
+            DeviceHeapHandle const& deviceHeapHandle,
             int64_t memoryOffset)
             : BaseType(superCells)
             , m_deviceHeapHandle(deviceHeapHandle)
@@ -94,13 +94,13 @@ namespace pmacc
          * @return an empty frame
          */
         template<typename T_Worker>
-        DINLINE FramePtr getEmptyFrame(const T_Worker& worker)
+        DINLINE FramePtr getEmptyFrame(T_Worker const& worker)
         {
             FrameType* tmp = nullptr;
-            const int maxTries = 13; // magic number is not performance critical
+            int const maxTries = 13; // magic number is not performance critical
             for(int numTries = 0; numTries < maxTries; ++numTries)
             {
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
                 tmp = (FrameType*) m_deviceHeapHandle.malloc(worker.getAcc(), sizeof(FrameType));
 #else
                 tmp = new FrameType;
@@ -127,9 +127,9 @@ namespace pmacc
          * @param frame frame to remove
          */
         template<typename T_Worker>
-        DINLINE void removeFrame(const T_Worker& worker, FramePtr& frame)
+        DINLINE void removeFrame(T_Worker const& worker, FramePtr& frame)
         {
-#if(BOOST_LANG_CUDA || BOOST_COMP_HIP)
+#if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
             m_deviceHeapHandle.free(worker.getAcc(), (void*) frame.ptr);
 #else
             delete(frame.ptr);
@@ -140,7 +140,7 @@ namespace pmacc
         HDINLINE
         FramePtr mapPtr(FramePtr devPtr) const
         {
-#if(PMACC_DEVICE_COMPILE == 1)
+#if (PMACC_DEVICE_COMPILE == 1)
             return devPtr;
 #else
             int64_t useOffset = hostMemoryOffset * static_cast<int64_t>(devPtr.ptr != nullptr);
@@ -154,7 +154,7 @@ namespace pmacc
          * @param frame the active frame
          * @return the next frame in the list
          */
-        HDINLINE FramePtr getNextFrame(const FramePtr& frame) const
+        HDINLINE FramePtr getNextFrame(FramePtr const& frame) const
         {
             return mapPtr(frame->nextFrame.ptr);
         }
@@ -165,7 +165,7 @@ namespace pmacc
          * @param frame the active frame
          * @return the previous frame in the list
          */
-        HDINLINE FramePtr getPreviousFrame(const FramePtr& frame) const
+        HDINLINE FramePtr getPreviousFrame(FramePtr const& frame) const
         {
             return mapPtr(frame->previousFrame.ptr);
         }
@@ -176,7 +176,7 @@ namespace pmacc
          * @param idx position of supercell
          * @return the last frame of the linked list from supercell
          */
-        HDINLINE FramePtr getLastFrame(const DataSpace<DIM>& idx) const
+        HDINLINE FramePtr getLastFrame(DataSpace<DIM> const& idx) const
         {
             return mapPtr(getSuperCell(idx).LastFramePtr());
         }
@@ -187,7 +187,7 @@ namespace pmacc
          * @param idx position of supercell
          * @return the first frame of the linked list from supercell
          */
-        HDINLINE FramePtr getFirstFrame(const DataSpace<DIM>& idx) const
+        HDINLINE FramePtr getFirstFrame(DataSpace<DIM> const& idx) const
         {
             return mapPtr(getSuperCell(idx).FirstFramePtr());
         }
@@ -275,7 +275,7 @@ namespace pmacc
          * @return true if more frames in list, else false
          */
         template<typename T_Worker>
-        DINLINE bool removeLastFrame(const T_Worker& worker, const DataSpace<DIM>& idx)
+        DINLINE bool removeLastFrame(T_Worker const& worker, DataSpace<DIM> const& idx)
         {
             //!\todo this is not thread save
             FrameType** lastFrameNativPtr = &(getSuperCell(idx).lastFramePtr);

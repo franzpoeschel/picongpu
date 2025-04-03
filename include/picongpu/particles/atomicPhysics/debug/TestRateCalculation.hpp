@@ -101,7 +101,6 @@ namespace picongpu::particles::atomicPhysics::debug
         std::unique_ptr<S_BoundBoundBuffer> boundBoundBuffer;
         std::unique_ptr<S_BoundFreeBuffer> boundFreeBuffer;
 
-
         TestRateCalculation()
         {
             // charge state already specifies number of entries
@@ -339,7 +338,7 @@ namespace picongpu::particles::atomicPhysics::debug
                               0u,
                               atomicStateBuffer->getHostDataBox(),
                               boundBoundBuffer->getHostDataBox()))
-                * 1. / sim.unit.time(); // 1/s
+                  * 1. / sim.unit.time(); // 1/s
 
             return testRelativeError(correctRate, rate, "collisional excitation rate", 1e-5);
         }
@@ -359,7 +358,7 @@ namespace picongpu::particles::atomicPhysics::debug
                               0u,
                               atomicStateBuffer->getHostDataBox(),
                               boundBoundBuffer->getHostDataBox()))
-                * 1. / sim.unit.time(); // 1/s
+                  * 1. / sim.unit.time(); // 1/s
 
             return testRelativeError(correctRate, rate, "collisional deexcitation rate", 1e-5);
         }
@@ -374,7 +373,7 @@ namespace picongpu::particles::atomicPhysics::debug
                           0u,
                           atomicStateBuffer->getHostDataBox(),
                           boundBoundBuffer->getHostDataBox()))
-                * 1. / sim.unit.time(); // 1/s
+                  * 1. / sim.unit.time(); // 1/s
 
             return testRelativeError(correctRate, rate, "spontaneous radiative deexcitation rate", 1e-5);
         }
@@ -397,7 +396,7 @@ namespace picongpu::particles::atomicPhysics::debug
                               chargeStateBuffer->getHostDataBox(),
                               atomicStateBuffer->getHostDataBox(),
                               boundFreeBuffer->getHostDataBox()))
-                * 1. / sim.unit.time(); // 1/s
+                  * 1. / sim.unit.time(); // 1/s
 
             //! @note larger error limit required due to numerics of rate formula
             return testRelativeError(correctRate, rate, "collisional ionization rate", 1e-3);
@@ -428,7 +427,7 @@ namespace picongpu::particles::atomicPhysics::debug
                           chargeStateBuffer->getHostDataBox(),
                           atomicStateBuffer->getHostDataBox(),
                           boundFreeBuffer->getHostDataBox()))
-                * 1. / sim.unit.time();
+                  * 1. / sim.unit.time();
 
             /// @note larger error limit required due to numerics of ADK rate formula
             return testRelativeError(correctRate, rate, "ADK field ionization", 1e-5);

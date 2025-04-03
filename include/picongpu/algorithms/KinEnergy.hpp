@@ -46,13 +46,13 @@ namespace picongpu
                 return sim.pic.getSpeedOfLight() * pmacc::math::l2norm(precisionCast<ValueType>(mom));
 
             /* if mass is non-zero then gamma is well defined */
-            const ValueType gamma = Gamma<ValueType>()(mom, mass);
+            ValueType const gamma = Gamma<ValueType>()(mom, mass);
 
             ValueType kinEnergy;
 
             if(gamma < GAMMA_THRESH)
             {
-                const ValueType mom2 = pmacc::math::l2norm2(precisionCast<ValueType>(mom));
+                ValueType const mom2 = pmacc::math::l2norm2(precisionCast<ValueType>(mom));
                 /* non relativistic kinetic energy expression */
                 kinEnergy = mom2 / (ValueType(2.0) * mass);
             }

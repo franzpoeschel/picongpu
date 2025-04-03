@@ -78,7 +78,7 @@ namespace picongpu
             {
                 using SuperCellSize = typename Mapping::SuperCellSize;
 
-                const DataSpace<simDim> superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
+                DataSpace<simDim> const superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
 
                 auto forEachParticle = pmacc::particles::algorithm::acc::makeForEach(worker, boxPar, superCellIdx);
 
@@ -111,7 +111,7 @@ namespace picongpu
         {
             using ParticleAlgo = T_ParticleAlgo;
 
-            HDINLINE ComputePerFrame(const float_X deltaTime) : m_deltaTime(deltaTime)
+            HDINLINE ComputePerFrame(float_X const deltaTime) : m_deltaTime(deltaTime)
             {
             }
 
@@ -121,16 +121,16 @@ namespace picongpu
                 /* Use (potentially) damped weighting for charge calculation.
                  * @see particles::boundary::DampWeightsInPml for details.
                  */
-                const auto dampedWeighting = picongpu::traits::attribute::getDampedWeighting(particle);
-                const float_X charge = picongpu::traits::attribute::getCharge(dampedWeighting, particle);
-                const floatD_X pos = particle[position_];
-                const int particleCellIdx = particle[localCellIdx_];
-                const DataSpace<simDim> localCell = pmacc::math::mapToND(TVec::toRT(), particleCellIdx);
+                auto const dampedWeighting = picongpu::traits::attribute::getDampedWeighting(particle);
+                float_X const charge = picongpu::traits::attribute::getCharge(dampedWeighting, particle);
+                floatD_X const pos = particle[position_];
+                int const particleCellIdx = particle[localCellIdx_];
+                DataSpace<simDim> const localCell = pmacc::math::mapToND(TVec::toRT(), particleCellIdx);
 
                 // The rest uses normal weighting
-                const float_X weighting = particle[weighting_];
+                float_X const weighting = particle[weighting_];
                 Velocity velocity;
-                const float3_X vel
+                float3_X const vel
                     = velocity(particle[momentum_], picongpu::traits::attribute::getMass(weighting, particle));
                 auto fieldJShiftToParticle = jBox.shift(localCell);
                 ParticleAlgo perParticle;
@@ -138,7 +138,7 @@ namespace picongpu
             }
 
         private:
-            PMACC_ALIGN(m_deltaTime, const float_32);
+            PMACC_ALIGN(m_deltaTime, float_32 const);
         };
 
         namespace traits

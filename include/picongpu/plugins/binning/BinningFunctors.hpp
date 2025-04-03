@@ -241,7 +241,6 @@ namespace picongpu
             }
         };
 
-
         struct FunctorCell
         {
             using result_type = void;

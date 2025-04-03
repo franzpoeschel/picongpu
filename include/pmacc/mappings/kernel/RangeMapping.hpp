@@ -129,7 +129,7 @@ namespace pmacc
          * @param blockIdx alpaka block index
          * @return mapped SuperCell index including guards
          */
-        HDINLINE DataSpace<Dim> getSuperCellIndex(const DataSpace<DIM1>& blockIdx) const
+        HDINLINE DataSpace<Dim> getSuperCellIndex(DataSpace<DIM1> const& blockIdx) const
         {
             auto const blockIdxNDim = pmacc::math::mapToND(baseGridDim, static_cast<int>(beginIdx + blockIdx.x()));
             return BaseClass::getSuperCellIndex(blockIdxNDim);

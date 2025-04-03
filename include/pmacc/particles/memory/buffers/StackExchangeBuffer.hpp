@@ -92,7 +92,7 @@ namespace pmacc
                 stackIndexer.getDeviceBuffer().getDataBox());
         }
 
-        void setSize(const size_t size)
+        void setSize(size_t const size)
         {
             // do host and device setSize parallel
             EventTask split = eventSystem::getTransactionEvent();

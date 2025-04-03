@@ -18,7 +18,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if(ENABLE_OPENPMD == 1)
+#if (ENABLE_OPENPMD == 1)
 
 #    include "picongpu/plugins/radiation/Radiation.kernel"
 
@@ -75,7 +75,6 @@ namespace picongpu
                     Frequency = 2
                 };
             } // end namespace idLabels
-
 
             ///////////////////////////////////////////////////////////////////////////////////////////////
             ///////////////////////////////  Radiation Plugin Class  ////////////////////////////////////
@@ -142,7 +141,7 @@ namespace picongpu
                 std::string meshesPathName;
 
                 mpi::MPIReduce reduce;
-                static const int numberMeshRecords = 3;
+                static int const numberMeshRecords = 3;
 
                 std::optional<::openPMD::Series> m_series;
                 std::string openPMDSuffix = "_%T." + openPMD::getDefaultExtension(openPMD::ExtensionPreference::ADIOS);
@@ -249,20 +248,17 @@ namespace picongpu
                         "Additionally output distributed amplitudes per MPI rank.");
                 }
 
-
                 std::string pluginGetName() const override
                 {
                     return pluginName;
                 }
-
 
                 void setMappingDescription(MappingDesc* cellDescription) override
                 {
                     this->cellDescription = cellDescription;
                 }
 
-
-                void restart(uint32_t timeStep, const std::string restartDirectory) override
+                void restart(uint32_t timeStep, std::string const restartDirectory) override
                 {
                     // only load backup if radiation is calculated:
                     if(notifyPeriod.empty())
@@ -284,8 +280,7 @@ namespace picongpu
                     }
                 }
 
-
-                void checkpoint(uint32_t timeStep, const std::string restartDirectory) override
+                void checkpoint(uint32_t timeStep, std::string const restartDirectory) override
                 {
                     // only write backup if radiation is calculated:
                     if(notifyPeriod.empty())
@@ -406,16 +401,15 @@ namespace picongpu
                     }
                 }
 
-
                 void pluginUnload() override
                 {
                     if(!notifyPeriod.empty())
                     {
                         // Some funny things that make it possible for the kernel to calculate
                         // the absolute position of the particles
-                        const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                        SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
                         DataSpace<simDim> localSize(subGrid.getLocalDomain().size);
-                        const uint32_t numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
+                        uint32_t const numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
                         DataSpace<simDim> globalOffset(subGrid.getLocalDomain().offset);
                         globalOffset.y() += (localSize.y() * numSlides);
 
@@ -427,7 +421,6 @@ namespace picongpu
                         }
                     }
                 }
-
 
                 /** Method to copy data from GPU to CPU */
                 void copyRadiationDeviceToHost()
@@ -445,10 +438,9 @@ namespace picongpu
                         }
                 }
 
-
                 /** write radiation from each GPU to file individually
                  *  requires call of copyRadiationDeviceToHost() before */
-                void saveRadPerGPU(const DataSpace<simDim> currentGPUpos)
+                void saveRadPerGPU(DataSpace<simDim> const currentGPUpos)
                 {
                     if(radPerGPU)
                     {
@@ -474,14 +466,12 @@ namespace picongpu
                     }
                 }
 
-
                 /** returns number of observers (radiation detectors) */
                 static unsigned int elementsAmplitude()
                 {
                     return radiation_frequencies::N_omega
-                        * parameters::N_observer; // storage for amplitude results on GPU
+                           * parameters::N_observer; // storage for amplitude results on GPU
                 }
-
 
                 /** combine radiation data from each CPU and store result on master
                  *  copyRadiationDeviceToHost() should be called before */
@@ -495,7 +485,6 @@ namespace picongpu
                         mpi::reduceMethods::Reduce());
                 }
 
-
                 /** add collected radiation data to previously stored data
                  *  should be called after collectRadiationOnMaster() */
                 void sumAmplitudesOverTime(std::vector<Amplitude>& targetArray, std::vector<Amplitude>& summandArray)
@@ -507,7 +496,6 @@ namespace picongpu
                             targetArray[i] += summandArray[i];
                     }
                 }
-
 
                 /** writes to file the emitted radiation only from the current
                  *  time step. Radiation from previous time steps is neglected. */
@@ -531,7 +519,6 @@ namespace picongpu
                     }
                 }
 
-
                 /** writes the total radiation (over entire simulation time) to file */
                 void writeTotalRadToText()
                 {
@@ -553,7 +540,6 @@ namespace picongpu
                     }
                 }
 
-
                 /** write total radiation data as openPMD file */
                 void writeAmplitudesToOpenPMD()
                 {
@@ -564,7 +550,6 @@ namespace picongpu
                         WriteOpenPMDParams{m_series, openPMDSuffix, openPMDConfig});
                 }
 
-
                 /** perform all operations to get data from GPU to master */
                 void collectDataGPUToMaster()
                 {
@@ -574,9 +559,8 @@ namespace picongpu
                     sumAmplitudesOverTime(timeSumArray, tmp_result);
                 }
 
-
                 /** write all possible/selected output */
-                void writeAllFiles(const DataSpace<simDim> currentGPUpos)
+                void writeAllFiles(DataSpace<simDim> const currentGPUpos)
                 {
                     // write data to files
                     saveRadPerGPU(currentGPUpos);
@@ -584,7 +568,6 @@ namespace picongpu
                     writeTotalRadToText();
                     writeAmplitudesToOpenPMD();
                 }
-
 
                 /** This method returns openPMD data structure names for amplitudes
                  *
@@ -597,15 +580,15 @@ namespace picongpu
                  *
                  * This method avoids initializing static constexpr string arrays.
                  */
-                static const std::string dataLabels(int index)
+                static std::string const dataLabels(int index)
                 {
-                    const std::string path("Amplitude");
+                    std::string const path("Amplitude");
 
                     /* return record name if handed -1 */
                     if(index == -1)
                         return path;
 
-                    const std::string dataLabelsList[] = {"x_Re", "x_Im", "y_Re", "y_Im", "z_Re", "z_Im"};
+                    std::string const dataLabelsList[] = {"x_Re", "x_Im", "y_Re", "y_Im", "z_Re", "z_Im"};
 
                     return dataLabelsList[index];
                 }
@@ -621,19 +604,18 @@ namespace picongpu
                  *
                  * This method avoids initializing static const string arrays.
                  */
-                static const std::string dataLabelsDetectorDirection(int index)
+                static std::string const dataLabelsDetectorDirection(int index)
                 {
-                    const std::string path("DetectorDirection");
+                    std::string const path("DetectorDirection");
 
                     /* return record name if handed -1 */
                     if(index == -1)
                         return path;
 
-                    const std::string dataLabelsList[] = {"x", "y", "z"};
+                    std::string const dataLabelsList[] = {"x", "y", "z"};
 
                     return dataLabelsList[index];
                 }
-
 
                 /** This method returns openPMD data structure names for detector frequencies
                  *
@@ -646,15 +628,15 @@ namespace picongpu
                  *
                  * This method avoids initializing static const string arrays.
                  */
-                static const std::string dataLabelsDetectorFrequency(int index)
+                static std::string const dataLabelsDetectorFrequency(int index)
                 {
-                    const std::string path("DetectorFrequency");
+                    std::string const path("DetectorFrequency");
 
                     /* return record name if handed -1 */
                     if(index == -1)
                         return path;
 
-                    const std::string dataLabelsList[] = {"omega"};
+                    std::string const dataLabelsList[] = {"omega"};
 
                     return dataLabelsList[index];
                 }
@@ -670,7 +652,7 @@ namespace picongpu
                  *
                  * This method avoids initializing static const string arrays.
                  */
-                static const std::string meshRecordLabels(int index)
+                static std::string const meshRecordLabels(int index)
                 {
                     if(index == idLabels::Amplitude)
                         return dataLabels(-1);
@@ -722,15 +704,16 @@ namespace picongpu
                     {
                         GridController<simDim>& gc = Environment<simDim>::get().GridController();
                         auto communicator = gc.getCommunicator().getMPIComm();
-                        series = std::make_optional(::openPMD::Series(
-                            dir + '/' + filename.str(),
-                            ::openPMD::Access::CREATE,
-                            communicator,
-                            jsonConfig));
+                        series = std::make_optional(
+                            ::openPMD::Series(
+                                dir + '/' + filename.str(),
+                                ::openPMD::Access::CREATE,
+                                communicator,
+                                jsonConfig));
 
                         /* begin recommended openPMD global attributes */
                         series->setMeshesPath(meshesPathName);
-                        const std::string software("PIConGPU");
+                        std::string const software("PIConGPU");
                         std::stringstream softwareVersion;
                         softwareVersion << PICONGPU_VERSION_MAJOR << "." << PICONGPU_VERSION_MINOR << "."
                                         << PICONGPU_VERSION_PATCH;
@@ -776,7 +759,7 @@ namespace picongpu
 
                     /* begin required openPMD global attributes */
                     openPMDdataFileIteration.setDt<float_X>(sim.pic.getDt());
-                    const float_X time = float_X(currentStep) * sim.pic.getDt();
+                    float_X const time = float_X(currentStep) * sim.pic.getDt();
                     openPMDdataFileIteration.setTime(time);
                     openPMDdataFileIteration.setTimeUnitSI(sim.unit.time());
                     /* end required openPMD global attributes */
@@ -793,18 +776,19 @@ namespace picongpu
                         mesh_amp.setGridUnitSI(1.0);
                         mesh_amp.setAxisLabels(
                             std::vector<std::string>{"MPI", "detector direction index", "detector frequency index"});
-                        mesh_amp.setUnitDimension(std::map<::openPMD::UnitDimension, double>{
-                            {::openPMD::UnitDimension::L, 2.0},
-                            {::openPMD::UnitDimension::M, 1.0},
-                            {::openPMD::UnitDimension::T, -1.0}});
+                        mesh_amp.setUnitDimension(
+                            std::map<::openPMD::UnitDimension, double>{
+                                {::openPMD::UnitDimension::L, 2.0},
+                                {::openPMD::UnitDimension::M, 1.0},
+                                {::openPMD::UnitDimension::T, -1.0}});
 
                         /* get the radiation amplitude unit */
                         Amplitude UnityAmplitude(1., 0., 0., 0., 0., 0.);
-                        const picongpu::float_64 factor
+                        picongpu::float_64 const factor
                             = UnityAmplitude.calcRadiation() * sim.unit.energy() * sim.unit.time();
 
                         // buffer for data re-arangement
-                        const int N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
+                        int const N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
                         std::vector<std::complex<float_64>> fallbackBuffer;
 
                         // reshape abstract MeshRecordComponent
@@ -877,18 +861,19 @@ namespace picongpu
                         mesh_amp.setGridUnitSI(1.0);
                         mesh_amp.setAxisLabels(
                             std::vector<std::string>{"detector direction index", "detector frequency index", "None"});
-                        mesh_amp.setUnitDimension(std::map<::openPMD::UnitDimension, double>{
-                            {::openPMD::UnitDimension::L, 2.0},
-                            {::openPMD::UnitDimension::M, 1.0},
-                            {::openPMD::UnitDimension::T, -1.0}});
+                        mesh_amp.setUnitDimension(
+                            std::map<::openPMD::UnitDimension, double>{
+                                {::openPMD::UnitDimension::L, 2.0},
+                                {::openPMD::UnitDimension::M, 1.0},
+                                {::openPMD::UnitDimension::T, -1.0}});
 
                         /* get the radiation amplitude unit */
                         Amplitude UnityAmplitude(1., 0., 0., 0., 0., 0.);
-                        const picongpu::float_64 factor
+                        picongpu::float_64 const factor
                             = UnityAmplitude.calcRadiation() * sim.unit.energy() * sim.unit.time();
 
                         // buffer for data re-arangement
-                        const int N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
+                        int const N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
                         std::vector<float_64> fallbackBuffer;
 
                         // reshape abstract MeshRecordComponent
@@ -958,7 +943,7 @@ namespace picongpu
                         ::openPMD::Extent extent_n = {parameters::N_observer, 1, 1};
                         ::openPMD::Offset offset_n = {0, 0, 0};
 
-                        const picongpu::float_64 factorDirection = 1.0;
+                        picongpu::float_64 const factorDirection = 1.0;
 
                         for(uint32_t detectorDim = 0; detectorDim < 3; ++detectorDim)
                         {
@@ -1020,7 +1005,7 @@ namespace picongpu
 
                     // write mesh attributes
                     ::openPMD::MeshRecordComponent omega_mrc = mesh_omega[dataLabelsDetectorFrequency(0)];
-                    const picongpu::float_64 factorOmega = 1.0 / sim.unit.time();
+                    picongpu::float_64 const factorOmega = 1.0 / sim.unit.time();
                     omega_mrc.setUnitSI(factorOmega);
                     omega_mrc.setPosition(std::vector<double>{0.0, 0.0, 0.0});
 
@@ -1047,7 +1032,6 @@ namespace picongpu
                     openPMDdataFile.flush();
                 }
 
-
                 /** Read Amplitude data from openPMD file
                  *
                  * Arguments:
@@ -1058,7 +1042,7 @@ namespace picongpu
                 void readOpenPMDfile(
                     std::vector<Amplitude>& values,
                     std::string name,
-                    const int timeStep,
+                    int const timeStep,
                     std::string const& extension)
                 {
                     std::ostringstream filename;
@@ -1077,7 +1061,7 @@ namespace picongpu
                         ::openPMD::Series openPMDdataFile
                             = ::openPMD::Series(filename.str(), ::openPMD::Access::READ_ONLY);
 
-                        const int N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
+                        int const N_tmpBuffer = radiation_frequencies::N_omega * parameters::N_observer;
                         picongpu::float_64* tmpBuffer = new picongpu::float_64[N_tmpBuffer];
 
                         for(uint32_t ampIndex = 0; ampIndex < Amplitude::numComponents; ++ampIndex)
@@ -1108,7 +1092,6 @@ namespace picongpu
                     }
                 }
 
-
                 /**
                  * From the collected data from all hosts the radiated intensity is
                  * calculated by calculating the absolute value squared and multiplying
@@ -1138,8 +1121,8 @@ namespace picongpu
                                 // calculate the square of the absolute value
                                 // and write to file.
                                 outFile << values[index_omega + index_direction * radiation_frequencies::N_omega]
-                                               .calcRadiation()
-                                        * sim.unit.energy() * sim.unit.time()
+                                                   .calcRadiation()
+                                               * sim.unit.energy() * sim.unit.time()
                                         << "\t";
                             }
                             outFile << std::endl;
@@ -1193,8 +1176,8 @@ namespace picongpu
                      * turned out to be slower on GPUs of the Fermi generation (sm_2x) (couple
                      * percent) and definitely slower on Kepler GPUs (sm_3x, tested on K20))
                      */
-                    const int N_observer = parameters::N_observer;
-                    const auto gridDim_rad = N_observer;
+                    int const N_observer = parameters::N_observer;
+                    auto const gridDim_rad = N_observer;
 
                     /* number of threads per block = number of cells in a super cell
                      *          = number of particles in a Frame
@@ -1207,8 +1190,8 @@ namespace picongpu
                     // Some funny things that make it possible for the kernel to calculate
                     // the absolute position of the particles
                     DataSpace<simDim> localSize(cellDescription->getGridLayout().sizeWithoutGuardND());
-                    const uint32_t numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
-                    const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                    uint32_t const numSlides = MovingWindow::getInstance().getSlideCounter(currentStep);
+                    SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
                     DataSpace<simDim> globalOffset(subGrid.getLocalDomain().offset);
                     globalOffset.y() += (localSize.y() * numSlides);
 

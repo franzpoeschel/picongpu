@@ -27,7 +27,6 @@
 #include <algorithm>
 #include <string>
 
-
 namespace picongpu
 {
     namespace plugins
@@ -52,7 +51,7 @@ namespace picongpu
                 Window const& inputWindow,
                 std::string const& selectedRange)
             {
-                const SubGrid<simDim>& subGrid = Environment<simDim>::get().SubGrid();
+                SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
 
                 auto parsedSlice = pmacc::pluginSystem::toRangeSlice(selectedRange);
 
@@ -90,7 +89,7 @@ namespace picongpu
                      */
                     if(static_cast<int>(newWindowEnd) <= subGrid.getLocalDomain().offset[d]
                        || subGrid.getLocalDomain().size[d] + subGrid.getLocalDomain().offset[d]
-                           < static_cast<int>(newWindowBegin))
+                              < static_cast<int>(newWindowBegin))
                         resultWindow.localDimensions.size[d] = 0;
                     else
                     {

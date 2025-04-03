@@ -21,7 +21,6 @@
 
 #include "picongpu/fields/incidentField/profiles/BaseParam.def"
 
-
 namespace picongpu
 {
     namespace fields

@@ -22,7 +22,6 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/traits/frame/GetMass.hpp"
 
-
 namespace picongpu
 {
     namespace traits
@@ -37,7 +36,7 @@ namespace picongpu
              * @return mass of the macro particle, sim.unit.mass()
              */
             template<typename T_Particle>
-            HDINLINE float_X getMass(const float_X weighting, const T_Particle& particle)
+            HDINLINE float_X getMass(float_X const weighting, T_Particle const& particle)
             {
                 using ParticleType = T_Particle;
                 return picongpu::traits::frame::getMass<typename ParticleType::FrameType>() * weighting;

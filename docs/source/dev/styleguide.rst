@@ -15,7 +15,7 @@ Source Style
 For contributions, *an ideal patch blends in the existing coding style around it* without being noticed as an addition when applied.
 Nevertheless, please make sure *new files* follow the styles linked above as strict as possible from the beginning.
 
-clang-format-12 (version 12.0.1) should be used to format the code.
+clang-format-20 (version 20.1.0) should be used to format the code.
 There are different ways to format the code.
 
 Format All Files
@@ -29,7 +29,7 @@ To format all files in your working copy, you can run this command in bash from 
      -o -iname "*.h" -o -iname "*.cpp" -o -iname "*.cu" \
      -o -iname "*.hpp" -o -iname "*.tpp" -o -iname "*.kernel" \
      -o -iname "*.loader" -o -iname "*.param" -o -iname "*.unitless" \
-     | xargs clang-format-12 -i
+     | xargs clang-format-20 -i
 
 Format Only Changes, Using Git
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -54,7 +54,7 @@ After installing, or on a cluster loading the module(see introduction), clangFor
 .. warning::
 
     The binary for *ClangFormat* is called `clang-format` on some operating systems.
-    If *clangFormat* is not recognized, try *clang-format* instead, in addition please check that `clang-format --version` returns version `11.X.X` in this case.
+    If *clangFormat* is not recognized, try *clang-format* instead, in addition please check that `clang-format --version` returns version `20.X.X` in this case.
 
 The Typical workflow using git clangFormat is the following,
 
@@ -85,7 +85,7 @@ The Typical workflow using git clangFormat is the following,
     git commit -m <commit message>
 
 Please be aware that un-staged changes will not be formatted.
-Formatting all changes of the previous commit can be achieved by executing the command `git clang-format-12 HEAD~1`.
+Formatting all changes of the previous commit can be achieved by executing the command `git clang-format-20 HEAD~1`.
 
 License Header
 --------------

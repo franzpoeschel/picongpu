@@ -29,7 +29,6 @@
 
 #include <mpi.h>
 
-
 namespace pmacc
 {
     namespace mpi
@@ -139,7 +138,6 @@ namespace pmacc
 
                 return this->isMaster();
             }
-
 
             /** gather data
              *

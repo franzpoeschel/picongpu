@@ -63,6 +63,7 @@ namespace pmacc
             Dim = BaseClass::Dim,
             AreaType = BORDER
         };
+
         typedef DataSpace<Dim> DimDataSpace;
 
         typedef typename BaseClass::SuperCellSize SuperCellSize;
@@ -73,7 +74,7 @@ namespace pmacc
          * @param base object of base class baseClass (see template parameters)
          * @param direction exchange direction to map to
          */
-        HINLINE BorderMapping(const BaseClass& base, pmacc::ExchangeType direction)
+        HINLINE BorderMapping(BaseClass const& base, pmacc::ExchangeType direction)
             : BaseClass(base)
             , m_direction(direction)
         {
@@ -98,7 +99,7 @@ namespace pmacc
         {
             DimDataSpace result(this->getGridSuperCells() - 2 * this->getGuardingSuperCells());
 
-            const DimDataSpace directions = Mask::getRelativeDirections<Dim>(m_direction);
+            DimDataSpace const directions = Mask::getRelativeDirections<Dim>(m_direction);
 
             for(int i = 0; i < Dim; i++)
             {
@@ -116,11 +117,11 @@ namespace pmacc
          * @return mapped SuperCell index including guards
          */
         template<uint32_t T_origin = GUARD>
-        HDINLINE DimDataSpace getSuperCellIndex(const DimDataSpace& blockIdx) const
+        HDINLINE DimDataSpace getSuperCellIndex(DimDataSpace const& blockIdx) const
         {
             DimDataSpace result = blockIdx;
 
-            const DimDataSpace directions = Mask::getRelativeDirections<Dim>(m_direction);
+            DimDataSpace const directions = Mask::getRelativeDirections<Dim>(m_direction);
 
             for(int i = 0; i < Dim; i++)
             {
@@ -141,6 +142,6 @@ namespace pmacc
         }
 
     private:
-        PMACC_ALIGN(m_direction, const pmacc::ExchangeType);
+        PMACC_ALIGN(m_direction, pmacc::ExchangeType const);
     };
 } // namespace pmacc

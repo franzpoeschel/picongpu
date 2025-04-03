@@ -43,7 +43,6 @@ namespace picongpu
                     using namespace picongpu::particles::collision::precision;
                     constexpr float_COLL c = static_cast<float_COLL>(sim.pic.getSpeedOfLight());
 
-
                     /* Calculate @f[ \gamma^* m @f]
                      *
                      * Returns particle mass times its Lorentz factor in the COM frame.
@@ -158,15 +157,14 @@ namespace picongpu
                         // new fit from smilei implementation:
                         if(s12 < 4._COLL)
                         {
-                            const float_COLL s2 = s12 * s12;
-                            const float_COLL alpha = 0.37_COLL * s12 - 0.005_COLL * s2 - 0.0064_COLL * s2 * s12;
-                            const float_COLL sin2X2 = alpha * u / math::sqrt((1._COLL - u) + alpha * alpha * u);
+                            float_COLL const s2 = s12 * s12;
+                            float_COLL const alpha = 0.37_COLL * s12 - 0.005_COLL * s2 - 0.0064_COLL * s2 * s12;
+                            float_COLL const sin2X2 = alpha * u / math::sqrt((1._COLL - u) + alpha * alpha * u);
                             return 1._COLL - 2.0_COLL * sin2X2;
                         }
                         else
                             return 2._COLL * u - 1._COLL;
                     }
-
 
                     /* Calculate the momentum after the collision in the COM frame
                      *
@@ -197,9 +195,9 @@ namespace picongpu
                         else // normal case
                         {
                             finalVec[0] = (p.x() * p.z() * sinXi * cosPhi - p.y() * pNorm2 * sinXi * sinPhi) / pPerp
-                                + p.x() * cosXi;
+                                          + p.x() * cosXi;
                             finalVec[1] = (p.y() * p.z() * sinXi * cosPhi + p.x() * pNorm2 * sinXi * sinPhi) / pPerp
-                                + p.y() * cosXi;
+                                          + p.y() * cosXi;
                             finalVec[2] = -1.0_COLL * pPerp * sinXi * cosPhi + p.z() * cosXi;
                         }
                         return finalVec;
@@ -233,14 +231,18 @@ namespace picongpu
                             , normalizedWeight1(precisionCast<float_COLL>(par1[weighting_]) / WEIGHT_NORM_COLL)
                             , labMomentum0(precisionCast<float_COLL>(par0[momentum_]) / normalizedWeight0)
                             , labMomentum1(precisionCast<float_COLL>(par1[momentum_]) / normalizedWeight1)
-                            , mass0(precisionCast<float_COLL>(
-                                  picongpu::traits::attribute::getMass(WEIGHT_NORM_COLL, par0)))
-                            , mass1(precisionCast<float_COLL>(
-                                  picongpu::traits::attribute::getMass(WEIGHT_NORM_COLL, par1)))
-                            , charge0(precisionCast<float_COLL>(
-                                  picongpu::traits::attribute::getCharge(WEIGHT_NORM_COLL, par0)))
-                            , charge1(precisionCast<float_COLL>(
-                                  picongpu::traits::attribute::getCharge(WEIGHT_NORM_COLL, par1)))
+                            , mass0(
+                                  precisionCast<float_COLL>(
+                                      picongpu::traits::attribute::getMass(WEIGHT_NORM_COLL, par0)))
+                            , mass1(
+                                  precisionCast<float_COLL>(
+                                      picongpu::traits::attribute::getMass(WEIGHT_NORM_COLL, par1)))
+                            , charge0(
+                                  precisionCast<float_COLL>(
+                                      picongpu::traits::attribute::getCharge(WEIGHT_NORM_COLL, par0)))
+                            , charge1(
+                                  precisionCast<float_COLL>(
+                                      picongpu::traits::attribute::getCharge(WEIGHT_NORM_COLL, par1)))
                             , gamma0(picongpu::gamma<float_COLL>(labMomentum0, mass0))
                             , gamma1(picongpu::gamma<float_COLL>(labMomentum1, mass1))
                             , comsVelocity((labMomentum0 + labMomentum1) / (mass0 * gamma0 + mass1 * gamma1))
@@ -253,7 +255,8 @@ namespace picongpu
                                 // written as (1-v)(1+v) rather than (1-v^2) for better performance when v close to
                                 // c
                                 gammaComs = 1.0_COLL
-                                    / math::sqrt((1.0_COLL - comsVelocityAbs / c) * (1.0_COLL + comsVelocityAbs / c));
+                                            / math::sqrt(
+                                                (1.0_COLL - comsVelocityAbs / c) * (1.0_COLL + comsVelocityAbs / c));
                                 // used later for comsToLab:
                                 factorA = (gammaComs - 1.0_COLL) / comsVelocityNorm2;
 
@@ -310,7 +313,6 @@ namespace picongpu
                         }
                     };
 
-
                     /* Perform a single binary collision between two macro particles. (Device side functor)
                      *
                      * This algorithm was described in [Perez 2012] @url www.doi.org/10.1063/1.4742167.
@@ -335,7 +337,7 @@ namespace picongpu
                             : densitySqCbrt0(p_densitySqCbrt0)
                             , densitySqCbrt1(p_densitySqCbrt1)
                             , duplicationCorrection(1u)
-                            , potentialPartners(p_potentialPartners){};
+                            , potentialPartners(p_potentialPartners) {};
 
                         PMACC_ALIGN(coulombLogFunctor, T_CoulombLogFunctor);
                         PMACC_ALIGN(densitySqCbrt0, float_COLL);
@@ -352,18 +354,19 @@ namespace picongpu
                             //  is equal  s12 * (n12/(n1*n2)) from [Perez 2012]
                             float_COLL s12Factor0
                                 = (DELTA_T_COLL * coulombLog * v.charge0 * v.charge0 * v.charge1 * v.charge1)
-                                / (4.0_COLL * pmacc::math::Pi<float_COLL>::value * EPS0_COLL * EPS0_COLL * c * c * c
-                                   * c * v.mass0 * v.gamma0 * v.mass1 * v.gamma1);
+                                  / (4.0_COLL * pmacc::math::Pi<float_COLL>::value * EPS0_COLL * EPS0_COLL * c * c * c
+                                     * c * v.mass0 * v.gamma0 * v.mass1 * v.gamma1);
                             s12Factor0 *= 1.0_COLL / WEIGHT_NORM_COLL / WEIGHT_NORM_COLL;
                             float_COLL const s12Factor1 = v.gammaComs * math::sqrt(v.comsMomentum0Norm2)
-                                / (v.mass0 * v.gamma0 + v.mass1 * v.gamma1);
+                                                          / (v.mass0 * v.gamma0 + v.mass1 * v.gamma1);
                             float_COLL const s12Factor2
                                 = v.coeff0 * v.coeff1 * c * c / v.comsMomentum0Norm2 + 1.0_COLL;
                             // Statistical part from [Higginson 2020],
                             // corresponds to n1*n2/n12 in [Perez 2012]:
-                            float_COLL const s12Factor3 = potentialPartners
-                                * math::max(v.normalizedWeight0, v.normalizedWeight1) * WEIGHT_NORM_COLL
-                                / static_cast<float_COLL>(duplicationCorrection) / CELL_VOLUME_COLL;
+                            float_COLL const s12Factor3
+                                = potentialPartners * math::max(v.normalizedWeight0, v.normalizedWeight1)
+                                  * WEIGHT_NORM_COLL / static_cast<float_COLL>(duplicationCorrection)
+                                  / CELL_VOLUME_COLL;
                             float_COLL const s12n = s12Factor0 * s12Factor1 * s12Factor2 * s12Factor2 * s12Factor3;
 
                             // low Temeprature correction:
@@ -382,8 +385,9 @@ namespace picongpu
                             float_COLL s12Max = math::pow(
                                                     4.0_COLL * pmacc::math::Pi<float_COLL>::value / 3._COLL,
                                                     1.0_COLL / 3.0_COLL)
-                                * DELTA_T_COLL * (v.mass0 + v.mass1)
-                                / math::max(v.mass0 * densitySqCbrt0, v.mass1 * densitySqCbrt1) * relativeComsVelocity;
+                                                * DELTA_T_COLL * (v.mass0 + v.mass1)
+                                                / math::max(v.mass0 * densitySqCbrt0, v.mass1 * densitySqCbrt1)
+                                                * relativeComsVelocity;
                             s12Max *= s12Factor3;
                             return math::min(s12n, s12Max);
                         }
@@ -467,11 +471,11 @@ namespace picongpu
                             if((par0[momentum_] == float3_X{0.0_X, 0.0_X, 0.0_X})
                                && (par1[momentum_] == float3_X{0.0_X, 0.0_X, 0.0_X}))
                                 return;
-                            const Variables v{par0, par1};
+                            Variables const v{par0, par1};
                             if(v.comsMomentum0Norm2 == 0.0_COLL)
                                 return;
-                            const float_COLL coulombLog = coulombLogFunctor(v);
-                            const float_COLL s12 = normalizedPathLength(v, coulombLog);
+                            float_COLL const coulombLog = coulombLogFunctor(v);
+                            float_COLL const s12 = normalizedPathLength(v, coulombLog);
                             RelativisticCollisionBase<ifDebug>::processDebugValues(coulombLog, s12);
                             lastPart(v, ctx, par0, par1, s12);
                         }

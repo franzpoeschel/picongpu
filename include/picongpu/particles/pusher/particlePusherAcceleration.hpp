@@ -53,11 +53,11 @@ namespace picongpu
 
             template<typename T_FunctorFieldE, typename T_FunctorFieldB, typename T_Particle, typename T_Pos>
             HDINLINE void operator()(
-                const T_FunctorFieldB,
-                const T_FunctorFieldE,
+                T_FunctorFieldB const,
+                T_FunctorFieldE const,
                 T_Particle& particle,
                 T_Pos& pos,
-                const uint32_t currentStep)
+                uint32_t const currentStep)
             {
                 using UnitlessParam = ::picongpu::particlePusherAcceleration::UnitlessParam;
 
@@ -68,12 +68,12 @@ namespace picongpu
                 using MomType = momentum::type;
                 MomType new_mom = particle[momentum_];
 
-                const float_X deltaT = sim.pic.getDt();
+                float_X const deltaT = sim.pic.getDt();
 
                 // normalize input SI values to
-                const float3_X eField(UnitlessParam::AMPLITUDEx, UnitlessParam::AMPLITUDEy, UnitlessParam::AMPLITUDEz);
+                float3_X const eField(UnitlessParam::AMPLITUDEx, UnitlessParam::AMPLITUDEy, UnitlessParam::AMPLITUDEz);
                 // the particle moves as if E = eField and B = 0, so record those values as probe fields
-                const auto bField = float3_X::create(0._X);
+                auto const bField = float3_X::create(0._X);
 
                 // update probe field if particle contains required attributes
                 if constexpr(pmacc::traits::HasIdentifier<T_Particle, probeB>::type::value)
@@ -90,7 +90,7 @@ namespace picongpu
                 particle[momentum_] = new_mom;
 
                 Velocity velocity;
-                const float3_X vel = velocity(new_mom, mass);
+                float3_X const vel = velocity(new_mom, mass);
 
                 for(uint32_t d = 0; d < simDim; ++d)
                 {

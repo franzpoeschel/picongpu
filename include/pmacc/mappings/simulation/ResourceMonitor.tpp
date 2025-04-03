@@ -28,7 +28,6 @@
 #include "pmacc/particles/operations/CountParticles.hpp"
 #include "pmacc/types.hpp"
 
-
 namespace pmacc
 {
     template<typename T_DIM, typename T_Species>
@@ -39,8 +38,8 @@ namespace pmacc
         {
             DataConnector& dc = Environment<>::get().DataConnector();
 
-            const SubGrid<T_DIM::value>& subGrid = Environment<T_DIM::value>::get().SubGrid();
-            const DataSpace<T_DIM::value> localSize(subGrid.getLocalDomain().size);
+            SubGrid<T_DIM::value> const& subGrid = Environment<T_DIM::value>::get().SubGrid();
+            DataSpace<T_DIM::value> const localSize(subGrid.getLocalDomain().size);
 
             uint64_cu totalNumParticles = 0;
             totalNumParticles = pmacc::CountParticles::countOnDevice<CORE + BORDER>(

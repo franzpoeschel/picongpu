@@ -39,7 +39,6 @@ namespace picongpu::atomicPhysics::debug
         constexpr bool DEBUG_SYNC_BUFFERS_TO_HOST = false;
     } // namespace  atomicData
 
-
     namespace electronHistogram
     {
         //! @attention only useful if using serial backend, no output unless compiling for cpu backend
@@ -51,7 +50,6 @@ namespace picongpu::atomicPhysics::debug
         constexpr bool RANGE_CHECKS_ENERGY = false;
     } // namespace electronHistogram
 
-
     namespace rateCalculation
     {
         //! @attention performance relevant
@@ -59,13 +57,11 @@ namespace picongpu::atomicPhysics::debug
         constexpr bool RUN_UNIT_TESTS = false;
     } // namespace rateCalculation
 
-
     namespace deltaEnergyTransition
     {
         //! @attention performance relevant
         constexpr bool IONIZATION_ENERGY_INVERSION_CHECK = false;
     } // namespace deltaEnergyTransition
-
 
     namespace rateCache
     {

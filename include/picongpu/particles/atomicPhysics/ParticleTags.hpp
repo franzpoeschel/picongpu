@@ -32,12 +32,15 @@ namespace picongpu::particles::atomicPhysics
         struct Ion
         {
         };
+
         struct Electron
         {
         };
+
         struct OnlyIPDIon
         {
         };
+
         struct OnlyIPDElectron
         {
         };

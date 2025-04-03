@@ -146,7 +146,6 @@ namespace pmacc
             Finished
         };
 
-
         ParBase& parBase;
         state_t state;
         EventTask tmpEvent;

@@ -32,7 +32,6 @@
 #include <string>
 #include <vector>
 
-
 namespace pmacc
 {
     void PluginConnector::registerPlugin(IPlugin* plugin)
@@ -114,7 +113,7 @@ namespace pmacc
         }
     }
 
-    void PluginConnector::checkpointPlugins(uint32_t currentStep, const std::string checkpointDirectory)
+    void PluginConnector::checkpointPlugins(uint32_t currentStep, std::string const checkpointDirectory)
     {
         for(auto iter = plugins.begin(); iter != plugins.end(); ++iter)
         {
@@ -123,7 +122,7 @@ namespace pmacc
         }
     }
 
-    void PluginConnector::restartPlugins(uint32_t restartStep, const std::string restartDirectory)
+    void PluginConnector::restartPlugins(uint32_t restartStep, std::string const restartDirectory)
     {
         for(auto iter = plugins.begin(); iter != plugins.end(); ++iter)
         {
