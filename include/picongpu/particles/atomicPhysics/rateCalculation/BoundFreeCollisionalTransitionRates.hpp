@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Brian Marre, Axel Huebl
+/* Copyright 2023-2025 Brian Marre, Axel Huebl
  *
  * This file is part of PIConGPU.
  *
@@ -83,6 +83,8 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
          * @param U (kinetic energy of interacting electron)/(ionization potential of initial level), unitless
          * @param beta beta factor from
          *
+         * @attention U must be > 0
+         *
          * @return unitless
          */
         HDINLINE static float_64 wFactor(float_X const U, float_X const beta)
@@ -97,8 +99,8 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
          * @tparam T_AtomicStateDataBox instantiated type of dataBox
          * @tparam T_BoundFreeTransitionDataBox instantiated type of dataBox
          *
-         * @param energyElectron kinetic energy of interacting free electron(/electron bin), eV
-         * @param ionizationPotentialDepression in eV
+         * @param energyElectron kinetic energy of interacting free electron(/electron bin), in eV
+         * @param ionizationPotentialDepression, in eV
          * @param transitionCollectionIndex index of transition in boundBoundTransitionDataBox
          * @param atomicStateDataBox access to atomic state property data
          * @param boundBoundTransitionDataBox access to bound-bound transition data
@@ -155,20 +157,30 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             }
 
             float_X result = 0._X;
-            if(energyDifference <= energyElectron)
+
+            /// @details ">", since energyDifference == energyElectron causes w == 0 -> cross section == 0, therefore
+            /// skip calculation
+            bool const electronEnergySufficientForTransitions = (energyDifference < energyElectron);
+
+            /// @details energyDifference > = since otherwise U is a NaN
+            /// @details also ensures energyElectron > 0, otherwise U = 0 for which the wFactor(U, beta) is not defined
+            if((energyDifference > 0) && electronEnergySufficientForTransitions)
             {
-                constexpr float_64 C = 2.3; // a fitting factor well suited for Z >= 2, unitless
-                constexpr float_64 a0 = sim.si.getBohrRadius(); // m
-                constexpr float_64 E_R = sim.si.conv().joule2eV(sim.si.getRydbergEnergy()); // eV
+                // a fitting factor well suited for Z >= 2, unitless
+                constexpr float_64 C = 2.3;
+                // m
+                constexpr float_64 a0 = sim.si.getBohrRadius();
+                // eV
+                constexpr float_64 E_R = sim.si.conv().joule2eV(sim.si.getRydbergEnergy());
+                /* m^2 / (m^2/10^6*b) * (eV)^2= m^2/m^2 * 10^6*b * eV^2
+                 * unit:  10^6*b * eV^2*/
                 constexpr float_64 scalingConstant
                     = C * picongpu::PI * pmacc::math::cPow(a0, 2u) / 1e-22 * pmacc::math::cPow(E_R, 2u);
-                // 10^6*b * eV^2
-                // m^2 / (m^2/10^6*b) * (eV)^2= m^2/m^2 * 10^6*b * eV^2
 
                 uint8_t const lowerStateChargeState = S_ConfigNumber::getChargeState(lowerStateConfigNumber);
 
-                /// @todo replace with screenedCharge(upperStateChargeState)?, Brian Marre, 2023
-                float_X const screenedCharge = chargeStateDataBox.screenedCharge(lowerStateChargeState) - 1._X; // [e]
+                // e
+                float_X const screenedCharge = chargeStateDataBox.screenedCharge(lowerStateChargeState) - 1._X;
 
                 // unitless
                 float_X const U = energyElectron / energyDifference;
@@ -176,11 +188,14 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
                 float_X const beta = betaFactor(screenedCharge);
                 // unitless
                 float_64 const w = wFactor(U, beta);
+
+                /* 1e6*b * (eV)^2 * unitless / (eV)^2 / unitless * log(unitless) * unitless
+                 * unit: 1e6*b */
                 float_X const crossSection = static_cast<float_X>(
                     scalingConstant * combinatorialFactor
                     / static_cast<float_64>(pmacc::math::cPow(energyDifference, 2u)) / static_cast<float_64>(U)
-                    * math::log(static_cast<float_64>(U)) * w); // [1e6*b]
-                // 1e6*b * (eV)^2 * unitless / (eV)^2 / unitless * log(unitless) * unitless
+                    * math::log(static_cast<float_64>(U)) * w);
+
                 if(crossSection > 0._X)
                     result = crossSection;
             }

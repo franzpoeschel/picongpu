@@ -461,6 +461,7 @@ namespace picongpu::particles::atomicPhysics::debug
                 else
                     std::cout << " x Fail" << std::endl;
             }
+            std::cout << std::endl;
             return pass_total;
         }
     };

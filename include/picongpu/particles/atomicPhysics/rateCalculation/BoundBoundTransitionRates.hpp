@@ -181,7 +181,7 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
          * @tparam T_BoundBoundTransitionDataBox instantiated type of dataBox
          * @tparam T_excitation true =^= excitation, false =^= deexcitation, direction of transition
          *
-         * @param energyElectron kinetic energy of interacting free electron(/electron bin), [eV]
+         * @param energyElectron kinetic energy of interacting free electron(/electron bin), in eV
          * @param transitionCollectionIndex index of transition in boundBoundTransitionDataBox
          * @param atomicStateDataBox access to atomic state property data
          * @param boundBoundTransitionDataBox access to bound-bound transition data
@@ -193,7 +193,7 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
          */
         template<typename T_AtomicStateDataBox, typename T_BoundBoundTransitionDataBox, bool T_excitation>
         HDINLINE static float_X collisionalBoundBoundCrossSection(
-            float_X const energyElectron, // [eV]
+            float_X const energyElectron,
             uint32_t const transitionCollectionIndex,
             T_AtomicStateDataBox const atomicStateDataBox,
             T_BoundBoundTransitionDataBox const boundBoundTransitionDataBox)

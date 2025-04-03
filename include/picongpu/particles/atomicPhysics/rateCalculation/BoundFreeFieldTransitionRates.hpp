@@ -1,4 +1,4 @@
-/* Copyright 2024-2024 Brian Marre, Marco Garten
+/* Copyright 2024-2025 Brian Marre, Marco Garten
  *
  * This file is part of PIConGPU.
  *
@@ -39,6 +39,10 @@
 
 namespace picongpu::particles::atomicPhysics::rateCalculation
 {
+    /** methods for calculating bound-free field based transition rates
+     *
+     * @tparam T_ADKLaserPolarization, laser polarization type to use in the ADK model
+     */
     template<atomicPhysics::enums::ADKLaserPolarization T_ADKLaserPolarization>
     struct BoundFreeFieldTransitionRates
     {
@@ -54,14 +58,15 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
 
             /** initialize
              *
-             * @param ionizationPotentialDepression, in eV
+             * @param ionizationEnergy, in eV
              * @param transitionCollectionIndex index of transition in boundBoundTransitionDataBox
              * @param atomicStateDataBox access to atomic state property data
              * @param boundBoundTransitionDataBox access to bound-bound transition data
+             *
+             * @attention ionizationEnergy must be > 0
              */
             HDINLINE RateFormulaVariables(
                 float_X const ionizationEnergy,
-                float_X const ionizationPotentialDepression,
                 uint32_t const transitionCollectionIndex,
                 T_ChargeStateDataBox const chargeStateDataBox,
                 T_AtomicStateDataBox const atomicStateDataBox,
@@ -80,8 +85,10 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
     public:
         /** get effective principal quantum number
          *
-         * @param ionizationEnergy, in Hartree
          * @param screenedCharge, in e
+         * @param ionizationEnergy, in eV
+         *
+         * @attention ionizationEnergy must be > 0
          *
          * @return unitless
          */
@@ -89,7 +96,7 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             float_X const screenedCharge,
             float_X const ionizationEnergy)
         {
-            return screenedCharge / math::sqrt(2._X * ionizationEnergy);
+            return screenedCharge / math::sqrt(2._X * picongpu::sim.si.conv().eV2auEnergy(ionizationEnergy));
         }
 
         /** get screened charge for ionization electron
@@ -122,6 +129,7 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
          * @param eFieldNorm_AU norm of the E-Field strength, in sim.atomicUnit.eField()
          *
          * @returns -1. if the result is larger than the maximum representable value of T_ReturnType, unit: 1/unit_time
+         * @attention eFieldNorm_AU > 0, otherwise rate formula not defined
          */
         template<typename T_ReturnType>
         HDINLINE static float_X rateFormula(float_X const Z, float_X const nEff, float_X const eFieldNorm_AU)
@@ -204,13 +212,15 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
                 ionizationPotentialDepression,
                 chargeStateDataBox);
 
-            if((eFieldNorm == 0._X) || (eFieldEnergy < picongpu::sim.pic.conv().eV2Joule(ionizationEnergy)))
+            /// @details need to check for ionizationEnergy > 0 since IPD ionization may be disabled
+            /// @details will also trigger if guarantees eFieldStrength == 0
+            bool const enoughFieldEnergy = (eFieldEnergy >= picongpu::sim.pic.conv().eV2Joule(ionizationEnergy));
+            if((ionizationEnergy <= 0) || !enoughFieldEnergy)
                 return static_cast<T_ReturnType>(0.);
 
             auto const v
                 = RateFormulaVariables<T_ChargeStateDataBox, T_AtomicStateDataBox, T_BoundFreeTransitionDataBox>(
-                    picongpu::sim.si.conv().eV2auEnergy(ionizationEnergy),
-                    ionizationPotentialDepression,
+                    ionizationEnergy,
                     transitionCollectionIndex,
                     chargeStateDataBox,
                     atomicStateDataBox,
@@ -263,13 +273,15 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
                 ionizationPotentialDepression,
                 chargeStateDataBox);
 
-            if((maxEFieldNorm == 0._X) || (maxEFieldEnergy < picongpu::sim.pic.conv().eV2Joule(ionizationEnergy)))
+            /// @details need to check for ionizationEnergy > 0 since IPD ionization may be disabled
+            /// @details will also trigger if guarantees eFieldStrength == 0
+            bool const enoughFieldEnergy = (maxEFieldEnergy >= picongpu::sim.pic.conv().eV2Joule(ionizationEnergy));
+            if((ionizationEnergy <= 0) || !enoughFieldEnergy)
                 return static_cast<T_ReturnType>(0.);
 
             auto const v
                 = RateFormulaVariables<T_ChargeStateDataBox, T_AtomicStateDataBox, T_BoundFreeTransitionDataBox>(
-                    picongpu::sim.si.conv().eV2auEnergy(ionizationEnergy),
-                    ionizationPotentialDepression,
+                    ionizationEnergy,
                     transitionCollectionIndex,
                     chargeStateDataBox,
                     atomicStateDataBox,
