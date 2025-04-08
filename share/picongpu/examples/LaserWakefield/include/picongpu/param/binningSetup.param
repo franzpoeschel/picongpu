@@ -130,7 +130,6 @@ namespace picongpu
             auto chargeDepositionData = createFunctorDescription<float_X>(getParticleCharge, "Charge", depositedUnits);
 
             binningCreator.addParticleBinner("eSpec", axisTuple, speciesTuple, chargeDepositionData)
-                .setNormalizeByBinVolume(true)
                 .setNotifyPeriod("100")
                 .setOpenPMDJsonCfg(R"({"hdf5":{"dataset":{"chunks":"auto"}}})")
                 .setOpenPMDExtension("h5");

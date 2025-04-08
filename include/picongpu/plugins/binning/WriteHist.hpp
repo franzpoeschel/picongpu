@@ -57,7 +57,6 @@ namespace picongpu
                 OpenPMDWriteParams params,
                 std::unique_ptr<HostBuffer<T_Type, 1u>> hReducedBuffer,
                 T_BinningData const& binningData,
-                std::array<double, numUnits> const& outputUnits,
                 uint32_t const currentStep,
                 bool const isCheckpoint = false,
                 uint32_t const accumulateCounter = 0)
@@ -165,9 +164,7 @@ namespace picongpu
                 mesh.setGridSpacing(gridSpacingVector);
                 mesh.setGridGlobalOffset(gridOffsetVector);
 
-                {
-                    mesh.setUnitDimension(makeOpenPMDUnitMap(binningData.depositionData.units)); // charge density
-                }
+                mesh.setUnitDimension(makeOpenPMDUnitMap(binningData.depositionData.units));
 
                 /*
                  * The value represents an aggregation over one cell, so any value is correct for the mesh position.
@@ -186,7 +183,7 @@ namespace picongpu
                     histOffset.emplace_back(static_cast<size_t>(0));
                 }
 
-                record.setUnitSI(getConversionFactor(outputUnits));
+                record.setUnitSI(getConversionFactor(binningData.depositionData.units));
 
                 record.resetDataset({::openPMD::determineDatatype<Type>(), histExtent});
                 auto base_ptr = hReducedBuffer->data();

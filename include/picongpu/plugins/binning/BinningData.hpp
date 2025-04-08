@@ -116,13 +116,6 @@ namespace picongpu
                 return interpretAsChild();
             }
 
-            /** @brief Defaults to true */
-            Child& setNormalizeByBinVolume(bool normalize)
-            {
-                this->normalizeByBinVolume = normalize;
-                return interpretAsChild();
-            }
-
             /** @brief The periodicity of the output. Defaults to 1 */
             Child& setNotifyPeriod(std::string notify)
             {

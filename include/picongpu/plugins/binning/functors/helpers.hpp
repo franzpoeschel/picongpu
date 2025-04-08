@@ -63,54 +63,5 @@ namespace picongpu
             }
         };
 
-        /**
-         * Functor to do volume normaliztion
-         * Factor with picongpu units
-         * User needs to deal with the units seperately
-         */
-        // @todo make this more generic? databox operations with another databox?
-        // maybe store the normalization in a buffer rather than computing it at every output timestep (memory vs ops)
-        // this style vs having the members as params of operator()
-        template<uint32_t blockSize, uint32_t nAxes>
-        struct BinNormalizationKernel
-        {
-            using ResultType = void;
-
-            HDINLINE BinNormalizationKernel() = default;
-
-            // @todo check if type stored in histBox is same as axisKernelTuple Type
-            template<typename T_Worker, typename T_DataSpace, typename T_BinWidthKernelTuple, typename T_DataBox>
-            HDINLINE void operator()(
-                T_Worker const& worker,
-                T_DataSpace const& extentsDataspace,
-                T_BinWidthKernelTuple const& binWidthsKernelTuple,
-                T_DataBox histBox) const
-            {
-                // @todo check normDataBox shape is same as histBox
-                auto blockIdx = worker.blockDomIdxND().x() * blockSize;
-                auto forEachElemInDataboxChunk = pmacc::lockstep::makeForEach<blockSize>(worker);
-                forEachElemInDataboxChunk(
-                    [&](int32_t const linearIdx)
-                    {
-                        int32_t const linearTid = blockIdx + linearIdx;
-                        if(linearTid < extentsDataspace.productOfComponents())
-                        {
-                            pmacc::DataSpace<nAxes> const nDIdx = pmacc::math::mapToND(extentsDataspace, linearTid);
-                            float_X factor = 1.;
-                            binning::apply(
-                                [&](auto const&... binWidthsKernel)
-                                {
-                                    // uses bin width for axes without dimensions as well should those be ignored?
-                                    uint32_t i = 0;
-                                    ((factor *= binWidthsKernel.getBinWidth(nDIdx[i++])), ...);
-                                },
-                                binWidthsKernelTuple);
-
-                            histBox(linearTid) *= 1 / factor;
-                        }
-                    });
-            }
-        };
-
     } // namespace plugins::binning
 } // namespace picongpu

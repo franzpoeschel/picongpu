@@ -155,21 +155,6 @@ namespace picongpu
 
                 LogAxisKernel lAK;
 
-                struct BinWidthKernel
-                {
-                    typename pmacc::HostDeviceBuffer<T_Attribute, 1>::DBuffer::DataBoxType widthsDeviceBox;
-
-                    BinWidthKernel(pmacc::HostDeviceBuffer<T_Attribute, 1>& widths)
-                        : widthsDeviceBox{widths.getDeviceBuffer().getDataBox()}
-                    {
-                    }
-
-                    ALPAKA_FN_ACC T_Attribute getBinWidth(uint32_t idx) const
-                    {
-                        return widthsDeviceBox(idx);
-                    }
-                };
-
                 LogAxis(
                     AxisSplitting<T_Attribute> axSplit,
                     T_AttrFunctor attrFunctor,
@@ -220,24 +205,6 @@ namespace picongpu
                 LogAxisKernel getAxisKernel() const
                 {
                     return lAK;
-                }
-
-                BinWidthKernel getBinWidthKernel() const
-                {
-                    // reset whenever binWidths changes
-                    static bool set = false;
-                    static pmacc::HostDeviceBuffer<T_Attribute, 1> binWidthBuffer{axisSplit.nBins};
-                    if(!set)
-                    {
-                        auto db = binWidthBuffer.getHostBuffer().getDataBox();
-                        for(size_t i = 0; i < binWidths.size(); i++)
-                        {
-                            db[i] = binWidths[i];
-                        }
-                        binWidthBuffer.hostToDevice();
-                        set = true;
-                    }
-                    return BinWidthKernel(binWidthBuffer);
                 }
 
                 /**

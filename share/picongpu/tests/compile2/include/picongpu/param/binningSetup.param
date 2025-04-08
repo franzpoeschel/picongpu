@@ -178,8 +178,7 @@ namespace picongpu
 
             binningCreator
                 .addParticleBinner("particleBinning", createTuple(ax_timeStep, ax_py), speciesTuple, getCounts)
-                .setDumpPeriod(2000)
-                .setNormalizeByBinVolume(false);
+                .setDumpPeriod(2000);
         }
 
         inline void fieldBinningExample(BinningCreator& binningCreator)
