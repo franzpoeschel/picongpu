@@ -1,7 +1,7 @@
 """
 This file is part of PIConGPU.
 Copyright 2021-2024 PIConGPU contributors
-Authors: Hannes Troepgen, Brian Edward Marre
+Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
@@ -207,7 +207,7 @@ class RenderedObject:
         return serialized
 
     @staticmethod
-    def check_context_for_type(type_to_check: type, context: dict | None) -> None:
+    def check_context_for_type(type_to_check: type, context: dict | None):
         """
         check if the given context is valid for the given type
 
@@ -222,3 +222,102 @@ class RenderedObject:
 
         # raises on error
         validator.validate(context)
+        return context
+
+
+class SelfRegistering:
+    """
+    A parent class the children of which will register their names in a list.
+
+    Any subclass that wants to register has to overwrite _name.
+    Its name will appear in _names afterwards.
+
+    Only leafs of the inheritance tree should have a _name.
+    Everything else is undefined behaviour.
+    """
+
+    # IMPORTANT: This is a mutable type ON PURPOSE!
+    # We will let our children register themselves by mutating this instance.
+    _names = []
+
+    # We have this as a "backup" because subclasses will have a real name
+    # but we still want to be able to check against the dummy name.
+    _dummy_name = "base class -- has no name"
+
+    # This is supposed to be set (and registered) by our children.
+    _name = _dummy_name
+
+    @classmethod
+    def _register(cls):
+        if cls._name not in cls._names:
+            cls._names.append(cls._name)
+
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+        if cls._name != cls._dummy_name:
+            cls._register()
+
+
+class SelfRegisteringRenderedObject(RenderedObject, SelfRegistering):
+    """
+    A rendered object specialisation for grouping together self-registered subclasses.
+
+    This class can be used like a RenderedObject but inheriting from this will create
+    a new group of subclasses that are grouped into a category like Plugin, DensityProfile, etc.
+
+    Typically, the class inheriting from this doesn't contain any functionality on its own
+    but is purely for grouping, so `class Plugin(SelfRegisteringRenderedObject): pass` is
+    a valid intermediate layer in the inheritance tree for grouping together plugins.
+    """
+
+    def __init_subclass__(cls):
+        if SelfRegisteringRenderedObject in cls.__bases__:
+            cls._names = []
+            cls._registered_class = cls
+        super().__init_subclass__()
+
+    def get_rendering_context(self):
+        """
+        retrieve a generic context containing type information specifying a subclass
+
+        Problem: Every self-registered subclass has its respective schema,
+        and it is difficult in JSON (particularly in a mustache-compatible way)
+        to get the type of the schema.
+
+        Solution: The normal rendering of self-registered subclasses via
+        get_rendering_context() provides **only their parameters**, i.e.
+        there is **no meta information** on types etc.
+
+        If a generic context is requested one can use the schema for
+        parent class, for which this method returns the correct content.
+        It includes metainformation and the data on the schema itself.
+
+        E.g.:
+
+        .. code::
+
+            {
+                "type": {
+                    "phasespace": true,
+                    "auto": false,
+                    ...
+                },
+                "data": DATA
+            }
+
+        where DATA is the serialization as returned by get_rendering_context().
+        """
+
+        # We perform two checks here:
+        # First we check against the schema of the wrapped object (e.g. the concrete Auto plugin)
+        # and afterwards we check against the schema for Plugin in general.
+        # TODO: The schema for different registered classes are likely to be identical
+        # upto the fact that they refer to different allowed content.
+        # We might want to unify this in the future.
+        return RenderedObject.check_context_for_type(
+            self._registered_class,
+            {
+                "typeID": {name: name == self._name for name in self._names},
+                "data": RenderedObject.check_context_for_type(self.__class__, super().get_rendering_context()),
+            },
+        )

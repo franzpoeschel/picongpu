@@ -19,6 +19,8 @@ class Foil(DensityProfile):
     post-plasma lengths and cutoffs
     """
 
+    _name = "foil"
+
     density_si = util.build_typesafe_property(float)
     """particle number density at at the foil plateau (m^-3)"""
 
@@ -33,10 +35,6 @@ class Foil(DensityProfile):
 
     post_foil_plasmaRamp = util.build_typesafe_property(PlasmaRamp)
     """post(higher y) foil-plateau ramp of density"""
-
-    def __init__(self):
-        # (nothing to do, overwrite from abstract parent)
-        pass
 
     def check(self) -> None:
         if self.density_si <= 0:
@@ -55,6 +53,6 @@ class Foil(DensityProfile):
             "density_si": self.density_si,
             "y_value_front_foil_si": self.y_value_front_foil_si,
             "thickness_foil_si": self.thickness_foil_si,
-            "pre_foil_plasmaRamp": self.pre_foil_plasmaRamp.get_generic_profile_rendering_context(),
-            "post_foil_plasmaRamp": self.post_foil_plasmaRamp.get_generic_profile_rendering_context(),
+            "pre_foil_plasmaRamp": self.pre_foil_plasmaRamp.get_rendering_context(),
+            "post_foil_plasmaRamp": self.post_foil_plasmaRamp.get_rendering_context(),
         }
