@@ -155,8 +155,8 @@ Instead of hard coding the output we might want to automatically generate one in
 
 Let's go in detail through the above example.
 
-The ``{{#<property>}}`` indicates the start of a block which ends at the corresponding ``{{/<property>}}`` and that this block will exist if ``<property>`` exists, i.e. it is contained as a key in the *context* and the corresponding value is not ``None``(python)/``Null``(json).
-In Addition if ``<property>`` happens to be a list as it is in our case we will repeat the in the block enclosed code once for every entry, ``#`` indicates in fact both an *if* and a *for-each* loop.
+The ``{{#<property>}}`` indicates the start of a block which ends at the corresponding ``{{/<property>}}`` and that this block will exist if ``<property>`` exists, i.e. it is contained as a key in the *context* and the corresponding value is not ``None`` (python) / ``Null`` (json).
+In addition if ``<property>`` happens to be a list as it is in our case, we will repeat that in the enclosed block code once for every entry, ``#`` indicates in fact both an *if* and a *for-each* loop.
 
 Therefore the block ``--{{{name}}}_macroParticlesCount.period 1`` will exist once per species in the simulation.
 
