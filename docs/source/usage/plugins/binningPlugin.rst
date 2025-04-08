@@ -121,7 +121,7 @@ Users can specify the units of their functor output using a 7 dimensional array.
 The dimensional base quantities are defined in ``SIBaseUnits_t`` following the international system of quantities (ISQ).
 If no units are given, the quantity is assumed to be dimensionless.
 
-.. literalinclude:: ../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
+.. literalinclude:: ../../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
    :language: c++
    :start-after: doc-include-start: units
    :end-before: doc-include-end: units
@@ -189,7 +189,7 @@ Species can be instances of a species type or a particle species name as a PMACC
 Optionally, users can specify a filter to be used with the species. This is a predicate functor, i.e. it is a functor with a signature as described above and which returns a boolean. If the filter returns true it means the particle is included in the binning.
 They can then create a FilteredSpecies object which contains the species and the filter.
 
-.. literalinclude:: ../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
+.. literalinclude:: ../../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
    :language: c++
    :start-after: doc-include-start: filter
    :end-before: doc-include-end: filter
@@ -205,7 +205,7 @@ Fields
 PIConGPU fields which should be used in field binning.
 Fields can be instances of a field type. For example,
 
-.. literalinclude:: ../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
+.. literalinclude:: ../../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
    :language: c++
    :start-after: doc-include-start: fieldTuple
    :end-before: doc-include-end: fieldTuple
@@ -229,7 +229,7 @@ The signature of quantity functors is
 
 This option makes it evident that the binning is more than just about creating histograms. While histograms are a common use case, the binning plugin allows for the accumulation of various quantities within bins and not just noting the frequencies of occurrences. This means that users can define custom quantities to be accumulated in each bin, such as charge, energy, momentum, or any other property of interest. The flexibility of the functor description enables users to specify exactly what and how they want to accumulate data in the bins.
 For example, you might want to accumulate the total charge of particles within each bin, or the average kinetic energy of particles in a specific region. The deposited quantity functor provides the mechanism to calculate and return these values, which are then accumulated in the corresponding bins during the simulation.
-By default the deposited quantity is added for each bin, but this is configurable by the user by setting an ref:`accumulate operation <usage/plugins/binningPlugin:Accumulation>`. 
+By default the deposited quantity is added for each bin, but this is configurable by the user by setting an :ref:`accumulate operation <usage/plugins/binningPlugin:Accumulation>`. 
 
 Extra Data
 ----------
@@ -337,13 +337,21 @@ Accumulation
 ============
 The binning plugin provides flexible options for accumulating data within bins. Instead of simply adding values to accumulate in a bin, users can utilize any alpaka atomic operation. This includes operations such as subtraction, minimum, maximum, AND, OR, XOR, and more.
 This flexibility enables users to tailor the accumulation process to their specific needs. For instance, you might want to track the minimum or maximum value of a certain property within each bin.
+A list of available alpaka atomic operations can be found in the `alpaka documentation <https://alpaka-group.github.io/alpaka/Op_8hpp.html>`_. 
+
+.. note::
+
+	Only binary atomics on arithmetic types are supported. In particular CAS operations are not supported.
+
 
 The accumulate operation is passed as a template parameter to the `createBinner` functions.
 For example, to use the maximum operation for accumulation, you would pass the corresponding Alpaka atomic operation as a template parameter:
 
-.. code-block:: c++
-
-    binningCreator.addParticleBinner<alpaka::AtomicMax>("MaxBinner", axisTuple, speciesTuple, depositionData);
+.. literalinclude:: ../../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
+   :language: c++
+   :start-after: doc-include-start: atomics
+   :end-before: doc-include-end: atomics
+   :dedent:
 
 Similarly, you can use other alpaka atomic operations such as `alpaka::AtomicMin`, `alpaka::AtomicSub`, `alpaka::AtomicAnd`, `alpaka::AtomicOr`, `alpaka::AtomicXor`, etc.
 

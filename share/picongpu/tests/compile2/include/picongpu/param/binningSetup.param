@@ -72,13 +72,13 @@ namespace picongpu
                 = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, auto const& particle) -> float_X
             { return particle[momentum_][1] / particle[weighting_]; };
 
-            // #doc-include-start : units
+            // doc-include-start: units
             // Define units
             std::array<double, numUnits> momentumDimension{};
             momentumDimension[SIBaseUnits::length] = 1.0;
             momentumDimension[SIBaseUnits::mass] = 1.0;
             momentumDimension[SIBaseUnits::time] = -1.0;
-            // #doc-include-end : units
+            // doc-include-end: units
 
             // Create Functor Description
             auto momentumYDescription
@@ -115,7 +115,7 @@ namespace picongpu
              */
             auto electronsObj = PMACC_CSTRING("e"){};
 
-            // #doc-include-start : filter
+            // doc-include-start: filter
             /**
              * Optionally pass a particle filter to be used for this
              * Simply a particle predicate functor
@@ -125,7 +125,7 @@ namespace picongpu
             { return true; };
 
             auto filteredElectrons = FilteredSpecies{electronsObj, allParticles};
-            // #doc-include-end : filter
+            // doc-include-end: filter
 
             // Bring the species together in a tuple
             auto speciesTuple = createSpeciesTuple(filteredElectrons);
@@ -176,9 +176,15 @@ namespace picongpu
                 .setOpenPMDExtension("h5")
                 .setOpenPMDWriteFunctor(writeOpenPMD);
 
+            // doc-include-start: atomics
             binningCreator
-                .addParticleBinner("particleBinning", createTuple(ax_timeStep, ax_py), speciesTuple, getCounts)
+                .addParticleBinner<alpaka::AtomicMax>(
+                    "particleBinning",
+                    createTuple(ax_timeStep, ax_py),
+                    speciesTuple,
+                    getCounts)
                 .setDumpPeriod(2000);
+            // doc-include-end: atomics
         }
 
         inline void fieldBinningExample(BinningCreator& binningCreator)
@@ -225,13 +231,13 @@ namespace picongpu
             // Bring the axes together in a tuple
             auto axisTuple = createTuple(ax_sqAmp, ax_timeStep);
 
-            // #doc-include-start : fieldTuple
+            // doc-include-start: fieldTuple
             // Bring the fields together in a tuple
             DataConnector& dc = Environment<>::get().DataConnector();
             auto fieldsTuple = createTuple(
                 dc.get<FieldB>(FieldB::getName())->getDeviceDataBox(),
                 dc.get<FieldTmp>(FieldTmp::getUniqueId(0))->getDeviceDataBox());
-            // #doc-include-end : fieldTuple
+            // doc-include-end: fieldTuple
 
             /**
              * Define deposited quantity here
