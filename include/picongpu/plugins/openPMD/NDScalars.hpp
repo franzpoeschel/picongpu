@@ -191,7 +191,7 @@ namespace picongpu
 
                 std::shared_ptr<T_Scalar> readValue = rc.loadChunk<T_Scalar>(start, count);
 
-                mrc.seriesFlush();
+                rc.seriesFlush();
 
                 *value = *readValue;
 
