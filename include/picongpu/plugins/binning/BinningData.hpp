@@ -49,11 +49,16 @@ namespace picongpu
             Leaving = 1 << 1
         };
 
-        template<typename Child, typename T_AxisTuple, typename T_DepositionData, typename T_Extras>
+        template<
+            typename Child,
+            typename T_AccumulateOp,
+            typename T_AxisTuple,
+            typename T_DepositionData,
+            typename T_Extras>
         struct BinningDataBase
         {
-            using DepositionFunctorType = typename T_DepositionData::FunctorType;
             using DepositedQuantityType = typename T_DepositionData::QuantityType;
+            using AccumulationOp = T_AccumulateOp;
             // @todo infer type from functor
             // using DepositedQuantityType = std::invoke_result_t<TDepositedQuantityFunctor, particle, worker>;
 
@@ -170,10 +175,16 @@ namespace picongpu
             }
         };
 
-        template<typename T_AxisTuple, typename T_SpeciesTuple, typename T_DepositionData, typename T_Extras>
+        template<
+            typename T_AccumulateOp,
+            typename T_AxisTuple,
+            typename T_SpeciesTuple,
+            typename T_DepositionData,
+            typename T_Extras>
         struct ParticleBinningData
             : public BinningDataBase<
-                  ParticleBinningData<T_AxisTuple, T_SpeciesTuple, T_DepositionData, T_Extras>,
+                  ParticleBinningData<T_AccumulateOp, T_AxisTuple, T_SpeciesTuple, T_DepositionData, T_Extras>,
+                  T_AccumulateOp,
                   T_AxisTuple,
                   T_DepositionData,
                   T_Extras>
@@ -187,7 +198,7 @@ namespace picongpu
                 T_SpeciesTuple const& species,
                 T_DepositionData const& depositData,
                 T_Extras const& extraData)
-                : BinningDataBase<ParticleBinningData, T_AxisTuple, T_DepositionData, T_Extras>(
+                : BinningDataBase<ParticleBinningData, T_AccumulateOp, T_AxisTuple, T_DepositionData, T_Extras>(
                       binnerName,
                       axes,
                       depositData,
@@ -217,10 +228,38 @@ namespace picongpu
             }
         };
 
-        template<typename T_AxisTuple, typename T_FieldsTuple, typename T_DepositionData, typename T_Extras>
+        template<
+            typename T_AccumulateOp,
+            typename T_AxisTuple,
+            typename T_SpeciesTuple,
+            typename T_DepositionData,
+            typename T_Extras>
+        ParticleBinningData<T_AccumulateOp, T_AxisTuple, T_SpeciesTuple, T_DepositionData, T_Extras>
+        makeParticleBinningData(
+            std::string const& binnerOutputName,
+            T_AxisTuple const& axisTupleObject,
+            T_SpeciesTuple const& speciesTupleObject,
+            T_DepositionData const& depositionData,
+            T_Extras const& extraData)
+        {
+            return ParticleBinningData<T_AccumulateOp, T_AxisTuple, T_SpeciesTuple, T_DepositionData, T_Extras>(
+                binnerOutputName,
+                axisTupleObject,
+                speciesTupleObject,
+                depositionData,
+                extraData);
+        }
+
+        template<
+            typename T_AccumulateOp,
+            typename T_AxisTuple,
+            typename T_FieldsTuple,
+            typename T_DepositionData,
+            typename T_Extras>
         struct FieldBinningData
             : public BinningDataBase<
-                  FieldBinningData<T_AxisTuple, T_FieldsTuple, T_DepositionData, T_Extras>,
+                  FieldBinningData<T_AccumulateOp, T_AxisTuple, T_FieldsTuple, T_DepositionData, T_Extras>,
+                  T_AccumulateOp,
                   T_AxisTuple,
                   T_DepositionData,
                   T_Extras>
@@ -233,7 +272,7 @@ namespace picongpu
                 T_FieldsTuple const& fields,
                 T_DepositionData const& depositData,
                 T_Extras const& extraData)
-                : BinningDataBase<FieldBinningData, T_AxisTuple, T_DepositionData, T_Extras>(
+                : BinningDataBase<FieldBinningData, T_AccumulateOp, T_AxisTuple, T_DepositionData, T_Extras>(
                       binnerName,
                       axes,
                       depositData,
@@ -242,6 +281,27 @@ namespace picongpu
             {
             }
         };
+
+        template<
+            typename T_AccumulateOp,
+            typename T_AxisTuple,
+            typename T_FieldsTuple,
+            typename T_DepositionData,
+            typename T_Extras>
+        FieldBinningData<T_AccumulateOp, T_AxisTuple, T_FieldsTuple, T_DepositionData, T_Extras> makeFieldBinningData(
+            std::string const& binnerName,
+            T_AxisTuple const& axes,
+            T_FieldsTuple const& fields,
+            T_DepositionData const& depositData,
+            T_Extras const& extraData)
+        {
+            return FieldBinningData<T_AccumulateOp, T_AxisTuple, T_FieldsTuple, T_DepositionData, T_Extras>(
+                binnerName,
+                axes,
+                fields,
+                depositData,
+                extraData);
+        }
 
     } // namespace plugins::binning
 } // namespace picongpu
