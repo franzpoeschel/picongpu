@@ -76,6 +76,8 @@ class Png(Plugin):
     preChannel2 = util.build_typesafe_property(str)
     preChannel3 = util.build_typesafe_property(str)
 
+    _name = "png"
+
     def __init__(self):
         "do nothing"
 
