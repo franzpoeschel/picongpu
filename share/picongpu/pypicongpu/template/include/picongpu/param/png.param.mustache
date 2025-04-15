@@ -39,7 +39,7 @@ constexpr float_64 scale_image = {{{scale_image}}};
 constexpr bool scale_to_cellsize = {{#scale_to_cellsize}}true{{/scale_to_cellsize}}{{^scale_to_cellsize}}false{{/scale_to_cellsize}};
 constexpr bool white_box_per_GPU = {{#white_box_per_GPU}}true{{/white_box_per_GPU}}{{^white_box_per_GPU}}false{{/white_box_per_GPU}};
 
-constexpr const char* data_list[] = { {{#data_list}}"{{name}}", {{/data_list}} };
+constexpr const char* data_list[] = { {{#data_list}}"{{{name}}}", {{/data_list}} };
 
     namespace visPreview
     {
@@ -97,7 +97,7 @@ constexpr const char* data_list[] = { {{#data_list}}"{{name}}", {{/data_list}} }
     /*if true image is scaled if cellsize is not quadratic, else no scale*/
     constexpr bool scale_to_cellsize = true;
     constexpr bool white_box_per_GPU = false;
-constexpr const char* data_list[] = { {{#species_initmanager.species}}"{{name}}", {{/species_initmanager.species}} };
+constexpr const char* data_list[] = { {{#species_initmanager.species}}"{{{name}}}", {{/species_initmanager.species}} };
 
 namespace visPreview
 {
