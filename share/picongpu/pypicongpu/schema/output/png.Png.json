@@ -4,7 +4,6 @@
   "description": "PNG output configuration for PIConGPU",
   "unevaluatedProperties": false,
   "required": [
-    "data_list",
     "period",
     "axis",
     "slicePoint",
@@ -30,23 +29,6 @@
     "preChannel3"
   ],
   "properties": {
-    "data_list": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Field or current component to output (e.g., 'Ex', 'Ey', 'Bz', 'Jx')."
-          }
-        },
-        "required": [
-          "name"
-        ],
-        "additionalProperties": false
-      },
-      "description": "List of (E & B) fields or current components to output."
-    },
     "period": {
       "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.timestepspec.TimeStepSpec"
     },

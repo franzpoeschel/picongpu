@@ -51,7 +51,6 @@ class ColorScaleEnum(Enum):
 
 @typeguard.typechecked
 class Png(Plugin):
-    data_list = util.build_typesafe_property(typing.List[str])
     species = util.build_typesafe_property(Species)
     period = util.build_typesafe_property(TimeStepSpec)
     axis = util.build_typesafe_property(str)
@@ -84,14 +83,10 @@ class Png(Plugin):
     def _get_serialized(self) -> typing.Dict:
         """Return the serialized representation of the object."""
 
-        # Transform data_list into a list of dictionaries
-        data_list_serialized = [{"name": field} for field in self.data_list]
-
         # Transform customNormalizationSI into a list of dictionaries
         custom_normalization_si_serialized = [{"value": val} for val in self.customNormalizationSI]
 
         return {
-            "data_list": data_list_serialized,
             "species": self.species.get_rendering_context(),
             "period": self.period.get_rendering_context(),
             "axis": self.axis,

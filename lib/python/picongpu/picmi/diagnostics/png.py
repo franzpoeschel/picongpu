@@ -25,9 +25,6 @@ class Png:
 
     Parameters
     ----------
-    data_list: list of strings
-        List of field or current quantities to output (e.g., ['Ex', 'Ey', 'Ez', 'Bx', 'By', 'Bz', 'Jx', 'Jy', 'Jz']).
-
     period: TimeStepSpec
         Specify on which time steps the plugin should run.
         Unit: steps (simulation time steps).
@@ -139,7 +136,6 @@ class Png:
 
     def __init__(
         self,
-        data_list: List[str],
         species: PICMISpecies,
         period: TimeStepSpec,
         axis: str,
@@ -164,7 +160,6 @@ class Png:
         pre_channel2: str,
         pre_channel3: str,
     ):
-        self.data_list = data_list
         self.period = period
         self.axis = axis
         self.slice_point = slice_point
@@ -206,7 +201,6 @@ class Png:
             raise ValueError(f"Species {self.species} is not mapped to a PyPIConGPUSpecies.")
 
         pypicongpu_png = PyPIConGPUPNG()
-        pypicongpu_png.data_list = self.data_list
         pypicongpu_png.period = self.period.get_as_pypicongpu(time_step_size, num_steps)
         pypicongpu_png.axis = self.axis
         pypicongpu_png.slicePoint = self.slice_point

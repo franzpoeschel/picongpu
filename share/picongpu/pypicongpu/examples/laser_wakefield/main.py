@@ -165,7 +165,6 @@ sim.diagnostics = [
         period=picmi.diagnostics.TimeStepSpec[::100],
     ),
     picmi.diagnostics.Png(
-        data_list=["Ex", "Ey", "Ez", "Bx", "By", "Bz", "Jx", "Jy", "Jz"],
         species=electrons,
         period=picmi.diagnostics.TimeStepSpec[::100],
         axis="yx",
