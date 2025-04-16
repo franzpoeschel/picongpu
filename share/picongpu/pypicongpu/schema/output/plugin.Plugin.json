@@ -15,7 +15,8 @@
         "auto",
         "phasespace",
         "energyhistogram",
-        "macroparticlecount"
+        "macroparticlecount",
+        "png"
       ],
       "unevaluatedProperties": false,
       "properties": {
@@ -29,6 +30,9 @@
           "type": "boolean"
         },
         "macroparticlecount": {
+          "type": "boolean"
+        },
+        "png": {
           "type": "boolean"
         }
       }
@@ -47,6 +51,9 @@
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.macro_particle_count.MacroParticleCount"
+        },
+        {
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.png.Png"
         }
       ]
     }

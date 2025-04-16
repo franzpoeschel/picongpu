@@ -8,6 +8,9 @@ License: GPLv3+
 from picongpu import picmi
 from picongpu import pypicongpu
 import numpy as np
+from scipy.constants import c
+
+from picongpu.pypicongpu.output.png import EMFieldScaleEnum, ColorScaleEnum
 
 """
 @file PICMI user script reproducing the PIConGPU LWFA example
@@ -161,6 +164,31 @@ sim.diagnostics = [
         species=electrons,
         period=picmi.diagnostics.TimeStepSpec[::100],
     ),
+    picmi.diagnostics.Png(
+        species=electrons,
+        period=picmi.diagnostics.TimeStepSpec[::100],
+        axis="yx",
+        slice_point=0.5,
+        folder_name="pngElectronsYX",
+        scale_image=1.0,
+        scale_to_cellsize=True,
+        white_box_per_gpu=False,
+        em_field_scale_channel1=EMFieldScaleEnum(7),
+        em_field_scale_channel2=EMFieldScaleEnum(-1),
+        em_field_scale_channel3=EMFieldScaleEnum(-1),
+        pre_particle_density_color_scales=ColorScaleEnum("grayInv"),
+        pre_channel1_color_scales=ColorScaleEnum("green"),
+        pre_channel2_color_scales=ColorScaleEnum("none"),
+        pre_channel3_color_scales=ColorScaleEnum("none"),
+        custom_normalization_si=[5.0e12 / c, 5.0e12, 15.0],
+        pre_particle_density_opacity=0.25,
+        pre_channel1_opacity=1.0,
+        pre_channel2_opacity=1.0,
+        pre_channel3_opacity=1.0,
+        pre_channel1="field_E.x() * field_E.x()",
+        pre_channel2="field_E.y()",
+        pre_channel3="-1.0_X * field_E.y()",
+    ),
 ]
 
 sim.add_laser(laser, None)
@@ -176,47 +204,13 @@ if ADD_CUSTOM_INPUT:
     sim.picongpu_add_custom_user_input(min_weight_input)
 
     output_configuration = pypicongpu.customuserinput.CustomUserInput()
+
     output_configuration.addToCustomInput(
-        {
-            "png_plugin_data_list": "['Ex', 'Ey', 'Ez', 'Bx', 'By', 'Bz', 'Jx', 'Jy', 'Jz']",
-            "png_plugin_SCALE_IMAGE": 1.0,
-            "png_plugin_SCALE_TO_CELLSIZE": True,
-            "png_plugin_WHITE_BOX_PER_GPU": False,
-            "png_plugin_EM_FIELD_SCALE_CHANNEL1": 7,
-            "png_plugin_EM_FIELD_SCALE_CHANNEL2": -1,
-            "png_plugin_EM_FIELD_SCALE_CHANNEL3": -1,
-            "png_plugin_CUSTOM_NORMALIZATION_SI": "5.0e12 / constants.c, 5.0e12, 15.0",
-            "png_plugin_PRE_PARTICLE_DENS_OPACITY": 0.25,
-            "png_plugin_PRE_CHANNEL1_OPACITY": 1.0,
-            "png_plugin_PRE_CHANNEL2_OPACITY": 1.0,
-            "png_plugin_PRE_CHANNEL3_OPACITY": 1.0,
-            "png_plugin_preParticleDensCol": "colorScales::grayInv",
-            "png_plugin_preChannel1Col": "colorScales::green",
-            "png_plugin_preChannel2Col": "colorScales::none",
-            "png_plugin_preChannel3Col": "colorScales::none",
-            "png_plugin_preChannel1": "field_E.x() * field_E.x();",
-            "png_plugin_preChannel2": "field_E.y()",
-            "png_plugin_preChannel3": "-1.0_X * field_E.y()",
-            "png_plugin_period": 100,
-            "png_plugin_axis": "yx",
-            "png_plugin_slicePoint": 0.5,
-            "png_plugin_species_name": "electron",
-            "png_plugin_folder_name": "pngElectronsYX",
-        },
-        "png plugin configuration",
+        {"openPMD_period": 100, "openPMD_file": "simData", "openPMD_extension": "bp"}, "openPMD plugin configuration"
     )
 
     output_configuration.addToCustomInput(
-        {"openPMD_period": 100, "openPMD_file": "simData", "openPMD_extension": "bp"},
-        "openPMD plugin configuration",
-    )
-
-    output_configuration.addToCustomInput(
-        {
-            "checkpoint_period": 100,
-            "checkpoint_backend": "openPMD",
-            "checkpoint_restart_backend": "openPMD",
-        },
+        {"checkpoint_period": 100, "checkpoint_backend": "openPMD", "checkpoint_restart_backend": "openPMD"},
         "checkpoint configuration",
     )
 

@@ -5,13 +5,13 @@ Authors: Masoud Afshari
 License: GPLv3+
 """
 
-from .timestepspec import TimeStepSpec
 from ...pypicongpu.output.macro_particle_count import (
     MacroParticleCount as PyPIConGPUMacroParticleCount,
 )
 from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
 
 from ..species import Species as PICMISpecies
+from .timestepspec import TimeStepSpec
 
 import typeguard
 
