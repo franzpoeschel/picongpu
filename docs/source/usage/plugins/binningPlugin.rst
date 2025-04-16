@@ -155,6 +155,10 @@ Currently implemented axis types
 ..            axis::createLog(cellY_splitting, cellPositionYDescription);
 
 
+.. attention::
+The log axis suffers from floating point precision errors, so for certain combinations of min, max, nBins and values to be binned the bin index calculated might be off by one. If using an integral log axis, be careful of what you are doing.
+
+
 Binning can be done over an arbitrary number of axes, by creating a tuple of all the axes. Limited by memory depending on number of bins in each axis.
 
 Axis Splitting

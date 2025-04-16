@@ -87,7 +87,7 @@ namespace picongpu
         {
             using UD = ::openPMD::UnitDimension;
 
-            std::array<UD, numUnits> keys = {UD::L, UD::M, UD::T, UD::I, UD::theta, UD::N, UD::J};
+            static constexpr std::array<UD, numUnits> keys = {UD::L, UD::M, UD::T, UD::I, UD::theta, UD::N, UD::J};
 
             std::map<UD, double> map;
 

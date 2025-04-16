@@ -23,6 +23,7 @@
 
 #include <array>
 #include <string>
+#include <type_traits>
 
 namespace picongpu
 {
@@ -43,20 +44,25 @@ namespace picongpu
             /** String used in the OpenPMD output */
             std::string name;
             /** The dimensionality of the particle property (defaults to dimensionless) */
-            std::array<double, numUnits> units;
+            std::array<double, numUnits> units{0., 0., 0., 0., 0., 0., 0.};
 
-            FunctorDescription(
-                FunctorType const func,
-                std::string label,
-                std::array<double, numUnits> const uDimension)
-                : functor{func}
-                , name{label}
-                , units{uDimension}
+            // Disabled for integral quantities since the dimension conversion will make things non integral
+            FunctorDescription(FunctorType func, std::string label, std::array<double, numUnits> uDimension)
+                requires std::is_floating_point_v<T_Quantity>
+                : functor{std::move(func)}
+                , name{std::move(label)}
+                , units{std::move(uDimension)}
+            {
+            }
+
+            FunctorDescription(FunctorType func, std::string label) : functor{std::move(func)}, name{std::move(label)}
             {
             }
         };
 
         /**
+         * These functions are the analog of make_tuple etc and exist to avoid specifying the T_Functor, which is
+         * automatically deduced with these functions
          */
 
         /**
@@ -74,11 +80,18 @@ namespace picongpu
         template<typename QuantityType, typename FunctorType>
         inline auto createFunctorDescription(
             FunctorType functor,
-            std::string name,
-            std::array<double, numUnits> units = std::array<double, numUnits>({0., 0., 0., 0., 0., 0., 0.}))
+            std::string const& name,
+            std::array<double, numUnits> units)
         {
             return FunctorDescription<QuantityType, FunctorType>(functor, name, units);
         }
+
+        template<typename QuantityType, typename FunctorType>
+        inline auto createFunctorDescription(FunctorType functor, std::string const& name)
+        {
+            return FunctorDescription<QuantityType, FunctorType>(functor, name);
+        }
+
 
     } // namespace plugins::binning
 } // namespace picongpu

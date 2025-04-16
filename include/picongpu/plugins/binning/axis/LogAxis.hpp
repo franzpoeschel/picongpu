@@ -25,7 +25,9 @@
 #include <pmacc/memory/buffers/HostDeviceBuffer.hpp>
 
 #include <array>
+#include <cmath>
 #include <cstdint>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -38,14 +40,29 @@ namespace picongpu
         {
             /**
              * Log axis with logarithmically sized bins.
+             * Similar to geompace from numpy
              * Axis splitting is defined with min, max and n_bins.
              * A bin with edges a and b is a closed-open interval [a,b)
              * If overflow bins are enabled, allocates 2 extra bins, for under and overflow. These are bin index 0 and
              * (n_bins+2)-1
+             * WARNING: For integral valued axes, the LogAxis always suffers from floating point erros, and can for
+             * certain axis splittings and value combinations under or over estimate the bin index
              */
             template<typename T_Attribute, typename T_AttrFunctor>
             class LogAxis
             {
+                // Depends on other class members being initialized
+                void initBinEdges()
+                {
+                    binEdges.reserve(axisSplit.nBins + 1);
+                    double edge = axisSplit.m_range.min;
+                    for(size_t i = 0; i <= axisSplit.nBins; i++)
+                    {
+                        binEdges.emplace_back(edge);
+                        edge = edge * geomFactor;
+                    }
+                }
+
             public:
                 using Type = T_Attribute;
                 /**
@@ -65,7 +82,10 @@ namespace picongpu
                 std::string label;
                 /** Units(Dimensionality) of the axis */
                 std::array<double, numUnits> units;
-                std::vector<T_Attribute> binWidths;
+                // Geometric factor (unitless)
+                double geomFactor;
+                /** axisSplit.nBins + 1 bin edges in SI units */
+                std::vector<double> binEdges;
 
                 /**
                  * @TODO store edges? Copmute once at the beginning and store for later to print at every
@@ -76,43 +96,37 @@ namespace picongpu
                     /** Function to place particle on axis, returns same type as min and max */
                     T_AttrFunctor getAttributeValue;
                     /**
-                     * logMin and logMax values in the range of the binning. Values outside this range are
+                     * Min and max values in the range of the binning. Values outside this range are
                      * placed in overflow bins
+                     * Range in PIC units
+                     * Usage in log axis assumes toPICUnits doesnt flip sign
                      */
-                    ScalingType logMin, logMax;
+                    Range<T_Attribute> picRange;
+                    /** Enable or disable allocation of extra bins for out of range particles*/
+                    bool overflowEnabled;
                     /** Number of bins in range */
                     uint32_t nBins;
                     ScalingType scaling;
-                    /** Enable or disable allocation of extra bins for out of range particles*/
-                    bool overflowEnabled;
 
                     constexpr LogAxisKernel(
                         T_AttrFunctor const& attrFunc,
                         AxisSplitting<T_Attribute> const& axisSplit,
                         std::array<double, numUnits> const& unitsArr)
                         : getAttributeValue{attrFunc}
+                        , picRange{toPICUnits(axisSplit.m_range.min, unitsArr), toPICUnits(axisSplit.m_range.max, unitsArr)}
                         , overflowEnabled{axisSplit.enableOverflowBins}
+                        , nBins{overflowEnabled ? axisSplit.nBins + 2 : axisSplit.nBins}
+                        , scaling{
+                              static_cast<ScalingType>(axisSplit.nBins)
+                              / static_cast<ScalingType>(
+                                  std::log2(static_cast<ScalingType>(picRange.max) / picRange.min))}
                     {
-                        // do conversion to PIC units here, if not auto
-                        // auto picRange = toPICUnits(axSplit.range, unitsArr);
-                        auto min = toPICUnits(axisSplit.m_range.min, unitsArr);
                         // toPICUnits might cause underflow
-                        PMACC_VERIFY(0. < min);
-                        logMin = std::log2(min);
-                        logMax = std::log2(toPICUnits(axisSplit.m_range.max, unitsArr));
-
-                        // do scaling calc here, on host and save it
-                        scaling = static_cast<ScalingType>(axisSplit.nBins) / (logMax - logMin);
-
-                        nBins = axisSplit.nBins;
-                        if(axisSplit.enableOverflowBins)
-                        {
-                            nBins += 2;
-                        }
+                        PMACC_VERIFY(picRange.min != 0);
                     }
 
                     template<typename... Args>
-                    ALPAKA_FN_ACC std::pair<bool, uint32_t> getBinIdx(Args const&... args) const
+                    ALPAKA_FN_HOST_ACC std::pair<bool, uint32_t> getBinIdx(Args const&... args) const
                     {
                         auto val = getAttributeValue(args...);
 
@@ -125,29 +139,34 @@ namespace picongpu
                         // @todo check if disableBinning is better
                         bool enableBinning = overflowEnabled;
 
-                        if(static_cast<T_Attribute>(0.) < val)
+                        // @todo check for optimizations here
+                        if(val >= picRange.min)
                         {
-                            auto logVal = math::log2(val);
-
-                            // @todo check for optimizations here
-                            if(logVal >= logMin)
+                            if(val < picRange.max)
                             {
-                                if(logVal < logMax)
+                                /** we know min and max have the same sign, and since val is between them it also has
+                                 * the same sign
+                                 */
+                                auto const x = math::log2(val / picRange.min);
+
+                                // Cast to bin index works like a floor
+                                binIdx = x * scaling;
+
+                                if(overflowEnabled)
                                 {
-                                    /**
-                                     * Precision errors?
-                                     * Is the math floor necessary?
-                                     */
-                                    binIdx = math::floor(((logVal - logMin) * scaling) + 1);
-                                    if(!overflowEnabled)
-                                    {
-                                        enableBinning = true;
-                                        binIdx = binIdx - 1;
-                                    }
+                                    // shift for 0th overflow bin
+                                    ++binIdx;
+                                    // binning is always done for all vals if overflow bins are enabled
                                 }
                                 else
-                                    binIdx = nBins - 1;
+                                {
+                                    // no shift required
+                                    // val is in range, so enable binning
+                                    enableBinning = true;
+                                }
                             }
+                            else
+                                binIdx = nBins - 1;
                         }
                         return {enableBinning, binIdx};
                     }
@@ -164,32 +183,11 @@ namespace picongpu
                     , label{label}
                     , units{unit_arr}
                     , lAK{attrFunctor, axisSplit, unit_arr}
+                    , geomFactor{std::pow(
+                          static_cast<double>(axisSplit.m_range.max) / axisSplit.m_range.min,
+                          1.0 / static_cast<double>(axSplit.nBins))}
                 {
-                    initBinWidths();
-                }
-
-                // lAK and axisSplit must be already initialized
-                void initBinWidths()
-                {
-                    binWidths.reserve(axisSplit.nBins);
-                    // Calculate the logarithmic spacing factor
-                    ScalingType factor = std::pow(2., (lAK.logMax - lAK.logMin) / axisSplit.nBins);
-                    // Calculate bin widths
-                    ScalingType edge = axisSplit.m_range.min;
-                    for(int i = 0; i < axisSplit.nBins; ++i)
-                    {
-                        ScalingType next_edge = factor * edge;
-                        if constexpr(std::is_integral_v<T_Attribute>)
-                        {
-                            // Ceiling because we have closed-open intervals
-                            binWidths.emplace_back(math::ceil(next_edge - edge));
-                        }
-                        else
-                        {
-                            binWidths.emplace_back(next_edge - edge);
-                        }
-                        edge = next_edge;
-                    }
+                    initBinEdges();
                 }
 
                 constexpr uint32_t getNBins() const
@@ -212,14 +210,6 @@ namespace picongpu
                  */
                 std::vector<double> getBinEdgesSI() const
                 {
-                    std::vector<double> binEdges;
-                    binEdges.reserve(axisSplit.nBins + 1);
-                    T_Attribute edge = axisSplit.m_range.min;
-                    for(size_t i = 0; i <= axisSplit.nBins; i++)
-                    {
-                        binEdges.emplace_back(toSIUnits(edge, units));
-                        edge = edge + binWidths[i];
-                    }
                     return binEdges;
                 }
             };
@@ -234,6 +224,11 @@ namespace picongpu
             template<typename T_Attribute, typename T_FunctorDescription>
             HINLINE auto createLog(AxisSplitting<T_Attribute> const& axSplit, T_FunctorDescription const& functorDesc)
             {
+                if(axSplit.m_range.min < 0 != axSplit.m_range.max < 0)
+                {
+                    throw std::domain_error("Range can't include zero");
+                }
+
                 static_assert(
                     std::is_same_v<typename T_FunctorDescription::QuantityType, T_Attribute>,
                     "Access functor return type and range type should be the same");
