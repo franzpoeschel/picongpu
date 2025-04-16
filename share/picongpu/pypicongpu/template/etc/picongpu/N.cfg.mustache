@@ -92,8 +92,8 @@ fi
 pypicongpu_output_with_newlines="
   {{#output}}
       {{#data}}
-    {{#typeID.auto}}
 
+    {{#typeID.auto}}
         --fields_energy.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
         --sumcurr.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
         $USED_CHARGE_CONSERVATION_FLAGS
@@ -146,6 +146,76 @@ pypicongpu_output_with_newlines="
           --{{{species.name}}}_png.slicePoint {{{slicePoint}}}
           --{{{species.name}}}_png.folder {{{folder}}}
     {{/typeID.png}}
+
+{{#typeID.macroparticlecount}}
+  --{{{species.name}}}_macroParticlesCount.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
+{{/typeID.macroparticlecount}}
+
+{{#typeID.png}}
+  --{{{species.name}}}_png.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
+  --{{{species.name}}}_png.axis {{{axis}}}
+  --{{{species.name}}}_png.slicePoint {{{slicePoint}}}
+  --{{{species.name}}}_png.folder {{{folder}}}
+{{/typeID.png}}
+
+{{#typeID.checkpoint}}
+  {{#period}}
+    --checkpoint.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
+  {{/period}}
+  {{#timePeriod}}
+    --checkpoint.timePeriod {{{timePeriod}}}
+  {{/timePeriod}}
+  {{#directory}}
+    --checkpoint.directory {{{directory}}}
+  {{/directory}}
+  {{#file}}
+    --checkpoint.file {{{file}}}
+  {{/file}}
+  {{#restart}}
+    --checkpoint.restart
+  {{/restart}}
+  {{#tryRestart}}
+    --checkpoint.tryRestart
+  {{/tryRestart}}
+  {{#restartStep}}
+    --checkpoint.restart.step {{{restartStep}}}
+  {{/restartStep}}
+  {{#restartDirectory}}
+    --checkpoint.restart.directory {{{restartDirectory}}}
+  {{/restartDirectory}}
+  {{#restartFile}}
+    --checkpoint.restart.file {{{restartFile}}}
+  {{/restartFile}}
+  {{#restartChunkSize}}
+    --checkpoint.restart.chunkSize {{{restartChunkSize}}}
+  {{/restartChunkSize}}
+  {{#restartLoop}}
+    --checkpoint.restart.loop {{{restartLoop}}}
+  {{/restartLoop}}
+  {{#openPMD}}
+    {{#ext}}
+      --checkpoint.openPMD.ext {{{ext}}}
+    {{/ext}}
+    {{#infix}}
+      --checkpoint.openPMD.infix {{{infix}}}
+    {{/infix}}
+    {{#json}}
+      --checkpoint.openPMD.json {{{json}}}
+    {{/json}}
+    {{#dataPreparationStrategy}}
+      --checkpoint.openPMD.dataPreparationStrategy {{{dataPreparationStrategy}}}
+    {{/dataPreparationStrategy}}
+    {{#jsonRestart}}
+      --checkpoint.openPMD.jsonRestart {{{jsonRestart}}}
+    {{/jsonRestart}}
+    {{#toml}}
+      --checkpoint.openPMD.toml {{{toml}}}
+    {{/toml}}
+    {{#particleIOChunkSize}}
+      --checkpoint.openPMD.particleIOChunkSize {{{particleIOChunkSize}}}
+    {{/particleIOChunkSize}}
+  {{/openPMD}}
+{{/typeID.checkpoint}}
 
     {{/data}}
   {{/output}}

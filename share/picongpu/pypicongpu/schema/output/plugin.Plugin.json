@@ -16,7 +16,8 @@
         "phasespace",
         "energyhistogram",
         "macroparticlecount",
-        "png"
+        "png",
+        "checkpoint"
       ],
       "unevaluatedProperties": false,
       "properties": {
@@ -33,6 +34,9 @@
           "type": "boolean"
         },
         "png": {
+          "type": "boolean"
+        },
+        "checkpoint": {
           "type": "boolean"
         }
       }
@@ -54,6 +58,9 @@
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.png.Png"
+        },
+        {
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.checkpoint.Checkpoint"
         }
       ]
     }
