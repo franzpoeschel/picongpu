@@ -49,8 +49,8 @@ class Checkpoint(Plugin):
     def _get_serialized(self) -> typing.Dict:
         """Return the serialized representation of the object."""
         self.check()
-        return {
-            "period": self.period.get_rendering_context() if self.period else None,
+        serialized = {
+            "period": self.period.get_rendering_context() if self.period is not None else None,
             "timePeriod": self.timePeriod,
             "directory": self.directory,
             "file": self.file,
@@ -63,3 +63,5 @@ class Checkpoint(Plugin):
             "restartLoop": self.restartLoop,
             "openPMD": self.openPMD,
         }
+        # print("Checkpoint serialized:", serialized)
+        return serialized

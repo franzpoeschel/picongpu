@@ -159,62 +159,26 @@ pypicongpu_output_with_newlines="
 {{/typeID.png}}
 
 {{#typeID.checkpoint}}
-  {{#period}}
-    --checkpoint.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
-  {{/period}}
-  {{#timePeriod}}
-    --checkpoint.timePeriod {{{timePeriod}}}
-  {{/timePeriod}}
-  {{#directory}}
-    --checkpoint.directory {{{directory}}}
-  {{/directory}}
-  {{#file}}
-    --checkpoint.file {{{file}}}
-  {{/file}}
-  {{#restart}}
-    --checkpoint.restart
-  {{/restart}}
-  {{#tryRestart}}
-    --checkpoint.tryRestart
-  {{/tryRestart}}
-  {{#restartStep}}
-    --checkpoint.restart.step {{{restartStep}}}
-  {{/restartStep}}
-  {{#restartDirectory}}
-    --checkpoint.restart.directory {{{restartDirectory}}}
-  {{/restartDirectory}}
-  {{#restartFile}}
-    --checkpoint.restart.file {{{restartFile}}}
-  {{/restartFile}}
-  {{#restartChunkSize}}
-    --checkpoint.restart.chunkSize {{{restartChunkSize}}}
-  {{/restartChunkSize}}
-  {{#restartLoop}}
-    --checkpoint.restart.loop {{{restartLoop}}}
-  {{/restartLoop}}
-  {{#openPMD}}
-    {{#ext}}
-      --checkpoint.openPMD.ext {{{ext}}}
-    {{/ext}}
-    {{#infix}}
-      --checkpoint.openPMD.infix {{{infix}}}
-    {{/infix}}
-    {{#json}}
-      --checkpoint.openPMD.json {{{json}}}
-    {{/json}}
-    {{#dataPreparationStrategy}}
-      --checkpoint.openPMD.dataPreparationStrategy {{{dataPreparationStrategy}}}
-    {{/dataPreparationStrategy}}
-    {{#jsonRestart}}
-      --checkpoint.openPMD.jsonRestart {{{jsonRestart}}}
-    {{/jsonRestart}}
-    {{#toml}}
-      --checkpoint.openPMD.toml {{{toml}}}
-    {{/toml}}
-    {{#particleIOChunkSize}}
-      --checkpoint.openPMD.particleIOChunkSize {{{particleIOChunkSize}}}
-    {{/particleIOChunkSize}}
-  {{/openPMD}}
+--checkpoint.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
+--checkpoint.timePeriod {{{timePeriod}}}
+--checkpoint.directory {{{directory}}}
+--checkpoint.file {{{file}}}
+--checkpoint.restart {{{restart}}}
+--checkpoint.tryRestart {{{tryRestart}}}
+--checkpoint.restartStep {{{restartStep}}}
+--checkpoint.restartDirectory {{{restartDirectory}}}
+--checkpoint.restartFile {{{restartFile}}}
+--checkpoint.restartChunkSize {{{restartChunkSize}}}
+--checkpoint.restartLoop {{{restartLoop}}}
+{{#openPMD}}
+--checkpoint.openPMD.ext {{{openPMD.ext}}}
+--checkpoint.openPMD.json {{{openPMD.json}}}
+--checkpoint.openPMD.infix {{{openPMD.infix}}}
+--checkpoint.openPMD.dataPreparationStrategy {{{openPMD.dataPreparationStrategy}}}
+--checkpoint.openPMD.jsonRestart {{{openPMD.jsonRestart}}}
+--checkpoint.openPMD.toml {{{openPMD.toml}}}
+--checkpoint.openPMD.particleIOChunkSize {{{openPMD.particleIOChunkSize}}}
+{{/openPMD}}
 {{/typeID.checkpoint}}
 
     {{/data}}
