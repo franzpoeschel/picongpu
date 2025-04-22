@@ -28,9 +28,9 @@ class Checkpoint:
         Specify on which time steps to create checkpoints.
         Unit: steps (simulation time steps). Required if timePeriod is not provided.
 
-    timePeriod: float, optional
+    timePeriod: int, optional
         Specify the interval in minutes for creating checkpoints.
-        Unit: minutes. Required if period is not provided.
+        Unit: minutes (must be a non-negative integer). Required if period is not provided.
 
     directory: str, optional
         Directory inside simOutput for writing checkpoints (default: "checkpoints").
@@ -67,7 +67,7 @@ class Checkpoint:
         if self.period is None and self.timePeriod is None:
             raise ValueError("At least one of period or timePeriod must be provided")
         if self.timePeriod is not None and self.timePeriod < 0:
-            raise ValueError("timePeriod must be non-negative")
+            raise ValueError("timePeriod must be a non-negative integer")
         if self.restartStep is not None and self.restartStep < 0:
             raise ValueError("restartStep must be non-negative")
         if self.restartChunkSize is not None and self.restartChunkSize < 1:
@@ -78,7 +78,7 @@ class Checkpoint:
     def __init__(
         self,
         period: Optional[TimeStepSpec] = None,
-        timePeriod: Optional[float] = None,
+        timePeriod: Optional[int] = None,
         directory: Optional[str] = None,
         file: Optional[str] = None,
         restart: Optional[bool] = None,

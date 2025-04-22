@@ -17,7 +17,7 @@ from typing import Optional, Dict
 @typeguard.typechecked
 class Checkpoint(Plugin):
     period = util.build_typesafe_property(Optional[TimeStepSpec])
-    timePeriod = util.build_typesafe_property(Optional[float])
+    timePeriod = util.build_typesafe_property(Optional[int])
     directory = util.build_typesafe_property(Optional[str])
     file = util.build_typesafe_property(Optional[str])
     restart = util.build_typesafe_property(Optional[bool])
@@ -63,5 +63,4 @@ class Checkpoint(Plugin):
             "restartLoop": self.restartLoop,
             "openPMD": self.openPMD,
         }
-        # print("Checkpoint serialized:", serialized)
         return serialized

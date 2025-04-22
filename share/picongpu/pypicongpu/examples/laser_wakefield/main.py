@@ -191,13 +191,6 @@ sim.diagnostics = [
     ),
     picmi.diagnostics.Checkpoint(
         period=picmi.diagnostics.TimeStepSpec[::100],
-        #     timePeriod=10.0,          # Checkpoints every 10 minutes (optional if period is provided)
-        #     directory="checkpoints",  # Optional: default directory inside simOutput
-        #     file="my_checkpoint",     # Optional: fileset prefix
-        #     openPMD={
-        #        "ext": "h5",  # Optional: file extension for openPMD
-        #        "json": "{}"  # Optional: JSON configuration for openPMD
-        #    }
     ),
 ]
 
