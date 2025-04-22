@@ -147,39 +147,47 @@ pypicongpu_output_with_newlines="
           --{{{species.name}}}_png.folder {{{folder}}}
     {{/typeID.png}}
 
-{{#typeID.macroparticlecount}}
-  --{{{species.name}}}_macroParticlesCount.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
-{{/typeID.macroparticlecount}}
-
-{{#typeID.png}}
-  --{{{species.name}}}_png.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
-  --{{{species.name}}}_png.axis {{{axis}}}
-  --{{{species.name}}}_png.slicePoint {{{slicePoint}}}
-  --{{{species.name}}}_png.folder {{{folder}}}
-{{/typeID.png}}
-
 {{#typeID.checkpoint}}
---checkpoint.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
---checkpoint.timePeriod {{{timePeriod}}}
---checkpoint.directory {{{directory}}}
---checkpoint.file {{{file}}}
---checkpoint.restart {{{restart}}}
---checkpoint.tryRestart {{{tryRestart}}}
---checkpoint.restartStep {{{restartStep}}}
---checkpoint.restartDirectory {{{restartDirectory}}}
---checkpoint.restartFile {{{restartFile}}}
---checkpoint.restartChunkSize {{{restartChunkSize}}}
---checkpoint.restartLoop {{{restartLoop}}}
+{{#period}}--checkpoint.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
+{{/period}}
+{{#timePeriod}}--checkpoint.timePeriod {{{timePeriod}}}
+{{/timePeriod}}
+{{#directory}}--checkpoint.directory {{{directory}}}
+{{/directory}}
+{{#file}}--checkpoint.file {{{file}}}
+{{/file}}
+{{#restart}}--checkpoint.restart {{{restart}}}
+{{/restart}}
+{{#tryRestart}}--checkpoint.tryRestart {{{tryRestart}}}
+{{/tryRestart}}
+{{#restartStep}}--checkpoint.restart.step {{{restartStep}}}
+{{/restartStep}}
+{{#restartDirectory}}--checkpoint.restart.directory {{{restartDirectory}}}
+{{/restartDirectory}}
+{{#restartFile}}--checkpoint.restart.file {{{restartFile}}}
+{{/restartFile}}
+{{#restartChunkSize}}--checkpoint.restart.chunkSize {{{restartChunkSize}}}
+{{/restartChunkSize}}
+{{#restartLoop}}--checkpoint.restart.loop {{{restartLoop}}}
+{{/restartLoop}}
 {{#openPMD}}
---checkpoint.openPMD.ext {{{openPMD.ext}}}
---checkpoint.openPMD.json {{{openPMD.json}}}
---checkpoint.openPMD.infix {{{openPMD.infix}}}
---checkpoint.openPMD.dataPreparationStrategy {{{openPMD.dataPreparationStrategy}}}
---checkpoint.openPMD.jsonRestart {{{openPMD.jsonRestart}}}
---checkpoint.openPMD.toml {{{openPMD.toml}}}
---checkpoint.openPMD.particleIOChunkSize {{{openPMD.particleIOChunkSize}}}
+  {{#openPMD.ext}}--checkpoint.openPMD.ext {{{openPMD.ext}}}
+  {{/openPMD.ext}}
+  {{#openPMD.json}}--checkpoint.openPMD.json {{{openPMD.json}}}
+  {{/openPMD.json}}
+  {{#openPMD.infix}}--checkpoint.openPMD.infix {{{openPMD.infix}}}
+  {{/openPMD.infix}}
+  {{#openPMD.dataPreparationStrategy}}--checkpoint.openPMD.dataPreparationStrategy {{{openPMD.dataPreparationStrategy}}}
+  {{/openPMD.dataPreparationStrategy}}
+  {{#openPMD.jsonRestart}}--checkpoint.openPMD.jsonRestart {{{openPMD.jsonRestart}}}
+  {{/openPMD.jsonRestart}}
+  {{#openPMD.toml}}--checkpoint.openPMD.toml {{{openPMD.toml}}}
+  {{/openPMD.toml}}
+  {{#openPMD.particleIOChunkSize}}--checkpoint.openPMD.particleIOChunkSize {{{openPMD.particleIOChunkSize}}}
+  {{/openPMD.particleIOChunkSize}}
 {{/openPMD}}
 {{/typeID.checkpoint}}
+
 
     {{/data}}
   {{/output}}
