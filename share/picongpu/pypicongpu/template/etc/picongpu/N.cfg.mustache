@@ -92,8 +92,8 @@ fi
 pypicongpu_output_with_newlines="
   {{#output}}
       {{#data}}
-    {{#typeID.auto}}
 
+    {{#typeID.auto}}
         --fields_energy.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
         --sumcurr.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
         $USED_CHARGE_CONSERVATION_FLAGS
@@ -146,6 +146,48 @@ pypicongpu_output_with_newlines="
           --{{{species.name}}}_png.slicePoint {{{slicePoint}}}
           --{{{species.name}}}_png.folder {{{folder}}}
     {{/typeID.png}}
+
+{{#typeID.checkpoint}}
+{{#period}}--checkpoint.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
+{{/period}}
+{{#timePeriod}}--checkpoint.timePeriod {{{timePeriod}}}
+{{/timePeriod}}
+{{#directory}}--checkpoint.directory {{{directory}}}
+{{/directory}}
+{{#file}}--checkpoint.file {{{file}}}
+{{/file}}
+{{#restart}}--checkpoint.restart {{{restart}}}
+{{/restart}}
+{{#tryRestart}}--checkpoint.tryRestart {{{tryRestart}}}
+{{/tryRestart}}
+{{#restartStep}}--checkpoint.restart.step {{{restartStep}}}
+{{/restartStep}}
+{{#restartDirectory}}--checkpoint.restart.directory {{{restartDirectory}}}
+{{/restartDirectory}}
+{{#restartFile}}--checkpoint.restart.file {{{restartFile}}}
+{{/restartFile}}
+{{#restartChunkSize}}--checkpoint.restart.chunkSize {{{restartChunkSize}}}
+{{/restartChunkSize}}
+{{#restartLoop}}--checkpoint.restart.loop {{{restartLoop}}}
+{{/restartLoop}}
+{{#openPMD}}
+  {{#openPMD.ext}}--checkpoint.openPMD.ext {{{openPMD.ext}}}
+  {{/openPMD.ext}}
+  {{#openPMD.json}}--checkpoint.openPMD.json {{{openPMD.json}}}
+  {{/openPMD.json}}
+  {{#openPMD.infix}}--checkpoint.openPMD.infix {{{openPMD.infix}}}
+  {{/openPMD.infix}}
+  {{#openPMD.dataPreparationStrategy}}--checkpoint.openPMD.dataPreparationStrategy {{{openPMD.dataPreparationStrategy}}}
+  {{/openPMD.dataPreparationStrategy}}
+  {{#openPMD.jsonRestart}}--checkpoint.openPMD.jsonRestart {{{openPMD.jsonRestart}}}
+  {{/openPMD.jsonRestart}}
+  {{#openPMD.toml}}--checkpoint.openPMD.toml {{{openPMD.toml}}}
+  {{/openPMD.toml}}
+  {{#openPMD.particleIOChunkSize}}--checkpoint.openPMD.particleIOChunkSize {{{openPMD.particleIOChunkSize}}}
+  {{/openPMD.particleIOChunkSize}}
+{{/openPMD}}
+{{/typeID.checkpoint}}
+
 
     {{/data}}
   {{/output}}

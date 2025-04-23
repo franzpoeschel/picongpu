@@ -23,7 +23,7 @@ This Python script is example PICMI user script reproducing the LaserWakefield e
 ENABLE_IONS = True
 ENABLE_IONIZATION = True
 ADD_CUSTOM_INPUT = True
-OUTPUT_DIRECTORY_PATH = "LWFA"
+OUTPUT_DIRECTORY_PATH = "lwfa"
 
 numberCells = np.array([192, 2048, 192])
 cellSize = np.array([0.1772e-6, 0.4430e-7, 0.1772e-6])  # unit: meter
@@ -189,6 +189,9 @@ sim.diagnostics = [
         pre_channel2="field_E.y()",
         pre_channel3="-1.0_X * field_E.y()",
     ),
+    picmi.diagnostics.Checkpoint(
+        period=picmi.diagnostics.TimeStepSpec[::100],
+    ),
 ]
 
 sim.add_laser(laser, None)
@@ -207,11 +210,6 @@ if ADD_CUSTOM_INPUT:
 
     output_configuration.addToCustomInput(
         {"openPMD_period": 100, "openPMD_file": "simData", "openPMD_extension": "bp"}, "openPMD plugin configuration"
-    )
-
-    output_configuration.addToCustomInput(
-        {"checkpoint_period": 100, "checkpoint_backend": "openPMD", "checkpoint_restart_backend": "openPMD"},
-        "checkpoint configuration",
     )
 
     sim.picongpu_add_custom_user_input(output_configuration)
