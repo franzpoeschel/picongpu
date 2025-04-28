@@ -45,6 +45,7 @@ namespace picongpu
         inline std::string getDefaultExtension(ExtensionPreference ep = ExtensionPreference::ADIOS)
         {
             using EP = ExtensionPreference;
+#    if openPMD_HAVE_ADIOS2
             auto getADIOSExtension = []()
             {
                 auto availableExtensions = ::openPMD::getFileExtensions();
@@ -61,7 +62,6 @@ namespace picongpu
                  * The reason for requiring ADIOS2 >= v2.9.2 before enabling BP5 is this bug, fixed in version v2.9.2:
                  * https://github.com/ornladios/ADIOS2/issues/3504
                  */
-#    if openPMD_HAVE_ADIOS2
 #        if ADIOS2_VERSION_MAJOR * 10000 + ADIOS2_VERSION_MINOR * 100 + ADIOS2_VERSION_PATCH >= 21000
                 /*
                  * ADIOS2 v2.10 removes the macro ADIOS2_HAVE_BP5 since BP5 is always there and cannot be switched off.
@@ -94,10 +94,8 @@ namespace picongpu
                  */
                 return "bp4";
 #        endif
-#    else
-                return "ADIOS2_NOT_AVAILABLE";
-#    endif
             };
+#    endif
 #    if openPMD_HAVE_ADIOS2 && openPMD_HAVE_HDF5
             switch(ep)
             {
