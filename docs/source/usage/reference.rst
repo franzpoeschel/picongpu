@@ -445,7 +445,7 @@ List of other references in chronological order
         Boris, J.,
 	*Relativistic Plasma Simulation - Optimization of a Hybrid Code*,
 	Proc. 4th Conf. on Num. Sim. of Plasmas (1970),
-	http://www.dtic.mil/docs/citations/ADA023511
+	https://apps.dtic.mil/sti/citations/ADA023511
 
 .. [More1985]
         R. M. More.
