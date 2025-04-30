@@ -21,6 +21,8 @@
 
 #include "picongpu/plugins/binning/UnitConversion.hpp"
 
+#include <pmacc/verify.hpp>
+
 #include <array>
 #include <cstdint>
 #include <string>
@@ -44,9 +46,14 @@ namespace picongpu
                 /** Maximum of binning range in SI Units */
                 T_Data max;
 
-                Range(T_Data minIn, T_Data maxIn) : min{minIn}, max{maxIn}
+                constexpr Range(T_Data minIn, T_Data maxIn) : min{minIn}, max{maxIn}
                 {
                     PMACC_VERIFY(min < max);
+                }
+
+                HDINLINE constexpr T_Data getRange() const
+                {
+                    return max - min;
                 }
             };
 
@@ -67,11 +74,16 @@ namespace picongpu
                  */
                 bool enableOverflowBins;
 
-                AxisSplitting(Range<T_Data> range, uint32_t numBins, bool enableOverflow = true)
+                constexpr AxisSplitting(Range<T_Data> range, uint32_t numBins, bool enableOverflow = true)
                     : m_range{range}
                     , nBins{numBins}
                     , enableOverflowBins{enableOverflow}
                 {
+                }
+
+                constexpr T_Data getRange() const
+                {
+                    return m_range.getRange();
                 }
             };
 

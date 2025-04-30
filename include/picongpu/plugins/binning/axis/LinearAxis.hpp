@@ -44,24 +44,19 @@ namespace picongpu
             template<typename T_Attribute, typename T_AttrFunctor>
             class LinearAxis
             {
-            public:
-                using Type = T_Attribute;
-                /**
-                 * Scaling is the multiplication factor used to scale (val-min) to find the bin idx
-                 * The type of the scaling depends on the Attribute type and is set to provide "reasonable" precision
-                 * For integral types <= 4 bytes it is float, else it is double
-                 * For floating point types it is the identity function
-                 **/
-                using ScalingType = std::conditional_t<
-                    std::is_integral_v<T_Attribute>,
-                    std::conditional_t<sizeof(T_Attribute) <= 4, float_X, double>,
-                    T_Attribute>;
-
-                AxisSplitting<T_Attribute> axisSplit;
-                /** Axis name, written out to OpenPMD */
-                std::string label;
-                /** Units(Dimensionality) of the axis */
-                std::array<double, numUnits> units;
+            private:
+                // Depends on other class members being initialized
+                void initBinEdges()
+                {
+                    // user_nBins+1 edges
+                    binEdges.reserve(axisSplit.nBins + 1);
+                    auto const binWidth
+                        = static_cast<double>(axisSplit.m_range.getRange() / static_cast<double>(axisSplit.nBins));
+                    for(size_t i = 0; i <= axisSplit.nBins; i++)
+                    {
+                        binEdges.emplace_back(axisSplit.m_range.min + i * binWidth);
+                    }
+                }
 
                 struct LinearAxisKernel
                 {
@@ -70,12 +65,15 @@ namespace picongpu
                     /**
                      * Min and max values in the range of the binning. Values outside this range are
                      * placed in overflow bins
+                     * Range in PIC units
                      */
-                    T_Attribute min, max;
-                    /** Number of bins in range */
+                    Range<T_Attribute> picRange;
+                    /** Number of bins in range, including overflow bins */
                     uint32_t nBins;
-                    /** Using type depending on whether T_Attribute is integer or floating point type */
-                    ScalingType scaling;
+                    /** For integral types = axSplit.nBins (EXCLUDING overflow bins)
+                     * for floating point types = axSplit.nBins/picRange.getRange()
+                     */
+                    T_Attribute scaling;
                     /** Enable or disable allocation of extra bins for out of range particles*/
                     bool overflowEnabled;
 
@@ -84,16 +82,19 @@ namespace picongpu
                         AxisSplitting<T_Attribute> const& axisSplit,
                         std::array<double, numUnits> const& unitsArr)
                         : getAttributeValue{attrFunc}
-                        , min{toPICUnits(axisSplit.m_range.min, unitsArr)}
-                        , max{toPICUnits(axisSplit.m_range.max, unitsArr)}
+                        , picRange{toPICUnits(axisSplit.m_range.min, unitsArr), toPICUnits(axisSplit.m_range.max, unitsArr)}
                         , nBins{axisSplit.enableOverflowBins ? axisSplit.nBins + 2 : axisSplit.nBins}
-                        , scaling{static_cast<ScalingType>(static_cast<T_Attribute>(axisSplit.nBins) / (max - min))}
+                        , scaling{static_cast<T_Attribute>(axisSplit.nBins)}
                         , overflowEnabled{axisSplit.enableOverflowBins}
                     {
+                        if constexpr(std::is_floating_point_v<T_Attribute>)
+                        {
+                            scaling /= picRange.getRange();
+                        }
                     }
 
                     template<typename... Args>
-                    ALPAKA_FN_ACC std::pair<bool, uint32_t> getBinIdx(Args const&... args) const
+                    ALPAKA_FN_HOST_ACC std::pair<bool, uint32_t> getBinIdx(Args const&... args) const
                     {
                         auto val = getAttributeValue(args...);
 
@@ -105,19 +106,31 @@ namespace picongpu
                         // @todo check if disableBinning is better
                         bool enableBinning = overflowEnabled;
                         // @todo check for optimizations here
-                        if(val >= min)
+                        if(val >= picRange.min)
                         {
-                            if(val < max)
+                            if(val < picRange.max)
                             {
-                                /**
-                                 * Precision errors?
-                                 * Is the math floor necessary?
-                                 */
-                                binIdx = math::floor(((val - min) * scaling) + 1);
-                                if(!overflowEnabled)
+                                if constexpr(std::is_integral_v<T_Attribute>)
                                 {
+                                    // using only integer operations
+                                    binIdx = ((val - picRange.min) * scaling) / picRange.getRange();
+                                }
+                                else
+                                {
+                                    // cast to bin index works like a floor
+                                    binIdx = (val - picRange.min) * scaling;
+                                }
+                                if(overflowEnabled)
+                                {
+                                    // shift for 0th overflow bin
+                                    ++binIdx;
+                                    // binning is always done for all vals if overflow bins are enabled
+                                }
+                                else
+                                {
+                                    // no shift required
+                                    // val is in range, so enable binning
                                     enableBinning = true;
-                                    binIdx = binIdx - 1;
                                 }
                             }
                             else
@@ -127,7 +140,17 @@ namespace picongpu
                     }
                 };
 
+
+            public:
+                using Type = T_Attribute;
+
+                AxisSplitting<T_Attribute> axisSplit;
+                /** Axis name, written out to OpenPMD */
+                std::string label;
+                /** Units(Dimensionality) of the axis */
+                std::array<double, numUnits> units;
                 LinearAxisKernel lAK;
+                std::vector<double> binEdges;
 
                 LinearAxis(
                     AxisSplitting<T_Attribute> const& axSplit,
@@ -139,6 +162,7 @@ namespace picongpu
                     , units{units}
                     , lAK{attrFunctor, axSplit, units}
                 {
+                    initBinEdges();
                 }
 
                 constexpr uint32_t getNBins() const
@@ -161,18 +185,6 @@ namespace picongpu
                  */
                 std::vector<double> getBinEdgesSI() const
                 {
-                    /**
-                     * @TODO store edges? Compute once at the beginning and store for later to print at every
-                     * iteration, also to be used in search based binning
-                     */
-                    std::vector<double> binEdges;
-
-                    auto binWidth = 1. / lAK.scaling;
-                    // user_nBins+1 edges
-                    for(size_t i = 0; i <= axisSplit.nBins; i++)
-                    {
-                        binEdges.emplace_back(toSIUnits(lAK.min + i * binWidth, units));
-                    }
                     return binEdges;
                 }
             };
