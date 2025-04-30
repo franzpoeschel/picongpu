@@ -47,68 +47,64 @@ namespace picongpu
             uint32_t virtualParticleInitialStartCell;
             uint32_t firstSlideStep;
             int32_t firstMoveStep;
+
+            ComputedConstants(float_64 movePoint)
+            {
+                SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
+
+                /* speed of the moving window */
+                auto const windowMovingSpeed = static_cast<float_64>(sim.pic.getSpeedOfLight());
+
+                /* the moving window is smaller than the global domain by exactly one
+                 * GPU (local domain size)
+                 */
+                uint32_t const globalWindowSizeInMoveDirection
+                    = subGrid.getGlobalDomain().size[moveDirection] - subGrid.getLocalDomain().size[moveDirection];
+
+                gpuNumberOfCellsInMoveDirection = subGrid.getLocalDomain().size[moveDirection];
+
+                /* unit PIConGPU length */
+                cellSizeInMoveDirection = static_cast<float_64>(sim.pic.getCellSize()[moveDirection]);
+
+                deltaWayPerStep = windowMovingSpeed * static_cast<float_64>(sim.pic.getDt());
+
+                /* How many cells the virtual particle with speed of light is pushed forward
+                 * at the begin of the simulation.
+                 * The number of cells is round up thus we avoid window moves and slides
+                 * depends on half cells.
+                 */
+                virtualParticleInitialStartCell = math::ceil(
+                    static_cast<float_64>(globalWindowSizeInMoveDirection) * (static_cast<float_64>(1.0) - movePoint));
+
+                /* Is the time step when the virtual particle **passed** the GPU next to the last
+                 * in the current to the next step
+                 */
+                firstSlideStep
+                    = static_cast<uint32_t>(math::ceil(
+                          static_cast<float_64>(
+                              subGrid.getGlobalDomain().size[moveDirection] - virtualParticleInitialStartCell)
+                          * cellSizeInMoveDirection / deltaWayPerStep))
+                      - 1;
+
+                /* way which the virtual particle must move before the window begins
+                 * to move the first time [in pic length] */
+                auto const wayToFirstMove
+                    = static_cast<float_64>(globalWindowSizeInMoveDirection - virtualParticleInitialStartCell)
+                      * cellSizeInMoveDirection;
+                /* Is the time step when the virtual particle **passed** the moving window
+                 * in the current to the next step
+                 * Signed type of firstMoveStep to allow for edge case movePoint = 0.0
+                 * for a moving window right from the start of the simulation.
+                 */
+                firstMoveStep = static_cast<int32_t>(math::ceil(wayToFirstMove / deltaWayPerStep)) - 1;
+            }
         };
-
-        ComputedConstants calculateConstants() const
-        {
-            ComputedConstants constants;
-            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
-
-            /* speed of the moving window */
-            auto const windowMovingSpeed = static_cast<float_64>(sim.pic.getSpeedOfLight());
-
-            /* the moving window is smaller than the global domain by exactly one
-             * GPU (local domain size)
-             */
-            uint32_t const globalWindowSizeInMoveDirection
-                = subGrid.getGlobalDomain().size[moveDirection] - subGrid.getLocalDomain().size[moveDirection];
-
-            constants.gpuNumberOfCellsInMoveDirection = subGrid.getLocalDomain().size[moveDirection];
-
-            /* unit PIConGPU length */
-            constants.cellSizeInMoveDirection = static_cast<float_64>(sim.pic.getCellSize()[moveDirection]);
-
-            constants.deltaWayPerStep = windowMovingSpeed * static_cast<float_64>(sim.pic.getDt());
-
-            /* How many cells the virtual particle with speed of light is pushed forward
-             * at the begin of the simulation.
-             * The number of cells is round up thus we avoid window moves and slides
-             * depends on half cells.
-             */
-            constants.virtualParticleInitialStartCell = math::ceil(
-                static_cast<float_64>(globalWindowSizeInMoveDirection) * (static_cast<float_64>(1.0) - movePoint));
-
-            /* Is the time step when the virtual particle **passed** the GPU next to the last
-             * in the current to the next step
-             */
-            constants.firstSlideStep
-                = static_cast<uint32_t>(math::ceil(
-                      static_cast<float_64>(
-                          subGrid.getGlobalDomain().size[moveDirection] - constants.virtualParticleInitialStartCell)
-                      * constants.cellSizeInMoveDirection / constants.deltaWayPerStep))
-                  - 1;
-
-            /* way which the virtual particle must move before the window begins
-             * to move the first time [in pic length] */
-            auto const wayToFirstMove
-                = static_cast<float_64>(globalWindowSizeInMoveDirection - constants.virtualParticleInitialStartCell)
-                  * constants.cellSizeInMoveDirection;
-            /* Is the time step when the virtual particle **passed** the moving window
-             * in the current to the next step
-             * Signed type of firstMoveStep to allow for edge case movePoint = 0.0
-             * for a moving window right from the start of the simulation.
-             */
-            constants.firstMoveStep = static_cast<int32_t>(math::ceil(wayToFirstMove / constants.deltaWayPerStep)) - 1;
-            return constants;
-        }
-
-        std::optional<ComputedConstants> computedConstants;
 
         ComputedConstants const& getOrComputeConstants()
         {
             if(!computedConstants)
             {
-                computedConstants = calculateConstants();
+                computedConstants = ComputedConstants(movePoint);
             }
             return *computedConstants;
         }
@@ -143,7 +139,8 @@ namespace picongpu
                         = virtualParticleWayPassedInCells + constants.virtualParticleInitialStartCell;
 
                     /* calculate the position of the virtual particle after the current step is calculated */
-                    float_64 const nextVirtualParticleWayPassed = virtualParticleWayPassed + constants.deltaWayPerStep;
+                    float_64 const nextVirtualParticleWayPassed
+                        = constants.deltaWayPerStep * static_cast<float_64>(currentStep + 1);
                     uint32_t const nextVirtualParticleWayPassedInCells
                         = uint32_t(math::floor(nextVirtualParticleWayPassed / constants.cellSizeInMoveDirection));
                     /* This position is used to detect the point in time where the virtual particle
@@ -259,6 +256,9 @@ namespace picongpu
          * note: currently only y direction is supported
          */
         static constexpr uint32_t moveDirection = 1;
+
+        // Not RAII because these are only required if moving window is enabled
+        std::optional<ComputedConstants> computedConstants;
 
     public:
         /** Set window move point which defines when to start sliding the window
