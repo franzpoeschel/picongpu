@@ -58,6 +58,7 @@ namespace picongpu
                     }
                 }
 
+            public:
                 struct LinearAxisKernel
                 {
                     /** Function to place particle on axis, returns same type as min and max */
@@ -140,8 +141,6 @@ namespace picongpu
                     }
                 };
 
-
-            public:
                 using Type = T_Attribute;
 
                 AxisSplitting<T_Attribute> axisSplit;
