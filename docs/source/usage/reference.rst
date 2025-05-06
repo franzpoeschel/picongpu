@@ -414,6 +414,12 @@ List of PIConGPU references in chronological order
 	Scientific Reports volume 13, Article number: 1330 (2023),
 	https://doi.org/10.1038/s41598-023-28617-w
 
+.. [Levine2025]
+        Levine, E. Y., et al.,
+        *Direct visualization of shock front induced nonlinear laser wakefield dynamics*,
+        Phys. Rev. Research 7, L012041 – 25 February, 2025,
+        https://doi.org/10.1103/PhysRevResearch.7.L012041
+
 List of other references in chronological order
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
