@@ -73,6 +73,8 @@ Laser plasma electron acceleration
  - Hybrid laser-driven/beam-driven plasms acceleration [Kurz2021]_
  - Acceleration in carbon nanotubes [Perera2020]_
  - TeV/m catapult acceleration in graphene layers [Bontoiu2023]_
+ - Refractive plasma optics for relativistic laser beams [Seeman2023]_
+ - Direct visualization of shock front induced nonlinear laser wakefield dynamics [Levine2025]_
 
 Laser plasma ion acceleration
 """""""""""""""""""""""""""""
@@ -88,7 +90,7 @@ Laser plasma light sources and diagnostics
  - PhD thesis on radiation from LWFA [Pausch2019]_
  - Laser-driven x-ray and proton sources [Ostermayr2020]_
  - Betatron x-ray diagnostic for beam decoherence [Koehler2019]_, [Koehler2021]_
-
+ - Visualizing plasmons and ultrafast kinetic instabilities in laser-driven solids using X-ray scattering [Ordyna2024]_
 
 Astrophysics
 """"""""""""
@@ -413,6 +415,18 @@ List of PIConGPU references in chronological order
 	*TeV/m catapult acceleration of electrons in graphene layers*,
 	Scientific Reports volume 13, Article number: 1330 (2023),
 	https://doi.org/10.1038/s41598-023-28617-w
+
+.. [Seeman2023]
+        Seeman, O. Wan, Y., Tata S. et al.,
+        *Refractive plasma optics for relativistic laser beams*,
+        Nat Commun 14, 3296 (2023),
+        https://doi.org/10.1038/s41467-023-38937-0
+
+.. [Ordyna2024]
+        Ordyna, P., Bähtz, C., Brambrink, E. et al.,
+        *Visualizing plasmons and ultrafast kinetic instabilities in laser-driven solids using X-ray scattering*,
+        Commun Phys 7, 296 (2024),
+        https://doi.org/10.1038/s42005-024-01776-6
 
 .. [Levine2025]
         Levine, E. Y., et al.,
