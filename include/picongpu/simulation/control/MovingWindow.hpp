@@ -123,8 +123,9 @@ namespace picongpu
             {
                 auto const& constants = getOrComputeConstants();
 
+                auto const realCurStep = currentStep;
                 // Clamp currentStep if sliding has ended
-                if(currentStep >= endSlidingOnStep)
+                if(currentStep > endSlidingOnStep)
                     currentStep = endSlidingOnStep;
 
                 // Check if the window should be moving yet based on the precomputed step
@@ -165,7 +166,7 @@ namespace picongpu
                      */
                     bool const virtualParticlePassesGPUBorder = (nextCell < currentCell);
 
-                    if(endOfInitialGlobalDomain && virtualParticlePassesGPUBorder)
+                    if(endOfInitialGlobalDomain && virtualParticlePassesGPUBorder && realCurStep <= endSlidingOnStep)
                     {
                         incrementSlideCounter(currentStep);
                         if(doSlide)
