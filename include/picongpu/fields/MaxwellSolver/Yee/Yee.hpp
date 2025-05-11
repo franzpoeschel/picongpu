@@ -54,7 +54,7 @@ namespace picongpu
                     constexpr float_X invCellSizeSquaredSum
                         = (1.0 / (cellSizeSimDim * cellSizeSimDim)).sumOfComponents();
                     PMACC_CASSERT_MSG(
-                        Courant_Friedrichs_Lewy_condition_failure____check_your_grid_param_file,
+                        Courant_Friedrichs_Lewy_condition_failure____check_your_simulation_param_file,
                         (sim.pic.getSpeedOfLight() * sim.pic.getSpeedOfLight() * dt * dt * invCellSizeSquaredSum)
                                 <= 1.0
                             && sizeof(T_Defer*) != 0);
