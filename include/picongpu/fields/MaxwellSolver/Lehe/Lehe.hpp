@@ -60,7 +60,7 @@ namespace picongpu
                     // Dependance on T_Defer is required, otherwise this check would have been enforced for each setup
                     constexpr auto dt = getTimeStep();
                     PMACC_CASSERT_MSG(
-                        Courant_Friedrichs_Lewy_condition_failure____check_your_grid_param_file,
+                        Courant_Friedrichs_Lewy_condition_failure____check_your_simulation_param_file,
                         (sim.pic.getSpeedOfLight() * dt) <= stepFreeDirection && sizeof(T_Defer*) != 0);
 
                     return stepFreeDirection;

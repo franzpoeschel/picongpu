@@ -58,7 +58,7 @@ namespace picongpu
 
                     // Dependence on T_Defer is required, otherwise this check would have been enforced for each setup
                     PMACC_CASSERT_MSG(
-                        Courant_Friedrichs_Lewy_condition_failure____check_your_grid_param_file,
+                        Courant_Friedrichs_Lewy_condition_failure____check_your_simulation_param_file,
                         (cdt <= delta) && sizeof(T_Defer*) != 0);
 
                     return delta;
