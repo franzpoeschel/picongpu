@@ -5,6 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from .layout import Layout
 from .densityoperation import DensityOperation
 from .densityprofile import DensityProfile
 from ..species import Species
@@ -41,6 +42,8 @@ class SimpleDensity(DensityOperation):
 
     species = util.build_typesafe_property(typing.Set[Species])
     """species to be placed"""
+
+    layout = util.build_typesafe_property(Layout)
 
     def __init__(self):
         # nothing to do
@@ -120,6 +123,7 @@ class SimpleDensity(DensityOperation):
 
         return {
             "ppc": self.ppc,
+            "layout": self.layout.get_rendering_context(),
             "profile": self.profile.get_rendering_context(),
             "placed_species_initial": placed_species[0],
             "placed_species_copied": placed_species[1:],
