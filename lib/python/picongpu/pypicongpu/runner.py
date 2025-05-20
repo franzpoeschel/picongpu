@@ -193,7 +193,7 @@ class Runner:
             self.sim = sim.get_as_pypicongpu()
         else:
             raise typeguard.TypeCheckError(
-                "sim must be pypicongpu simulation or picmi simulation, got: {}".format(type(sim))
+                "sim must be pypicongpu simulation or picmi simulation, " "got: {}".format(type(sim))
             )
 
         # use helper to perform various checks
@@ -256,7 +256,7 @@ class Runner:
 
         if self.scratch_dir is not None and self.scratch_dir.startswith(str(pathlib.Path.home())):
             logging.warning(
-                "You specified your scratch directory to be inside your $HOME. THIS IS NOT ACCEPTABLE ON HPC!"
+                "You specified your scratch directory to be inside" " your $HOME. THIS IS NOT ACCEPTABLE ON HPC!"
             )
         assert self.scratch_dir is None or path.isdir(self.scratch_dir), "scratch directory must exist"
 
@@ -347,9 +347,9 @@ class Runner:
         if printDirToConsole:
             print(" [" + str(self.setup_dir) + "]")
 
-        assert not path.isdir(
-            self.setup_dir
-        ), "setup directory must not exist before generation -- did you call generate() already?"
+        assert not path.isdir(self.setup_dir), (
+            "setup directory must not exist before generation -- " "did you call generate() already?"
+        )
         self.__copy_template()
         self.__render_templates()
 
@@ -357,26 +357,26 @@ class Runner:
         """
         build (compile) picongpu-compatible input files
         """
-        assert path.isdir(
-            self.setup_dir
-        ), "setup directory must exist (and contain generated files) -- did you call generate()?"
-        assert not path.isdir(
-            path.join(self.setup_dir, ".build")
-        ), "build dir (.build in setup dir) must not exist -- did you call build() already?"
+        assert path.isdir(self.setup_dir), (
+            "setup directory must exist (and contain generated files) -- " "did you call generate()?"
+        )
+        assert not path.isdir(path.join(self.setup_dir, ".build")), (
+            "build dir (.build in setup dir) must not exist -- " "did you call build() already?"
+        )
         self.__build()
 
     def run(self):
         """
         run compiled picongpu simulation
         """
-        assert path.isdir(
-            path.join(self.setup_dir, ".build")
-        ), "build dir (.build in setup dir) must exist -- did you call build()?"
+        assert path.isdir(path.join(self.setup_dir, ".build")), (
+            "build dir (.build in setup dir) must exist -- " "did you call build()?"
+        )
         assert not path.isdir(self.run_dir), "run dir must not exist yet -- did you call run() already?"
 
         if self.run_dir.startswith(path.abspath(tempfile.gettempdir())):
             logging.warning(
-                "run dir is inside the temporary directory. THE SIMULATION RESULTS ARE NOT ON PERMANENT STORAGE!"
+                "run dir is inside the temporary directory. " "THE SIMULATION RESULTS ARE NOT ON PERMANENT STORAGE!"
             )
             # TODO: maybe note that multi-device support is disabled
 
