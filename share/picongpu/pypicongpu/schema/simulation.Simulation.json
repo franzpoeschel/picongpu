@@ -9,7 +9,7 @@
     },
     "base_density": {
       "type": "number",
-      "description": "value to normalise densities"
+      "description": "PIConGPU unit system reference number density, used to normalize macro particle momenta and mass"
     },
     "time_steps": {
       "type": "integer",
