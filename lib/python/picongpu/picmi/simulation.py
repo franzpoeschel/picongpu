@@ -486,7 +486,10 @@ class Simulation(picmistandard.PICMI_Simulation):
         ]
 
         # set typical ppc if not set explicitly by user
-        s.typical_ppc = self.picongpu_typical_ppc or s.init_manager.get_typical_particle_per_cell()
+        if self.picongpu_typical_ppc is None:
+            s.typical_ppc = (s.init_manager).get_typical_particle_per_cell()
+        else:
+            s.typical_ppc = self.picongpu_typical_ppc
 
         if s.typical_ppc < 1:
             raise ValueError("typical_ppc must be >= 1")
