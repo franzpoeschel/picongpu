@@ -5,6 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from ..grid import Grid3D
 import typeguard
 import typing
 from .. import util
@@ -167,8 +168,9 @@ class InitManager(RenderedObject):
         if 0 != len(unknown_species):
             unknown_species_names = list(map(lambda species: species.name, unknown_species))
             raise ValueError(
-                "operation {} initialized species, but they are not "
-                "registered in InitManager.all_species: {}".format(str(operation), ", ".join(unknown_species_names))
+                "operation {} initialized species, but they are not registered in InitManager.all_species: {}".format(
+                    str(operation), ", ".join(unknown_species_names)
+                )
             )
 
     def __check_attributes_species_exclusive(self) -> None:
@@ -466,6 +468,26 @@ class InitManager(RenderedObject):
             min_ppc = 1
 
         return (max_ppc - min_ppc) // 2 + min_ppc
+
+    def get_base_density(self, grid: Grid3D) -> float:
+        # There's supposed to be some heuristics here along the lines of
+        #        num_grid = (
+        #            np.reshape([grid.cell_size_x_si, grid.cell_size_y_si, grid.cell_size_z_si], (-1, 1, 1, 1))
+        #            * np.mgrid[: grid.cell_cnt_x, : grid.cell_cnt_y, : grid.cell_cnt_z]
+        #        )
+        #        return float(
+        #            np.max(
+        #                np.fromiter(
+        #                    (
+        #                        operation.profile(*num_grid)
+        #                        for operation in self.all_operations
+        #                        if isinstance(operation, SimpleDensity)
+        #                    ),
+        #                    dtype=float,
+        #                )
+        #            )
+        #        )
+        return 1.0e25
 
     def _get_serialized(self) -> dict:
         """

@@ -1,5 +1,5 @@
-/* Copyright 2013-2024 Axel Huebl, Rene Widera, Benjamin Worpitz
- *                     Hannes Troepgen
+/* Copyright 2013-2025 Axel Huebl, Rene Widera, Benjamin Worpitz
+ *                     Hannes Troepgen, Julian Lenz
  *
  * This file is part of PIConGPU.
  *
@@ -85,7 +85,7 @@ namespace picongpu
          * unit: ELEMENTS/m^3
          */
         //! @todo find way to compute on the fly, Brian Marre, 2023
-        constexpr float_64 BASE_DENSITY_SI = 1.e25;
+        constexpr float_64 BASE_DENSITY_SI = {{{base_density}}};
     } // namespace SI
 
     /** Approximate number of maximum macro-particles per cell.

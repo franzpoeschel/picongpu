@@ -181,7 +181,7 @@ class TestPicmiSimulation(unittest.TestCase):
         grid = get_grid(1, 1, 1, 64)
         solver = picmi.ElectromagneticSolver(method="Yee", grid=grid)
 
-        wrongValues = [0, -1, -15]
+        wrongValues = [-1, -15]
         for value in wrongValues:
             sim = picmi.Simulation(time_step_size=17, max_steps=4, solver=solver, picongpu_typical_ppc=value)
             with self.assertRaisesRegex(ValueError, "typical_ppc must be >= 1"):

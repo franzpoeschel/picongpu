@@ -1,7 +1,7 @@
 """
 This file is part of PIConGPU.
-Copyright 2021-2024 PIConGPU contributors
-Authors: Hannes Troepgen, Brian Edward Marre, Alexander Debus, Richard Pausch
+Copyright 2021-2025 PIConGPU contributors
+Authors: Hannes Troepgen, Brian Edward Marre, Alexander Debus, Richard Pausch, Julian Lenz
 License: GPLv3+
 """
 
@@ -48,6 +48,7 @@ class TestSimulation(unittest.TestCase):
         self.s.moving_window = None
         self.s.plugins = "auto"
         self.s.init_manager = species.InitManager()
+        self.s.base_density = 1.0e25
 
         self.laser = GaussianLaser()
         self.laser.wavelength = 1.2
