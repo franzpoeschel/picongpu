@@ -12,6 +12,7 @@ from .Distribution import Distribution
 
 import typeguard
 import typing
+import numpy as np
 
 
 @typeguard.typechecked
@@ -82,3 +83,18 @@ class GaussianDistribution(Distribution):
         gaussian_profile.density = self.density
 
         return gaussian_profile
+
+    def __call__(self, x, y, z):
+        # apparently, our SI position is the centre of the cell
+        y += -0.5
+        # The last term undoes the shift to the cell origin.
+        vacuum_y = self.vacuum_front - 0.5
+
+        # We do this to get the correct shape after broadcasting:
+        exponent = 0 * (x + y + z)
+        exponent[y < self.center_front] = np.abs((y - self.center_front) / self.sigma_front)[y < self.center_front]
+        exponent[y >= self.center_rear] = np.abs((y - self.center_rear) / self.sigma_rear)[y >= self.center_rear]
+
+        result = np.exp(self.factor * exponent**self.power)
+        result[y < vacuum_y] = 0.0
+        return self.density * result

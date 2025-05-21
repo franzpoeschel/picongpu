@@ -128,7 +128,7 @@ class Foil:
 # This is a predefined setup within PIConGPU but not PICMI.
 class LinearExponential:
     def __init__(self):
-        self.parameters = dict(density=8.0e24, vacuum_y=14.0, gas_a=10.0, gas_b=12.0, gas_d=17.0, gas_y_max=25.0)
+        self.parameters = dict(density=8.0e24, vacuum_y=14.0, gas_a=10.0, gas_b=12.0, gas_d=-0.1, gas_y_max=25.0)
         self.distributions = {
             "free_form": picmi.AnalyticDistribution(lambda x, y, z: self.free_form(y, **self.parameters)),
         }
@@ -238,7 +238,9 @@ class TestFreeFormulaDensity(unittest.TestCase):
                 lambda df: pd.Series(
                     # We add 0.5 because the density is evaluated at the centre of the cell.
                     DISTRIBUTIONS[df.name[0]][df.name[1]](
-                        df.positionOffset_x + 0.5, df.positionOffset_y + 0.5, df.positionOffset_z + 0.5
+                        df.positionOffset_x.to_numpy() + 0.5,
+                        df.positionOffset_y.to_numpy() + 0.5,
+                        df.positionOffset_z.to_numpy() + 0.5,
                     ),
                     index=df.set_index(["positionOffset_x", "positionOffset_y", "positionOffset_z"], drop=True).index,
                 ).astype(float),

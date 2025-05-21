@@ -5,6 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from picongpu.picmi.grid import Cartesian3DGrid
 from picongpu import picmi
 
 import unittest
@@ -12,6 +13,14 @@ import unittest
 from picongpu.pypicongpu import species
 import math
 import typeguard
+
+ARBITRARY_GRID = Cartesian3DGrid(
+    lower_bound=[0, 0, 0],
+    upper_bound=[1, 1, 1],
+    number_of_cells=[1, 1, 1],
+    lower_boundary_conditions=["periodic", "periodic", "periodic"],
+    upper_boundary_conditions=["periodic", "periodic", "periodic"],
+)
 
 
 @typeguard.typechecked
@@ -44,7 +53,7 @@ class HelperTestPicmiBoundaries:
     def test_boundary_not_given_at_all(self):
         """no boundaries supplied at all"""
         picmi_dist = self._get_distribution([None, None, None], [None, None, None])
-        pypic = picmi_dist.get_as_pypicongpu()
+        pypic = picmi_dist.get_as_pypicongpu(ARBITRARY_GRID)
         self.assertEqual((math.inf, math.inf, math.inf), pypic.upper_bound)
         self.assertEqual((-math.inf, -math.inf, -math.inf), pypic.lower_bound)
 
@@ -52,14 +61,14 @@ class HelperTestPicmiBoundaries:
     def test_boundary_not_given_partial(self):
         """only some boundaries (components) are missing"""
         picmi_dist = self._get_distribution(lower_bound=[123, -569, None], upper_bound=[124, None, 17])
-        pypic = picmi_dist.get_as_pypicongpu()
+        pypic = picmi_dist.get_as_pypicongpu(ARBITRARY_GRID)
         self.assertEqual((123, -569, -math.inf), pypic.lower_bound)
         self.assertEqual((124, math.inf, 17), pypic.upper_bound)
 
     @unittest.skip("not implemented")
     def test_boundary_passthru(self):
         picmi_dist = self._get_distribution(lower_bound=[111, 222, 333], upper_bound=[444, 555, 666])
-        pypic = picmi_dist.get_as_pypicongpu()
+        pypic = picmi_dist.get_as_pypicongpu(ARBITRARY_GRID)
         self.assertTrue(isinstance(pypic, species.attributes.position.profile.Profile))
         self.assertEqual((111, 222, 333), pypic.lower_bound)
         self.assertEqual((444, 555, 666), pypic.upper_bound)
@@ -72,7 +81,7 @@ class TestPicmiUniformDistribution(unittest.TestCase, HelperTestPicmiBoundaries)
     def test_full(self):
         """full paramset"""
         uniform = picmi.UniformDistribution(density=42.42, lower_bound=[111, 222, 333], upper_bound=[444, 555, 666])
-        pypic = uniform.get_as_pypicongpu()
+        pypic = uniform.get_as_pypicongpu(ARBITRARY_GRID)
         self.assertTrue(isinstance(pypic, species.operation.densityprofile.Uniform))
 
         self.assertEqual(42.42, pypic.density_si)
@@ -83,7 +92,7 @@ class TestPicmiUniformDistribution(unittest.TestCase, HelperTestPicmiBoundaries)
     def test_density_zero(self):
         """density set to zero is accepted"""
         uniform = picmi.UniformDistribution(density=0)
-        pypic = uniform.get_as_pypicongpu()
+        pypic = uniform.get_as_pypicongpu(ARBITRARY_GRID)
         # no error:
         self.assertEqual(0, pypic.density_si)
 
@@ -91,10 +100,10 @@ class TestPicmiUniformDistribution(unittest.TestCase, HelperTestPicmiBoundaries)
         """check that mandatory must be given"""
         # type of exception is not checked
         with self.assertRaises(Exception):
-            picmi.UniformDistribution().get_as_pypicongpu()
+            picmi.UniformDistribution().get_as_pypicongpu(ARBITRARY_GRID)
 
         # density is only required param
-        picmi.UniformDistribution(density=3.14).get_as_pypicongpu()
+        picmi.UniformDistribution(density=3.14).get_as_pypicongpu(ARBITRARY_GRID)
 
     def test_drift(self):
         """drift is correctly translated"""
@@ -132,7 +141,7 @@ class TestPicmiAnalyticDistriution(unittest.TestCase, HelperTestPicmiBoundaries)
             lower_bound=[111, 222, 333],
             upper_bound=[444, 555, 666],
         )
-        pypic = analytic.get_as_pypicongpu()
+        pypic = analytic.get_as_pypicongpu(ARBITRARY_GRID)
         self.assertTrue(isinstance(pypic, species.attributes.position.profile.Analytic))
 
         self.assertEqual((111, 222, 333), pypic.lower_bound)
@@ -151,7 +160,7 @@ class TestPicmiAnalyticDistriution(unittest.TestCase, HelperTestPicmiBoundaries)
             constant_offset=1,
             x_offset=123.3,
         )
-        pypic = analytic.get_as_pypicongpu()
+        pypic = analytic.get_as_pypicongpu(ARBITRARY_GRID)
 
         # note: the conversion to cpp str serves to trigger pypicongpu-internal
         # checks
@@ -171,10 +180,10 @@ class TestPicmiAnalyticDistriution(unittest.TestCase, HelperTestPicmiBoundaries)
         """check that mandatory must be given"""
         # type of exception is not checked
         with self.assertRaises(Exception):
-            picmi.AnalyticDistribution().get_as_pypicongpu()
+            picmi.AnalyticDistribution().get_as_pypicongpu(ARBITRARY_GRID)
 
         # density is only required param
-        picmi.AnalyticDistribution(density_expression="3.14").get_as_pypicongpu()
+        picmi.AnalyticDistribution(density_expression="3.14").get_as_pypicongpu(ARBITRARY_GRID)
 
     def test_drift(self):
         """drift is correctly translated"""
@@ -202,7 +211,7 @@ class TestPicmiGaussianBunchDistribution(unittest.TestCase):
     def test_full(self):
         """check for all possible params"""
         gb = picmi.GaussianBunchDistribution(1337, 0.05, centroid_position=[111, 222, 333])
-        pypic = gb.get_as_pypicongpu()
+        pypic = gb.get_as_pypicongpu(ARBITRARY_GRID)
         self.assertTrue(isinstance(pypic, species.attributes.position.profile.GaussianCloud))
         self.assertEqual((111, 222, 333), pypic.centroid_position_si)
         self.assertAlmostEqual(0.05, pypic.rms_bunch_size_si)
@@ -211,7 +220,7 @@ class TestPicmiGaussianBunchDistribution(unittest.TestCase):
     def test_defaults(self):
         """mandatory params are enforced"""
         gb = picmi.GaussianBunchDistribution(1, 1)
-        pypic = gb.get_as_pypicongpu()
+        pypic = gb.get_as_pypicongpu(ARBITRARY_GRID)
         self.assertEqual((0, 0, 0), pypic.centroid_position_si)
 
     def test_conversion(self):
@@ -226,7 +235,7 @@ class TestPicmiGaussianBunchDistribution(unittest.TestCase):
         for param_tuple in max_density_by_n_particles_and_rms_bunch_size:
             n_particles, rms_bunch_size = param_tuple
             gb = picmi.GaussianBunchDistribution(n_particles, rms_bunch_size)
-            pypic = gb.get_as_pypicongpu()
+            pypic = gb.get_as_pypicongpu(ARBITRARY_GRID)
             self.assertAlmostEqual(
                 pypic.max_density_si,
                 max_density_by_n_particles_and_rms_bunch_size[param_tuple],
@@ -286,7 +295,7 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
             upper_bound=[444, 555, 666],
         )
 
-        pypic = foil.get_as_pypicongpu()
+        pypic = foil.get_as_pypicongpu(ARBITRARY_GRID)
         self.assertTrue(isinstance(pypic, species.operation.densityprofile.Foil))
 
         self.assertEqual(42.42, pypic.density_si)
@@ -305,19 +314,19 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
         """density set to zero is not accepted"""
         foil = picmi.FoilDistribution(density=0, thickness=1.0, front=2.0)
         with self.assertRaisesRegex(ValueError, ".*density must be > 0.*"):
-            foil.get_as_pypicongpu().get_rendering_context()
+            foil.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_front_zero(self):
         """front set to zero is accepted"""
         foil = picmi.FoilDistribution(density=1.0, thickness=2.0, front=0)
-        pypic = foil.get_as_pypicongpu()
+        pypic = foil.get_as_pypicongpu(ARBITRARY_GRID)
         # no error:
         self.assertEqual(0, pypic.y_value_front_foil_si)
 
     def test_thickness_zero(self):
         """thickness set to zero is accepted"""
         foil = picmi.FoilDistribution(density=1.0, thickness=0, front=2.0)
-        pypic = foil.get_as_pypicongpu()
+        pypic = foil.get_as_pypicongpu(ARBITRARY_GRID)
         # no error
         self.assertEqual(0, pypic.thickness_foil_si)
 
@@ -364,7 +373,7 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
         testCases = self._get_test_foils(0, 1.0)
 
         for entry in testCases:
-            pypic = entry.get_as_pypicongpu()
+            pypic = entry.get_as_pypicongpu(ARBITRARY_GRID)
             # no error:
             self.assertEqual(1.0, pypic.density_si)
             self.assertEqual(2.0, pypic.thickness_foil_si)
@@ -377,7 +386,7 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
 
         for i, entry in enumerate(testCases):
             with self.assertRaisesRegex(ValueError, ".*PlasmaCutoff must be >=0.*"):
-                entry.get_as_pypicongpu().get_rendering_context()
+                entry.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_length_zero(self):
         """length set to zero is not accepted"""
@@ -385,7 +394,7 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
 
         for entry in testCases:
             with self.assertRaisesRegex(ValueError, ".*PlasmaLength must be >0.*"):
-                entry.get_as_pypicongpu().get_rendering_context()
+                entry.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_length_below_zero(self):
         """length below zero is not accepted"""
@@ -394,7 +403,7 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
 
         for entry in testCases:
             with self.assertRaisesRegex(ValueError, ".*PlasmaLength must be >0.*"):
-                entry.get_as_pypicongpu().get_rendering_context()
+                entry.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_setting_noPlasmaRamps(self):
         testCases = self._get_test_foils(None, 1.0)
@@ -406,7 +415,7 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
                 "length and exponential_(pre|post)_plasma_cutoff must be"
                 " set to none or neither!",
             ):
-                entry.get_as_pypicongpu().get_rendering_context()
+                entry.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
         testCases = self._get_test_foils(1.0, None)
         for entry in testCases:
@@ -416,16 +425,16 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
                 "length and exponential_(pre|post)_plasma_cutoff must be"
                 " set to none or neither!",
             ):
-                entry.get_as_pypicongpu().get_rendering_context()
+                entry.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_mandatory(self):
         """check that mandatory must be given"""
         # type of exception is not checked
         with self.assertRaises(Exception):
-            picmi.FoilDistribution().get_as_pypicongpu()
+            picmi.FoilDistribution().get_as_pypicongpu(ARBITRARY_GRID)
 
         # density, thickness and front are only required param
-        picmi.FoilDistribution(density=3.14, thickness=1.0, front=3.0).get_as_pypicongpu()
+        picmi.FoilDistribution(density=3.14, thickness=1.0, front=3.0).get_as_pypicongpu(ARBITRARY_GRID)
 
     def test_drift(self):
         """drift is correctly translated"""
@@ -459,7 +468,7 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
         "sigma_rear": 4.0,
         "power": 5.0,
         "factor": -6.0,
-        "vacuum_cells_front": 50,
+        "vacuum_front": 50,
     }
 
     def _get_distribution(self, lower_bound=[None, None, None], upper_bound=[None, None, None]):
@@ -471,7 +480,7 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
             sigma_rear=self.values["sigma_rear"],
             power=self.values["power"],
             factor=self.values["factor"],
-            vacuum_cells_front=self.values["vacuum_cells_front"],
+            vacuum_front=self.values["vacuum_front"],
             lower_bound=lower_bound,
             upper_bound=upper_bound,
         )
@@ -480,7 +489,7 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
         """full paramset"""
         gaussian = self._get_distribution()
 
-        pypic = gaussian.get_as_pypicongpu()
+        pypic = gaussian.get_as_pypicongpu(ARBITRARY_GRID)
         self.assertTrue(isinstance(pypic, species.operation.densityprofile.Gaussian))
 
         self.assertEqual(self.values["density"], pypic.density)
@@ -490,7 +499,7 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
         self.assertEqual(self.values["sigma_rear"], pypic.gas_sigma_rear)
         self.assertEqual(self.values["power"], pypic.gas_power)
         self.assertEqual(self.values["factor"], pypic.gas_factor)
-        self.assertEqual(self.values["vacuum_cells_front"], pypic.vacuum_cells_front)
+        self.assertEqual(self.values["vacuum_front"], pypic.vacuum_cells_front)
 
         # @todo repect bounding boxes, Brian Marre, 2024
 
@@ -499,7 +508,7 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
         gaussian = self._get_distribution()
         gaussian.density = 0.0
         with self.assertRaisesRegex(ValueError, ".*density must be > 0.*"):
-            gaussian.get_as_pypicongpu().get_rendering_context()
+            gaussian.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_front_rear_swapped(self):
         """front and rear swapped is not accepted"""
@@ -507,19 +516,19 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
         gaussian.center_front = self.values["center_rear"]
         gaussian.center_rear = self.values["center_front"]
         with self.assertRaisesRegex(ValueError, ".*center_front must be <= center_rear.*"):
-            gaussian.get_as_pypicongpu().get_rendering_context()
+            gaussian.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_sigma_zero(self):
         """sigma == 0 is not accepted"""
         gaussian = self._get_distribution()
         gaussian.sigma_front = 0.0
         with self.assertRaisesRegex(ValueError, ".*sigma_front must be != 0.*"):
-            gaussian.get_as_pypicongpu().get_rendering_context()
+            gaussian.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
         gaussian = self._get_distribution()
         gaussian.sigma_rear = 0.0
         with self.assertRaisesRegex(ValueError, ".*sigma_rear must be != 0.*"):
-            gaussian.get_as_pypicongpu().get_rendering_context()
+            gaussian.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_drift(self):
         """drift is correctly translated"""

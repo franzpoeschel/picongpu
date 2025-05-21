@@ -69,3 +69,6 @@ class UniformDistribution(picmistandard.PICMI_UniformDistribution):
         drift = species.operation.momentum.Drift()
         drift.fill_from_velocity(tuple(self.directed_velocity))
         return drift
+
+    def __call__(self, x, y, z):
+        return 0.0 * (x + y + z) + self.density
