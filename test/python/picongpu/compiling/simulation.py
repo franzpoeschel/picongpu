@@ -61,6 +61,7 @@ class TestSimulation(unittest.TestCase):
         sim.solver = pypicongpu.solver.YeeSolver()
         sim.plugins = "auto"
         sim.init_manager = pypicongpu.species.InitManager()
+        sim.base_density = 1.0e25
         return sim
 
     def test_minimal(self):

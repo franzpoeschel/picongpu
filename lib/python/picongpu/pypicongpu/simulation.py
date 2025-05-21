@@ -1,7 +1,7 @@
 """
 This file is part of PIConGPU.
-Copyright 2021-2024 PIConGPU contributors
-Authors: Hannes Troepgen, Brian Edward Marre
+Copyright 2021-2025 PIConGPU contributors
+Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
@@ -32,6 +32,9 @@ class Simulation(RenderedObject):
 
     To run a Simulation object pass it to the Runner (for details see there).
     """
+
+    base_density = util.build_typesafe_property(float)
+    """value to normalise densities"""
 
     delta_t_si = util.build_typesafe_property(float)
     """Width of a single timestep, given in seconds."""
@@ -112,6 +115,7 @@ class Simulation(RenderedObject):
     def _get_serialized(self) -> dict:
         serialized = {
             "delta_t_si": self.delta_t_si,
+            "base_density": float(self.base_density),
             "time_steps": self.time_steps,
             "typical_ppc": self.typical_ppc,
             "solver": self.solver.get_rendering_context(),

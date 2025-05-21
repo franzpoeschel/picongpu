@@ -7,6 +7,10 @@
       "type": "number",
       "description": "width of a single timestamp in s"
     },
+    "base_density": {
+      "type": "number",
+      "description": "PIConGPU unit system reference number density, used to normalize macro particle momenta and mass"
+    },
     "time_steps": {
       "type": "integer",
       "minimum": 1,
