@@ -25,6 +25,8 @@ class TestGrid3D(unittest.TestCase):
         self.g.boundary_condition_y = BoundaryCondition.ABSORBING
         self.g.boundary_condition_z = BoundaryCondition.PERIODIC
         self.g.n_gpus = tuple([2, 4, 1])
+        self.g.super_cell_size = (8, 8, 4)
+        self.g.grid_dist = None
 
     def test_basic(self):
         """test default setup"""

@@ -118,12 +118,12 @@ class Grid3D(RenderedObject):
             },
         }
         if self.grid_dist is not None:
-            result_dict |= {
-                "grid_dist": {
-                    "x": list(map(lambda x: {"device_cells": x}, self.grid_dist[0])),
-                    "y": list(map(lambda x: {"device_cells": x}, self.grid_dist[1])),
-                    "z": list(map(lambda x: {"device_cells": x}, self.grid_dist[2])),
-                }
+            result_dict["grid_dist"] = {
+                "x": [{"device_cells": x} for x in self.grid_dist[0]],
+                "y": [{"device_cells": x} for x in self.grid_dist[1]],
+                "z": [{"device_cells": x} for x in self.grid_dist[2]],
             }
+        else:
+            result_dict["grid_dist"] = None
 
         return result_dict

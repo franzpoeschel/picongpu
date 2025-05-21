@@ -12,14 +12,18 @@ import typeguard
 
 
 class TestCartesian3DGrid(unittest.TestCase):
+    COMMON_KWARGS = dict(
+        lower_bound=[0, 0, 0],
+        upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
+        lower_boundary_conditions=["open", "open", "periodic"],
+        upper_boundary_conditions=["open", "open", "periodic"],
+    )
+
     def setUp(self):
         """default setup"""
         self.grid = picmi.Cartesian3DGrid(
             number_of_cells=[192, 2048, 12],
-            lower_bound=[0, 0, 0],
-            upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-            lower_boundary_conditions=["open", "open", "periodic"],
-            upper_boundary_conditions=["open", "open", "periodic"],
+            **self.COMMON_KWARGS,
         )
 
     def test_basic(self):
@@ -33,12 +37,9 @@ class TestCartesian3DGrid(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, ".*Unexpected.*ngpus.*"):
             picmi.Cartesian3DGrid(
                 number_of_cells=[192, 2048, 12],
-                lower_bound=[0, 0, 0],
-                upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                lower_boundary_conditions=["open", "open", "periodic"],
-                upper_boundary_conditions=["open", "open", "periodic"],
                 # common typo ngpus instead of picongpu_n_gpus
                 picongpu_ngpus=None,
+                **self.COMMON_KWARGS,
             )
 
     def test_n_gpus_type(self):
@@ -50,154 +51,119 @@ class TestCartesian3DGrid(unittest.TestCase):
             ):
                 picmi.Cartesian3DGrid(
                     number_of_cells=[192, 2048, 12],
-                    lower_bound=[0, 0, 0],
-                    upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                    lower_boundary_conditions=["open", "open", "periodic"],
-                    upper_boundary_conditions=["open", "open", "periodic"],
                     picongpu_n_gpus=not_ngpus_type,
+                    **self.COMMON_KWARGS,
                 )
 
     def test_n_gpus_asserts(self):
         """test too many GPUs for grid"""
         for not_ngpus_dist in [[1, 1, 2], [5, 1, 1], [1, 512, 1]]:
+            grid = picmi.Cartesian3DGrid(
+                number_of_cells=[192, 2048, 12],
+                picongpu_n_gpus=not_ngpus_dist,
+                **self.COMMON_KWARGS,
+            )
             with self.assertRaisesRegex(Exception, ".*GPU- and/or super-cell-distribution.*"):
-                grid = picmi.Cartesian3DGrid(
-                    number_of_cells=[192, 2048, 12],
-                    lower_bound=[0, 0, 0],
-                    upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                    lower_boundary_conditions=["open", "open", "periodic"],
-                    upper_boundary_conditions=["open", "open", "periodic"],
-                    picongpu_n_gpus=not_ngpus_dist,
-                )
                 grid.get_as_pypicongpu()
 
     def test_n_gpus_wrong_numbers(self):
         """test negativ numbers or zero as number of gpus"""
         for not_ngpus_dist in [[0], [1, 1, 0], [-1], [-1, 1, 1], [-7]]:
+            grid = picmi.Cartesian3DGrid(
+                number_of_cells=[192, 2048, 12],
+                picongpu_n_gpus=not_ngpus_dist,
+                **self.COMMON_KWARGS,
+            )
             with self.assertRaisesRegex(Exception, ".*number of gpus must be positive integer.*"):
-                grid = picmi.Cartesian3DGrid(
-                    number_of_cells=[192, 2048, 12],
-                    lower_bound=[0, 0, 0],
-                    upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                    lower_boundary_conditions=["open", "open", "periodic"],
-                    upper_boundary_conditions=["open", "open", "periodic"],
-                    picongpu_n_gpus=not_ngpus_dist,
-                )
                 grid.get_as_pypicongpu()
 
     def test_supercell(self):
-        """test supercell default"""
+        """test explicitly setting the super cell size default value"""
         grid = picmi.Cartesian3DGrid(
             number_of_cells=[192, 2048, 12],
-            lower_bound=[0, 0, 0],
-            upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-            lower_boundary_conditions=["open", "open", "periodic"],
-            upper_boundary_conditions=["open", "open", "periodic"],
             picongpu_n_gpus=[1, 1, 1],
             picongpu_super_cell_size=(8, 8, 4),
+            **self.COMMON_KWARGS,
         )
         g = grid.get_as_pypicongpu()
         assert g.super_cell_size == (8, 8, 4), "supercell should be [8,8,4]"
 
     def test_super_cell_mismatch_no_dist(self):
+        grid = picmi.Cartesian3DGrid(
+            number_of_cells=[192, 2048, 12],
+            picongpu_super_cell_size=(7, 8, 4),
+            **self.COMMON_KWARGS,
+        )
         with self.assertRaisesRegex(Exception, ".*GPU- and/or super-cell-distribution.*"):
-            grid = picmi.Cartesian3DGrid(
-                number_of_cells=[192, 2048, 12],
-                lower_bound=[0, 0, 0],
-                upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                lower_boundary_conditions=["open", "open", "periodic"],
-                upper_boundary_conditions=["open", "open", "periodic"],
-                picongpu_super_cell_size=(7, 8, 4),
-            )
             grid.get_as_pypicongpu()
 
     def test_super_cell_mismatch_with_dist(self):
+        grid = picmi.Cartesian3DGrid(
+            number_of_cells=[192, 2048, 12],
+            picongpu_n_gpus=[2, 1, 1],
+            picongpu_super_cell_size=(7, 8, 4),
+            picongpu_grid_dist=([12, 180], [2048], [12]),
+            **self.COMMON_KWARGS,
+        )
         with self.assertRaisesRegex(Exception, ".*grid distribution in x dimension must be multiple.*"):
-            grid = picmi.Cartesian3DGrid(
-                number_of_cells=[192, 2048, 12],
-                lower_bound=[0, 0, 0],
-                upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                lower_boundary_conditions=["open", "open", "periodic"],
-                upper_boundary_conditions=["open", "open", "periodic"],
-                picongpu_n_gpus=[2, 1, 1],
-                picongpu_super_cell_size=(7, 8, 4),
-                picongpu_grid_dist=([12, 180], [2048], [12]),
-            )
             grid.get_as_pypicongpu()
 
     def test_super_cell_size_zero(self):
+        grid = picmi.Cartesian3DGrid(
+            number_of_cells=[192, 2048, 12],
+            picongpu_super_cell_size=(0, 8, 4),
+            **self.COMMON_KWARGS,
+        )
         with self.assertRaisesRegex(Exception, ".*super cell size must be an integer greater than 1.*"):
-            grid = picmi.Cartesian3DGrid(
-                number_of_cells=[192, 2048, 12],
-                lower_bound=[0, 0, 0],
-                upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                lower_boundary_conditions=["open", "open", "periodic"],
-                upper_boundary_conditions=["open", "open", "periodic"],
-                picongpu_super_cell_size=(0, 8, 4),
-            )
             grid.get_as_pypicongpu()
 
     def test_super_cell_size_negative(self):
+        grid = picmi.Cartesian3DGrid(
+            number_of_cells=[192, 2048, 12],
+            picongpu_super_cell_size=(8, -8, 4),
+            **self.COMMON_KWARGS,
+        )
         with self.assertRaisesRegex(Exception, ".*super cell size must be an integer greater than 1.*"):
-            grid = picmi.Cartesian3DGrid(
-                number_of_cells=[192, 2048, 12],
-                lower_bound=[0, 0, 0],
-                upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                lower_boundary_conditions=["open", "open", "periodic"],
-                upper_boundary_conditions=["open", "open", "periodic"],
-                picongpu_super_cell_size=(8, -8, 4),
-            )
             grid.get_as_pypicongpu()
 
     def test_grid_dist_values_lt_one(self):
+        grid = picmi.Cartesian3DGrid(
+            number_of_cells=[192, 2048, 12],
+            picongpu_n_gpus=[1, 1, 1],
+            picongpu_grid_dist=([192], [2048], [0]),
+            **self.COMMON_KWARGS,
+        )
         with self.assertRaisesRegex(Exception, ".*All values in grid distribution must be greater than 0.*"):
-            grid = picmi.Cartesian3DGrid(
-                number_of_cells=[192, 2048, 12],
-                lower_bound=[0, 0, 0],
-                upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                lower_boundary_conditions=["open", "open", "periodic"],
-                upper_boundary_conditions=["open", "open", "periodic"],
-                picongpu_n_gpus=[1, 1, 1],
-                picongpu_grid_dist=([192], [2048], [0]),
-            )
             grid.get_as_pypicongpu()
 
     def test_grid_dist_sum_mismatch(self):
+        grid = picmi.Cartesian3DGrid(
+            number_of_cells=[192, 2048, 12],
+            picongpu_n_gpus=[2, 1, 1],
+            picongpu_grid_dist=([100, 64], [2048], [12]),
+            **self.COMMON_KWARGS,
+        )
         with self.assertRaisesRegex(Exception, ".*sum of grid distribution.*must match number of cells.*"):
-            grid = picmi.Cartesian3DGrid(
-                number_of_cells=[192, 2048, 12],
-                lower_bound=[0, 0, 0],
-                upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                lower_boundary_conditions=["open", "open", "periodic"],
-                upper_boundary_conditions=["open", "open", "periodic"],
-                picongpu_n_gpus=[2, 1, 1],
-                picongpu_grid_dist=([100, 64], [2048], [12]),
-            )
             grid.get_as_pypicongpu()
 
     def test_grid_dist_length_mismatch(self):
+        grid = picmi.Cartesian3DGrid(
+            number_of_cells=[192, 2048, 12],
+            picongpu_n_gpus=[1, 1, 1],
+            # length 2 in x but n_gpus=1
+            picongpu_grid_dist=([96, 96], [2048], [12]),  # length 2 in x but n_gpus=1
+            **self.COMMON_KWARGS,
+        )
         with self.assertRaisesRegex(Exception, ".*number of grid distributions.*must match number of gpus.*"):
-            grid = picmi.Cartesian3DGrid(
-                number_of_cells=[192, 2048, 12],
-                lower_bound=[0, 0, 0],
-                upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-                lower_boundary_conditions=["open", "open", "periodic"],
-                upper_boundary_conditions=["open", "open", "periodic"],
-                picongpu_n_gpus=[1, 1, 1],
-                picongpu_grid_dist=([96, 96], [2048], [12]),  # length 2 in x but n_gpus=1
-            )
             grid.get_as_pypicongpu()
 
     def test_grid_dist_correct(self):
         grid = picmi.Cartesian3DGrid(
             number_of_cells=[192, 2048, 12],
-            lower_bound=[0, 0, 0],
-            upper_bound=[3.40992e-5, 9.07264e-5, 2.1312e-6],
-            lower_boundary_conditions=["open", "open", "periodic"],
-            upper_boundary_conditions=["open", "open", "periodic"],
             picongpu_n_gpus=[2, 1, 1],
             picongpu_super_cell_size=(8, 8, 4),
             picongpu_grid_dist=([96, 96], [2048], [12]),
+            **self.COMMON_KWARGS,
         )
         g = grid.get_as_pypicongpu()
         assert g.grid_dist == ([96, 96], [2048], [12]), "grid_dist should be [96,96], [2048], [12]"

@@ -119,47 +119,55 @@
       }
     },
     "grid_dist": {
-      "description": " grid distributionover devices in cells",
-      "type": "object",
-      "unevaluatedProperties": false,
-      "required": [
-        "x",
-        "y",
-        "z"
-      ],
-      "properties": {
-        "x": {
-          "$anchor": "grid_dist_component",
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "required": [
-              "device_cells"
-            ],
-            "unevaluatedProperties": false,
-            "properties": {
-              "device_cells": {
-                "type": "integer",
-                "minimum": 1
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "description": " grid distributionover devices in cells",
+          "type": "object",
+          "unevaluatedProperties": false,
+          "required": [
+            "x",
+            "y",
+            "z"
+          ],
+          "properties": {
+            "x": {
+              "$anchor": "grid_dist_component",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": [
+                  "device_cells"
+                ],
+                "unevaluatedProperties": false,
+                "properties": {
+                  "device_cells": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
               }
+            },
+            "y": {
+              "$ref": "#grid_dist_component"
+            },
+            "z": {
+              "$ref": "#grid_dist_component"
             }
           }
-        },
-        "y": {
-          "$ref": "#grid_dist_component"
-        },
-        "z": {
-          "$ref": "#grid_dist_component"
         }
-      }
+      ]
     }
   },
   "required": [
     "cell_size",
     "cell_cnt",
     "boundary_condition",
-    "super_cell_size"
+    "super_cell_size",
+    "grid_dist"
   ],
   "unevaluatedProperties": false
 }
