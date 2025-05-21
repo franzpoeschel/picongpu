@@ -173,7 +173,18 @@ Parameters/Methods prefixed with ``picongpu_`` are PIConGPU-exclusive.
     3-integer list: ``[N_gpu_x, N_gpu_y, N_gpu_z]``
     1-integer list: ``[1, N_gpu_y, 1]``
     Default is ``None`` equal to ``[1, 1, 1]``
-
+  - ``picongpu_grid_dist``: 
+    Optional static grid distrbution. If not set or equal ``None`` the cells are distributed evenly over the GPUs.
+    Tuple with 3 lists of integers or ``None``.
+    Each lists describes the distribution of the grid on the GPUs in the respective direction.
+    Every integer in a given list is the amount of cells covered by the coresponding GPU row.
+    An Example for ``picongpu_n_gpus=[3, 3, 1]`` could be ``([128, 64, 128], [128, 256], [128,])``.
+    For every axis the sum of the integers in the list must be equal to the total number of cells in the grid in that direction.
+    Default is ``None``.
+  - ``picongpu_super_cell_size``:
+    A tuple with 3 integers, describing the size of a super cell.
+    The default is ``(8, 8, 4)``.
+    It is recomended to set it to ``(16, 16, 1)`` for 2D simulations.
 - **Gaussian Laser**
 
   - Laguerre Modes (``picongpu_laguerre_modes`` and ``picongpu_laguerre_phases``):
