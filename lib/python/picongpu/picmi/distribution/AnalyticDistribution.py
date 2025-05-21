@@ -137,7 +137,7 @@ class AnalyticDistribution:
         )
         self.warned_about_lambdify_failure = False
 
-    def get_as_pypicongpu(self) -> species.operation.densityprofile.DensityProfile:
+    def get_as_pypicongpu(self, grid) -> species.operation.densityprofile.DensityProfile:
         x, y, z = sympy.symbols("x,y,z")
         return species.operation.densityprofile.FreeFormula(
             density_expression=(

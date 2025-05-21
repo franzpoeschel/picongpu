@@ -46,8 +46,8 @@ class GaussianDistribution(Distribution):
     factor: float
     """sign and scaling factor, must be < 0, unitless"""
 
-    vacuum_cells_front: int
-    """number of cells to keep as vacuum in front of density for laser init and similar, unitless"""
+    vacuum_front: float
+    """size of the vacuum in front of density, gets rounded down to full cells, [m]"""
 
     lower_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (None, None, None)
     upper_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (None, None, None)
@@ -57,7 +57,7 @@ class GaussianDistribution(Distribution):
 
     # @note user may add additional attributes by hand, these will be available but not type verified
 
-    def get_as_pypicongpu(self) -> species.operation.densityprofile.DensityProfile:
+    def get_as_pypicongpu(self, grid) -> species.operation.densityprofile.DensityProfile:
         util.unsupported("fill in not active", self.fill_in, True)
 
         # @todo support bounds, Brian Marre, 2024
@@ -78,7 +78,7 @@ class GaussianDistribution(Distribution):
         gaussian_profile.gas_sigma_rear = self.sigma_rear
         gaussian_profile.gas_factor = self.factor
         gaussian_profile.gas_power = self.power
-        gaussian_profile.vacuum_cells_front = self.vacuum_cells_front
+        gaussian_profile.vacuum_cells_front = int(self.vacuum_front * grid.get_cell_size()[1])
         gaussian_profile.density = self.density
 
         return gaussian_profile

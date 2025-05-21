@@ -23,7 +23,7 @@ class Gaussian:
             "density": 1.0e25,
             # cell size is 1, so we don't need to distinguish
             # between number of cells and value in SI
-            "vacuum_cells_front": 14,
+            "vacuum_front": 14.0,
             "center_front": 29,
             "center_rear": 54,
             "sigma_front": 10,
@@ -43,7 +43,7 @@ class Gaussian:
         y,
         density,
         cell_size_y,
-        vacuum_cells_front,
+        vacuum_front,
         center_front,
         center_rear,
         sigma_front,
@@ -54,7 +54,7 @@ class Gaussian:
         # apparently, our SI position is the centre of the cell
         y += -0.5
         # The last term undoes the shift to the cell origin.
-        vacuum_y = vacuum_cells_front * cell_size_y - 0.5
+        vacuum_y = vacuum_front - 0.5
 
         exponent = sympy.Piecewise(
             (sympy.Abs((y - center_front) / sigma_front), y < center_front),
