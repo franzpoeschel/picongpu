@@ -6,6 +6,7 @@ License: GPLv3+
 """
 
 from .renderer import Renderer
+from .pmaccprinter import PMAccPrinter
 from .renderedobject import (
     RenderedObject,
     SelfRegistering,
@@ -13,6 +14,7 @@ from .renderedobject import (
 )
 
 __all__ = [
+    "PMAccPrinter",
     "Renderer",
     "RenderedObject",
     "SelfRegistering",

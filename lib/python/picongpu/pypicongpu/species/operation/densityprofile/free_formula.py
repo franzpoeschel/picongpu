@@ -7,20 +7,8 @@ License: GPLv3+
 
 from .densityprofile import DensityProfile
 import typeguard
-
-
-from sympy.printing.cxx import cxx_code_printers
+from ....rendering.pmaccprinter import PMAccPrinter
 from sympy import Expr, lambdify
-
-PMACC_MATH_FUNCTIONS = {
-    "Abs": "abs",
-}
-
-
-class PMAccPrinter(cxx_code_printers["c++17"]):
-    # Originally, the C++ printers use `_ns = "std::"`.
-    _ns = "pmacc::math::"
-    _kf = cxx_code_printers["c++17"]._kf | PMACC_MATH_FUNCTIONS
 
 
 @typeguard.typechecked
