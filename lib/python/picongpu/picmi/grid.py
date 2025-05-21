@@ -42,21 +42,31 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
         # continue with regular init
         super().__init__(**kw)
 
+    def get_cell_size(self):
+        return (
+            (self.upper_bound[0] - self.lower_bound[0]) / self.number_of_cells[0],
+            (self.upper_bound[1] - self.lower_bound[1]) / self.number_of_cells[1],
+            (self.upper_bound[2] - self.lower_bound[2]) / self.number_of_cells[2],
+        )
+
     def get_as_pypicongpu(self):
         # todo check
         if any(bound != 0.0 for bound in self.lower_bound):
             raise ValueError(
-                "A lower bound different from 0,0,0 is not supported in PIConGPU. " f"You gave {self.lower_bound}."
+                f"A lower bound different from 0,0,0 is not supported in PIConGPU. You gave {self.lower_bound}."
             )
         if self.lower_boundary_conditions != self.upper_boundary_conditions:
             raise ValueError(
                 "upper and lower boundary conditions must be equal (can only be chosen by axis, not by direction)"
             )
-
         util.unsupported("moving window", self.moving_window_velocity)
         util.unsupported("refined regions", self.refined_regions, [])
-        util.unsupported("lower bound (particles)", self.lower_bound_particles, self.lower_bound)
-        util.unsupported("upper bound (particles)", self.upper_bound_particles, self.upper_bound)
+        util.unsupported(
+            "lower bound (particles)", self.lower_bound_particles, self.lower_bound
+        )
+        util.unsupported(
+            "upper bound (particles)", self.upper_bound_particles, self.upper_bound
+        )
         util.unsupported(
             "lower boundary conditions (particles)",
             self.lower_boundary_conditions_particles,
@@ -75,23 +85,38 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
             "periodic": grid.BoundaryCondition.PERIODIC,
         }
 
-        if self.lower_boundary_conditions[0] not in picongpu_boundary_condition_by_picmi_id:
+        if (
+            self.lower_boundary_conditions[0]
+            not in picongpu_boundary_condition_by_picmi_id
+        ):
             raise ValueError("X: boundary condition not supported")
-        if self.lower_boundary_conditions[1] not in picongpu_boundary_condition_by_picmi_id:
+        if (
+            self.lower_boundary_conditions[1]
+            not in picongpu_boundary_condition_by_picmi_id
+        ):
             raise ValueError("Y: boundary condition not supported")
-        if self.lower_boundary_conditions[2] not in picongpu_boundary_condition_by_picmi_id:
+        if (
+            self.lower_boundary_conditions[2]
+            not in picongpu_boundary_condition_by_picmi_id
+        ):
             raise ValueError("Z: boundary condition not supported")
 
         g = grid.Grid3D()
-        g.cell_size_x_si = (self.upper_bound[0] - self.lower_bound[0]) / self.number_of_cells[0]
-        g.cell_size_y_si = (self.upper_bound[1] - self.lower_bound[1]) / self.number_of_cells[1]
-        g.cell_size_z_si = (self.upper_bound[2] - self.lower_bound[2]) / self.number_of_cells[2]
+        g.cell_size_x_si = self.get_cell_size()[0]
+        g.cell_size_y_si = self.get_cell_size()[1]
+        g.cell_size_z_si = self.get_cell_size()[2]
         g.cell_cnt_x = self.number_of_cells[0]
         g.cell_cnt_y = self.number_of_cells[1]
         g.cell_cnt_z = self.number_of_cells[2]
-        g.boundary_condition_x = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[0]]
-        g.boundary_condition_y = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[1]]
-        g.boundary_condition_z = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[2]]
+        g.boundary_condition_x = picongpu_boundary_condition_by_picmi_id[
+            self.lower_boundary_conditions[0]
+        ]
+        g.boundary_condition_y = picongpu_boundary_condition_by_picmi_id[
+            self.lower_boundary_conditions[1]
+        ]
+        g.boundary_condition_z = picongpu_boundary_condition_by_picmi_id[
+            self.lower_boundary_conditions[2]
+        ]
 
         # gpu distribution
         # convert input to 3 integer list
@@ -107,16 +132,24 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
                     raise ValueError("number of gpus must be positive integer")
             g.n_gpus = tuple(self.picongpu_n_gpus)
         else:
-            raise ValueError("picongpu_n_gpus was neither None, " "a 1-integer-list or a 3-integer-list")
+            raise ValueError(
+                "picongpu_n_gpus was neither None, a 1-integer-list or a 3-integer-list"
+            )
 
         if self.picongpu_grid_dist is not None:
             for i in range(3):
                 if not all(n >= 1 for n in self.picongpu_grid_dist[i]):
-                    raise ValueError("All values in grid distribution must be greater than 0.")
+                    raise ValueError(
+                        "All values in grid distribution must be greater than 0."
+                    )
                 if sum(self.picongpu_grid_dist[i]) != self.number_of_cells[i]:
-                    raise ValueError(f"sum of grid distribution in dimension {i} must match number of cells")
+                    raise ValueError(
+                        f"sum of grid distribution in dimension {i} must match number of cells"
+                    )
                 if len(self.picongpu_grid_dist[i]) != g.n_gpus[i]:
-                    raise ValueError(f"number of grid distributions in dimension {i} must match number of gpus")
+                    raise ValueError(
+                        f"number of grid distributions in dimension {i} must match number of gpus"
+                    )
         for i in range(3):
             if self.picongpu_super_cell_size[i] < 1:
                 raise ValueError("super cell size must be an integer greater than 1")
@@ -129,17 +162,21 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
         dim_name = ["x", "y", "z"]
         for dim in range(3):
             if self.picongpu_grid_dist is None:
-                if ((cells[dim] // g.n_gpus[dim]) // self.picongpu_super_cell_size[dim]) * g.n_gpus[
-                    dim
-                ] * self.picongpu_super_cell_size[dim] != cells[dim]:
+                if (
+                    (cells[dim] // g.n_gpus[dim]) // self.picongpu_super_cell_size[dim]
+                ) * g.n_gpus[dim] * self.picongpu_super_cell_size[dim] != cells[dim]:
                     raise ValueError(
-                        "GPU- and/or super-cell-distribution in {} dimension does " "not match grid size".format(
-                            dim_name[dim]
-                        )
+                        "GPU- and/or super-cell-distribution in {} dimension does "
+                        "not match grid size".format(dim_name[dim])
                     )
             else:
                 # any returns true if there is at least one non zero (True) element
-                if any([x % self.picongpu_super_cell_size[dim] for x in self.picongpu_grid_dist[dim]]):
+                if any(
+                    [
+                        x % self.picongpu_super_cell_size[dim]
+                        for x in self.picongpu_grid_dist[dim]
+                    ]
+                ):
                     raise ValueError(
                         f"grid distribution in {dim_name[dim]} dimension must be multiple of super cell size"
                     )
