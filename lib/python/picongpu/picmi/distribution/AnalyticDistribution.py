@@ -177,9 +177,7 @@ class AnalyticDistribution:
         try:
             # This produces faster code but the code generation is not perfect.
             # There are cases where the generated code can't handle broadcasting properly.
-            return sympy.lambdify(
-                sympy.symbols("x,y,z"), self.density_expression, "numpy"
-            )(*args, **kwargs)
+            return sympy.lambdify(sympy.symbols("x,y,z"), self.density_expression, "numpy")(*args, **kwargs)
         except ValueError:
             if not self.warned_about_lambdify_failure:
                 message = (
@@ -189,9 +187,7 @@ class AnalyticDistribution:
                 )
                 logging.warning(message)
                 logging.warning(traceback.format_exc())
-                logging.warning(
-                    "Continuing operation using a slower serialised version now."
-                )
+                logging.warning("Continuing operation using a slower serialised version now.")
                 self.warned_about_lambdify_failure = True
         # This basically calls the original function in a big loop.
         # Slower but more reliable in some cases of difficult broadcasting.
