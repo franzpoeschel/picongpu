@@ -55,6 +55,8 @@ class TestSimulation(unittest.TestCase):
         sim.grid.boundary_condition_x = pypicongpu.grid.BoundaryCondition.PERIODIC
         sim.grid.boundary_condition_y = pypicongpu.grid.BoundaryCondition.PERIODIC
         sim.grid.boundary_condition_z = pypicongpu.grid.BoundaryCondition.PERIODIC
+        sim.grid.super_cell_size = (8, 8, 4)
+        sim.grid.grid_dist = None
         sim.laser = None
         sim.custom_user_input = None
         sim.moving_window = None

@@ -59,6 +59,10 @@ TBG_wallTime="1:00:00"
   TBG_gridSize="{{{x}}} {{{y}}} {{{z}}}"
 {{/grid.cell_cnt}}
 
+{{#grid.grid_dist}}
+TBG_gridDist="--gridDist '{{#x}}{{{device_cells}}}{{^_last}},{{/_last}}{{/x}}' '{{#y}}{{{device_cells}}}{{^_last}},{{/_last}}{{/y}}' '{{#z}}{{{device_cells}}}{{^_last}},{{/_last}}{{/z}}'"
+{{/grid.grid_dist}}
+
 TBG_steps="{{{time_steps}}}"
 
 #################################
@@ -209,15 +213,18 @@ TBG_deviceDist="!TBG_devices_x !TBG_devices_y !TBG_devices_z"
 TBG_programParams="-d !TBG_deviceDist   \
                    -g !TBG_gridSize     \
                    -s !TBG_steps        \
+                   {{#grid.grid_dist}}
+                    !TBG_gridDist       \
+                   {{/grid.grid_dist}}
                    !TBG_periodic        \
                    !TBG_plugins         \
-                {{#moving_window}}
-                   !TBG_movingWindow    \
-                   !TBG_windowMovePoint \
-                  {{#stop_iteration}}
-                   !TBG_stopWindow      \
-                  {{/stop_iteration}}
-                {{/moving_window}}
+                   {{#moving_window}}
+                    !TBG_movingWindow    \
+                    !TBG_windowMovePoint \
+                    {{#stop_iteration}}
+                     !TBG_stopWindow      \
+                    {{/stop_iteration}}
+                   {{/moving_window}}
                    --versionOnce"
 
 # TOTAL number of devices
