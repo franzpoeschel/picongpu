@@ -47,7 +47,7 @@ namespace picongpu
              */
             HDINLINE float_X operator()(DataSpace<simDim> const& totalCellOffset)
             {
-                if(totalCellOffset.y() < ParamClass::vacuumCellsY)
+                if(static_cast<uint32_t>(totalCellOffset.y()) < ParamClass::vacuumCellsY)
                 {
                     return 0._X;
                 }
