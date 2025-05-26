@@ -224,11 +224,11 @@ class Simulation(picmistandard.PICMI_Simulation):
             picmi_species_by_profile,
         ) in picmi_species_by_profile_by_layout.items():
             for profile, picmi_species_list in picmi_species_by_profile.items():
-                assert isinstance(layout, picmistandard.PICMI_PseudoRandomLayout)
-
                 op = pypicongpu.species.operation.SimpleDensity()
                 op.ppc = layout.n_macroparticles_per_cell
                 op.profile = profile.get_as_pypicongpu()
+                op.layout = layout.get_as_pypicongpu()
+                op.layout.ppc = layout.n_macroparticles_per_cell
 
                 op.species = set(
                     map(

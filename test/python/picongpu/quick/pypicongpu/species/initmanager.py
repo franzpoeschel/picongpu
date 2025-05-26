@@ -20,6 +20,7 @@ from picongpu.pypicongpu.species.operation import (
     NotPlaced,
     densityprofile,
 )
+from picongpu.pypicongpu.species.operation.layout import Random
 
 import typing
 import typeguard
@@ -507,6 +508,8 @@ class TestInitManager(unittest.TestCase):
             self.species1,
             self.species2,
         }
+        simple_density.layout = Random()
+        simple_density.layout.ppc = 1
         momentum_ops = []
         for single_species in initmgr.all_species:
             simple_momentum = SimpleMomentum()
@@ -543,6 +546,8 @@ class TestInitManager(unittest.TestCase):
         simple_density.species = {
             self.species1,
         }
+        simple_density.layout = Random()
+        simple_density.layout.ppc = 1
         initmgr.all_operations.append(simple_density)
 
         # store momentum ops separately for assertion later

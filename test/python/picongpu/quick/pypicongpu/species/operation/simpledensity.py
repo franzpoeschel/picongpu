@@ -12,6 +12,7 @@ import typeguard
 
 from picongpu.pypicongpu.species import Species
 from picongpu.pypicongpu.species.operation import densityprofile
+from picongpu.pypicongpu.species.operation.layout import Random
 from picongpu.pypicongpu.species.attribute import Position, Weighting, Momentum
 from picongpu.pypicongpu.species.constant import DensityRatio
 
@@ -53,6 +54,9 @@ class TestSimpleDensity(unittest.TestCase):
             self.species2,
             self.species4,
         }
+
+        self.sd.layout = Random()
+        self.sd.layout.ppc = 1
 
     def test_basic(self):
         """simple scenario"""
@@ -210,6 +214,9 @@ class TestSimpleDensity(unittest.TestCase):
         sd.profile = self.profile
         sd.ppc = 1
         sd.species = {species}
+
+        sd.layout = Random()
+        sd.layout.ppc = 1
 
         # would normally be performed by init manager:
         species.attributes = [Momentum()]
