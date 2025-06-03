@@ -408,16 +408,6 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 boost::program_options::options_description& desc,
                 std::string const& masterPrefix = std::string{}) override
             {
-                meta::ForEach<AllEligibleSpeciesSources, plugins::misc::AppendName<boost::mpl::_1>>
-                    getEligibleDataSourceNames;
-                getEligibleDataSourceNames(allowedDataSources);
-
-                meta::ForEach<AllFieldSources, plugins::misc::AppendName<boost::mpl::_1>> appendFieldSourceNames;
-                appendFieldSourceNames(allowedDataSources);
-
-                // string list with all possible particle sources
-                std::string concatenatedSourceNames = plugins::misc::concatenateToString(allowedDataSources, ", ");
-
                 notifyPeriod.registerHelp(desc, masterPrefix + prefix);
                 tomlSources.registerHelp(desc, masterPrefix + prefix);
 
