@@ -11,7 +11,6 @@ from ...pypicongpu import util
 from .Distribution import Distribution
 
 import typeguard
-import typing
 import math
 
 
@@ -48,17 +47,6 @@ class CylindricalDistribution(Distribution):
     exponential_pre_plasma_cutoff: float | None
     """cutoff of the exponential pre-plasma ramp, [m]"""
 
-    lower_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (
-        None,
-        None,
-        None,
-    )
-    upper_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (
-        None,
-        None,
-        None,
-    )
-
     # @details pydantic provides an automatically generated __init__/constructor method which allows initialization off
     #   all attributes as keyword arguments
 
@@ -66,10 +54,6 @@ class CylindricalDistribution(Distribution):
 
     def get_as_pypicongpu(self) -> species.operation.densityprofile.Cylinder:
         util.unsupported("fill in not active", self.fill_in, True)
-
-        # @todo support bounds, Brian Marre, 2024
-        util.unsupported("lower bound", self.lower_bound, (None, None, None))
-        util.unsupported("upper bound", self.upper_bound, (None, None, None))
 
         profile = species.operation.densityprofile.Cylinder()
 
