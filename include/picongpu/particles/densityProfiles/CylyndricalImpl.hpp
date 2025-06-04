@@ -51,15 +51,17 @@ namespace picongpu
                     precisionCast<float_X>(totalCellOffset) * sim.pic.getCellSize().shrink<simDim>());
 
 
-                float3_X globalCellPos;
-                if constexpr(simDim == 2)
+                auto const globalCellPos = [&]
                 {
-                    globalCellPos = float3_X{globalCellPosSimDim[0], globalCellPosSimDim[1], 0.0_X};
-                }
-                else
-                {
-                    globalCellPos = globalCellPosSimDim;
-                }
+                    if constexpr(simDim == 2)
+                    {
+                        return float3_X{globalCellPosSimDim[0], globalCellPosSimDim[1], 0.0_X};
+                    }
+                    else
+                    {
+                        return globalCellPosSimDim;
+                    }
+                }();
                 constexpr float3_X centerPosition
                     = precisionCast<float_X>(ParamClass::centerPosition_SI / sim.unit.length());
                 float3_X const cellPositionRel = globalCellPos - centerPosition;
