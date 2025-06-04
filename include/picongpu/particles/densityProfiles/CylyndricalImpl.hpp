@@ -73,7 +73,7 @@ namespace picongpu
                 // prePlasma ramp
                 if constexpr(ParamClass::prePlasmaLength_SI == 0.0 || ParamClass::prePlasmaCutoff_SI == 0.0)
                 {
-                    density = (r <= radius) ? 1.0 : 0.0;
+                    density = (r < radius) ? 1.0 : 0.0;
                 }
                 else
                 {
@@ -84,11 +84,11 @@ namespace picongpu
                     float_X const reduced_radius
                         = math::sqrt(radius * radius - prePlasmaLength * prePlasmaLength) - prePlasmaLength;
 
-                    if(r <= reduced_radius)
+                    if(r < reduced_radius)
                     {
                         density = 1.0;
                     }
-                    else if(r <= (reduced_radius + prePlasmaCutoff))
+                    else if(r < (reduced_radius + prePlasmaCutoff))
                     {
                         float_X const distance = r - reduced_radius;
                         density = math::exp(-distance / prePlasmaLength);

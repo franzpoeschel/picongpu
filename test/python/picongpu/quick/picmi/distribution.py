@@ -585,9 +585,9 @@ class TestPicmiCylyndricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
             dist.get_as_pypicongpu().get_rendering_context()
 
     def test_radius_zero(self):
-        """radius set to zero is not accepted"""
-        dist = self._get_distribution(radius=0.0)
-        with self.assertRaisesRegex(ValueError, ".*radius must be > 0.*"):
+        """radius smaller sqrt(2)*preplasma_length is not axcepted"""
+        dist = self._get_distribution(radius=0.05)
+        with self.assertRaisesRegex(ValueError, ".*radius must be > sqrt(2)*"):
             dist.get_as_pypicongpu().get_rendering_context()
 
     def test_cutoff_zero(self):

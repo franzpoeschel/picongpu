@@ -12,6 +12,7 @@ from .Distribution import Distribution
 
 import typeguard
 import typing
+import math
 
 
 @typeguard.typechecked
@@ -47,8 +48,16 @@ class CylindricalDistribution(Distribution):
     exponential_pre_plasma_cutoff: float | None
     """cutoff of the exponential pre-plasma ramp, [m]"""
 
-    lower_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (None, None, None)
-    upper_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (None, None, None)
+    lower_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (
+        None,
+        None,
+        None,
+    )
+    upper_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (
+        None,
+        None,
+        None,
+    )
 
     # @details pydantic provides an automatically generated __init__/constructor method which allows initialization off
     #   all attributes as keyword arguments
@@ -66,8 +75,16 @@ class CylindricalDistribution(Distribution):
 
         if self.density <= 0.0:
             raise ValueError("density must be > 0")
-        if self.radius <= 0.0:
-            raise ValueError("radius must be > 0")
+
+        min_radius = (
+            math.sqrt(2.0) * self.exponential_pre_plasma_length
+            if self.exponential_pre_plasma_length is not None
+            else 0.0
+        )
+        if self.radius < min_radius:
+            raise ValueError(
+                f"radius must be > sqrt(2)*pre_plasma_length = {min_radius}, so that the reduced radius stays non negative. In case of no preplasma radius must be >= 0.0."
+            )
 
         # create prePlasma ramp if indicated by settings
         prePlasma: bool = (self.exponential_pre_plasma_cutoff is not None) and (

@@ -37,7 +37,7 @@
     "radius_si": {
       "type": "number",
       "description": "cylinder radius, [m]",
-      "exclusiveMinimum": 0
+      "minimum": 0
     },
     "cylinder_axis": {
       "type": "array",

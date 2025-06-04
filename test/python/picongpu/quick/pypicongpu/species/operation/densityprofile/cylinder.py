@@ -97,9 +97,9 @@ class TestCylinder(unittest.TestCase):
         c.cylinder_axis = (0.0, 1.0, 0.0)
         c.density_si = 1.0e20
 
-        for invalid in [0, -1e-5, -123.0]:
+        for invalid in [-1e-5, -123.0]:
             c.radius_si = invalid
-            with self.assertRaisesRegex(ValueError, ".*radius must be > 0.*"):
+            with self.assertRaisesRegex(ValueError, ".*radius must be > sqrt(2)*"):
                 c.check()
 
     def test_rendering(self):
