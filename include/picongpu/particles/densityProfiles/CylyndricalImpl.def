@@ -36,6 +36,6 @@ namespace picongpu
          *  requirements are documented by CylyniderParam in density.param
          */
         template<typename T_ParamClass>
-        struct CylyndricalImpl;
+        struct CylindricalImpl;
     } // namespace densityProfiles
 } // namespace picongpu
