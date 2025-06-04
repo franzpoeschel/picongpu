@@ -27,7 +27,7 @@ namespace picongpu
     namespace densityProfiles
     {
         template<typename T_ParamClass>
-        struct CylyndricalImpl : public T_ParamClass
+        struct CylindricalImpl : public T_ParamClass
         {
             using ParamClass = T_ParamClass;
 
