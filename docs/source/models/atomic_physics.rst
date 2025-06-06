@@ -22,17 +22,17 @@ This allows a more accurate prediction of ionization dynamics and the prediction
 
 FLYonPIC is based on the [FlyCHK]_ atomic model and currently implements the following processes:
 
-- electronic collisional de-/excitation
+- electron-ion collisional de-/excitation
 - spontaneous deexcitation
-- electronic ionization (with ionization potential depression)
+- electron impact ionization (with Stewart-Pyatt ionization potential depression)
 - autonomous ionization
-- pressure ionization
+- pressure ionization (according to Stewart-Pyatt ionization potential depression)
+- field ionization [BSI + ADK] (with Stewart-Pyatt ionization potential depression)
 
 FLYonPIC is energy and charge conserving and in the thermal average momentum conserving and solves the atomic rate equation time dependent and explicit with adaptive sub-stepping of the PIC-cycle.
 
 In addition FLYonPIC will be extended in the near future to include:
 
-- energy field ionization
 - three body electronic recombination
 
 Momentum conservation and photonic processes are also planned in the future.
