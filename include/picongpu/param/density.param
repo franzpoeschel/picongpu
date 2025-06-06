@@ -244,7 +244,7 @@ namespace picongpu
              * x, y, z coordinates
              * unit: meter
              */
-            static constexpr float3_64 centerPosition_SI{8.0 - 6, 8.0 - 6, 1.0e-5};
+            static constexpr float3_64 centerPosition_SI{8.0e-6, 8.0e-6, 1.0e-5};
 
             /** Cylinder axis
              * Vector pointing in the direction of the cylinder axis
