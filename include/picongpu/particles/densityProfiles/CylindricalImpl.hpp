@@ -34,10 +34,10 @@ namespace picongpu
             template<typename T_SpeciesType>
             struct apply
             {
-                using type = CylyndricalImpl<ParamClass>;
+                using type = CylindricalImpl<ParamClass>;
             };
 
-            HINLINE CylyndricalImpl(uint32_t currentStep)
+            HINLINE CylindricalImpl(uint32_t currentStep)
             {
             }
 

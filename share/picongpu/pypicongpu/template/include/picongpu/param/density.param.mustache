@@ -149,7 +149,7 @@
            {{#profile.typeID.cylinder}}
 
 
-           struct init_{{{placed_species_initial.typename}}}_CylyndricalParam
+           struct init_{{{placed_species_initial.typename}}}_CylindricalParam
            {
               static constexpr float3_64  centerPosition_SI{
                   {{{profile.data.center_position_si.0.component}}},
@@ -176,7 +176,7 @@
              static constexpr float_64 prePlasmaCutoff_SI = 0.0;
              {{/profile.data.pre_plasma_ramp.typeID.none}}
            };
-           using init_{{{placed_species_initial.typename}}} = CylyndricalImpl<init_{{{placed_species_initial.typename}}}_CylyndricalParam>;
+           using init_{{{placed_species_initial.typename}}} = CylindricalImpl<init_{{{placed_species_initial.typename}}}_CylindricalParam>;
            {{/profile.typeID.cylinder}}
 
          {{/species_initmanager.operations.simple_density}}

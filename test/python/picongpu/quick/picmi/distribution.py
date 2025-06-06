@@ -542,7 +542,7 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
         self.assertAlmostEqual(drift.direction_normalized[2], 0.004318114799291135)
 
 
-class TestPicmiCylyndricalDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
+class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
     def _get_distribution(
         self,
         density=1.0,
@@ -552,7 +552,7 @@ class TestPicmiCylyndricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
         exponential_pre_plasma_length=None,
         exponential_pre_plasma_cutoff=None,
     ):
-        return picmi.CylyndricalDistribution(
+        return picmi.CylindricalDistribution(
             density=density,
             center_position=center_position,
             radius=radius,
@@ -649,7 +649,7 @@ class TestPicmiCylyndricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
     def test_mandatory(self):
         """check that mandatory must be given"""
         with self.assertRaises(Exception):
-            picmi.CylyndricalDistribution().get_as_pypicongpu()
+            picmi.CylindricalDistribution().get_as_pypicongpu()
 
         # minimal valid
         dist = self._get_distribution()

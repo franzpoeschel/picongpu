@@ -33,7 +33,7 @@ namespace picongpu
          * the reduced radius ensures mass conservation
          *
          * @tparam T_ParamClass structure with parameters,
-         *  requirements are documented by CylyniderParam in density.param
+         *  requirements are documented by CyliniderParam in density.param
          */
         template<typename T_ParamClass>
         struct CylindricalImpl;

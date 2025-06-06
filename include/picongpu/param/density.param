@@ -238,7 +238,7 @@ namespace picongpu
         /* definition of sphere profile with flanks */
         using SphereFlanks = SphereFlanksImpl<SphereFlanksParam>;
 
-        struct CylyndricalParam
+        struct CylindricalParam
         {
             /** Position of the center of the cylinder
              * x, y, z coordinates
@@ -274,8 +274,8 @@ namespace picongpu
             static constexpr float_64 prePlasmaCutoff_SI = 7.0e-8;
         };
 
-        /* definition of cylyndrical profile */
-        using Cylyndrical = CylyndricalImpl<CylyndricalParam>;
+        /* definition of cylindrical profile */
+        using Cylindrical = CylindricalImpl<CylindricalParam>;
 
         /* definition of checkerboard density profile with particles every fourth cell in all directions */
         using EveryFourthCell = EveryNthCellImpl<mCT::UInt32<4, 4, 4>>;
