@@ -547,7 +547,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
         self,
         density=1.0,
         center_position=(0.0, 0.0, 0.0),
-        radius=1.0,
+        radius=2.0,
         cylinder_axis=(0.0, 1.0, 0.0),
         exponential_pre_plasma_length=None,
         exponential_pre_plasma_cutoff=None,
@@ -586,7 +586,11 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
 
     def test_radius_zero(self):
         """radius smaller sqrt(2)*preplasma_length is not axcepted"""
-        dist = self._get_distribution(radius=0.05)
+        dist = self._get_distribution(
+            radius=0.05,
+            exponential_pre_plasma_length=0.1,
+            exponential_pre_plasma_cutoff=0.2,
+        )
         with self.assertRaisesRegex(ValueError, ".*radius must be > sqrt(2)*"):
             dist.get_as_pypicongpu().get_rendering_context()
 
@@ -599,7 +603,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
         pypic = dist.get_as_pypicongpu()
         # no error
         self.assertAlmostEqual(pypic.density_si, 1.0)
-        self.assertAlmostEqual(pypic.radius_si, 1.0)
+        self.assertAlmostEqual(pypic.radius_si, 2.0)
 
     def test_cutoff_below_zero(self):
         """cutoff below zero is not accepted (depends on ramp checks)"""

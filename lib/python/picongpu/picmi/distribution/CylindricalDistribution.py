@@ -25,7 +25,7 @@ class CylindricalDistribution(Distribution):
       n = density if r < reduced_radius
       n is 0 or follows the exponential ramp if r > reduced_radius
       n is 0 if r > reduced_radius + prePlasmaCutoff
-      the reduced_radius is equal = @f[\sqrt{R^2 -L^2} -L @f]
+      the reduced_radius is equal = @f[\\sqrt{R^2 -L^2} -L @f]
       with R - cylinder_radius and L - prePlasmaLength (scale length of the ramp)
       the reduced radius ensures mass conservation
     """
@@ -67,7 +67,7 @@ class CylindricalDistribution(Distribution):
         )
         if self.radius < min_radius:
             raise ValueError(
-                f"radius must be > sqrt(2)*pre_plasma_length = {min_radius}, so that the reduced radius stays non negative. In case of no preplasma radius must be >= 0.0."
+                f"radius must be > sqrt(2)*pre_plasma_length = {min_radius}, so that the reduced radius stays non negative. In case of no preplasma radius must be >= 0.0., {self.exponential_pre_plasma_length}, {self.radius}"
             )
 
         # create prePlasma ramp if indicated by settings

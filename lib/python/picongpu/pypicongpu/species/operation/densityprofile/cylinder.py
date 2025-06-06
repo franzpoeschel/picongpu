@@ -6,7 +6,7 @@ License: GPLv3+
 """
 
 from .densityprofile import DensityProfile
-from .plasmaramp import Exponential, None_
+from .plasmaramp import PlasmaRamp, None_
 from .... import util
 
 import typeguard
@@ -24,7 +24,7 @@ class Cylinder(DensityProfile):
       n = density if r < reduced_radius
       n is 0 or follows the exponential ramp if r > reduced_radius
       n is 0 if r > reduced_radius + prePlasmaCutoff
-      the reduced_radius is equal = @f[\sqrt{R^2 -L^2} -L @f]
+      the reduced_radius is equal = @f[\\sqrt{R^2 -L^2} -L @f]
       with R - cylinder_radius and L - prePlasmaLength (scale length of the ramp)
       the reduced radius ensures mass conservation
     """
@@ -43,7 +43,7 @@ class Cylinder(DensityProfile):
     cylinder_axis = util.build_typesafe_property(tuple[float, float, float])
     """cylinder axis [x, y, z], [unitless]"""
 
-    pre_plasma_ramp = util.build_typesafe_property(Exponential | None_)
+    pre_plasma_ramp = util.build_typesafe_property(PlasmaRamp)
     """pre plasma ramp"""
 
     def __init__(self):
