@@ -20,7 +20,6 @@
 #pragma once
 
 #include "picongpu/defines.hpp"
-#include "picongpu/simulation/control/MovingWindow.hpp"
 
 namespace picongpu
 {
