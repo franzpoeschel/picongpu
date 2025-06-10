@@ -12,7 +12,7 @@ from . import constants
 
 from . import diagnostics
 
-from .distribution import FoilDistribution, UniformDistribution, GaussianDistribution
+from .distribution import FoilDistribution, UniformDistribution, GaussianDistribution, CylindricalDistribution
 from .interaction import Interaction
 from .interaction.ionization.fieldionization import (
     ADK,
@@ -49,6 +49,7 @@ __all__ = [
     "ThomasFermi",
     "Interaction",
     "diagnostics",
+    "CylindricalDistribution",
 ]
 
 

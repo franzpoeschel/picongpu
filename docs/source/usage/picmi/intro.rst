@@ -209,6 +209,7 @@ Parameters/Methods prefixed with ``picongpu_`` are PIConGPU-exclusive.
 
     If neither is set a warning is printed prompting for either of the options above.
 
+    
 Ionization:
 ^^^^^^^^^^^
 The PIConGPU PICMI interface currently supports the configuration of ionization only through a picongpu specific PICMI extension, not the in the PICMI standard defined interface, due to the lack of standardization of ionization algorithm names in the PICMI standard.
