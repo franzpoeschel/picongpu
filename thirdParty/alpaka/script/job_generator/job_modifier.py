@@ -135,3 +135,36 @@ def add_job_parameters(job_matrix: List[Dict[str, Tuple[str, str]]]):
     for job in job_matrix:
         if job[DEVICE_COMPILER][NAME] in [GCC, CLANG, ICPX]:
             job[JOB_EXECUTION_TYPE] = (JOB_EXECUTION_TYPE, JOB_EXECUTION_RUNTIME)
+
+
+def add_sycl_fpga_jobs(job_matrix: List[Dict[str, Tuple[str, str]]]) -> List[Dict[str, Tuple[str, str]]]:
+    """Duplicate each job with enabled backend ALPAKA_ACC_SYCL_ENABLE and set 
+    the SYCL_DEVICE to SYCL_CPU for the first and SYCL_FPGA for the second job.
+    All other jobs get a neutral SYCL_DEVICE entry.
+
+    Args:
+        job_matrix (List[Dict[str, Tuple[str, str]]]): Job matrix
+    Return:
+        (List[Dict[str, Tuple[str, str]]]): Job matrix with duplicated and 
+        extended jobs
+    """
+    extended_job_matrix = []
+
+    for job in job_matrix:
+        if ALPAKA_ACC_SYCL_ENABLE in job:
+            extended_job = job.copy()
+            extended_job[SYCL_DEVICE] = (SYCL_CPU, ON)
+            extended_job_matrix.append(extended_job)
+            # TODO: a bug in the blockSharedSharingTest disallow testing the
+            # SYCL FPGA backend in debug mode
+            if job[BUILD_TYPE][VERSION] == CMAKE_RELEASE:
+                extended_job = job.copy()
+                extended_job[SYCL_DEVICE] = (SYCL_FPGA, ON)
+                extended_job_matrix.append(extended_job)
+        else:
+            job[SYCL_DEVICE] = ("", "")
+            extended_job_matrix.append(job)
+            
+
+
+    return extended_job_matrix
