@@ -139,24 +139,7 @@ class AnalyticDistribution:
 
     def get_as_pypicongpu(self, grid) -> species.operation.densityprofile.DensityProfile:
         x, y, z = sympy.symbols("x,y,z")
-        return species.operation.densityprofile.FreeFormula(
-            density_expression=(
-                # We add the simplify because of the following:
-                # Translating to C++ requires ALL cases of a Piecewise to be defined
-                # such that there's a fallback for if-conditions.
-                # The user might have written their formula piecing together
-                # multiple partial Piecewise instances.
-                # Without simplification, sympy tries to translate them individually.
-                # and fails to do so even if they supplement each other
-                # into a function defined everywhere.
-                sympy.simplify(self.density_expression(x, y, z))
-                # density_expression might be independent of any or all of the three variables.
-                # (This might even happen due to the simplification.)
-                # In order to be sure to arrive at a function of these three variables,
-                # we add this trivial additional term.
-                + (0 * x * y * z)
-            )
-        )
+        return species.operation.densityprofile.FreeFormula(density_expression=self.density_expression)
 
     def picongpu_get_rms_velocity_si(self) -> typing.Tuple[float, float, float]:
         return self.rms_velocity
