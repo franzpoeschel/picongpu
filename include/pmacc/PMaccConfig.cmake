@@ -98,11 +98,6 @@ set(_PMACC_MAX_ALPAKA_VERSION 1.2.0)
 # for example, a project that includes alpaka via add_subdirectory before including pmacc via add_subdirectory
 if(NOT TARGET alpaka::alpaka)
 
-    # mallocMC needs this and it must be set before alpaka is added
-    if(alpaka_ACC_GPU_CUDA_ENABLE OR alpaka_ACC_GPU_HIP_ENABLE)
-            set(alpaka_INSTALL ON CACHE BOOL "" FORCE)
-    endif()
-
     # the alpaka provider for the internal alpaka is only available,
     # if pmacc is used via add_subdirectory in another project
     # or examples are build
