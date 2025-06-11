@@ -106,6 +106,10 @@ add_library(
 target_link_libraries(argparser PRIVATE ${HOST_LIBS})
 target_link_libraries(argparser PRIVATE pmacc::pmacc)
 
+# Workaround for this bug https://github.com/nlohmann/json/issues/3907
+# We don't need ranges in <nlohmann/json.hpp>
+target_compile_definitions(argparser PRIVATE JSON_HAS_RANGES=0)
+
 # Add subdirectories for tests
 add_subdirectory(dimensional_tests)
 add_subdirectory(non_dimensional_tests)
