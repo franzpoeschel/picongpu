@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import sympy
+from sympy.vector import CoordSys3D, Vector
 from .compare_particles import compare_particles, compute_densities_from_particles
 from picongpu import picmi
 from picongpu.picmi.diagnostics.timestepspec import TimeStepSpec
@@ -116,7 +117,10 @@ class Foil:
             if exponential_post_plasma_length is not None
             else 0.0,
             # condition
-            sympy.And(y > front + thickness, y < front + thickness + exponential_post_plasma_cutoff),
+            sympy.And(
+                y > front + thickness,
+                y < front + thickness + exponential_post_plasma_cutoff,
+            ),
         )
 
         foil = (1.0, sympy.And(y >= front, y <= front + thickness))
@@ -125,10 +129,85 @@ class Foil:
         return density * sympy.Piecewise(pre_plasma_ramp, foil, post_plasma_ramp, vacuum)
 
 
+def _make_vector(coefficients, basis_vectors):
+    # In sympy, vectors are represented as linear combinations of basis vectors.
+    # The last argument is important.
+    # Otherwise Python tries to start from an integer (scalar) 0 which is not well-defined.
+    return sum((coeff * vec for coeff, vec in zip(coefficients, basis_vectors)), Vector.zero)
+
+
+class Cylinder:
+    def __init__(self):
+        self.parameters = dict(
+            density=8.0e24,
+            center_position=(17.0, 23.0, 45.0),
+            radius=10,
+            cylinder_axis=(1.0, 2.0, 3.0),
+            exponential_pre_plasma_length=5.0,
+            exponential_pre_plasma_cutoff=3.0,
+        )
+        self.distributions = {
+            "predefined": picmi.CylindricalDistribution(**self.parameters),
+            "free_form": picmi.AnalyticDistribution(lambda x, y, z: self.free_form(x, y, z, **self.parameters)),
+        }
+
+    @staticmethod
+    def free_form(
+        x,
+        y,
+        z,
+        density,
+        center_position,
+        radius,
+        cylinder_axis,
+        exponential_pre_plasma_length,
+        exponential_pre_plasma_cutoff,
+    ):
+        # The definition of this density uses the origin of the cell
+        # while the call operator uses the center.
+        x += -0.5
+        y += -0.5
+        z += -0.5
+
+        # Handling vectors in sympy starts from a coordinate system.
+        e = CoordSys3D("e")
+
+        # Every vector is expressed as a linear combination of basis vectors.
+        # This is abstracted away in `_make_vector`.
+        cylinder_axis = _make_vector(cylinder_axis, e).normalize()
+        r = (_make_vector([x, y, z], e) - _make_vector(center_position, e)).cross(cylinder_axis).magnitude()
+        radius = (
+            sympy.sqrt(radius**2 - exponential_pre_plasma_length**2) - exponential_pre_plasma_length
+            if exponential_pre_plasma_cutoff > 0.0 and exponential_pre_plasma_length > 0.0
+            else radius
+        )
+
+        cylinder = (1.0, r < radius)
+
+        pre_plasma_ramp = (
+            # expression
+            sympy.exp((radius - r) / exponential_pre_plasma_length)
+            if exponential_pre_plasma_cutoff > 0.0 and exponential_pre_plasma_length > 0.0
+            else 0.0,
+            # condition
+            sympy.And(r > radius, r < radius + exponential_pre_plasma_cutoff),
+        )
+        vacuum = (0.0, True)
+
+        return density * sympy.Piecewise(cylinder, pre_plasma_ramp, vacuum)
+
+
 # This is a predefined setup within PIConGPU but not PICMI.
 class LinearExponential:
     def __init__(self):
-        self.parameters = dict(density=8.0e24, vacuum_y=14.0, gas_a=10.0, gas_b=12.0, gas_d=-0.1, gas_y_max=25.0)
+        self.parameters = dict(
+            density=8.0e24,
+            vacuum_y=14.0,
+            gas_a=10.0,
+            gas_b=12.0,
+            gas_d=-0.1,
+            gas_y_max=25.0,
+        )
         self.distributions = {
             "free_form": picmi.AnalyticDistribution(lambda x, y, z: self.free_form(y, **self.parameters)),
         }
@@ -139,7 +218,10 @@ class LinearExponential:
         y += -0.5
 
         vacuum = (0.0, y < vacuum_y)
-        linear_slope = (sympy.Max(0.0, gas_a * y + gas_b), sympy.And(y >= vacuum_y, y < gas_y_max))
+        linear_slope = (
+            sympy.Max(0.0, gas_a * y + gas_b),
+            sympy.And(y >= vacuum_y, y < gas_y_max),
+        )
         exponential_slope = (sympy.exp(gas_d * (y - gas_y_max)), True)
 
         return density * sympy.Piecewise(vacuum, linear_slope, exponential_slope)
@@ -148,7 +230,14 @@ class LinearExponential:
 # This is a predefined setup within PIConGPU but not PICMI.
 class SphereFlanks:
     def __init__(self):
-        self.parameters = dict(density=8.0e24, vacuum_y=14.0, center=[10.0, 40.0, 35.0], r=20.0, ri=10.0, exponent=1.0)
+        self.parameters = dict(
+            density=8.0e24,
+            vacuum_y=14.0,
+            center=[10.0, 40.0, 35.0],
+            r=20.0,
+            ri=10.0,
+            exponent=1.0,
+        )
         self.distributions = {
             "free_form": picmi.AnalyticDistribution(lambda x, y, z: self.free_form(x, y, z, **self.parameters)),
         }
@@ -173,6 +262,7 @@ DISTRIBUTIONS = {
     "Foil": Foil().distributions,
     "LinearExponential": LinearExponential().distributions,
     "SphereFlanks": SphereFlanks().distributions,
+    "Cylinder": Cylinder().distributions,
 }
 
 
@@ -242,12 +332,17 @@ class TestFreeFormulaDensity(unittest.TestCase):
                         df.positionOffset_y.to_numpy() + 0.5,
                         df.positionOffset_z.to_numpy() + 0.5,
                     ),
-                    index=df.set_index(["positionOffset_x", "positionOffset_y", "positionOffset_z"], drop=True).index,
+                    index=df.set_index(
+                        ["positionOffset_x", "positionOffset_y", "positionOffset_z"],
+                        drop=True,
+                    ).index,
                 ).astype(float),
                 include_groups=False,
             )
         )
-        self.assertTrue(np.allclose(densities.found, densities.expected))
+
+        # The Gaussian rear tail somehow has a bad accuracy.
+        np.testing.assert_allclose(densities.found, densities.expected, rtol=1.0e-5)
 
 
 if __name__ == "__main__":
