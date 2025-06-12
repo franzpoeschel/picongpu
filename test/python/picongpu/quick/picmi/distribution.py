@@ -498,7 +498,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
             exponential_pre_plasma_length=0.1,
             exponential_pre_plasma_cutoff=0.2,
         )
-        pypic = dist.get_as_pypicongpu()
+        pypic = dist.get_as_pypicongpu(ARBITRARY_GRID)
         self.assertTrue(isinstance(pypic, species.operation.densityprofile.Cylinder))
         self.assertAlmostEqual(pypic.density_si, 42.42)
         self.assertEqual(pypic.center_position_si, (1.0, 2.0, 3.0))
@@ -509,7 +509,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
         """density set to zero is not accepted"""
         dist = self._get_distribution(density=0.0)
         with self.assertRaisesRegex(ValueError, ".*density must be > 0.*"):
-            dist.get_as_pypicongpu().get_rendering_context()
+            dist.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_radius_zero(self):
         """radius smaller sqrt(2)*preplasma_length is not axcepted"""
@@ -519,7 +519,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
             exponential_pre_plasma_cutoff=0.2,
         )
         with self.assertRaisesRegex(ValueError, ".*radius must be > sqrt(2)*"):
-            dist.get_as_pypicongpu().get_rendering_context()
+            dist.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_cutoff_zero(self):
         """cutoff set to zero is accepted"""
@@ -527,7 +527,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
             exponential_pre_plasma_length=1.0,
             exponential_pre_plasma_cutoff=0.0,
         )
-        pypic = dist.get_as_pypicongpu()
+        pypic = dist.get_as_pypicongpu(ARBITRARY_GRID)
         # no error
         self.assertAlmostEqual(pypic.density_si, 1.0)
         self.assertAlmostEqual(pypic.radius_si, 2.0)
@@ -539,7 +539,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
             exponential_pre_plasma_cutoff=-0.5,
         )
         with self.assertRaisesRegex(ValueError, ".*PlasmaCutoff must be >=0.*"):
-            dist.get_as_pypicongpu().get_rendering_context()
+            dist.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_length_zero(self):
         """length set to zero is not accepted"""
@@ -548,7 +548,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
             exponential_pre_plasma_cutoff=1.0,
         )
         with self.assertRaisesRegex(ValueError, ".*PlasmaLength must be >0.*"):
-            dist.get_as_pypicongpu().get_rendering_context()
+            dist.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_length_below_zero(self):
         """length below zero is not accepted"""
@@ -557,7 +557,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
             exponential_pre_plasma_cutoff=1.0,
         )
         with self.assertRaisesRegex(ValueError, ".*PlasmaLength must be >0.*"):
-            dist.get_as_pypicongpu().get_rendering_context()
+            dist.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_setting_noPrePlasma(self):
         """must set either both cutoffs and length, or none"""
@@ -567,7 +567,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
             ValueError,
             "either both exponential_pre_plasma_length and" " exponential_pre_plasma_cutoff must be set.*",
         ):
-            dist.get_as_pypicongpu().get_rendering_context()
+            dist.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
         # partial other way
         dist = self._get_distribution(exponential_pre_plasma_cutoff=1.0)
@@ -575,13 +575,13 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
             ValueError,
             "either both exponential_pre_plasma_length and" " exponential_pre_plasma_cutoff must be set.*",
         ):
-            dist.get_as_pypicongpu().get_rendering_context()
+            dist.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_mandatory(self):
         """check that mandatory must be given"""
         with self.assertRaises(Exception):
-            picmi.CylindricalDistribution().get_as_pypicongpu()
+            picmi.CylindricalDistribution().get_as_pypicongpu(ARBITRARY_GRID)
 
         # minimal valid
         dist = self._get_distribution()
-        dist.get_as_pypicongpu()
+        dist.get_as_pypicongpu(ARBITRARY_GRID)
