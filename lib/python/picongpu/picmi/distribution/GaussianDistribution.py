@@ -50,8 +50,18 @@ class GaussianDistribution(Distribution):
     vacuum_front: float
     """size of the vacuum in front of density, gets rounded down to full cells, [m]"""
 
-    lower_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (None, None, None)
-    upper_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (None, None, None)
+    lower_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (
+        None,
+        None,
+        None,
+    )
+    upper_bound: typing.Tuple[float, float, float] | typing.Tuple[None, None, None] = (
+        None,
+        None,
+        None,
+    )
+
+    cell_size: tuple[float, float, float] | None = None
 
     # @details pydantic provides an automatically generated __init__/constructor method which allows initialization off
     #   all attributes as keyword arguments
@@ -59,6 +69,7 @@ class GaussianDistribution(Distribution):
     # @note user may add additional attributes by hand, these will be available but not type verified
 
     def get_as_pypicongpu(self, grid) -> species.operation.densityprofile.DensityProfile:
+        self.cell_size = grid.get_cell_size()
         util.unsupported("fill in not active", self.fill_in, True)
 
         # @todo support bounds, Brian Marre, 2024
@@ -85,8 +96,21 @@ class GaussianDistribution(Distribution):
         return gaussian_profile
 
     def __call__(self, x, y, z):
-        # apparently, our SI position is the centre of the cell
-        y += -0.5
+        if self.cell_size is None:
+            message = (
+                "Due to inconsistencies in the backend, evaluation of this function requires information about the cell_size."
+                " You can either set it manually "
+                " or you can perform anything that includes writing the input files on your simulation object."
+                " This is a temporary workaround and will be fixed in the future."
+            )
+            raise NotImplementedError(message)
+
+        # The definition of this density uses the origin of the cell
+        # while the call operator uses the center.
+        x += -0.5 * self.cell_size[0]
+        y += -0.5 * self.cell_size[1]
+        z += -0.5 * self.cell_size[2]
+
         # The last term undoes the shift to the cell origin.
         vacuum_y = self.vacuum_front - 0.5
 

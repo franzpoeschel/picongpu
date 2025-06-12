@@ -16,6 +16,11 @@ from .compare_particles import compare_particles, compute_densities_from_particl
 from picongpu import picmi
 from picongpu.picmi.diagnostics.timestepspec import TimeStepSpec
 
+NUMBER_OF_CELLS = [64, 64, 64]
+UPPER_BOUNDARY = np.array([64.0, 66.0, 74.0])
+UPPER_BOUNDARY = np.array([64.0, 64.0, 64.0])
+CELL_SIZE = UPPER_BOUNDARY / NUMBER_OF_CELLS
+
 
 # This is just meant as a form of namespace to bundle the setups together.
 class Gaussian:
@@ -53,9 +58,9 @@ class Gaussian:
         factor,
     ):
         # apparently, our SI position is the centre of the cell
-        y += -0.5
+        y += -0.5 * CELL_SIZE[1]
         # The last term undoes the shift to the cell origin.
-        vacuum_y = vacuum_front - 0.5
+        vacuum_y = vacuum_front - 0.5 * CELL_SIZE[1]
 
         exponent = sympy.Piecewise(
             (sympy.Abs((y - center_front) / sigma_front), y < center_front),
@@ -165,9 +170,9 @@ class Cylinder:
     ):
         # The definition of this density uses the origin of the cell
         # while the call operator uses the center.
-        x += -0.5
-        y += -0.5
-        z += -0.5
+        x += -0.5 * CELL_SIZE[0]
+        y += -0.5 * CELL_SIZE[1]
+        z += -0.5 * CELL_SIZE[2]
 
         # Handling vectors in sympy starts from a coordinate system.
         e = CoordSys3D("e")
@@ -215,7 +220,7 @@ class LinearExponential:
     @staticmethod
     def free_form(y, density, vacuum_y, gas_a, gas_b, gas_d, gas_y_max):
         # move to the origin of the cell
-        y += -0.5
+        y += -0.5 * CELL_SIZE[1]
 
         vacuum = (0.0, y < vacuum_y)
         linear_slope = (
@@ -245,7 +250,7 @@ class SphereFlanks:
     @staticmethod
     def free_form(x, y, z, density, vacuum_y, center, r, ri, exponent):
         # move to the origin of the cell
-        y += -0.5
+        y += -0.5 * CELL_SIZE[1]
 
         distance = sympy.sqrt((x - center[0]) ** 2 + (y - center[1]) ** 2 + (z - center[2]) ** 2)
         front_vacuum = (0.0, y < vacuum_y)
@@ -284,9 +289,10 @@ def add(sim, name, **distributions):
 
 def setup_sim():
     grid = picmi.Cartesian3DGrid(
-        number_of_cells=[64, 64, 64],
+        number_of_cells=NUMBER_OF_CELLS,
         lower_bound=[0, 0, 0],
-        upper_bound=[64.0, 64.0, 64.0],
+        # cell size is slightly different from 1
+        upper_bound=UPPER_BOUNDARY,
         lower_boundary_conditions=["open", "open", "open"],
         upper_boundary_conditions=["open", "open", "open"],
     )
@@ -328,9 +334,9 @@ class TestFreeFormulaDensity(unittest.TestCase):
                 lambda df: pd.Series(
                     # We add 0.5 because the density is evaluated at the centre of the cell.
                     DISTRIBUTIONS[df.name[0]][df.name[1]](
-                        df.positionOffset_x.to_numpy() + 0.5,
-                        df.positionOffset_y.to_numpy() + 0.5,
-                        df.positionOffset_z.to_numpy() + 0.5,
+                        df.positionOffset_x.to_numpy() + 0.5 * CELL_SIZE[0],
+                        df.positionOffset_y.to_numpy() + 0.5 * CELL_SIZE[1],
+                        df.positionOffset_z.to_numpy() + 0.5 * CELL_SIZE[2],
                     ),
                     index=df.set_index(
                         ["positionOffset_x", "positionOffset_y", "positionOffset_z"],

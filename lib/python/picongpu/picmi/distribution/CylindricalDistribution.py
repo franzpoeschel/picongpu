@@ -48,12 +48,15 @@ class CylindricalDistribution(Distribution):
     exponential_pre_plasma_cutoff: float | None
     """cutoff of the exponential pre-plasma ramp, [m]"""
 
+    cell_size: tuple[float, float, float] | None = None
+
     # @details pydantic provides an automatically generated __init__/constructor method which allows initialization off
     #   all attributes as keyword arguments
 
     # @note user may add additional attributes by hand, these will be available but not type verified
 
-    def get_as_pypicongpu(self, _) -> species.operation.densityprofile.Cylinder:
+    def get_as_pypicongpu(self, grid) -> species.operation.densityprofile.Cylinder:
+        self.cell_size = grid.get_cell_size()
         util.unsupported("fill in not active", self.fill_in, True)
 
         profile = species.operation.densityprofile.Cylinder()
@@ -107,11 +110,20 @@ class CylindricalDistribution(Distribution):
         y,
         z,
     ):
+        if self.cell_size is None:
+            message = (
+                "Due to inconsistencies in the backend, evaluation of this function requires information about the cell_size."
+                " You can either set it manually "
+                " or you can perform anything that includes writing the input files on your simulation object."
+                " This is a temporary workaround and will be fixed in the future."
+            )
+            raise NotImplementedError(message)
+
         # The definition of this density uses the origin of the cell
         # while the call operator uses the center.
-        x += -0.5
-        y += -0.5
-        z += -0.5
+        x += -0.5 * self.cell_size[0]
+        y += -0.5 * self.cell_size[1]
+        z += -0.5 * self.cell_size[2]
 
         # Just for convenience:
         pre_l = self.exponential_pre_plasma_length or 0.0
