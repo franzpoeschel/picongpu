@@ -16,9 +16,8 @@ from .compare_particles import compare_particles, compute_densities_from_particl
 from picongpu import picmi
 from picongpu.picmi.diagnostics.timestepspec import TimeStepSpec
 
-NUMBER_OF_CELLS = [64, 64, 64]
+NUMBER_OF_CELLS = [64, 64, 32]
 UPPER_BOUNDARY = np.array([64.0, 66.0, 74.0])
-UPPER_BOUNDARY = np.array([64.0, 64.0, 64.0])
 CELL_SIZE = UPPER_BOUNDARY / NUMBER_OF_CELLS
 
 

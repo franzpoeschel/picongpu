@@ -106,9 +106,10 @@ class AnalyticDistribution:
       That's the way chosen in the end-to-end tests.
 
     Parameters:
-        density_expression (function):
+        density_expression (Callable):
             A Python function that takes x, y, z coordinates (in SI units)
             and returns the density (in SI units) at that point.
+            It should use sympy functionality.
         directed_velocity (3-tuple of float):
             A collective velocity for the particle distribution.
             (currently untested)

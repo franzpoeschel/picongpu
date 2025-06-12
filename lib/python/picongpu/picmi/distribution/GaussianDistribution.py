@@ -90,7 +90,7 @@ class GaussianDistribution(Distribution):
         gaussian_profile.gas_sigma_rear = self.sigma_rear
         gaussian_profile.gas_factor = self.factor
         gaussian_profile.gas_power = self.power
-        gaussian_profile.vacuum_cells_front = int(self.vacuum_front * grid.get_cell_size()[1])
+        gaussian_profile.vacuum_cells_front = int(self.vacuum_front / grid.get_cell_size()[1])
         gaussian_profile.density = self.density
 
         return gaussian_profile

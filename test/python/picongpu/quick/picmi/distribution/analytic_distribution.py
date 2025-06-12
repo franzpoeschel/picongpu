@@ -13,10 +13,16 @@ from scipy.constants import c
 from picongpu.picmi import AnalyticDistribution
 import typeguard
 
+# allow numpy broadcasting (see https://numpy.org/doc/stable/user/basics.broadcasting.html)
+# some examples to check:
 VALID_CALLS = [
+    # scalar arguments produce scalar results
     ((1, 2, 3), 6),
+    # broadcasting in the first argument, function is evaluated for (1,2,3) and (2,2,3)
     (([1, 2], 2, 3), [6, 12]),
+    # broadcasting in the last argument, (1,2,3) and (1,2,4)
     ((1, 2, [3, 4]), [6, 8]),
+    # broadcasting in all arguments, shapes must match, scalar arguments are (1,3,5) and (2,4,6)
     (([1, 2], [3, 4], [5, 6]), [15, 48]),
 ]
 
