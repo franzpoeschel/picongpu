@@ -114,7 +114,8 @@ class GaussianDistribution(Distribution):
         # The last term undoes the shift to the cell origin.
         vacuum_y = self.vacuum_front - 0.5
 
-        exponent = np.zeros(np.broadcast_shapes(x, y, z))
+        # We do this to get the correct shape after broadcasting:
+        exponent = 0 * (x + y + z)
         exponent[y < self.center_front] = np.abs((y - self.center_front) / self.sigma_front)[y < self.center_front]
         exponent[y >= self.center_rear] = np.abs((y - self.center_rear) / self.sigma_rear)[y >= self.center_rear]
 

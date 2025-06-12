@@ -7,7 +7,6 @@ License: GPLv3+
 
 from ...pypicongpu import species
 from ...pypicongpu import util
-import numpy as np
 
 import picmistandard
 
@@ -72,4 +71,4 @@ class UniformDistribution(picmistandard.PICMI_UniformDistribution):
         return drift
 
     def __call__(self, x, y, z):
-        return np.ones(np.broadcast_shapes(x, y, z)) * self.density
+        return 0.0 * (x + y + z) + self.density

@@ -110,7 +110,8 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
         return drift
 
     def __call__(self, x, y, z):
-        result = np.zeros(np.broadcast_shapes(x, y, z))
+        # We do this to get the correct shape after broadcasting:
+        result = 0.0 * (x + y + z)
 
         pre_plasma_ramp = (
             np.exp((y - self.front) / self.exponential_pre_plasma_length)
