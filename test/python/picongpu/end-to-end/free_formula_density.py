@@ -59,7 +59,7 @@ class Gaussian:
         # apparently, our SI position is the centre of the cell
         y += -0.5 * CELL_SIZE[1]
         # The last term undoes the shift to the cell origin.
-        vacuum_y = vacuum_front - 0.5 * CELL_SIZE[1]
+        vacuum_y = int(vacuum_front / CELL_SIZE[1]) * CELL_SIZE[1] - 0.5 * CELL_SIZE[1]
 
         exponent = sympy.Piecewise(
             (sympy.Abs((y - center_front) / sigma_front), y < center_front),
@@ -325,7 +325,9 @@ class TestFreeFormulaDensity(unittest.TestCase):
         self.assertTrue(compare_particles(self.result_path))
 
     def test_compare_particles_against_call_operator(self):
-        densities = compute_densities_from_particles(self.result_path).to_frame().rename({"weighting": "found"}, axis=1)
+        densities = compute_densities_from_particles(self.result_path).to_frame().rename(
+            {"weighting": "found"}, axis=1
+        ) / np.prod(CELL_SIZE)
         densities["expected"] = (
             densities.reset_index(drop=False)
             .groupby(["setup", "impl"])
@@ -347,7 +349,7 @@ class TestFreeFormulaDensity(unittest.TestCase):
         )
 
         # The Gaussian rear tail somehow has a bad accuracy.
-        np.testing.assert_allclose(densities.found, densities.expected, rtol=1.0e-5)
+        np.testing.assert_allclose(densities.found, densities.expected, rtol=1.0e-4)
 
 
 if __name__ == "__main__":

@@ -112,7 +112,7 @@ class GaussianDistribution(Distribution):
         z += -0.5 * self.cell_size[2]
 
         # The last term undoes the shift to the cell origin.
-        vacuum_y = self.vacuum_front - 0.5
+        vacuum_y = int(self.vacuum_front / self.cell_size[1]) * self.cell_size[1] - 0.5 * self.cell_size[1]
 
         # We do this to get the correct shape after broadcasting:
         exponent = 0 * (x + y + z)

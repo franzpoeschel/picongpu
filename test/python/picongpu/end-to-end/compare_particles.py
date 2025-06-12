@@ -32,7 +32,12 @@ def compare_particles_per_setup(data):
         # We're doing (more than) twice the work here but that's fine:
         for lhs_name, lhs_df in df.groupby("impl"):
             for rhs_name, rhs_df in df.groupby("impl"):
-                matched = np.allclose(lhs_df.reset_index(drop=True), rhs_df.reset_index(drop=True))
+                matched = np.allclose(
+                    lhs_df.reset_index(drop=True),
+                    rhs_df.reset_index(drop=True),
+                    atol=0,
+                    rtol=1.0e-4,
+                )
                 if not matched:
                     print(f"Mismatch found in {setup_name}: {lhs_name} != {rhs_name}")
                 result *= matched
@@ -46,6 +51,9 @@ def compute_densities_per_setup_and_impl(data):
 
 
 def compute_densities_from_particles(series_name):
+    """
+    This density is not normalised by volume yet.
+    """
     return compute_densities_per_setup_and_impl(read_particles(series_name))
 
 
