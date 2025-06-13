@@ -19,7 +19,7 @@ function script_error {
 
 export PICSRC=$CI_PROJECT_DIR
 export PATH=$PATH:$PICSRC/bin
-export PYTHONPATH=$PICSRC/lib/python:$PYTHONPATH
+
 export PIC_EXAMPLES=$PICSRC/share/picongpu/examples
 
 cd $CI_PROJECT_DIR
