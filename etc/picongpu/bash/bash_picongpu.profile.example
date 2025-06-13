@@ -36,8 +36,6 @@ export PIC_EXAMPLES=$PICSRC/share/picongpu/examples
 export PATH=$PICSRC/bin:$PATH
 export PATH=$PICSRC/src/tools/bin:$PATH
 
-export PYTHONPATH=$PICSRC/lib/python:$PYTHONPATH
-
 # "tbg" default options #######################################################
 export TBG_SUBMIT="bash"
 export TBG_TPLFILE="etc/picongpu/bash/mpirun.tpl"

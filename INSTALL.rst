@@ -127,8 +127,8 @@ PIConGPU Source Code
   - ``export PATH=$PATH:$PICSRC``
   - ``export PATH=$PATH:$PICSRC/bin``
   - ``export PATH=$PATH:$PICSRC/src/tools/bin``
-  - ``export PYTHONPATH=$PICSRC/lib/python:$PYTHONPATH``
-
+- *python*:
+  - install as in :ref:python_utils
 Optional Libraries
 ^^^^^^^^^^^^^^^^^^
 

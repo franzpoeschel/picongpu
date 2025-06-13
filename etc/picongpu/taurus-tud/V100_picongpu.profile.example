@@ -59,7 +59,7 @@ export PATH=$PICSRC/bin:$PATH
 export PATH=$PICSRC/src/tools/bin:$PATH
 
 # python not included yet
-export PYTHONPATH=$PICSRC/lib/python:$PYTHONPATH
+
 
 # This is necessary in order to make alpaka compile.
 # The workaround is from Axel Huebl according to alpaka PR #702.

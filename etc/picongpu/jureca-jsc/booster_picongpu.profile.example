@@ -63,7 +63,7 @@ export PATH=$PICSRC/src/tools/bin:$PATH
 export CC=$(which icc)
 export CXX=$(which icpc)
 
-export PYTHONPATH=$PICSRC/lib/python:$PYTHONPATH
+
 
 # "tbg" default options #######################################################
 #   - SLURM (sbatch)
