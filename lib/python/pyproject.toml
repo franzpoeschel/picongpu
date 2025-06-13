@@ -1,3 +1,8 @@
+# This file is part of PIConGPU.
+# Copyright 2025 PIConGPU contributors
+# Authors: Pawel Ordyna
+# License: GPLv3+
+
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
@@ -9,6 +14,7 @@ name = "picongpu"
 # should be always identical with PIConGPU version
 version = "0.9.0.dev"
 description = "Python package for PIConGPU"
+license = "GPL-3.0-or-later"
 requires-python = ">=3.10"
 # dependecies list generated with
 # https://gist.github.com/pordyna/ff27ce949a8e944fe30252f47b5b831f
