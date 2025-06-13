@@ -29,7 +29,7 @@ This will also install all the required dependencies.
 
 .. code:: shell
 
-  pip install -e $PICSRC/lib/python/picongpu/
+  pip install -e $PICSRC/lib/python/
 
 
 .. note::
