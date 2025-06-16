@@ -599,6 +599,10 @@ foreach(target picongpu picongpu-hostonly)
     # Workaround for this bug https://github.com/nlohmann/json/issues/3907
     # We don't need ranges in <nlohmann/json.hpp>
     target_compile_definitions(${target} PRIVATE JSON_HAS_RANGES=0)
+
+    # Automatic detection of std::source_location availability fails
+    # on Clang 12 through 14
+    target_compile_definitions(${target} PRIVATE TOML11_DISABLE_SOURCE_LOCATION)
 endforeach()
 
 ## annotate with RPATH's
