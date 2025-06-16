@@ -426,7 +426,6 @@ PIC_dependency_set_status(PNGwriter ${PNGwriter_FOUND})
 PIC_dependency(ISAAC "Framework to in-situ visualize PIConGPU during the execution." OFF)
 
 if(PIC_SEARCH_ISAAC)
-    message(WARNING "ISAAC is currently not supporting alpaka 1.2.0+ if you are not fixing the ISSAC you should not enable this dependency.")
     find_package(ISAAC 1.4.0 CONFIG QUIET)
     if(ISAAC_FOUND)
         message(STATUS "Found ISAAC: ${ISAAC_DIR}")
