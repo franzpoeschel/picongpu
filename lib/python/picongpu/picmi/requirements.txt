@@ -6,4 +6,5 @@ sympy >= 1.14
 pydantic >= 2.6.4
 particle >= 0.25.1
 pandas >= 2.2.3
+openpmd_api >= 0.16.1
 -r ../pypicongpu/requirements.txt
