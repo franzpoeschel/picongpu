@@ -9,12 +9,12 @@ export MY_MAILNOTIFY="NONE"
 export MY_MAIL="someone@example.com"
 export MY_NAME="$(whoami) <$MY_MAIL>"
 
-# Project Information ######################################## (edit this line)
+# Project Information ######################################## (edit these lines)
 #   - project and account for allocation
 #   jutil user projects will return a table of project associations.
 #   Each row contains: project,unixgroup,PI-uid,project-type,budget-accounts
 #   We need the first and last entry.
-#   Here: select the last available project.
+#   Here: selects the last available project.
 export proj=$( jutil user projects --noheader | awk '{print $1}' | tail -n 1 )
 export account=$(jutil user projects -n | awk '{print $NF}' | tail -n 1)
 
@@ -33,22 +33,23 @@ fi
 # General modules #############################################################
 #
 module purge
-module load Stages/2024
-module load GCC/12.3.0
+module load Stages/2025
+module load GCC/13.3.0
 module load CUDA/12
-module load CMake
-module load ParaStationMPI/5.9.2-1
+module load CMake/3.29.3
+module load ParaStationMPI/5.10.0-1
 module load MPI-settings/CUDA
-module load Python/3.11.3
+module load Python
 module load HDF5
-module load Boost/1.82.0
+module load ADIOS2
+module load Boost
 module load git
 module load JUBE
 
 # necessary for evaluations (NumPy, SciPy, Matplotlib, SymPy, Pandas, IPython)
-module load SciPy-bundle/2023.07
-module load matplotlib/3.7.2
-module load h5py/3.9.0
+module load SciPy-bundle/2024.05
+module load matplotlib
+module load h5py
 module load numba
 module load tqdm
 
@@ -56,29 +57,27 @@ module load tqdm
 #
 # needs to be compiled by the user
 # Check the install script at
-# https://gist.github.com/ikbuibui/3b20afc3eb3577f43b74cdbd9c3f53c0
+# https://gist.github.com/ikbuibui/07225398476bad28821c87ea4c7e677a
 #
-export PIC_LIBS=$PROJECT/share/lib
+export PIC_LIBS=$PROJECT/$USER/share/lib
 export PNG_WRITER=$PIC_LIBS/pngwriter
 export OPENPMD_ROOT=$PIC_LIBS/openPMD-api
-export ADIOS2_ROOT=$PIC_LIBS/adios2
 
 export CMAKE_PREFIX_PATH=$PNG_WRITER:$CMAKE_PREFIX_PATH
 export CMAKE_PREFIX_PATH=$OPENPMD_ROOT:$CMAKE_PREFIX_PATH
-export CMAKE_PREFIX_PATH=$ADIOS2_ROOT:$CMAKE_PREFIX_PATH
 
 export PATH=$OPENPMD_ROOT/bin:$PATH
 
 export PYTHONPATH=$OPENPMD_ROOT/lib64/python3.11/site-packages/openpmd_api:$PYTHONPATH
 # Environment #################################################################
 
-export PICSRC=$PROJECT/src/picongpu
+export PICSRC=$PROJECT/$USER/src/picongpu
 export PIC_EXAMPLES=$PICSRC/share/picongpu/examples
 export PIC_BACKEND="cuda:90" # Nvidia H100 architecture
 
 # Path to the required templates of the system,
 # relative to the PIConGPU source code of the tool bin/pic-create.
-export PIC_SYSTEM_TEMPLATE_PATH=${PIC_SYSTEM_TEMPLATE_PATH:-"etc/picongpu/jedi-jsc"}
+export PIC_SYSTEM_TEMPLATE_PATH=${PIC_SYSTEM_TEMPLATE_PATH:-"etc/picongpu/jupiter-jsc"}
 
 export PATH=$PICSRC/bin:$PATH
 export PATH=$PICSRC/src/tools/bin:$PATH
@@ -89,7 +88,7 @@ export PYTHONPATH=$PICSRC/lib/python:$PYTHONPATH
 #   - SLURM (sbatch)
 #   - "gpus" queue
 export TBG_SUBMIT="sbatch"
-export TBG_TPLFILE="etc/picongpu/jedi-jsc/gh200.tpl"
+export TBG_TPLFILE="etc/picongpu/jupiter-jsc/gh200.tpl"
 
 # allocate an interactive shell for one hour
 #   getNode 2  # allocates 2 interactive nodes (default: 1)
@@ -104,7 +103,7 @@ function getNode() {
         return 1
     fi
     echo "Hint: please use 'srun --cpu_bind=sockets <COMMAND>' for launching multiple processes in the interactive mode"
-    salloc --time=1:00:00 --nodes=$numNodes --ntasks-per-node=4 --gres=gpu:4 --mem=115G -A $account -p all bash
+    salloc --time=1:00:00 --nodes=$numNodes --ntasks-per-node=4 --gres=gpu:4 --mem=115G -A $account -p jureap bash
 }
 
 # allocate an interactive shell for one hour
@@ -121,7 +120,7 @@ function getDevice() {
         fi
     fi
     echo "Hint: please use 'srun --cpu_bind=sockets <COMMAND>' for launching multiple processes in the interactive mode"
-    srun --time=1:00:00 --ntasks-per-node=$(($numDevices)) --gres=gpu:$(($numDevices)) --mem=115G -A $account -p all --pty bash
+    srun --time=1:00:00 --ntasks-per-node=$(($numDevices)) --gres=gpu:$(($numDevices)) --mem=115G -A $account -p jureap --pty bash
 }
 
 # Load autocompletion for PIConGPU commands

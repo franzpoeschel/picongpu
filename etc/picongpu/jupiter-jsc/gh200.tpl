@@ -46,7 +46,7 @@
 export UCX_RC_TIMEOUT=3000000.00us # 3s instead of 1s
 
 ## calculations will be performed by tbg ##
-.TBG_queue="all"
+.TBG_queue="jureap"
 
 # settings that can be controlled by environment variables before submit
 .TBG_mailSettings=${MY_MAILNOTIFY:-"NONE"}
@@ -62,7 +62,7 @@ export UCX_RC_TIMEOUT=3000000.00us # 3s instead of 1s
 .TBG_devicesPerNode=$(if [ $TBG_tasks -gt $TBG_numHostedDevicesPerNode ] ; then echo $TBG_numHostedDevicesPerNode; else echo $TBG_tasks; fi)
 
 # host memory per device
-.TBG_memPerDevice="$((117760 / $TBG_numHostedDevicesPerNode))"
+.TBG_memPerDevice=117760
 # host memory per node
 .TBG_memPerNode="$((TBG_memPerDevice * TBG_devicesPerNode))"
 
@@ -88,7 +88,7 @@ fi
 unset MODULES_NO_OUTPUT
 
 # number of cores to block per GPU
-.TBG_coresPerGPU=1
+.TBG_coresPerGPU=72
 
 #set user rights to u=rwx;g=r-x;o=---
 umask 0027
