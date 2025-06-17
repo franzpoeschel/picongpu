@@ -423,7 +423,7 @@ PIC_dependency_set_status(PNGwriter ${PNGwriter_FOUND})
 # ISAAC
 ################################################################################
 
-PIC_dependency(ISAAC "Framework to in-situ visualize PIConGPU during the execution." OFF)
+PIC_dependency(ISAAC "Framework to in-situ visualize PIConGPU during the execution." AUTO)
 
 if(PIC_SEARCH_ISAAC)
     find_package(ISAAC 1.4.0 CONFIG QUIET)
