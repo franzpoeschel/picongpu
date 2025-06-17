@@ -224,7 +224,7 @@ clang_compiers = [
     ("clang++", 18),
     ("clang++", 19),
 ]
-gnu_compilers = [("g++", 10), ("g++", 11), ("g++", 12), ("g++", 13), ("g++", 14)]
+gnu_compilers = [("g++", 11), ("g++", 12), ("g++", 13), ("g++", 14)]
 compilers = [clang_compiers, gnu_compilers]
 
 # generate clang cuda compiler list
