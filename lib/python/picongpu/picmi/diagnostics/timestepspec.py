@@ -124,7 +124,7 @@ class TimeStepSpec(metaclass=_TimeStepSpecMeta):
             # In PIConGPU, a single integer would be interpreted as
             # slice(None, None, value) but this is unnatural for the
             # Python [] operator.
-            spec if isinstance(spec, slice) else slice(int(spec), int(spec), 1)
+            spec if isinstance(spec, slice) else slice(spec, spec, None)
             for spec in args
         )
         self.specs_in_seconds = tuple(specs_in_seconds)
