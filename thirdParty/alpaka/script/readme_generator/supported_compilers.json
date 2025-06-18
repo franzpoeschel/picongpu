@@ -1,5 +1,5 @@
 {
-    "gcc 10.4 / 11.1 (Linux)": {
+    "gcc 11.1 (Linux)": {
         "serial": {
             "state": "yes"
         },
@@ -84,96 +84,6 @@
         },
         "hip": {
             "state": "none"
-        },
-        "sycl": {
-            "state": "no"
-        }
-    },
-    "clang 10/11 (Linux)": {
-        "serial": {
-            "state": "yes"
-        },
-        "OMPblock": {
-            "state": "yes"
-        },
-        "OMPthread": {
-            "state": "yes"
-        },
-        "thread": {
-            "state": "yes"
-        },
-        "tbb": {
-            "state": "yes"
-        },
-        "CUDAnvcc": {
-            "state": "yes",
-            "comment": "(CUDA 12.0)"
-        },
-        "CUDAclang": {
-            "state": "no"
-        },
-        "hip": {
-            "state": "no"
-        },
-        "sycl": {
-            "state": "no"
-        }
-    },
-    "clang 12 (Linux)": {
-        "serial": {
-            "state": "yes"
-        },
-        "OMPblock": {
-            "state": "yes"
-        },
-        "OMPthread": {
-            "state": "yes"
-        },
-        "thread": {
-            "state": "yes"
-        },
-        "tbb": {
-            "state": "yes"
-        },
-        "CUDAnvcc": {
-            "state": "yes",
-            "comment": "(CUDA 12.0)"
-        },
-        "CUDAclang": {
-            "state": "no"
-        },
-        "hip": {
-            "state": "no"
-        },
-        "sycl": {
-            "state": "no"
-        }
-    },
-    "clang 13 (Linux)": {
-        "serial": {
-            "state": "yes"
-        },
-        "OMPblock": {
-            "state": "yes"
-        },
-        "OMPthread": {
-            "state": "yes"
-        },
-        "thread": {
-            "state": "yes"
-        },
-        "tbb": {
-            "state": "yes"
-        },
-        "CUDAnvcc": {
-            "state": "yes",
-            "comment": "(CUDA 12.0)"
-        },
-        "CUDAclang": {
-            "state": "no"
-        },
-        "hip": {
-            "state": "no"
         },
         "sycl": {
             "state": "no"
