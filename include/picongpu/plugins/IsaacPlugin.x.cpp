@@ -858,5 +858,24 @@ namespace picongpu
     } // namespace isaacP
 } // namespace picongpu
 
+namespace alpaka
+{
+
+    template<typename... T>
+    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::SourceList> : std::true_type
+    {
+    };
+
+    template<typename... T>
+    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::VectorSourceList> : std::true_type
+    {
+    };
+
+    template<typename... T>
+    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::ParticleList> : std::true_type
+    {
+    };
+} // namespace alpaka
+
 PIC_REGISTER_PLUGIN(isaacP::IsaacPlugin);
 #endif
