@@ -276,3 +276,12 @@ class TestTimeStepSpec(unittest.TestCase):
             with self.subTest(ts=ts, indices=indices):
                 with self.assertRaisesRegex(ValueError, "Step size must be >= 1"):
                     ts.get_as_pypicongpu(TIME_STEP_SIZE, INDEX_MAX)
+
+    def test_regression_wrong_int_casting(self):
+        stop_time = 1.1195773740290312e-12
+        dt = 1.749246958411663e-17
+        num_steps = 64004
+
+        as_single = TimeStepSpec[stop_time]("seconds").get_as_pypicongpu(dt, num_steps).specs[0]
+        as_slice = TimeStepSpec[stop_time:stop_time]("seconds").get_as_pypicongpu(dt, num_steps).specs[0]
+        self.assertEqual(as_single, as_slice)
