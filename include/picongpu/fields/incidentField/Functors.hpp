@@ -1,4 +1,4 @@
-/* Copyright 2020-2024 Sergei Bastrakov, Finn-Ole Carstens
+/* Copyright 2020-2024 Sergei Bastrakov, Finn-Ole Carstens, Klaus Steiniger
  *
  * This file is part of PIConGPU.
  *
@@ -139,7 +139,7 @@ namespace picongpu
                  * cross product of propagation direction and polarization direction.
                  * The internal coordinate system is always 3d, regardless of simDim.
                  *
-                 * Provides conversion operations for cooridnate and time transforms to internal system.
+                 * Provides conversion operations for coordinate and time transforms to internal system.
                  * Essentially, a client of this class can implement a laser in internal coordinate system and
                  * use the base class functionality for all necessary transformations.
                  *
@@ -175,9 +175,18 @@ namespace picongpu
                         return getAxis0();
                     }
 
-                    /** Get current time to calculate field at the given point
+                    /** Get time T at which phase and envelope have to be evaluated to enable oblique propagation
                      *
-                     * It accounts for both current PIC iteration, location relative to origin and the given time
+                     * Fields propagate according to T=(t-x/c) in internal coordinates.
+                     * In case of oblique propagation, i.e. where the propagation direction (=Axis0=x) and the incident
+                     * field plane are not perpendicular, the value of T depends on the position on the incident field
+                     * plane (since x is not constant across that plane).
+                     *
+                     * This routine is most useful for separable laser pulses where the value of the longitudinal
+                     * envelope and phase only depends on T. Accordingly its main purpose is usage in
+                     * `BaseSeparableFunctorE`.
+                     *
+                     * It accounts for current PIC iteration, location relative to origin and the given time
                      * delay. Note that the result may be negative as well, and clients may want to set field = 0 when
                      * the returned value is negative.
                      *
@@ -187,7 +196,7 @@ namespace picongpu
                      */
 
                     //! 3d version
-                    HDINLINE float_X getCurrentTime(float3_X const& totalCellIdx) const
+                    HDINLINE float_X getTminusXoverC(float3_X const& totalCellIdx) const
                     {
                         auto const shiftFromOrigin = totalCellIdx * sim.pic.getCellSize() - origin;
                         auto const distance = pmacc::math::dot(shiftFromOrigin, getDirection());
@@ -196,9 +205,9 @@ namespace picongpu
                     }
 
                     //! 2d version
-                    HDINLINE float_X getCurrentTime(float2_X const& totalCellIdx) const
+                    HDINLINE float_X getTminusXoverC(float2_X const& totalCellIdx) const
                     {
-                        return getCurrentTime(float3_X{totalCellIdx.x(), totalCellIdx.y(), 0.0_X});
+                        return getTminusXoverC(float3_X{totalCellIdx.x(), totalCellIdx.y(), 0.0_X});
                     }
 
                     /** @} */
@@ -231,11 +240,11 @@ namespace picongpu
                     //! 3d version
                     HDINLINE float3_X getInternalCoordinates(float3_X const& totalCellIdx) const
                     {
-                        auto const shiftFromOrigin = totalCellIdx * sim.pic.getCellSize() - origin;
+                        auto const shiftFromFocus = totalCellIdx * sim.pic.getCellSize() - focus;
                         float3_X result;
-                        result[0] = pmacc::math::dot(shiftFromOrigin, getAxis0());
-                        result[1] = pmacc::math::dot(shiftFromOrigin, getAxis1());
-                        result[2] = pmacc::math::dot(shiftFromOrigin, getAxis2());
+                        result[0] = pmacc::math::dot(shiftFromFocus, getAxis0());
+                        result[1] = pmacc::math::dot(shiftFromFocus, getAxis1());
+                        result[2] = pmacc::math::dot(shiftFromFocus, getAxis2());
                         return result;
                     }
 
@@ -308,7 +317,7 @@ namespace picongpu
                          * Between the (normally, two) intersection points we choose one encountered by a laser first,
                          * so with the smaller of p values in the formula above.
                          * Note that the origin is generally not the first point of entry to or domain, as that would
-                         * be one of vertices. However it is a transversal center of the laser at the generation
+                         * be one of vertices. However, it is a transversal center of the laser at the generation
                          * surface.
                          */
                         auto const& subGrid = Environment<simDim>::get().SubGrid();
@@ -340,7 +349,7 @@ namespace picongpu
                                     (maxPosition - focus[axis]) / direction[axis]);
                                 /* Here we have to use max of those parameter values as only it will give (after this
                                  * loop is finished) a point at the generation surface. All other axisP values are at
-                                 * continuations of the generation places but outside of the surface as a whole.
+                                 * continuations of the generation places but outside the surface as a whole.
                                  */
                                 originP = std::max(originP, axisP);
                             }
@@ -448,10 +457,7 @@ namespace picongpu
                     template<typename T_SeparableFunctor>
                     HDINLINE float3_X operator()(T_SeparableFunctor const& functor, floatD_X const& totalCellIdx) const
                     {
-                        auto const time = functor.getCurrentTime(totalCellIdx);
-                        // Cut off when the laser has not entered at this point yet to avoid confusion.
-                        if(time < 0.0_X)
-                            return float3_X::create(0.0_X);
+                        auto const time = functor.getTminusXoverC(totalCellIdx);
                         auto const transversal = functor.getTransversal(totalCellIdx);
                         if(T_SeparableFunctor::Unitless::Polarisation == PolarisationType::Linear)
                             return functor.getLinearPolarizationVector()

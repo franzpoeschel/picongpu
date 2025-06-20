@@ -33,7 +33,6 @@
  *  - profiles::PlaneWave<>           : plane wave profile with given parameters
  *  - profiles::Polynom<>             : wavepacket with a polynomial temporal intensity shape profile with given
  * parameters
- *  - profiles::PulseFrontTilt<>      : GaussianPulse with tilted pulse front with given parameters
  *  - profiles::Wavepacket<>          : wavepacket with Gaussian spatial and temporal envelope profile with given
  * parameters
  *

@@ -1,6 +1,6 @@
 /* Copyright 2013-2024 Axel Huebl, Heiko Burau, Anton Helm, Rene Widera,
  *                     Richard Pausch, Alexander Debus, Sergei Bastrakov,
- *                     Julian Lenz
+ *                     Julian Lenz, Klaus Steiniger
  *
  * This file is part of PIConGPU.
  *
@@ -42,56 +42,48 @@ namespace picongpu::fields::incidentField
     {
         namespace detail
         {
-            /** Base class providing tilt value based on given parameters
-             *
-             * General implementation sets tilts to 0 and does not require T_Params having tilt as member.
+            /** Value of GaussianPulse's waist sizes
+             * Defined here to ensure compatibility to old setups defining only W0_SI.
+             * This struct is instantiated in the default case where W0_AXIS_1_SI exists in T_Params.
+             * Then, W0_AXIS_2_SI should also exist, since the params already follow the updated rules.
              *
              * @tparam T_Params user (SI) parameters
              */
             template<typename T_Params, typename T_Sfinae = void>
-            struct TiltParam
+            struct WaistParamUnitless
             {
-                // unit: radian
-                static constexpr float_X TILT_AXIS_1 = 0.0_X;
-                // unit: radian
-                static constexpr float_X TILT_AXIS_2 = 0.0_X;
+                static constexpr float_64 W0_AXIS_1 = static_cast<float_X>(T_Params::W0_AXIS_1_SI / sim.unit.length());
+                static constexpr float_64 W0_AXIS_2 = static_cast<float_X>(T_Params::W0_AXIS_2_SI / sim.unit.length());
             };
 
-            /** Helper type to check if T_Params has members TILT_AXIS_1_SI and TILT_AXIS_2_SI.
+            /** Helper type to check if T_Params has member W0_SI.
              *
              * Is void for those types, ill-formed otherwise.
              *
              * @tparam T_Params user (SI) parameters
              */
             template<typename T_Params>
-            using HasTilt = std::void_t<decltype(T_Params::TILT_AXIS_1_SI + T_Params::TILT_AXIS_2_SI)>;
+            using HasW0_SI = std::void_t<decltype(T_Params::W0_SI)>;
 
-            /** Specialization for T_Params having tilt as member, then use it.
+            /** Specialization for T_Params having W0_SI as member, then use it.
              *
              * @tparam T_Params user (SI) parameters
              */
             template<typename T_Params>
-            struct TiltParam<T_Params, HasTilt<T_Params>>
+            struct WaistParamUnitless<T_Params, HasW0_SI<T_Params>>
             {
-                // unit: radian
-                static constexpr float_X TILT_AXIS_1
-                    = static_cast<float_X>(T_Params::TILT_AXIS_1_SI * pmacc::math::Pi<float_X>::value / 180.);
-                // unit: radian
-                static constexpr float_X TILT_AXIS_2
-                    = static_cast<float_X>(T_Params::TILT_AXIS_2_SI * pmacc::math::Pi<float_X>::value / 180.);
+                static constexpr float_64 W0_AXIS_1 = static_cast<float_X>(T_Params::W0_SI / sim.unit.length());
+                static constexpr float_64 W0_AXIS_2 = W0_AXIS_1;
             };
 
             /** Unitless GaussianPulse parameters
-             *
-             * These parameters are shared for tilted and non-tilted Gaussian laser.
-             * The branching in terms of if and how user sets a tilt is encapculated in TiltParam.
              *
              * @tparam T_Params user (SI) parameters
              */
             template<typename T_Params>
             struct GaussianPulseUnitless
                 : public BaseParamUnitless<T_Params>
-                , public TiltParam<T_Params>
+                , public WaistParamUnitless<T_Params>
             {
                 //! User SI parameters
                 using Params = T_Params;
@@ -99,18 +91,17 @@ namespace picongpu::fields::incidentField
                 //! Base unitless parameters
                 using Base = BaseParamUnitless<T_Params>;
 
-                // unit: sim.unit.length()
-                static constexpr float_X W0 = static_cast<float_X>(Params::W0_SI / sim.unit.length());
+                //! Waist unitless parameters
+                using Waist = WaistParamUnitless<T_Params>;
 
                 // rayleigh length in propagation direction
-                static constexpr float_X rayleighLength
-                    = pmacc::math::Pi<float_X>::value * W0 * W0 / Base::WAVE_LENGTH;
+                static constexpr float_X rayleighLength_AXIS_1
+                    = pmacc::math::Pi<float_X>::value * Waist::W0_AXIS_1 * Waist::W0_AXIS_1 / Base::WAVE_LENGTH;
+                static constexpr float_X rayleighLength_AXIS_2
+                    = pmacc::math::Pi<float_X>::value * Waist::W0_AXIS_2 * Waist::W0_AXIS_2 / Base::WAVE_LENGTH;
             };
 
             /** GaussianPulse incident E functor
-             *
-             * The implementation is shared between a normal GaussianPulse and one with tilted front.
-             * We always take tilt value from the unitless params and apply the tilt (which can be 0).
              *
              * @tparam T_Params parameters
              * @tparam T_LongitudinalEnvelope class providing a static method getEnvelope(time)
@@ -136,29 +127,37 @@ namespace picongpu::fields::incidentField
                  */
                 HINLINE GaussianPulseFunctorIncidentE(float_X const currentStep, float3_64 const unitField)
                     : Base(currentStep, unitField)
+                    , laguerre_norm(getLaguerreNorm())
                 {
                     // This check is done here on HOST, since std::numeric_limits<float_X>::epsilon() does not
                     // compile on laserTransversal(), which is on DEVICE.
-                    auto etrans_norm = 0.0_X;
-                    for(uint32_t m = 0; m < Unitless::laguerreModes.size(); ++m)
-                        etrans_norm += Unitless::laguerreModes[m];
                     PMACC_VERIFY_MSG(
-                        math::abs(etrans_norm) > std::numeric_limits<float_X>::epsilon(),
+                        math::abs(laguerre_norm) > std::numeric_limits<float_X>::epsilon(),
                         "Sum of laguerreModes can not be 0.");
+                }
+
+                //!
+                HINLINE static float_X getLaguerreNorm()
+                {
+                    float_X value = 0.0_X;
+                    for(uint32_t m = 0; m < Unitless::laguerreModes.size(); ++m)
+                        value += Unitless::laguerreModes[m];
+
+                    return value;
                 }
 
                 /** Calculate incident field E value for the given position
                  *
                  * The transverse spatial laser modes are given as a decomposition of Gauss-Laguerre modes
-                 * GLM(m,r,z) : Sum_{m=0}^{m_max} := Snorm * a_m * GLM(m,r,z)
+                 * GLM(m,r,z) : Snorm * Sum_{m=0}^{m_max}{a_m * GLM(m,r,z)}
                  * with a_m being complex-valued coefficients: a_m := |a_m| * exp(I Arg(a_m) )
                  * |a_m| are equivalent to the laguerreModes vector entries.
                  * Arg(a_m) are equivalent to the laguerrePhases vector entries.
                  * The implicit pulse properties w0, lambda0, etc... equally apply to all GLM-modes.
                  * The on-axis, in-focus field value of the mode decomposition is normalized to unity:
-                 * Snorm := 1 / ( Sum_{m=0}^{m_max}GLM(m,0,0) )
+                 * Snorm := 1 / ( Sum_{m=0}^{m_max}{GLM(m,0,0)} )
                  *
-                 * Spatial mode: Arg(a_m) * GLM(m,r,z) := w0/w(zeta) * L_m( 2*r^2/(w(zeta))^2 ) \
+                 * Spatial mode: a_m * GLM(m,r,z) := w0/w(zeta) * L_m( 2*r^2/(w(zeta))^2 ) \
                  *     * exp( I*k*z - I*(2*m+1)*ArcTan(zeta) - r^2 / ( w0^2*(1+I*zeta) ) + I*Arg(a_m) ) )
                  * with w(zeta) = w0*sqrt(1+zeta^2)
                  * with zeta = z / zR
@@ -170,6 +169,10 @@ namespace picongpu::fields::incidentField
                  * pos[0] is the propagation direction.
                  *
                  * References:
+                 * R. Pausch et al. (2022), Modeling Beyond Gaussian Laser Pulses in Particle-in-Cell Simulations - The
+                 * Impact of Higher Order Laser Modes, IEEE Advanced Accelerator Concepts Workshop (AAC), Long Island,
+                 * NY, USA, pp. 1-5, doi: 10.1109/AAC55212.2022.10822876.
+                 *
                  * F. Pampaloni et al. (2004), Gaussian, Hermite-Gaussian, and Laguerre-GaussianPulses: A
                  * primer https://arxiv.org/pdf/physics/0410021
                  *
@@ -204,96 +207,123 @@ namespace picongpu::fields::incidentField
                  */
                 HDINLINE float_X getValue(floatD_X const& totalCellIdx, float_X const phaseShift) const
                 {
-                    // transform to 3d internal coordinate system
-                    float3_X pos = this->getInternalCoordinates(totalCellIdx);
-                    auto time = this->getCurrentTime(totalCellIdx);
-                    if(time < 0.0_X)
-                        return 0.0_X;
+                    // get simulation time step
+                    auto const time = this->currentTimeOrigin;
 
-                    // A time shift provided by the envelope class.
-                    // For example when the envelope is a Gaussian pulse:
-                    // a symmetric pulse will be initialized at generation plane for
-                    // a time of PULSE_INIT * PULSE_DURATION = INIT_TIME.
-                    // we shift the complete pulse for the half of this time to start with
-                    // the front of the laser pulse.
-                    constexpr auto timeshift = LongitudinalEnvelope::TIME_SHIFT;
-                    time += timeshift;
-                    /* Calculate focus position relative to the current point in the propagation direction.
-                     * Coordinate system is PIConGPUs and not the laser internal coordinate system where X is the
-                     * propagation direction.
+                    /* Calculate position of laser origin on the incidentField plane relative to the focus.
+                     * Coordinate system is PIConGPUs and not the laser internal coordinate system where X is
+                     * the propagation direction.
                      */
-                    float3_X const focusRelativeToOrigin = this->focus - this->origin;
+                    float3_X const originRelativeToFocus = this->origin - this->focus;
 
-                    /* Relative focus distance from the laser origin to the focus, transformed into the laser
+                    /* Relative distance of the origin from the laser focus, transformed into the laser
                      * coordination system where X is the propagation direction. */
-                    float_X const distanceFocusRelativeToOrigin
-                        = pmacc::math::dot(focusRelativeToOrigin, this->getAxis0());
+                    float_X const distanceOriginRelativeToFocus
+                        = pmacc::math::dot(originRelativeToFocus, this->getAxis0());
 
-                    // Distance from the current cell to the focus in laser propagation direction.
-                    float_X const focusPos = distanceFocusRelativeToOrigin - pos[0];
+                    /* Shifting pulse for TIME_SHIFT, TIME_DELAY, and travel time from the focus to
+                     * the origin in order to start with the front of the laser pulse at the origin. */
+                    constexpr auto mue = LongitudinalEnvelope::TIME_SHIFT + Unitless::TIME_DELAY;
+                    float_X const timeDelay = mue - (distanceOriginRelativeToFocus / sim.pic.getSpeedOfLight());
+
+                    // transform current point of evaluation to laser internal coordinates
+                    // The laser internal coordinate system's origin
+                    // is in the focus and the laser propagates along the x-axis.
+                    float3_X internalPosition = this->getInternalCoordinates(totalCellIdx);
+
+                    // distance from focus in units of the Rayleigh length
+                    float_X const normalizedDistanceFromFocus_AXIS_1
+                        = internalPosition[0] / Unitless::rayleighLength_AXIS_1;
+
                     // beam waist at the generation plane so that at focus we will get W0
-                    float_X const w
-                        = Unitless::W0
-                          * math::sqrt(
-                              1.0_X + (focusPos / Unitless::rayleighLength) * (focusPos / Unitless::rayleighLength));
+                    float_X const waist_AXIS_1
+                        = Unitless::W0_AXIS_1
+                          * math::sqrt(1._X + normalizedDistanceFromFocus_AXIS_1 * normalizedDistanceFromFocus_AXIS_1);
 
+                    // inverse radius of curvature
+                    float_X const inverseR_AXIS_1
+                        = internalPosition[0]
+                          / (internalPosition[0] * internalPosition[0]
+                             + Unitless::rayleighLength_AXIS_1 * Unitless::rayleighLength_AXIS_1);
 
-                    auto const phase = Unitless::w * (time - focusPos / sim.pic.getSpeedOfLight())
-                                       + Unitless::LASER_PHASE + phaseShift;
+                    // Gouy phase
+                    float_X gouy = .5_X * math::atan(normalizedDistanceFromFocus_AXIS_1);
+                    float_X evaluationTime = time - timeDelay - internalPosition[0] / sim.pic.getSpeedOfLight()
+                                             - internalPosition[1] * internalPosition[1] * inverseR_AXIS_1
+                                                   / (2._X * sim.pic.getSpeedOfLight());
 
-                    // Apply tilt if needed
-                    if constexpr(Unitless::TILT_AXIS_1 || Unitless::TILT_AXIS_2)
+                    auto amplitudeExponent
+                        = -internalPosition[1] * internalPosition[1] / (waist_AXIS_1 * waist_AXIS_1);
+
+                    /* Compute amplitude and its reduction outside the focus due to defocussing. */
+                    auto amplitudeAbs
+                        = Unitless::AMPLITUDE
+                          / math::sqrt(
+                              math::sqrt(
+                                  1._X + normalizedDistanceFromFocus_AXIS_1 * normalizedDistanceFromFocus_AXIS_1));
+
+                    // add terms for 3D Pulse
+                    if constexpr(simDim == DIM3)
                     {
-                        auto const tiltTimeShift = phase / Unitless::w + focusPos / sim.pic.getSpeedOfLight();
-                        auto const tiltPositionShift
-                            = sim.pic.getSpeedOfLight() * tiltTimeShift
-                              / pmacc::math::dot(this->getDirection(), float3_X{sim.pic.getCellSize()});
-                        auto const tilt1 = Unitless::TILT_AXIS_1;
-                        pos[1] += math::tan(tilt1) * tiltPositionShift;
-                        auto const tilt2 = Unitless::TILT_AXIS_2;
-                        pos[2] += math::tan(tilt2) * tiltPositionShift;
+                        float_X const normalizedDistanceFromFocus_AXIS_2
+                            = internalPosition[0] / Unitless::rayleighLength_AXIS_2;
+                        float_X const waist_AXIS_2
+                            = Unitless::W0_AXIS_2
+                              * math::sqrt(
+                                  1._X + normalizedDistanceFromFocus_AXIS_2 * normalizedDistanceFromFocus_AXIS_2);
+                        float_X const inverseR_AXIS_2
+                            = internalPosition[0]
+                              / (internalPosition[0] * internalPosition[0]
+                                 + Unitless::rayleighLength_AXIS_2 * Unitless::rayleighLength_AXIS_2);
+
+                        gouy += .5_X * math::atan(normalizedDistanceFromFocus_AXIS_2);
+                        evaluationTime -= internalPosition[2] * internalPosition[2] * inverseR_AXIS_2
+                                          / (2._X * sim.pic.getSpeedOfLight());
+                        amplitudeExponent -= internalPosition[2] * internalPosition[2] / (waist_AXIS_2 * waist_AXIS_2);
+                        amplitudeAbs /= math::sqrt(
+                            math::sqrt(
+                                1._X + normalizedDistanceFromFocus_AXIS_2 * normalizedDistanceFromFocus_AXIS_2));
                     }
 
-                    auto planeNoNormal = float3_X::create(1.0_X);
-                    planeNoNormal[0] = 0.0_X;
-                    auto const transversalDistanceSquared = pmacc::math::l2norm2(pos * planeNoNormal);
+                    auto const phase = Unitless::OMEGA0 * evaluationTime + gouy + Unitless::LASER_PHASE + phaseShift;
+                    auto const eTemporal = LongitudinalEnvelope::getEnvelope(evaluationTime);
 
-                    // inverse radius of curvature of the pulse's wavefronts
-                    auto const R_inv
-                        = -focusPos / (Unitless::rayleighLength * Unitless::rayleighLength + focusPos * focusPos);
-                    // the Gouy phase shift
-                    auto xi = math::atan(-focusPos / Unitless::rayleighLength);
-                    if(simDim == DIM2)
-                        xi *= 0.5_X;
-                    auto etrans = 0.0_X;
-                    auto const r2OverW2 = transversalDistanceSquared / w / w;
-                    auto const r = 0.5_X * transversalDistanceSquared * R_inv;
-
+                    // initial values (m=0) for higher-order mode contributions
                     constexpr auto laguerreModes = Unitless::laguerreModes;
                     constexpr auto laguerrePhases = Unitless::laguerrePhases;
-                    for(uint32_t m = 0; m < laguerreModes.size(); ++m)
+                    auto laguerre = laguerreModes[0] * math::cos(phase + laguerrePhases[0]);
+
+                    if constexpr(laguerreModes.dim > uint32_t(1) && simDim == DIM3)
                     {
-                        etrans += laguerreModes[m] * simpleLaguerre(m, 2.0_X * r2OverW2) * math::exp(-r2OverW2)
-                                  * math::cos(
-                                      pmacc::math::Pi<float_X>::doubleValue / Unitless::WAVE_LENGTH * focusPos
-                                      - pmacc::math::Pi<float_X>::doubleValue / Unitless::WAVE_LENGTH * r
-                                      + (2._X * float_X(m) + 1._X) * xi + phase + laguerrePhases[m]);
+                        /** Apply higher-order Laguerre-Gaussian modes
+                         * Since Laguerre-Gaussian modes are radially symmetric,
+                         * it needs to be guaranteed that the laser waist sizes along AXIS_1 and AXIS_2 are equal.
+                         * For this, assume W0_AXIS_1 and W0_AXIS_2 are positive, as they should.
+                         * In case they are not, other things will break, such as computing a square root of a negative
+                         * number. */
+                        static_assert(
+                            Unitless::W0_AXIS_1 - Unitless::W0_AXIS_2 < std::numeric_limits<float_X>::epsilon(),
+                            "Waist sizes of the GaussianPulse must be equal along the transverse axes when using "
+                            "Laguerre modes!");
+
+                        // compute distance from beam axis
+                        auto planeNoNormal = float3_X::create(1.0_X);
+                        planeNoNormal[0] = 0.0_X;
+                        auto const transversalDistanceSquared = pmacc::math::l2norm2(internalPosition * planeNoNormal);
+                        auto const r2OverW2 = transversalDistanceSquared / (waist_AXIS_1 * waist_AXIS_1);
+
+                        for(uint32_t m = 1; m < laguerreModes.size(); ++m)
+                        {
+                            // Add higher-order Laguerre-Gaussian mode contributions to transverse envelope
+
+                            laguerre += laguerreModes[m] * simpleLaguerre(m, 2.0_X * r2OverW2)
+                                        * math::cos(phase + 2._X * float_X(m) * gouy + laguerrePhases[m]);
+                        }
+                        laguerre /= laguerre_norm;
                     }
-                    // time shifted by the distance (in propagation direction) to the point where the current wavefront
-                    // is crossing the beam axis.
-                    auto const shiftedTime = time - r / sim.pic.getSpeedOfLight();
 
-                    etrans *= LongitudinalEnvelope::getEnvelope(shiftedTime);
-
-                    auto etrans_norm = 0.0_X;
-                    for(uint32_t m = 0; m < laguerreModes.size(); ++m)
-                        etrans_norm += laguerreModes[m];
-                    auto envelope = Unitless::AMPLITUDE;
-                    if(simDim == DIM2)
-                        envelope *= math::sqrt(Unitless::W0 / w);
-                    else if(simDim == DIM3)
-                        envelope *= Unitless::W0 / w;
-                    return envelope * etrans / etrans_norm;
+                    auto eSpatial = amplitudeAbs * math::exp(amplitudeExponent) * laguerre;
+                    return eSpatial * eTemporal;
                 }
 
                 /** Simple iteration algorithm to implement Laguerre polynomials for GPUs.
@@ -323,6 +353,12 @@ namespace picongpu::fields::incidentField
                     }
                     return laguerreN;
                 }
+
+                /** Sum of amplitudes of Laguerre-Gaussian higher-modes
+                 *
+                 * Required for normalization.
+                 */
+                float_X const laguerre_norm;
             };
         } // namespace detail
 
@@ -336,7 +372,7 @@ namespace picongpu::fields::incidentField
             using Base = typename detail::BaseParamUnitless<T_Param>;
             using Unitless = detail::BaseParamUnitless<T_Param>;
 
-            static constexpr float_X TIME_SHIFT = -0.5_X * Base::PULSE_INIT * Base::PULSE_DURATION;
+            static constexpr float_X TIME_SHIFT = 0.5_X * Base::PULSE_INIT * Base::PULSE_DURATION;
 
             HDINLINE static float_X getEnvelope(float_X const time)
             {
@@ -359,11 +395,7 @@ namespace picongpu::fields::incidentField
             //! Get text name of the incident field profile
             HINLINE static std::string getName()
             {
-                // This template is used for both Gaussian and PulseFrontTilt, distinguish based on tilt value
-                using TiltParam = detail::TiltParam<T_Params>;
-                bool isTilted = (std::abs(TiltParam::TILT_AXIS_1) + std::abs(TiltParam::TILT_AXIS_2) > 0);
-                std::string name = isTilted ? "PulseFrontTilt" : "GaussianPulse";
-                name += "_with_" + LongitudinalEnvelope::getName();
+                std::string name = "GaussianPulse_with_" + LongitudinalEnvelope::getName();
                 return name;
             }
 

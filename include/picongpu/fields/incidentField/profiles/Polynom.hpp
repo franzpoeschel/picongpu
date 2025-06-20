@@ -116,7 +116,8 @@ namespace picongpu
                              */
                             float_X const riseTime = 0.5_X * Unitless::PULSE_DURATION;
                             float_X const tau = time / riseTime;
-                            auto const phase = Unitless::w * (time - riseTime) + Unitless::LASER_PHASE + phaseShift;
+                            auto const phase
+                                = Unitless::OMEGA0 * (time - riseTime) + Unitless::LASER_PHASE + phaseShift;
                             auto const amplitude = Unitless::AMPLITUDE * polynomial(tau);
                             return math::sin(phase) * amplitude;
                         }

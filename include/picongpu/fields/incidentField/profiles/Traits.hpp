@@ -21,10 +21,10 @@
 
 namespace picongpu::fields::incidentField::profiles
 {
-    /** Express if the Huyhens surface in transversal directions must be extended to the simulation borders in case the
+    /** Express if the Huygens surface in transversal directions must be extended to the simulation borders in case the
      * transversal direction is periodic.
      *
-     * The result of this trait should be true in case you have non zero field amplitudes on the transversal borders
+     * The result of this trait should be true in case you have non-zero field amplitudes on the transversal borders
      * else the field will not be contiguous if periodic boundaries are enabled.
      *
      * @tparam T_Profile incident field profile
@@ -35,7 +35,7 @@ namespace picongpu::fields::incidentField::profiles
         static constexpr bool value = false;
     };
 
-    /** short hand notation for @see MakePeriodicTransversalHuygensSurfaceContiguous */
+    /** shorthand notation for @see MakePeriodicTransversalHuygensSurfaceContiguous */
     template<typename T_Profile>
     constexpr bool makePeriodicTransversalHuygensSurfaceContiguous
         = MakePeriodicTransversalHuygensSurfaceContiguous<T_Profile>::value;

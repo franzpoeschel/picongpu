@@ -1,4 +1,5 @@
-/* Copyright 2013-2024 Axel Huebl, Heiko Burau, Rene Widera, Richard Pausch, Sergei Bastrakov, Julian Lenz
+/* Copyright 2013-2024 Axel Huebl, Heiko Burau, Rene Widera, Richard Pausch, Sergei Bastrakov, Julian Lenz, Klaus
+ * Steiniger
  *
  * This file is part of PIConGPU.
  *
@@ -66,10 +67,6 @@ namespace picongpu
                         // unit: sim.unit.time()
                         static constexpr float_X LASER_NOFOCUS_CONSTANT
                             = static_cast<float_X>(Params::LASER_NOFOCUS_CONSTANT_SI / sim.unit.time());
-                        // unit: sim.unit.time()
-                        static constexpr float_X INIT_TIME = static_cast<float_X>(
-                            (Params::RAMP_INIT * Params::PULSE_DURATION_SI + Params::LASER_NOFOCUS_CONSTANT_SI)
-                            / sim.unit.time());
                     };
 
                     /** Plane wave incident E functor
@@ -120,7 +117,7 @@ namespace picongpu
                         HDINLINE float_X getLongitudinal(float_X const time, float_X const phaseShift) const
                         {
                             auto envelope = Unitless::AMPLITUDE;
-                            auto const mue = 0.5_X * Unitless::RAMP_INIT * Unitless::PULSE_DURATION;
+                            auto const mue = Unitless::RAMP_INIT * Unitless::PULSE_DURATION;
                             auto const tau = Unitless::PULSE_DURATION * math::sqrt(2.0_X);
                             auto const endUpramp = mue;
                             auto const startDownramp = mue + Unitless::LASER_NOFOCUS_CONSTANT;
@@ -130,18 +127,18 @@ namespace picongpu
                                 // downramp = end
                                 auto const exponent = (time - startDownramp) / tau;
                                 envelope *= math::exp(-0.5_X * exponent * exponent);
-                                integrationCorrectionFactor = (time - startDownramp) / (Unitless::w * tau * tau);
+                                integrationCorrectionFactor = (time - startDownramp) / (Unitless::OMEGA0 * tau * tau);
                             }
                             else if(time < endUpramp)
                             {
                                 // upramp = start
                                 auto const exponent = (time - endUpramp) / tau;
                                 envelope *= math::exp(-0.5_X * exponent * exponent);
-                                integrationCorrectionFactor = (time - endUpramp) / (Unitless::w * tau * tau);
+                                integrationCorrectionFactor = (time - endUpramp) / (Unitless::OMEGA0 * tau * tau);
                             }
 
                             auto const timeOszi = time - endUpramp;
-                            auto const phase = Unitless::w * timeOszi + Unitless::LASER_PHASE + phaseShift;
+                            auto const phase = Unitless::OMEGA0 * timeOszi + Unitless::LASER_PHASE + phaseShift;
                             // to understand both components [sin(...) + t/tau^2 * cos(...)] see description above
                             return (math::sin(phase) + math::cos(phase) * integrationCorrectionFactor) * envelope;
                         }

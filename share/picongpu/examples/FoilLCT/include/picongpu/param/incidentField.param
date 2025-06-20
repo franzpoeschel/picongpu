@@ -31,7 +31,6 @@
  *  - profiles::PlaneWave<>           : plane wave profile with given parameters
  *  - profiles::Polynom<>             : wavepacket with a polynomial temporal intensity shape profile with given
  * parameters
- *  - profiles::PulseFrontTilt<>      : GaussianPulse with tilted pulse front with given parameters
  *  - profiles::Wavepacket<>          : wavepacket with Gaussian spatial and temporal envelope profile with given
  * parameters
  *
@@ -90,9 +89,9 @@ namespace picongpu
                  *  unit: seconds */
                 static constexpr float_64 LASER_NOFOCUS_CONSTANT_SI = 0.0;
 
-                /** The laser pulse will be initialized half of PULSE_INIT times of the PULSE_DURATION before and
+                /** The laser pulse will be initialized RAMP_INIT times the PULSE_DURATION before and
                  * after the plateau unit: none */
-                static constexpr float_64 RAMP_INIT = 3. * 2.354820045;
+                static constexpr float_64 RAMP_INIT = 1.5 * 2.354820045;
 
                 /** Convert the normalized laser strength parameter a0 to Volt per meter */
                 static constexpr float_64 UNITCONV_A0_to_Amplitude_SI
@@ -255,12 +254,12 @@ namespace picongpu
 
                 //***** Overwritten settings from plane wave params *****
 
-                /** The laser pulse will be initialized half of RAMP_INIT times of the PULSE_DURATION before
+                /** The laser pulse will be initialized RAMP_INIT times the PULSE_DURATION before
                  * plateau and half at the end of the plateau
                  *
                  * unit: none
                  */
-                static constexpr float_64 RAMP_INIT = 16.0;
+                static constexpr float_64 RAMP_INIT = 8.0;
 
                 /** Pulse duration: sigma of std. gauss for intensity (E^2)
                  *  PULSE_DURATION_SI = FWHM_of_Intensity   / [ 2*sqrt{ 2* ln(2) } ]

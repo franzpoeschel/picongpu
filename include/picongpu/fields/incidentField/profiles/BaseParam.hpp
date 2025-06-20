@@ -61,7 +61,7 @@ namespace picongpu
                          *
                          * unit: 1/sim.unit.time()
                          */
-                        static constexpr float_X w = pmacc::math::Pi<float_X>::doubleValue * f;
+                        static constexpr float_X OMEGA0 = pmacc::math::Pi<float_X>::doubleValue * f;
 
                         /** Max amplitude of E field
                          *
@@ -147,7 +147,7 @@ namespace picongpu
                             _error_laser_polarization_direction_vector_must_be_orthogonal_to_propagation_direction____check_your_incidentField_param_file,
                             (dotPropagationPolarization > -0.0001) && (dotPropagationPolarization < 0.0001));
 
-                        /** Focus position in total cooridnate system
+                        /** Focus position in total coordinate system
                          *
                          * unit: sim.unit.length()
                          *
