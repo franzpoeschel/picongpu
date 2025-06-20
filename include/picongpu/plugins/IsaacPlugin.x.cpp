@@ -861,14 +861,17 @@ namespace picongpu
 namespace alpaka
 {
 
+    template<>
     struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::SourceList> : std::true_type
     {
     };
 
-    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::VectorSourceList> : std::true_type
+    template<>
+    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::VectorFieldSourceList> : std::true_type
     {
     };
 
+    template<>
     struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::ParticleList> : std::true_type
     {
     };
