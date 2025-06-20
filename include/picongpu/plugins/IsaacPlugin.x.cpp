@@ -417,8 +417,8 @@ namespace picongpu
                     int min = std::numeric_limits<int>::max();
                     int max = 0;
                     int average = 0;
-                    int times[numProc];
-                    MPI_Gather(&time, 1, MPI_INT, times, 1, MPI_INT, 0, MPI_COMM_WORLD);
+                    std::vector<int> times(numProc);
+                    MPI_Gather(&time, 1, MPI_INT, times.data(), 1, MPI_INT, 0, MPI_COMM_WORLD);
                     for(int i = 0; i < numProc; i++)
                     {
                         min = (times[i] < min) ? times[i] : min;
@@ -857,6 +857,26 @@ namespace picongpu
 
     } // namespace isaacP
 } // namespace picongpu
+
+namespace alpaka
+{
+
+    template<>
+    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::SourceList> : std::true_type
+    {
+    };
+
+    template<>
+    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::VectorFieldSourceList>
+        : std::true_type
+    {
+    };
+
+    template<>
+    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::ParticleList> : std::true_type
+    {
+    };
+} // namespace alpaka
 
 PIC_REGISTER_PLUGIN(isaacP::IsaacPlugin);
 #endif

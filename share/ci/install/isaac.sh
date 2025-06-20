@@ -19,7 +19,7 @@ if [ -z "$DISABLE_ISAAC" ] ; then
     cd $CI_PROJECT_DIR
     git clone https://github.com/ComputationalRadiationPhysics/isaac.git
     cd isaac
-    git checkout 6bf8e189142da7ab16f8367316fb21dcaa7e3b78
+    git checkout 9c8f710fd054690385d58ce89b353f3bb066979d
     mkdir build_isaac
     cd build_isaac
     cmake ../lib/ -DCMAKE_INSTALL_PREFIX=$ISAAC_ROOT
