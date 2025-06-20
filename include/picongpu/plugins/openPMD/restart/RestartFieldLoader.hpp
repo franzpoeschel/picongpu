@@ -122,7 +122,7 @@ namespace picongpu
                     useLinearIdxAsDestination = true;
                 }
 
-                ::openPMD::Series& series = *params->openPMDSeries;
+                ::openPMD::Series& series = *params->readOpenPMDSeries;
                 ::openPMD::Container<::openPMD::Mesh>& meshes = series.iterations[currentStep].open().meshes;
 
                 auto destBox = field.getHostBuffer().getDataBox();
