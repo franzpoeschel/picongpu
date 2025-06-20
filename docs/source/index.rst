@@ -79,6 +79,7 @@ In case you are already fluent in compiling C++ projects and HPC, running PIC si
 
    models/pic
    models/AOFDTD
+   models/lasers
    models/total_field_scattered_field
    models/shapes
    models/LL_RR
