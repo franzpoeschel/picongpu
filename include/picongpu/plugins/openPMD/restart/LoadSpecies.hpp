@@ -83,7 +83,7 @@ namespace picongpu
                 DataConnector& dc = Environment<>::get().DataConnector();
                 GridController<simDim>& gc = Environment<simDim>::get().GridController();
 
-                ::openPMD::Series& series = *params->openPMDSeries;
+                ::openPMD::Series& series = *params->readOpenPMDSeries;
                 ::openPMD::Container<::openPMD::ParticleSpecies>& particles
                     = series.iterations[currentStep].open().particles;
                 ::openPMD::ParticleSpecies particleSpecies = particles[speciesName];
