@@ -21,6 +21,8 @@
 // required for SIMDIM definition
 #include "picongpu/defines.hpp"
 
+#include <concepts>
+
 #if (ENABLE_ISAAC == 1) && (SIMDIM == DIM3)
 
 #    include "picongpu/param/isaac.param"
@@ -861,19 +863,35 @@ namespace picongpu
 namespace alpaka
 {
 
-    template<>
-    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::SourceList> : std::true_type
+    /** Define these lists as trivially copyable but only if they differ to other lists used by ISAAC to avoid multiple
+     * definitions.
+     */
+    template<typename T>
+    requires(std::same_as<T, typename picongpu::isaacP::IsaacPlugin::SourceList>)
+    struct IsKernelArgumentTriviallyCopyable<T> : std::true_type
     {
     };
 
-    template<>
-    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::VectorFieldSourceList>
-        : std::true_type
+    template<typename T>
+    requires(
+        std::same_as<T, typename picongpu::isaacP::IsaacPlugin::VectorFieldSourceList>
+        && !std::same_as<
+            typename picongpu::isaacP::IsaacPlugin::SourceList,
+            typename picongpu::isaacP::IsaacPlugin::VectorFieldSourceList>)
+    struct IsKernelArgumentTriviallyCopyable<T> : std::true_type
     {
     };
 
-    template<>
-    struct IsKernelArgumentTriviallyCopyable<typename picongpu::isaacP::IsaacPlugin::ParticleList> : std::true_type
+    template<typename T>
+    requires(
+        std::same_as<T, typename picongpu::isaacP::IsaacPlugin::ParticleList>
+        && !std::same_as<
+            typename picongpu::isaacP::IsaacPlugin::SourceList,
+            typename picongpu::isaacP::IsaacPlugin::ParticleList>
+        && !std::same_as<
+            typename picongpu::isaacP::IsaacPlugin::VectorFieldSourceList,
+            typename picongpu::isaacP::IsaacPlugin::ParticleList>)
+    struct IsKernelArgumentTriviallyCopyable<T> : std::true_type
     {
     };
 } // namespace alpaka
