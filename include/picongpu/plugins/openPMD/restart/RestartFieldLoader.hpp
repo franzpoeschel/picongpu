@@ -219,6 +219,13 @@ namespace picongpu
 
                 /* load from openPMD */
                 bool const isDomainBound = traits::IsFieldDomainBound<T_Field>::value;
+
+                // Skip PML fields for load balancing purposes
+                if(!isDomainBound)
+                {
+                    return;
+                }
+
                 RestartFieldLoader::loadField(
                     field->getGridBuffer(),
                     (uint32_t) T_Field::numComponents,
