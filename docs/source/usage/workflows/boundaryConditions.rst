@@ -47,7 +47,7 @@ To set physical boundary conditions, use the command-line option described above
 .. note::
 
    Note that with the "absorbing" particle boundary conditions (the default in most examples), the weighting of the macro particles decreases exponentially near the field boundaries until it reaches the minimum possible value `MIN_WEIGHTING`.
-   Thus, particles with low or minimum weighting might originate from a low-density region or the boundaries. Keep this in mind when doing data analysis.
+   Thus, particles with low or minimum weighting might originate not only from a low-density region but also due to this effect at the boundaries. Keep this in mind when doing data analysis.
    
 
 
