@@ -107,7 +107,7 @@ function getNode() {
     else
         numNodes=$1
     fi
-    srun  --time=1:00:00 --nodes=$numNodes --ntasks=$((numNodes * 8)) --gres=gpu:$((numNodes * 8)) --cpus-per-task=7 --ntasks-per-gpu=1 --gpu-bind=closest --mem-per-gpu=64000 -p batch -A $PROJID --pty bash
+    srun  --time=1:00:00 --nodes=$numNodes --ntasks=$((numNodes * 8)) --gres=gpu:$((numNodes * 8)) --cpus-per-task=7 --ntasks-per-gpu=1 --gpu-bind=closest --mem-per-gpu=64000 -p batch -A $PROJID -q debug --pty bash
 }
 
 # allocate an interactive shell for one hour
@@ -123,7 +123,7 @@ function getDevice() {
             numGPUs=$1
         fi
     fi
-    srun  --time=1:00:00 --nodes=1 --ntasks=$(($numGPUs)) --gres=gpu:$(($numGPUs)) --cpus-per-task=7 --ntasks-per-gpu=1 --gpu-bind=closest --mem-per-gpu=64000 -p batch -A $PROJID --pty bash
+    srun  --time=1:00:00 --nodes=1 --ntasks=$(($numGPUs)) --gres=gpu:$(($numGPUs)) --cpus-per-task=7 --ntasks-per-gpu=1 --gpu-bind=closest --mem-per-gpu=64000 -p batch -A $PROJID -q debug --pty bash
 }
 
 # Load autocompletion for PIConGPU commands
