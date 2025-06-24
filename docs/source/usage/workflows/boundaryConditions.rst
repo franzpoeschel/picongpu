@@ -44,6 +44,13 @@ The internal treatment of particles in the guard area is controlled by the ``bou
 However, this option is for expert users and generally should not be modified.
 To set physical boundary conditions, use the command-line option described above.
 
+.. note::
+
+   Note that with the "absorbing" particle boundary conditions (the default in most examples), the weighting of the macro particles decreases exponentially near the field boundaries until it reaches the minimum possible value `MIN_WEIGHTING`.
+   Thus, particles with low or minimum weighting might originate from a low-density region or the boundaries. Keep this in mind when doing data analysis.
+   
+
+
 Fields
 """"""
 
