@@ -35,8 +35,10 @@
 
 #    include <boost/mpl/placeholders.hpp>
 
+#    include <algorithm>
 #    include <cassert>
 #    include <stdexcept>
+#    include <utility>
 
 #    include <openPMD/openPMD.hpp>
 
@@ -101,7 +103,7 @@ namespace picongpu
 
                 auto numRanks = gc.getGlobalSize();
 
-                size_t patchIdx = getPatchIdx(params, particleSpecies, numRanks);
+                size_t patchIdx = getPatchIdx(params, particleSpecies);
 
                 std::shared_ptr<uint64_t> fullParticlesInfoShared
                     = particleSpecies.particlePatches["numParticles"][::openPMD::RecordComponent::SCALAR]
@@ -186,6 +188,27 @@ namespace picongpu
             }
 
         private:
+            // o: offset, e: extent, u: upper corner (= o+e)
+            static std::pair<DataSpace<simDim>, DataSpace<simDim>> intersect(
+                DataSpace<simDim> const& o1,
+                DataSpace<simDim> const& e1,
+                DataSpace<simDim> const& o2,
+                DataSpace<simDim> const& e2)
+            {
+                // Convert extents into upper coordinates
+                auto u1 = o1 + e1;
+                auto u2 = o2 + e2;
+
+                DataSpace<simDim> intersect_o, intersect_u, intersect_e;
+                for(unsigned d = 0; d < simDim; ++d)
+                {
+                    intersect_o[d] = std::max(o1[d], o2[d]);
+                    intersect_u[d] = std::min(u1[d], u2[d]);
+                    intersect_e[d] = intersect_u[d] > intersect_o[d] ? intersect_u[d] - intersect_o[d] : 0;
+                }
+                return {intersect_o, intersect_e};
+            }
+
             /** get index for particle data within the openPMD patch data
              *
              * It is not possible to assume that we can use the MPI rank to load the particle data.
@@ -197,13 +220,14 @@ namespace picongpu
              *
              * @return index of the particle patch within the openPMD data
              */
-            HINLINE size_t
-            getPatchIdx(ThreadParams* params, ::openPMD::ParticleSpecies particleSpecies, size_t numRanks)
+            HINLINE size_t getPatchIdx(ThreadParams* params, ::openPMD::ParticleSpecies particleSpecies)
             {
                 std::string const name_lookup[] = {"x", "y", "z"};
 
-                std::vector<DataSpace<simDim>> offsets(numRanks);
-                std::vector<DataSpace<simDim>> extents(numRanks);
+                size_t patches = particleSpecies.particlePatches["numParticles"].getExtent()[0];
+
+                std::vector<DataSpace<simDim>> offsets(patches);
+                std::vector<DataSpace<simDim>> extents(patches);
 
                 // transform openPMD particle patch data into PIConGPU data objects
                 for(uint32_t d = 0; d < simDim; ++d)
@@ -213,7 +237,7 @@ namespace picongpu
                     std::shared_ptr<uint64_t> patchExtentsInfoShared
                         = particleSpecies.particlePatches["extent"][name_lookup[d]].load<uint64_t>();
                     particleSpecies.seriesFlush();
-                    for(size_t i = 0; i < numRanks; ++i)
+                    for(size_t i = 0; i < patches; ++i)
                     {
                         offsets[i][d] = patchOffsetsInfoShared.get()[i];
                         extents[i][d] = patchExtentsInfoShared.get()[i];
@@ -235,18 +259,53 @@ namespace picongpu
                 DataSpace<simDim> const patchTotalOffset
                     = localToTotalDomainOffset + params->localWindowToDomainOffset;
                 DataSpace<simDim> const patchExtent = params->window.localDimensions.size;
+                math::Vector<bool, simDim> true_;
+                for(unsigned d = 0; d < simDim; ++d)
+                {
+                    true_[d] = true;
+                }
 
                 // search the patch index based on the offset and extents of local domain size
-                for(size_t i = 0; i < numRanks; ++i)
+                std::deque<size_t> fullMatches;
+                std::deque<size_t> partialMatches;
+                size_t noMatches = 0;
+                for(size_t i = 0; i < patches; ++i)
                 {
-                    if(patchTotalOffset == offsets[i] && patchExtent == extents[i])
-                        return i;
+                    // std::cout << "Comp.: " << patchTotalOffset << " - " << (patchTotalOffset + patchExtent)
+                    //           << "\tAGAINST " << offsets[i] << " - " << (offsets[i] + extents[i])
+                    //           << "\toffsets: " << (patchTotalOffset <= offsets[i])
+                    //           << ", extents: " << ((offsets[i] + extents[i]) <= (patchTotalOffset + patchExtent)) <<
+                    //           '\n';
+                    if((patchTotalOffset <= offsets[i]) == true_
+                       && ((offsets[i] + extents[i]) <= (patchTotalOffset + patchExtent)) == true_)
+                    {
+                        fullMatches.emplace_back(i);
+                    }
+                    else if(
+                        intersect(offsets[i], extents[i], patchTotalOffset, patchExtent).second.productOfComponents()
+                        != 0)
+                    {
+                        partialMatches.emplace_back(i);
+                    }
+                    else
+                    {
+                        ++noMatches;
+                    }
                 }
+
+                std::cout << "\n\n"
+                          << fullMatches.size() << " full matches, " << partialMatches.size() << " partial matches, "
+                          << noMatches << " unmatched." << std ::endl;
+
                 // If no patch fits the conditions, something went wrong before
-                throw std::runtime_error(
-                    "Error while restarting: no particle patch matches the required offset and extent");
-                // Fake return still needed to avoid warnings
-                return 0;
+                if(fullMatches.empty())
+                {
+                    throw std::runtime_error(
+                        "Error while restarting: no particle patch matches the required offset and extent");
+                }
+
+                // For now, ignore all the others
+                return *fullMatches.begin();
             }
         };
 
