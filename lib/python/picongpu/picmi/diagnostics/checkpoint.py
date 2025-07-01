@@ -112,8 +112,9 @@ class Checkpoint:
         self.check()
 
         pypicongpu_checkpoint = PyPIConGPUCheckpoint()
-        if self.period is not None:
-            pypicongpu_checkpoint.period = self.period.get_as_pypicongpu(time_step_size, num_steps)
+        pypicongpu_checkpoint.period = (
+            self.period.get_as_pypicongpu(time_step_size, num_steps) if self.period is not None else None
+        )
         pypicongpu_checkpoint.timePeriod = self.timePeriod
         pypicongpu_checkpoint.directory = self.directory
         pypicongpu_checkpoint.file = self.file
