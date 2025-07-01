@@ -111,7 +111,7 @@ namespace pmacc
             MPI_CHECK(MPI_Barrier(gc.getCommunicator().getMPIComm()));
 
             /* create directory containing checkpoints  */
-            if(numCheckpoints == 0)
+            if(numCheckpoints == 0 && gc.getGlobalRank() == 0)
             {
                 pmacc::Filesystem::get().createDirectoryWithPermissions(checkpointDirectory);
             }

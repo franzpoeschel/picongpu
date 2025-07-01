@@ -185,8 +185,14 @@ namespace picongpu
                 DataSpace<simDim> localSuperCells(subGrid.getLocalDomain().size / SuperCellSize::toRT());
                 localResult = std::make_unique<GridBufferType>(localSuperCells);
 
-                /* create folder for hdf5 files*/
-                pmacc::Filesystem::get().createDirectoryWithPermissions(foldername);
+                GridController<simDim>& gc = Environment<simDim>::get().GridController();
+                if(gc.getGlobalRank() == 0)
+                {
+                    /* Only one rank is allowed to create the directory.
+                     * All ranks participate the IO therefore selecting rank zero is fine.
+                     */
+                    pmacc::Filesystem::get().createDirectoryWithPermissions(foldername);
+                }
             }
         }
 

@@ -1126,16 +1126,26 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
 
                         Environment<>::get().PluginConnector().setNotificationPeriod(this, emplaced->second.periods());
 
-                        /** create output directory */
-                        pmacc::Filesystem::get().createDirectoryWithPermissions(outputDirectory);
+                        if(gc.getGlobalRank() == 0)
+                        {
+                            /* Only one rank is allowed to create the directory.
+                             * All ranks participate the IO therefore selecting rank zero is fine.
+                             */
+                            pmacc::Filesystem::get().createDirectoryWithPermissions(outputDirectory);
+                        }
                     }
                     else if(not tomlSourcesSpecified && notifyPeriodSpecified)
                     {
                         std::string const& notifyPeriod = m_help->notifyPeriod.get(id);
                         Environment<>::get().PluginConnector().setNotificationPeriod(this, notifyPeriod);
 
-                        /** create output directory */
-                        pmacc::Filesystem::get().createDirectoryWithPermissions(outputDirectory);
+                        if(gc.getGlobalRank() == 0)
+                        {
+                            /* Only one rank is allowed to create the directory.
+                             * All ranks participate the IO therefore selecting rank zero is fine.
+                             */
+                            pmacc::Filesystem::get().createDirectoryWithPermissions(outputDirectory);
+                        }
                     }
                     else
                     {

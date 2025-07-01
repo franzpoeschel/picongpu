@@ -318,9 +318,6 @@ namespace picongpu
 
             if(activatePlugin)
             {
-                /** create dir */
-                pmacc::Filesystem::get().createDirectoryWithPermissions("phaseSpace");
-
                 uint32_t const r_element = axis_element.space;
 
                 /* CORE + BORDER elements for spatial bins */
@@ -381,6 +378,12 @@ namespace picongpu
                     std::vector<int> ranks(
                         std::lower_bound(planeReduceRootRanks.begin(), planeReduceRootRanks.end(), 0),
                         planeReduceRootRanks.end());
+
+                    if(static_cast<int>(gc.getGlobalRank()) == ranks.front())
+                    {
+                        /** only one rank is creating the output directory */
+                        pmacc::Filesystem::get().createDirectoryWithPermissions("phaseSpace");
+                    }
 
                     MPI_CHECK(MPI_Comm_group(MPI_COMM_WORLD, &world_group));
                     MPI_CHECK(MPI_Group_incl(world_group, ranks.size(), ranks.data(), &new_group));

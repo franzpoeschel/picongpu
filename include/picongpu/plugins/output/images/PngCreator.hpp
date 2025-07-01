@@ -101,6 +101,10 @@ namespace picongpu
         }
 
     private:
+        /** Write image to disk
+         *
+         * @attention Only one MPI rank is allowed to call this method.
+         */
         template<typename T_DataType>
         void createImage(std::shared_ptr<std::vector<T_DataType>> imageBuffer, MessageHeader const header);
 
