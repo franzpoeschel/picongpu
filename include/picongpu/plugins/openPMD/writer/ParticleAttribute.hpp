@@ -34,6 +34,8 @@
 #    include <pmacc/traits/GetNComponents.hpp>
 #    include <pmacc/traits/Resolve.hpp>
 
+#    include <algorithm>
+
 namespace picongpu
 {
     namespace openPMD
@@ -166,6 +168,15 @@ namespace picongpu
                     {
                         ::openPMD::RecordComponent recordComponent
                             = components > 1 ? record[name_lookup[d]] : record[::openPMD::MeshRecordComponent::SCALAR];
+
+                        /*
+                         * storeChunk() on constant components (this includes empty datasets) are illegal, so skip in
+                         * that case.
+                         */
+                        if(std::ranges::any_of(recordComponent.getExtent(), [](auto const e) { return e == 0; }))
+                        {
+                            continue;
+                        }
 
                         recordComponent.storeChunk<ComponentType>(
                             ::openPMD::Offset{globalOffset},
