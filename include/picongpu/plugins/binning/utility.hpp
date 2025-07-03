@@ -76,7 +76,7 @@ namespace picongpu
             constexpr auto tupleMapHelper(
                 std::index_sequence<Is...>,
                 std::tuple<Args...> const& tuple,
-                Functor&& functor) noexcept
+                Functor&& functor)
             {
                 return pmacc::memory::tuple::make_tuple(std::forward<Functor>(functor)(std::get<Is>(tuple))...);
             }
@@ -86,7 +86,7 @@ namespace picongpu
          * @brief create a new tuple from the return value of a functor applied on all arguments of a tuple
          */
         template<typename... Args, typename Functor>
-        constexpr auto tupleMap(std::tuple<Args...> const& tuple, Functor&& functor) noexcept
+        constexpr auto tupleMap(std::tuple<Args...> const& tuple, Functor&& functor)
         {
             return detail::tupleMapHelper(
                 std::make_index_sequence<sizeof...(Args)>{},
@@ -95,7 +95,7 @@ namespace picongpu
         }
 
         template<typename... Args>
-        constexpr auto createTuple(Args&&... args) noexcept
+        constexpr auto createTuple(Args&&... args)
         {
             return std::make_tuple(std::forward<Args>(args)...);
         }
@@ -107,6 +107,22 @@ namespace picongpu
             return std::unique_ptr<std::remove_cvref_t<decltype(*ptr)>>(ptr);
         }
 
+        template<typename, template<typename...> typename>
+        struct is_specialization_of : std::false_type
+        {
+        };
+
+        template<template<typename...> typename Template, typename... Args>
+        struct is_specialization_of<Template<Args...>, Template> : std::true_type
+        {
+        };
+
+        // TODO reverse this order
+        template<typename T, template<typename...> typename Template>
+        inline constexpr bool is_specialization_of_v = is_specialization_of<T, Template>::value;
+
+        template<typename T, template<typename...> typename Template>
+        concept IsSpecializationOf = is_specialization_of_v<T, Template>;
 
     } // namespace plugins::binning
 } // namespace picongpu

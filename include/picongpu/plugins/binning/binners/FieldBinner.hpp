@@ -79,7 +79,7 @@ namespace picongpu
                             [&](auto&&... extras)
                             {
                                 return pmacc::memory::tuple::make_tuple(
-                                    std::forward<decltype(fields)>(fields)...,
+                                    transformFieldInfo(std::forward<decltype(fields)>(fields))...,
                                     std::forward<decltype(extras)>(extras)...);
                             },
                             this->binningData.extraData);

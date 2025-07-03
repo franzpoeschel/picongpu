@@ -233,10 +233,8 @@ namespace picongpu
 
             // doc-include-start: fieldTuple
             // Bring the fields together in a tuple
-            DataConnector& dc = Environment<>::get().DataConnector();
-            auto fieldsTuple = createTuple(
-                dc.get<FieldB>(FieldB::getName())->getDeviceDataBox(),
-                dc.get<FieldTmp>(FieldTmp::getUniqueId(0))->getDeviceDataBox());
+            auto fieldsTuple
+                = createTuple(FieldInfo<FieldB>(FieldB::getName()), FieldInfo<FieldTmp>(FieldTmp::getUniqueId(0)));
             // doc-include-end: fieldTuple
 
             /**
