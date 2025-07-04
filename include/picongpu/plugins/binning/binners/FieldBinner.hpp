@@ -64,7 +64,12 @@ namespace picongpu
                 auto const localOffset = Environment<simDim>::get().SubGrid().getLocalDomain().offset;
                 auto& mv = MovingWindow::getInstance();
                 auto const windowOffset = mv.getMovingWindowOriginPositionCells(currentStep);
-                auto domainInfo = DomainInfo<BinningType::Field>(currentStep, globalOffset, localOffset, windowOffset);
+                auto domainInfo = DomainInfo<BinningType::Field>(
+                    currentStep,
+                    globalOffset,
+                    localOffset,
+                    mapper.getGuardingSuperCells(),
+                    windowOffset);
 
                 auto const axisKernels = tupleMap(
                     this->binningData.axisTuple,

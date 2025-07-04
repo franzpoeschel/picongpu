@@ -222,7 +222,13 @@ For example,
 
 Fields are passed to addFieldBinner in the form of a tuple. This is just a collection of ``FieldInfo`` and is of arbitrary size.
 Users can make a fields tuple by using the ``createTuple()`` function and passing in the objects as arguments.
-The functors receive the fields in the form of the field data box, in the order they are passed in the tuple.
+The functors receive the fields in the form of the field data box, which is the field data on the current GPU including the guard cells, in the order they are passed in the tuple.
+
+.. literalinclude:: ../../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
+   :language: c++
+   :start-after: doc-include-start: fieldBox
+   :end-before: doc-include-end: fieldBox
+   :dedent:
 
 .. note::
 

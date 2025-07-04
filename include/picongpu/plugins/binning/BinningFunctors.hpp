@@ -114,8 +114,9 @@ namespace picongpu
                 T_Mapping const& mapper) const
             {
                 DataSpace<simDim> const superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
+                auto const guardingSuperCells = mapper.getGuardingSuperCells();
                 // supercell index relative to the border origin
-                auto const physicalSuperCellIdx = superCellIdx - mapper.getGuardingSuperCells();
+                auto const physicalSuperCellIdx = superCellIdx - guardingSuperCells;
                 /**
                  * Init the Domain info, here because of the possibility of a moving window
                  */
@@ -203,8 +204,9 @@ namespace picongpu
             {
                 /* multi-dimensional offset vector from local domain origin on GPU in units of super cells */
                 pmacc::DataSpace<simDim> const superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
+                auto const guardingSuperCells = mapper.getGuardingSuperCells();
                 // supercell index relative to the border origin
-                auto const physicalSuperCellIdx = superCellIdx - mapper.getGuardingSuperCells();
+                auto const physicalSuperCellIdx = superCellIdx - guardingSuperCells;
 
                 domainInfo.fillDeviceData(physicalSuperCellIdx);
                 auto const functorParticle = FunctorParticle<T_AtomicOp>{};
@@ -322,8 +324,9 @@ namespace picongpu
                 constexpr uint32_t cellsPerSupercell = pmacc::math::CT::volume<SuperCellSize>::type::value;
 
                 DataSpace<simDim> const superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
+                auto const guardingSuperCells = mapper.getGuardingSuperCells();
                 // supercell index relative to the border origin
-                auto const physicalSuperCellIdx = superCellIdx - mapper.getGuardingSuperCells();
+                auto const physicalSuperCellIdx = superCellIdx - guardingSuperCells;
 
                 using SuperCellSize = typename T_Mapping::SuperCellSize;
 

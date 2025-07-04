@@ -57,6 +57,8 @@ namespace picongpu
             pmacc::DataSpace<simDim> localOffset;
             /** Offset of domain simulated by current block wrt the border */
             pmacc::DataSpace<simDim> blockCellOffset;
+            /** Size of the guard region around the local domain in cells */
+            pmacc::DataSpace<simDim> guardSize;
             /** Moving window offset accurate to sub-cell position */
             pmacc::math::Vector<float_64, simDim> windowOffset;
 
@@ -67,10 +69,12 @@ namespace picongpu
                 uint32_t simStep,
                 pmacc::DataSpace<simDim> gOffset,
                 pmacc::DataSpace<simDim> lOffset,
+                pmacc::DataSpace<simDim> guardingSuperCells,
                 pmacc::math::Vector<float_64, simDim> wOffset)
                 : currentStep{simStep}
                 , globalOffset{gOffset}
                 , localOffset{lOffset}
+                , guardSize{guardingSuperCells * SuperCellSize::toRT()}
                 , windowOffset{wOffset}
             {
             }
@@ -97,6 +101,8 @@ namespace picongpu
              *  window and is not discretized to the cell grid
              */
             MOVING_WINDOW,
+            // origin of the current ("my") GPU, including guards
+            LOCAL_WITH_GUARDS
         };
 
         enum class PositionPrecision
@@ -142,16 +148,17 @@ namespace picongpu
                 uint32_t simStep,
                 pmacc::DataSpace<simDim> gOffset,
                 pmacc::DataSpace<simDim> lOffset,
+                pmacc::DataSpace<simDim> guardingSuperCells,
                 pmacc::math::Vector<float_64, simDim> windowOffset)
-                : DomainInfoBase(simStep, gOffset, lOffset, windowOffset)
+                : DomainInfoBase(simStep, gOffset, lOffset, guardingSuperCells, windowOffset)
             {
             }
 
             DINLINE void fillDeviceData(
                 pmacc::DataSpace<simDim> physicalSuperCellIdx,
-                pmacc::DataSpace<simDim> localCellIdx)
+                pmacc::DataSpace<simDim> localCellIndex)
             {
-                localCellIdx = localCellIdx;
+                localCellIdx = localCellIndex;
                 DomainInfoBase::fillDeviceData(physicalSuperCellIdx);
             }
 
@@ -162,6 +169,10 @@ namespace picongpu
             {
                 auto relative_cellpos = blockCellOffset;
 
+                if constexpr(T_Origin == DomainOrigin::LOCAL_WITH_GUARDS)
+                {
+                    relative_cellpos = relative_cellpos + guardSize;
+                }
                 if constexpr(T_Origin == DomainOrigin::GLOBAL)
                 {
                     relative_cellpos = relative_cellpos + localOffset;
@@ -196,8 +207,9 @@ namespace picongpu
                 uint32_t simStep,
                 pmacc::DataSpace<simDim> gOffset,
                 pmacc::DataSpace<simDim> lOffset,
+                pmacc::DataSpace<simDim> guardingSuperCells,
                 pmacc::math::Vector<float_64, simDim> windowOffset)
-                : DomainInfoBase(simStep, gOffset, lOffset, windowOffset)
+                : DomainInfoBase(simStep, gOffset, lOffset, guardingSuperCells, windowOffset)
             {
             }
 
@@ -250,6 +262,10 @@ namespace picongpu
             pmacc::DataSpace<simDim> const cellIdx = pmacc::math::mapToND(SuperCellSize::toRT(), linearCellIdx);
             auto relative_cellpos = domainInfo.blockCellOffset + cellIdx;
 
+            if constexpr(T_Origin == DomainOrigin::LOCAL_WITH_GUARDS)
+            {
+                relative_cellpos = relative_cellpos + domainInfo.guardSize;
+            }
             if constexpr(T_Origin == DomainOrigin::GLOBAL)
             {
                 relative_cellpos = relative_cellpos + domainInfo.localOffset;

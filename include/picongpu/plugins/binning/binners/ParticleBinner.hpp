@@ -110,8 +110,12 @@ namespace picongpu
                 auto const localOffset = Environment<simDim>::get().SubGrid().getLocalDomain().offset;
                 auto& mv = MovingWindow::getInstance();
                 auto const windowOffset = mv.getMovingWindowOriginPositionCells(currentStep);
-                auto domainInfo
-                    = DomainInfo<BinningType::Particle>(currentStep, globalOffset, localOffset, windowOffset);
+                auto domainInfo = DomainInfo<BinningType::Particle>(
+                    currentStep,
+                    globalOffset,
+                    localOffset,
+                    mapper.getGuardingSuperCells(),
+                    windowOffset);
 
                 auto const axisKernels = tupleMap(
                     this->binningData.axisTuple,
@@ -168,8 +172,12 @@ namespace picongpu
                         auto const currentStep = Environment<>::get().SimulationDescription().getCurrentStep();
                         auto& mv = MovingWindow::getInstance();
                         auto const windowOffset = mv.getMovingWindowOriginPositionCells(currentStep);
-                        auto domainInfo
-                            = DomainInfo<BinningType::Particle>(currentStep, globalOffset, localOffset, windowOffset);
+                        auto domainInfo = DomainInfo<BinningType::Particle>(
+                            currentStep,
+                            globalOffset,
+                            localOffset,
+                            mapper.getGuardingSuperCells(),
+                            windowOffset);
 
                         auto const axisKernels = tupleMap(
                             binner->binningData.axisTuple,

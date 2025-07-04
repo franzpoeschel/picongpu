@@ -10,9 +10,12 @@
 
 namespace picongpu::plugins::binning
 {
-    /** @brief Struct to hold information about a field
-     *  @tparam Field The type of the field
+    /**
+     *  @brief Struct to hold information about a field
+     *
      *  The constructor takes a id which describes how to get the field from the DataConnector
+     *  @tparam Field The type of the field
+     *
      */
     template<typename Field>
     struct FieldInfo
