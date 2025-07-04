@@ -40,6 +40,7 @@
 #pragma once
 
 #include "picongpu/particles/param.hpp"
+#include "picongpu/particles/particleToGrid/ComputeGridValuePerFrame.def"
 #include "picongpu/particles/particleToGrid/derivedAttributes/DerivedAttributes.def"
 
 namespace picongpu
