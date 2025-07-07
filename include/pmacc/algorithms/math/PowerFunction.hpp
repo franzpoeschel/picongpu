@@ -27,12 +27,12 @@
 #    include "pmacc/static_assert.hpp"
 #endif
 
+#include <concepts>
 #include <cstdint>
-#include <type_traits>
 
 namespace pmacc::math
 {
-    /** power function for integer exponents, constexpr
+    /** power function for non negative integer exponents, constexpr
      *
      * @tparam T_Type return and accumulation data type
      * @tparam T_Exp exponent data type, must be an unsigned integral type, default uint32_t
@@ -40,17 +40,20 @@ namespace pmacc::math
      * @param x base
      * @param exp exponent
      */
-    template<typename T_Type, typename T_Exp = uint32_t>
-    HDINLINE constexpr T_Type cPow(T_Type const x, T_Exp const exp)
+    template<typename T_Type, std::unsigned_integral T_Exp = uint32_t>
+    HDINLINE constexpr T_Type cPow(T_Type base, T_Exp exp) noexcept
     {
-        static_assert(
-            std::is_unsigned_v<T_Exp>,
-            "This pow() implementation supports only unsigned integral types for the exponent.");
+        T_Type result{1};
+        while(exp > 0)
+        {
+            if(exp & 1)
+            {
+                result *= base;
+            }
 
-        T_Type result = static_cast<T_Type>(1u);
-        for(T_Exp e = static_cast<T_Exp>(0u); e < exp; e++)
-            // for whatever reason "*=" causes the function to return wrong results, do not ask me ...
-            result = result * x;
+            base *= base;
+            exp >>= 1;
+        }
         return result;
     }
 
