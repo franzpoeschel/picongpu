@@ -209,11 +209,15 @@ namespace picongpu
 
         void checkpoint(uint32_t currentStep, std::string const& checkpointDirectory) override
         {
-            /*
-             * Create folder for openPMD checkpoint files.
-             * openPMD would also do it automatically, but let's keep things explicit.
-             */
-            pmacc::Filesystem::get().createDirectoryWithPermissions(checkpointDirectory + "/" + this->foldername);
+            GridController<simDim>& gc = Environment<simDim>::get().GridController();
+            if(gc.getGlobalRank() == 0)
+            {
+                /*
+                 * Create folder for openPMD checkpoint files.
+                 * openPMD would also do it automatically, but let's keep things explicit.
+                 */
+                pmacc::Filesystem::get().createDirectoryWithPermissions(checkpointDirectory + "/" + this->foldername);
+            }
             auto dataSize = this->dBufLeftParsCalorimeter->capacityND();
             HBufCalorimeter hBufLeftParsCalorimeter(dataSize);
             HBufCalorimeter hBufTotal(dataSize);
@@ -356,8 +360,12 @@ namespace picongpu
                 this->calorimeterFrameVecY,
                 this->calorimeterFrameVecZ);
 
-            /* create folder for openPMD files*/
-            pmacc::Filesystem::get().createDirectoryWithPermissions(this->foldername);
+            bool const isIORank = this->allGPU_reduce->hasResult(mpi::reduceMethods::Reduce());
+            if(isIORank)
+            {
+                /* create folder for openPMD files*/
+                pmacc::Filesystem::get().createDirectoryWithPermissions(this->foldername);
+            }
 
             // set how often the plugin should be executed while PIConGPU is running
             Environment<>::get().PluginConnector().setNotificationPeriod(this, m_help->notifyPeriod.get(m_id));

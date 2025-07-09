@@ -34,35 +34,36 @@ namespace pmacc
     class Filesystem
     {
     public:
-        /**
-         * Create directory with default permissions
+        /** Create directory with default permissions
+         *
+         * @attention Only one MPI rank is allowed to call this method.
          *
          * @param dir name of directory
          */
         void createDirectory(std::string const dir) const;
-        /**
-         * Set 755 permissions for a directory
+        /** Set 755 permissions for a directory
+         *
+         * @attention Only one MPI rank is allowed to call this method.
          *
          * @param dir name of directory
          */
         void setDirectoryPermissions(std::string const dir) const;
 
-        /**
-         * Create directory and set 755 permissions by root rank.
+        /** Create directory and set 755 permissions by root rank.
+         *
+         * @attention Only one MPI rank is allowed to call this method.
          *
          * @param dir name of directory
          */
         void createDirectoryWithPermissions(std::string const dir) const;
 
-        /**
-         * Strip path from absolute or relative paths to filenames
+        /** Strip path from absolute or relative paths to filenames
          *
          * @param path and filename
          */
         std::string basename(std::string const pathFilename) const;
 
-        /**
-         * Returns the instance of the filesystem class.
+        /** Returns the instance of the filesystem class.
          *
          * This class is a singleton class.
          *

@@ -46,15 +46,9 @@ namespace pmacc
 
     void Filesystem::createDirectoryWithPermissions(std::string const dir) const
     {
-        auto const mpiRank = Environment<>::get().EnvironmentController().getCommunicator().getRank();
-        bool const isRootRank = mpiRank == 0;
-
-        if(isRootRank)
-        {
-            createDirectory(dir);
-            /* must be set by only one process to avoid races */
-            setDirectoryPermissions(dir);
-        }
+        createDirectory(dir);
+        /* must be set by only one process to avoid races */
+        setDirectoryPermissions(dir);
     }
 
     std::string Filesystem::basename(std::string const pathFilename) const
