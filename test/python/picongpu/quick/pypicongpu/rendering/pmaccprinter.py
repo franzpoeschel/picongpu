@@ -70,6 +70,9 @@ CODE_SNIPPETS = {
     #        "trunc": (???, "pmacc::math::trunc(x)"),
     #        "lround": (???, "pmacc::math::lround(x)"),
     #        "llround": (???, "pmacc::math::llround(x)"),
+    # Sinc can be used but isn't translated into the pmacc equivalent
+    # but the defining formula.
+    # Bessel functions are available upon request...
 }
 
 

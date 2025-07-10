@@ -89,12 +89,8 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
             raise ValueError("Z: boundary condition not supported")
 
         g = grid.Grid3D()
-        g.cell_size_x_si = self.get_cell_size()[0]
-        g.cell_size_y_si = self.get_cell_size()[1]
-        g.cell_size_z_si = self.get_cell_size()[2]
-        g.cell_cnt_x = self.number_of_cells[0]
-        g.cell_cnt_y = self.number_of_cells[1]
-        g.cell_cnt_z = self.number_of_cells[2]
+        g.cell_size_x_si, g.cell_size_y_si, g.cell_size_z_si = self.get_cell_size()
+        g.cell_cnt_x, g.cell_cnt_y, g.cell_cnt_z = self.number_of_cells
         g.boundary_condition_x = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[0]]
         g.boundary_condition_y = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[1]]
         g.boundary_condition_z = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[2]]

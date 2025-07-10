@@ -39,7 +39,7 @@ class Gaussian:
         self.distributions = {
             "predefined": picmi.GaussianDistribution(**self.parameters),
             "free_form": picmi.AnalyticDistribution(
-                lambda x, y, z: self.free_form(y, cell_size_y=1.0, **self.parameters)
+                lambda x, y, z: self.free_form(y, cell_size_y=CELL_SIZE[1], **self.parameters)
             ),
         }
 
@@ -57,9 +57,9 @@ class Gaussian:
         factor,
     ):
         # apparently, our SI position is the centre of the cell
-        y += -0.5 * CELL_SIZE[1]
+        y += -0.5 * cell_size_y
         # The last term undoes the shift to the cell origin.
-        vacuum_y = int(vacuum_front / CELL_SIZE[1]) * CELL_SIZE[1] - 0.5 * CELL_SIZE[1]
+        vacuum_y = int(vacuum_front / cell_size_y) * cell_size_y - 0.5 * cell_size_y
 
         exponent = sympy.Piecewise(
             (sympy.Abs((y - center_front) / sigma_front), y < center_front),
