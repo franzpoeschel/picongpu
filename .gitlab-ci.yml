@@ -1,5 +1,5 @@
 include:
-  - local: '/share/ci/pypicongpu.yml'
+  - local: "/share/ci/pypicongpu.yml"
 
 stages:
   - validate
@@ -179,7 +179,7 @@ pypicongpu-generate-full-matrix:
     paths:
       - compile.yml
   tags:
-      - x86_64
+    - x86_64
   interruptible: true
 
 pypicongpu-full-matrix:

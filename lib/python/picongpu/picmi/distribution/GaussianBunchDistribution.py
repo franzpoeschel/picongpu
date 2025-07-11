@@ -40,7 +40,7 @@ class GaussianBunchDistribution(picmistandard.PICMI_GaussianBunchDistribution):
     def picongpu_get_rms_velocity_si(self) -> typing.Tuple[float, float, float]:
         return tuple(self.rms_velocity)
 
-    def get_as_pypicongpu(self) -> species.operation.densityprofile.DensityProfile:
+    def get_as_pypicongpu(self, grid) -> species.operation.densityprofile.DensityProfile:
         # @todo respect boundaries, Brian Marre, 2023
         profile = object()
         profile.lower_bound = (-math.inf, -math.inf, -math.inf)

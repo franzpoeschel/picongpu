@@ -93,7 +93,7 @@ class TestDistribution(unittest.TestCase):
             sigma_rear=5.0e-6,
             power=4.0,
             factor=-1.0,
-            vacuum_cells_front=50,
+            vacuum_front=50 * 9.07264e-5 / 2048,
             density=8e24,
         )
         self._compile_distribution(gaussian_dist)

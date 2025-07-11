@@ -12,7 +12,14 @@ from . import constants
 
 from . import diagnostics
 
-from .distribution import FoilDistribution, UniformDistribution, GaussianDistribution, CylindricalDistribution
+from .distribution import (
+    FoilDistribution,
+    UniformDistribution,
+    GaussianDistribution,
+    CylindricalDistribution,
+    AnalyticDistribution,
+)
+
 from .interaction import Interaction
 from .interaction.ionization.fieldionization import (
     ADK,
@@ -41,6 +48,7 @@ __all__ = [
     "FoilDistribution",
     "UniformDistribution",
     "GaussianDistribution",
+    "AnalyticDistribution",
     "ADK",
     "ADKVariant",
     "BSI",

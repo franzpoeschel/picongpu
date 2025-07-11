@@ -46,7 +46,7 @@ gaussianProfile = picmi.distribution.GaussianDistribution(
     sigma_rear=8.0e-5,
     factor=-1.0,
     power=4.0,
-    vacuum_cells_front=50,
+    vacuum_front=50 * cellSize[1],
 )
 
 solver = picmi.ElectromagneticSolver(grid=grid, method="Yee")

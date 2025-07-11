@@ -12,6 +12,7 @@ import picmistandard
 
 import typeguard
 import typing
+import numpy as np
 
 """
 note on rms_velocity:
@@ -40,7 +41,7 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
     def picongpu_get_rms_velocity_si(self) -> typing.Tuple[float, float, float]:
         return tuple(self.rms_velocity)
 
-    def get_as_pypicongpu(self) -> species.operation.densityprofile.DensityProfile:
+    def get_as_pypicongpu(self, grid) -> species.operation.densityprofile.DensityProfile:
         util.unsupported("fill in", self.fill_in)
         util.unsupported("lower bound", self.lower_bound, (None, None, None))
         util.unsupported("upper bound", self.upper_bound, (None, None, None))
@@ -107,3 +108,29 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
         drift = species.operation.momentum.Drift()
         drift.fill_from_velocity(tuple(self.directed_velocity))
         return drift
+
+    def __call__(self, x, y, z):
+        # We do this to get the correct shape after broadcasting:
+        result = 0.0 * (x + y + z)
+
+        pre_plasma_ramp = (
+            np.exp((y - self.front) / self.exponential_pre_plasma_length)
+            if self.exponential_pre_plasma_length is not None
+            else 0.0
+        ) + result
+        pre_plasma_mask = (y < self.front) * (y > self.front - self.exponential_pre_plasma_cutoff)
+
+        post_plasma_ramp = (
+            np.exp(((self.front + self.thickness) - y) / self.exponential_post_plasma_length)
+            if self.exponential_post_plasma_length is not None
+            else 0.0
+        ) + result
+        post_plasma_mask = (y > self.front + self.thickness) * (
+            y < self.front + self.thickness + self.exponential_post_plasma_cutoff
+        )
+
+        result[pre_plasma_mask] = pre_plasma_ramp[pre_plasma_mask]
+        result[post_plasma_mask] = post_plasma_ramp[post_plasma_mask]
+        result[(y >= self.front) * (y <= self.front + self.thickness)] = 1.0
+
+        return self.density * result

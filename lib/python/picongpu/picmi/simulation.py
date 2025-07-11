@@ -226,7 +226,7 @@ class Simulation(picmistandard.PICMI_Simulation):
             for profile, picmi_species_list in picmi_species_by_profile.items():
                 op = pypicongpu.species.operation.SimpleDensity()
                 op.ppc = layout.n_macroparticles_per_cell
-                op.profile = profile.get_as_pypicongpu()
+                op.profile = profile.get_as_pypicongpu(self.solver.grid)
                 op.layout = layout.get_as_pypicongpu()
                 op.layout.ppc = layout.n_macroparticles_per_cell
 

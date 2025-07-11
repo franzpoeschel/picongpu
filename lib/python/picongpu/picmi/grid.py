@@ -42,17 +42,23 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
         # continue with regular init
         super().__init__(**kw)
 
+    def get_cell_size(self):
+        return (
+            (self.upper_bound[0] - self.lower_bound[0]) / self.number_of_cells[0],
+            (self.upper_bound[1] - self.lower_bound[1]) / self.number_of_cells[1],
+            (self.upper_bound[2] - self.lower_bound[2]) / self.number_of_cells[2],
+        )
+
     def get_as_pypicongpu(self):
         # todo check
         if any(bound != 0.0 for bound in self.lower_bound):
             raise ValueError(
-                "A lower bound different from 0,0,0 is not supported in PIConGPU. " f"You gave {self.lower_bound}."
+                f"A lower bound different from 0,0,0 is not supported in PIConGPU. You gave {self.lower_bound}."
             )
         if self.lower_boundary_conditions != self.upper_boundary_conditions:
             raise ValueError(
                 "upper and lower boundary conditions must be equal (can only be chosen by axis, not by direction)"
             )
-
         util.unsupported("moving window", self.moving_window_velocity)
         util.unsupported("refined regions", self.refined_regions, [])
         util.unsupported("lower bound (particles)", self.lower_bound_particles, self.lower_bound)
@@ -83,12 +89,8 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
             raise ValueError("Z: boundary condition not supported")
 
         g = grid.Grid3D()
-        g.cell_size_x_si = (self.upper_bound[0] - self.lower_bound[0]) / self.number_of_cells[0]
-        g.cell_size_y_si = (self.upper_bound[1] - self.lower_bound[1]) / self.number_of_cells[1]
-        g.cell_size_z_si = (self.upper_bound[2] - self.lower_bound[2]) / self.number_of_cells[2]
-        g.cell_cnt_x = self.number_of_cells[0]
-        g.cell_cnt_y = self.number_of_cells[1]
-        g.cell_cnt_z = self.number_of_cells[2]
+        g.cell_size_x_si, g.cell_size_y_si, g.cell_size_z_si = self.get_cell_size()
+        g.cell_cnt_x, g.cell_cnt_y, g.cell_cnt_z = self.number_of_cells
         g.boundary_condition_x = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[0]]
         g.boundary_condition_y = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[1]]
         g.boundary_condition_z = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[2]]
@@ -107,7 +109,7 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
                     raise ValueError("number of gpus must be positive integer")
             g.n_gpus = tuple(self.picongpu_n_gpus)
         else:
-            raise ValueError("picongpu_n_gpus was neither None, " "a 1-integer-list or a 3-integer-list")
+            raise ValueError("picongpu_n_gpus was neither None, a 1-integer-list or a 3-integer-list")
 
         if self.picongpu_grid_dist is not None:
             for i in range(3):
