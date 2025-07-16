@@ -1,9 +1,8 @@
 #pragma once
 
-#include "picongpu/plugins/binning/utility.hpp"
-
 #include <pmacc/Environment.hpp>
 #include <pmacc/dataManagement/DataConnector.hpp>
+#include <pmacc/traits/IsSpecializationOf.hpp>
 
 #include <string>
 #include <string_view>
@@ -33,9 +32,9 @@ namespace picongpu::plugins::binning
         }
     };
 
-    auto transformFieldInfo(auto&& arg) -> decltype(auto)
+    decltype(auto) transformFieldInfo(auto&& arg)
     {
-        if constexpr(IsSpecializationOf<std::decay_t<decltype(arg)>, FieldInfo>)
+        if constexpr(pmacc::concepts::SpecializationOf<std::decay_t<decltype(arg)>, FieldInfo>)
         {
             pmacc::DataConnector& dc = pmacc::Environment<>::get().DataConnector();
             return dc
