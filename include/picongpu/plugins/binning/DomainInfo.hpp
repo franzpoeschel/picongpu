@@ -184,18 +184,25 @@ namespace picongpu
 
                 auto pos = localCellIdx + relative_cellpos;
 
+                using DistanceReturnType = std::common_type_t<
+                    typename std::decay_t<decltype(sim.si.getCellSize())>::type,
+                    typename std::decay_t<decltype(pos)>::type>;
+
                 if constexpr(T_Units == PositionUnits::SI)
                 {
-                    return precisionCast<typename std::decay_t<decltype(sim.si.getCellSize())>::type>(pos)
-                           * sim.si.getCellSize().shrink<simDim>();
+                    return precisionCast<DistanceReturnType>(pos)
+                           * precisionCast<DistanceReturnType>(sim.si.getCellSize().shrink<simDim>());
                 }
-                if constexpr(T_Units == PositionUnits::PIC)
+                else if constexpr(T_Units == PositionUnits::PIC)
                 {
-                    return precisionCast<typename std::decay_t<decltype(sim.pic.getCellSize())>::type>(pos)
-                           * sim.pic.getCellSize().shrink<simDim>();
+                    return precisionCast<DistanceReturnType>(pos)
+                           * precisionCast<DistanceReturnType>(sim.pic.getCellSize().shrink<simDim>());
                 }
-
-                return pos;
+                // else T_Units == PositionUnits::Cell
+                else
+                {
+                    return pos;
+                }
             }
         };
 
@@ -296,32 +303,43 @@ namespace picongpu
                 if constexpr(T_Units == PositionUnits::SI)
                 {
                     auto cellSize = sim.si.getCellSize().shrink<simDim>();
-                    return precisionCast<typename std::decay_t<decltype(cellSize)>::type>(pos) * cellSize;
+                    return precisionCast<DistanceReturnType>(pos) * precisionCast<DistanceReturnType>(cellSize);
                 }
                 else if constexpr(T_Units == PositionUnits::PIC)
                 {
                     auto cellSize = sim.pic.getCellSize().shrink<simDim>();
-                    return precisionCast<typename std::decay_t<decltype(cellSize)>::type>(pos) * cellSize;
+                    return precisionCast<DistanceReturnType>(pos) * precisionCast<DistanceReturnType>(cellSize);
                 }
+                // else T_Units == PositionUnits::Cell
                 else
                 {
                     return pos;
                 }
             }
+            // T_Precision == PositionPrecision::Cell
             else
             {
+                using DistanceReturnType = std::common_type_t<
+                    typename std::decay_t<decltype(sim.si.getCellSize())>::type,
+                    typename std::decay_t<decltype(relative_cellpos)>::type>;
+
                 if constexpr(T_Units == PositionUnits::SI)
                 {
                     auto cellSize = sim.si.getCellSize().shrink<simDim>();
-                    return precisionCast<typename std::decay_t<decltype(cellSize)>::type>(relative_cellpos) * cellSize;
+                    return precisionCast<DistanceReturnType>(relative_cellpos)
+                           * precisionCast<DistanceReturnType>(cellSize);
                 }
-                if constexpr(T_Units == PositionUnits::PIC)
+                else if constexpr(T_Units == PositionUnits::PIC)
                 {
                     auto cellSize = sim.pic.getCellSize().shrink<simDim>();
-                    return precisionCast<typename std::decay_t<decltype(cellSize)>::type>(relative_cellpos) * cellSize;
+                    return precisionCast<DistanceReturnType>(relative_cellpos)
+                           * precisionCast<DistanceReturnType>(cellSize);
                 }
-
-                return relative_cellpos;
+                // else T_Units == PositionUnits::Cell
+                else
+                {
+                    return relative_cellpos;
+                }
             }
         }
     } // namespace plugins::binning
