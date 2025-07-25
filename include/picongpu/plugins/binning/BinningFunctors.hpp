@@ -105,14 +105,12 @@ namespace picongpu
                 auto const& worker,
                 T_HistBox binningBox,
                 auto particlesBox,
-                pmacc::DataSpace<simDim> const& localOffset,
-                pmacc::DataSpace<simDim> const& globalOffset,
+                DomainInfo<BinningType::Particle> domainInfo,
                 auto const& axisTuple,
                 T_DepositionFunctor const& quantityFunctor,
                 DataSpace<T_nAxes> const& extents,
                 auto const& userFunctorData,
                 auto const& filter,
-                uint32_t const currentStep,
                 T_Mapping const& mapper) const
             {
                 DataSpace<simDim> const superCellIdx(mapper.getSuperCellIndex(worker.blockDomIdxND()));
@@ -121,8 +119,7 @@ namespace picongpu
                 /**
                  * Init the Domain info, here because of the possibility of a moving window
                  */
-                auto const domainInfo
-                    = DomainInfo<BinningType::Particle>{currentStep, globalOffset, localOffset, physicalSuperCellIdx};
+                domainInfo.fillDeviceData(physicalSuperCellIdx);
 
                 auto const functorParticle = FunctorParticle<T_AtomicOp>{};
 
@@ -194,14 +191,12 @@ namespace picongpu
                 T_Worker const& worker,
                 T_HistBox binningBox,
                 TParticlesBox particlesBox,
-                pmacc::DataSpace<simDim> const& localOffset,
-                pmacc::DataSpace<simDim> const& globalOffset,
+                DomainInfo<BinningType::Particle> domainInfo,
                 T_AxisTuple const& axisTuple,
                 T_DepositionFunctor const& quantityFunctor,
                 DataSpace<T_nAxes> const& extents,
                 auto const& userFunctorData,
                 auto const& filter,
-                uint32_t const currentStep,
                 pmacc::DataSpace<simDim> const& beginCellIdxLocal,
                 pmacc::DataSpace<simDim> const& endCellIdxLocal,
                 T_Mapping const& mapper) const
@@ -211,8 +206,7 @@ namespace picongpu
                 // supercell index relative to the border origin
                 auto const physicalSuperCellIdx = superCellIdx - mapper.getGuardingSuperCells();
 
-                auto const domainInfo
-                    = DomainInfo<BinningType::Particle>{currentStep, globalOffset, localOffset, physicalSuperCellIdx};
+                domainInfo.fillDeviceData(physicalSuperCellIdx);
                 auto const functorParticle = FunctorParticle<T_AtomicOp>{};
 
                 auto forEachParticle
@@ -317,13 +311,11 @@ namespace picongpu
             DINLINE void operator()(
                 auto const& worker,
                 T_HistBox binningBox,
-                pmacc::DataSpace<simDim> const& localOffset,
-                pmacc::DataSpace<simDim> const& globalOffset,
+                DomainInfo<BinningType::Field> domainInfo,
                 auto const& axisTuple,
                 auto const& userFunctorData,
                 T_DepositionFunctor const& quantityFunctor,
                 DataSpace<T_nAxes> const& extents,
-                uint32_t const currentStep,
                 T_Mapping const& mapper) const
             {
                 using SuperCellSize = typename T_Mapping::SuperCellSize;
@@ -348,12 +340,7 @@ namespace picongpu
                         /**
                          * Init the Domain info, here because of the possibility of a moving window
                          */
-                        auto const domainInfo = DomainInfo<BinningType::Field>{
-                            currentStep,
-                            globalOffset,
-                            localOffset,
-                            physicalSuperCellIdx,
-                            localCellIndex};
+                        domainInfo.fillDeviceData(physicalSuperCellIdx, localCellIndex);
 
                         functorCell(
                             worker,

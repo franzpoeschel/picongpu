@@ -108,6 +108,10 @@ namespace picongpu
 
                 auto const globalOffset = Environment<simDim>::get().SubGrid().getGlobalDomain().offset;
                 auto const localOffset = Environment<simDim>::get().SubGrid().getLocalDomain().offset;
+                auto& mv = MovingWindow::getInstance();
+                auto const windowOffset = mv.getMovingWindowOriginPositionCells(currentStep);
+                auto domainInfo
+                    = DomainInfo<BinningType::Particle>(currentStep, globalOffset, localOffset, windowOffset);
 
                 auto const axisKernels = tupleMap(
                     this->binningData.axisTuple,
@@ -123,14 +127,12 @@ namespace picongpu
                     .config(mapper.getGridDim(), particlesBox)(
                         binningBox,
                         particlesBox,
-                        localOffset,
-                        globalOffset,
+                        domainInfo,
                         axisKernels,
                         this->binningData.depositionData.functor,
                         this->binningData.axisExtentsND,
                         extraData,
                         fs.filter,
-                        currentStep,
                         mapper);
             }
 
@@ -160,6 +162,11 @@ namespace picongpu
 
                         auto const globalOffset = Environment<simDim>::get().SubGrid().getGlobalDomain().offset;
                         auto const localOffset = Environment<simDim>::get().SubGrid().getLocalDomain().offset;
+                        auto const currentStep = Environment<>::get().SimulationDescription().getCurrentStep();
+                        auto& mv = MovingWindow::getInstance();
+                        auto const windowOffset = mv.getMovingWindowOriginPositionCells(currentStep);
+                        auto domainInfo
+                            = DomainInfo<BinningType::Particle>(currentStep, globalOffset, localOffset, windowOffset);
 
                         auto const axisKernels = tupleMap(
                             binner->binningData.axisTuple,
@@ -188,14 +195,12 @@ namespace picongpu
                             .config(mapper.getGridDim(), particlesBox)(
                                 binningBox,
                                 particlesBox,
-                                localOffset,
-                                globalOffset,
+                                domainInfo,
                                 axisKernels,
                                 binner->binningData.depositionData.functor,
                                 binner->binningData.axisExtentsND,
                                 extraData,
                                 fs.filter,
-                                Environment<>::get().SimulationDescription().getCurrentStep(),
                                 beginExternalCellsLocal,
                                 endExternalCellsLocal,
                                 mapper);

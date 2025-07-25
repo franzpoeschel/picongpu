@@ -62,6 +62,9 @@ namespace picongpu
 
                 auto const globalOffset = Environment<simDim>::get().SubGrid().getGlobalDomain().offset;
                 auto const localOffset = Environment<simDim>::get().SubGrid().getLocalDomain().offset;
+                auto& mv = MovingWindow::getInstance();
+                auto const windowOffset = mv.getMovingWindowOriginPositionCells(currentStep);
+                auto domainInfo = DomainInfo<BinningType::Field>(currentStep, globalOffset, localOffset, windowOffset);
 
                 auto const axisKernels = tupleMap(
                     this->binningData.axisTuple,
@@ -86,13 +89,11 @@ namespace picongpu
                 PMACC_LOCKSTEP_KERNEL(functorBlock)
                     .config(mapper.getGridDim(), SuperCellSize{})(
                         binningBox,
-                        localOffset,
-                        globalOffset,
+                        domainInfo,
                         axisKernels,
                         userFunctorData,
                         this->binningData.depositionData.functor,
                         this->binningData.axisExtentsND,
-                        currentStep,
                         mapper);
             }
         };
