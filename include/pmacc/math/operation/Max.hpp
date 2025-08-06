@@ -22,6 +22,7 @@
 #pragma once
 
 #include "pmacc/algorithms/math.hpp"
+#include "pmacc/math/operation/traits.hpp"
 #include "pmacc/mpi/GetMPI_Op.hpp"
 #include "pmacc/types.hpp"
 
@@ -45,6 +46,28 @@ namespace pmacc
                     dst = alpaka::math::max(worker.getAcc(), dst, src);
                 }
             };
+
+            namespace traits
+            {
+                template<>
+                struct AlpakaAtomicOp<Max>
+                {
+                    using type = alpaka::AtomicMax;
+                };
+
+                /**
+                 * @brief The neutral element for Max is the minimum representable number.
+                 * @tparam T_Value The value type for which to get the neutral element.
+                 */
+                template<typename T_Value>
+                struct NeutralElement<Max, T_Value>
+                {
+                    static constexpr T_Value value = T_Value(std::numeric_limits<T_Value>::min());
+                };
+
+
+            } // namespace traits
+
         } // namespace operation
     } // namespace math
 } // namespace pmacc
