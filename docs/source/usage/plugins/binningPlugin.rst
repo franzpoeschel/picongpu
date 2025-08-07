@@ -355,17 +355,17 @@ Attribute                   Description
 
 Accumulation
 ============
-The binning plugin provides flexible options for accumulating data within bins. Instead of simply adding values to accumulate in a bin, users can utilize any alpaka atomic operation. This includes operations such as subtraction, minimum, maximum, AND, OR, XOR, and more.
+The binning plugin provides flexible options for accumulating data within bins. Instead of simply adding values to accumulate in a bin, users can utilize PMacc operations. This includes operations such as addition, multiplication, minimum, maximum, bitwise AND, bitwise OR, and bitwise XOR.
 This flexibility enables users to tailor the accumulation process to their specific needs. For instance, you might want to track the minimum or maximum value of a certain property within each bin.
-A list of available alpaka atomic operations can be found in the `alpaka documentation <https://alpaka-group.github.io/alpaka/Op_8hpp.html>`_. 
+A list of available PMacc operations can be found under `/include/pmacc/math/operation`. Only operations defining the `getMPI_Op` function and the `AlpakaAtomicOp` and `NeutralElement` traits are supported.
 
 .. note::
 
-	Only binary atomics on arithmetic types are supported. In particular CAS operations are not supported.
+	The operation is only viable if it has a corresponding MPI reduction operation, a neutral element, and a cooresponding alpaka operation. Only binary atomics on arithmetic types are supported. In particular CAS operations are not supported.
 
 
 The accumulate operation is passed as a template parameter to the `createBinner` functions.
-For example, to use the maximum operation for accumulation, you would pass the corresponding Alpaka atomic operation as a template parameter:
+For example, to use the maximum operation for accumulation, you would pass the corresponding PMacc operation as a template parameter:
 
 .. literalinclude:: ../../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
    :language: c++
@@ -373,7 +373,7 @@ For example, to use the maximum operation for accumulation, you would pass the c
    :end-before: doc-include-end: atomics
    :dedent:
 
-Similarly, you can use other alpaka atomic operations such as `alpaka::AtomicMin`, `alpaka::AtomicSub`, `alpaka::AtomicAnd`, `alpaka::AtomicOr`, `alpaka::AtomicXor`, etc.
+Similarly, you can use other PMacc operations such as `pmacc::math::operation::Min`, `pmacc::math::operation::Add`, `pmacc::math::operation::BitwiseAnd`, `pmacc::math::operation::BitwiseOr`, `pmacc::math::operation::BitwiseXor`, etc.
 
 
 Example binning plugin usage: Laser Wakefield electron spectrometer

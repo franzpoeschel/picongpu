@@ -79,6 +79,9 @@ namespace picongpu
                  */
                 this->histBuffer = std::make_unique<HostDeviceBuffer<TDepositedQuantity, 1>>(
                     binningData.axisExtentsND.productOfComponents());
+                this->histBuffer->getDeviceBuffer().setValue(
+                    pmacc::math::operation::traits::
+                        NeutralElement<typename TBinningData::AccumulationOp, TDepositedQuantity>::value);
                 isMain = reduce.hasResult(mpi::reduceMethods::Reduce());
             }
 
@@ -135,7 +138,7 @@ namespace picongpu
                     auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
 
                     reduce(
-                        pmacc::math::operation::Add(),
+                        typename TBinningData::AccumulationOp(),
                         hReducedBuffer->data(),
                         this->histBuffer->getHostBuffer().data(),
                         bufferExtent[0],
@@ -157,7 +160,9 @@ namespace picongpu
                             currentStep);
                     }
                     // reset device buffer
-                    this->histBuffer->getDeviceBuffer().setValue(TDepositedQuantity(0.0));
+                    this->histBuffer->getDeviceBuffer().setValue(
+                        pmacc::math::operation::traits::
+                            NeutralElement<typename TBinningData::AccumulationOp, TDepositedQuantity>::value);
                     accumulateCounter = 0;
                 }
             }
@@ -186,7 +191,7 @@ namespace picongpu
                 auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
 
                 reduce(
-                    pmacc::math::operation::Add(),
+                    typename TBinningData::AccumulationOp(),
                     hReducedBuffer->data(),
                     this->histBuffer->getHostBuffer().data(),
                     bufferExtent[0], // this is a 1D dataspace, just access it?

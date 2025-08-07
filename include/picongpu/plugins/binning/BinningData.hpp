@@ -24,6 +24,8 @@
 #    include "picongpu/plugins/common/openPMDDefaultExtension.hpp"
 
 #    include <pmacc/dimensions/DataSpace.hpp>
+#    include <pmacc/math/operation/traits.hpp>
+#    include <pmacc/mpi/GetMPI_Op.hpp>
 
 #    include <cstdint>
 #    include <functional>
@@ -55,6 +57,11 @@ namespace picongpu
             typename T_AxisTuple,
             typename T_DepositionData,
             typename T_Extras>
+        requires requires {
+            typename pmacc::math::operation::traits::AlpakaAtomicOp_t<T_AccumulateOp>;
+            pmacc::mpi::getMPI_Op<T_AccumulateOp>();
+            pmacc::math::operation::traits::NeutralElement_v<T_AccumulateOp, typename T_DepositionData::QuantityType>;
+        }
         struct BinningDataBase
         {
             using DepositedQuantityType = typename T_DepositionData::QuantityType;
