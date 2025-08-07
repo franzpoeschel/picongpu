@@ -77,8 +77,8 @@ struct GenerateEvals
     using float_T = templates::twtstight::float_T;
 
     HINLINE GenerateEvals()
-        : testEfield(0.0, 800.0e-9, 30.0e-15, 2.5e-6, 5. * (PI / 180.), 1.0, 0.0, false, 30. * (PI / 180.))
-        , testBfield(0.0, 800.0e-9, 30.0e-15, 2.5e-6, 5. * (PI / 180.), 1.0, 0.0, false, 30. * (PI / 180.))
+        : testEfield(0.0, 800.0e-9, 30.0e-15, 2.5e-6, 5. * (PI / 180.), 1.0, 0.0, false, 0.0, 30. * (PI / 180.))
+        , testBfield(0.0, 800.0e-9, 30.0e-15, 2.5e-6, 5. * (PI / 180.), 1.0, 0.0, false, 0.0, 30. * (PI / 180.))
     {
     }
 
@@ -131,6 +131,7 @@ struct twtsTightNumberTest
             1.0,
             0.0,
             false,
+            0.0,
             30. * (PI / 180.));
         templates::twtstight::BField const testBfield = templates::twtstight::BField(
             0.0,
@@ -141,6 +142,7 @@ struct twtsTightNumberTest
             1.0,
             0.0,
             false,
+            0.0,
             30. * (PI / 180.));
         using float_T = templates::twtstight::float_T;
         using float3_T = ::pmacc::math::Vector<float_T, 3u>;

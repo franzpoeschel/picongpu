@@ -94,6 +94,7 @@ namespace picongpu
                           Params::BETA_0,
                           Params::TDELAY,
                           Params::AUTO_TDELAY,
+                          Params::Z_OFFSET_SI,
                           Params::Polarization)
                 {
                 }
@@ -136,6 +137,7 @@ namespace picongpu
                           Params::BETA_0,
                           Params::TDELAY,
                           Params::AUTO_TDELAY,
+                          Params::Z_OFFSET_SI,
                           -Params::Polarization)
                 {
                 }
@@ -178,6 +180,7 @@ namespace picongpu
                           Params::BETA_0,
                           Params::TDELAY,
                           Params::AUTO_TDELAY,
+                          Params::Z_OFFSET_SI,
                           Params::Polarization)
                 {
                 }
@@ -220,6 +223,7 @@ namespace picongpu
                           Params::BETA_0,
                           Params::TDELAY,
                           Params::AUTO_TDELAY,
+                          Params::Z_OFFSET_SI,
                           -Params::Polarization)
                 {
                 }
