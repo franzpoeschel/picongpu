@@ -13,6 +13,7 @@ import math
 
 import typeguard
 import typing
+import logging
 
 
 @typeguard.typechecked
@@ -173,6 +174,10 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser):
                                        / (self.propagation_direction[1] * constants.c) 
                                        / self.duration) # unit: multiple of laser pulse duration
         # @todo extend this to other propagation directions than +y
+        if pypicongpu_laser.pulse_init < 3.:
+            logging.warning("set centroid_position and propagation_direction indicate that laser "
+                            + "initalization might be too short.\n"
+                            + f"Details: laser.pulse_init = {pypicongpu_laser.pulse_init} < 3")
 
         pypicongpu_laser.polarization_type = self.picongpu_polarization_type
         pypicongpu_laser.polarization_direction = self.polarization_direction
