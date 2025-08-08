@@ -12,11 +12,15 @@
       "type": "object",
       "required": [
         "gaussian",
+        "dispersive",
         "planewave"
       ],
       "unevaluatedProperties": false,
       "properties": {
         "gaussian": {
+          "type": "boolean"
+        },
+        "dispersive": {
           "type": "boolean"
         },
         "planewave": {
@@ -29,6 +33,9 @@
       "anyOf": [
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.GaussianLaser"
+        },
+        {
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.DispersivePulseLaser"
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.PlaneWaveLaser"

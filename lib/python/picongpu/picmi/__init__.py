@@ -7,6 +7,7 @@ from .grid import Cartesian3DGrid
 from .solver import ElectromagneticSolver
 from .gaussian_laser import GaussianLaser
 from .plane_wave_laser import PlaneWaveLaser
+from .dispersive_pulse_laser import DispersivePulseLaser
 from .species import Species
 from .layout import PseudoRandomLayout, GriddedLayout
 from . import constants
@@ -43,6 +44,7 @@ __all__ = [
     "ElectromagneticSolver",
     "GaussianLaser",
     "PlaneWaveLaser",
+    "DispersivePulseLaser",
     "Species",
     "PseudoRandomLayout",
     "GriddedLayout",
