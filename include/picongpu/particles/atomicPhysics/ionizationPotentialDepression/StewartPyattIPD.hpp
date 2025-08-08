@@ -227,7 +227,9 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
 
             // (eV * sim.unit.length()) / (eV * sim.unit.length()), not weighted
             // unitless, not weighted
-            float_X const K = constFactor / (temperatureTimesk_Boltzman * debyeLength);
+            float_X const K = (debyeLength <= 0._X || temperatureTimesk_Boltzman <= 0._X)
+                                  ? 0._X
+                                  : constFactor / (temperatureTimesk_Boltzman * debyeLength);
 
             // unitless, not weighted
             float_X const zStar = zStarBox(superCellFieldIdx);

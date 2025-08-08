@@ -30,6 +30,7 @@
 #include <pmacc/particles/algorithm/ForEach.hpp>
 
 #include <cstdint>
+#include <limits>
 
 namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::kernel
 {
@@ -135,7 +136,10 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                 {
                     /* unit: (unitless * weight / typicalNumParticlesPerMacroParticle)
                      *  / (unitless * weight / typicalNumParticlesPerMacroParticle) = unitless */
-                    zStarBox(superCellFieldIdx) = sumChargeNumberSquared / sumChargeNumber;
+                    zStarBox(superCellFieldIdx)
+                        = (math::abs(sumChargeNumber) < std::numeric_limits<float_X>::epsilon())
+                              ? 0._X
+                              : sumChargeNumberSquared / sumChargeNumber;
 
                     // eV / unit_energy
                     constexpr float_X eV = sim.pic.get_eV();
@@ -144,7 +148,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                      *  / (weight / typicalNumParticlesPerMacroParticle) = unit_energy
                      *
                      * k_Boltzman * Temperature, energy equivalent to the local temperature */
-                    float_X const temperatureEnergy_PIC = sumTemperatureTerm / sumWeightAllNormalized;
+                    float_X const temperatureEnergy_PIC
+                        = (sumWeightAllNormalized > 0._X) ? sumTemperatureTerm / sumWeightAllNormalized : 0._X;
 
                     // (eV / unit_energy) * unit_energy = eV
                     temperatureEnergyBox(superCellFieldIdx) = eV * temperatureEnergy_PIC;
@@ -169,9 +174,12 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                      *
                      * unit:  sqrt(unit_length^2 / unit_energy / typicalNumParticlesPerMacroParticle
                      *  * unit_energy / (1/typicalNumParticlesPerMacroParticle)) = unit_length */
-                    debyeLengthBox(superCellFieldIdx) = math::sqrt(
-                        constFactorDebyeLength * temperatureEnergy_PIC
-                        / (sumChargeNumberSquared + sumWeightElectronNormalized));
+                    debyeLengthBox(superCellFieldIdx)
+                        = (math::abs(sumChargeNumberSquared + sumWeightElectronNormalized) < std::numeric_limits<float_X>::epsilon())
+                              ? -1._X
+                              : math::sqrt(
+                                    constFactorDebyeLength * temperatureEnergy_PIC
+                                    / (sumChargeNumberSquared + sumWeightElectronNormalized));
                 });
         }
     };
