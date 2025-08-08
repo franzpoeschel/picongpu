@@ -138,6 +138,8 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser):
             it using a huygens surface in the box, centroid_y <= 0"
         # @todo implement check that laser field strength sufficiently small
         # at simulation box boundary
+        # @todo extend this to other propagation directions than +y
+
 
         # check polarization vector normalization
 
