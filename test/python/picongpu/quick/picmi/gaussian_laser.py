@@ -51,8 +51,10 @@ class TestPicmiGaussianLaser(unittest.TestCase):
         self.assertEqual([[1, -1], [1, -1], [1, -1]], pypic_laser.huygens_surface_positions)
 
         # computed values
-        self.assertAlmostEqual(-2. *  picmi_laser.centroid_position[1] / picmi_laser.propagation_direction[1] 
-                               / c / picmi_laser.duration, pypic_laser.pulse_init)
+        self.assertAlmostEqual(
+            -2.0 * picmi_laser.centroid_position[1] / picmi_laser.propagation_direction[1] / c / picmi_laser.duration,
+            pypic_laser.pulse_init,
+        )
 
     def test_scalar_values_negative(self):
         """waist, duration and wavelelngth must be > 0"""
