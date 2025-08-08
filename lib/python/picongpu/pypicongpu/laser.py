@@ -5,8 +5,8 @@ Authors: Hannes Troepgen, Brian Edward Marre, Alexander Debus, Julian Lenz
 License: GPLv3+
 """
 
+from .rendering import SelfRegisteringRenderedObject
 from . import util
-from .rendering import RenderedObject
 
 import enum
 import typing
@@ -14,13 +14,19 @@ import typeguard
 import logging
 
 
+class Laser(SelfRegisteringRenderedObject):
+    pass
+
+
 @typeguard.typechecked
-class GaussianLaser(RenderedObject):
+class GaussianLaser(Laser):
     """
     PIConGPU Gaussian Laser
 
     Holds Parameters to specify a gaussian laser
     """
+
+    _name = "gaussian"
 
     class PolarizationType(enum.Enum):
         """represents a polarization of a laser (for PIConGPU)"""
@@ -105,12 +111,14 @@ class GaussianLaser(RenderedObject):
 
 
 @typeguard.typechecked
-class PlaneWaveLaser(RenderedObject):
+class PlaneWaveLaser(Laser):
     """
     PIConGPU Plane Wave Laser
 
     Holds Parameters to specify a plane wave laser
     """
+
+    _name = "planewave"
 
     class PolarizationType(enum.Enum):
         """represents a polarization of a laser (for PIConGPU)"""
