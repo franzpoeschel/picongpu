@@ -106,6 +106,7 @@ namespace picongpu::fields::incidentField
         static constexpr float_64 POLARISATION_DIRECTION_Z = polarisation_direction[2];
     };
 
+    {{#is_gaussian}}
     struct PyPIConGPUGaussianPulseParam : public PyPIConGPULaserBaseParam
     {
         /** Beam waist: distance from the axis where the pulse intensity (E^2)
@@ -141,6 +142,19 @@ namespace picongpu::fields::incidentField
             );
         /** @} */
     };
+    {{/is_gaussian}}
+
+    {{^is_gaussian}}
+    struct PyPIConGPUPlaneWaveParam : public PyPIConGPULaserBaseParam
+    {
+        /** The laser pulse will be initialized PULSE_INIT times of the PULSE_DURATION
+         *
+         *  unit: none
+         */
+        static constexpr float_64 RAMP_INIT = {{{pulse_init}}};
+        static constexpr float_64 LASER_NOFOCUS_CONSTANT_SI = {{{laser_nofocus_constant_si}}};
+    };
+    {{/is_gaussian}}
 
     /** Position in cells of the Huygens surface relative to start of the total domain
      *
@@ -177,7 +191,7 @@ namespace picongpu::fields::incidentField
 
     /**@{*/
     //! Incident field profile types along each boundary, these 6 types (or aliases) are required.
-    using YMin = profiles::GaussianPulse<PyPIConGPUGaussianPulseParam>;
+    using YMin = {{#is_gaussian}}profiles::GaussianPulse<PyPIConGPUGaussianPulseParam>{{/is_gaussian}}{{^is_gaussian}}profiles::PlaneWave<PyPIConGPUPlaneWaveParam>{{/is_gaussian}};
     {{/laser}}
     {{^laser}}
     // no laser defined case
@@ -195,4 +209,4 @@ namespace picongpu::fields::incidentField
     using ZMin = profiles::None;
     using ZMax = profiles::None;
     /**@}*/
-} // namespace picongpu::fields::incidentField
+}
