@@ -29,6 +29,17 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser):
 
         return result
 
+    def crossProduct(self, a: typing.List[float], b: typing.List[float]) -> typing.List[float]:
+        assert len(a) == len(b) == 3, "the cross product is only defined for 3d vectors"
+        return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
+
+    def difference(self, a: typing.List[float], b: typing.List[float]) -> typing.List[float]:
+        assert len(a) == len(b), "the difference between two vectors is only defined if they have the same length"
+        result = []
+        for i in range(len(a)):
+            result.append(a[i] - b[i])
+        return result
+
     @staticmethod
     def testRelativeError(trueValue, testValue, relativeErrorLimit):
         return abs((testValue - trueValue) / trueValue) < relativeErrorLimit
@@ -139,6 +150,14 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser):
             ),
             1e-9,
         ), "polarization vector must be normalized"
+
+        # check that propagation_direction is parallel to the difference of focal_position and centroid_position
+        diff_vec = self.difference(self.focal_position, self.centroid_position)
+        cross_vec = self.crossProduct(diff_vec, self.propagation_direction)
+        length_of_cross_product = self.scalarProduct(cross_vec, cross_vec)
+
+        assert length_of_cross_product < 1e-5, "propagation_direction must connect centroid_position and focus_position"
+        del (diff_vec, cross_vec, length_of_cross_product)  # clean up
 
         pypicongpu_laser = laser.GaussianLaser()
         pypicongpu_laser.wavelength = self.wavelength
