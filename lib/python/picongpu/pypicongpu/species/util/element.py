@@ -115,7 +115,7 @@ class Element(RenderedObject, pydantic.BaseModel):
 
         :return: charge in C
         """
-        return self._store.ions[-1] * scipy.constants.elementary_charge
+        return self._store.number * scipy.constants.elementary_charge
 
     def get_atomic_number(self) -> int:
         return self._store.number
