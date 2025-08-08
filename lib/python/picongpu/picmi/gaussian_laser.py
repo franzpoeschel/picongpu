@@ -169,11 +169,10 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser):
         pypicongpu_laser.phase = self.picongpu_phase
         pypicongpu_laser.E0 = self.E0
 
-        pypicongpu_laser.pulse_init = max(
-            -2 * self.centroid_position[1] / (self.propagation_direction[1] * constants.c) / self.duration,
-            15,
-        )
-        # unit: duration
+        pypicongpu_laser.pulse_init = (-2.0 * self.centroid_position[1] 
+                                       / (self.propagation_direction[1] * constants.c) 
+                                       / self.duration) # unit: multiple of laser pulse duration
+        # @todo extend this to other propagation directions than +y
 
         pypicongpu_laser.polarization_type = self.picongpu_polarization_type
         pypicongpu_laser.polarization_direction = self.polarization_direction
