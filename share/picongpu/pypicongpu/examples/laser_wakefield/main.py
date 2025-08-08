@@ -52,7 +52,7 @@ gaussianProfile = picmi.distribution.GaussianDistribution(
 solver = picmi.ElectromagneticSolver(grid=grid, method="Yee")
 
 laser_duration = 5.0e-15
-pulse_init = 15.
+pulse_init = 15.0
 laser = picmi.GaussianLaser(
     wavelength=0.8e-6,
     waist=5.0e-6 / 1.17741,
