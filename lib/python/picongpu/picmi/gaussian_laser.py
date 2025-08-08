@@ -141,7 +141,6 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser):
         # at simulation box boundary
         # @todo extend this to other propagation directions than +y
 
-
         # check polarization vector normalization
 
         assert self.testRelativeError(
@@ -170,14 +169,16 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser):
         pypicongpu_laser.phase = self.picongpu_phase
         pypicongpu_laser.E0 = self.E0
 
-        pypicongpu_laser.pulse_init = (-2.0 * self.centroid_position[1] 
-                                       / (self.propagation_direction[1] * constants.c) 
-                                       / self.duration) # unit: multiple of laser pulse duration
+        pypicongpu_laser.pulse_init = (
+            -2.0 * self.centroid_position[1] / (self.propagation_direction[1] * constants.c) / self.duration
+        )  # unit: multiple of laser pulse duration
         # @todo extend this to other propagation directions than +y
-        if pypicongpu_laser.pulse_init < 3.:
-            logging.warning("set centroid_position and propagation_direction indicate that laser "
-                            + "initalization might be too short.\n"
-                            + f"Details: laser.pulse_init = {pypicongpu_laser.pulse_init} < 3")
+        if pypicongpu_laser.pulse_init < 3.0:
+            logging.warning(
+                "set centroid_position and propagation_direction indicate that laser "
+                + "initalization might be too short.\n"
+                + f"Details: laser.pulse_init = {pypicongpu_laser.pulse_init} < 3"
+            )
 
         pypicongpu_laser.polarization_type = self.picongpu_polarization_type
         pypicongpu_laser.polarization_direction = self.polarization_direction

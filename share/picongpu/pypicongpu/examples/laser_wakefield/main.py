@@ -211,7 +211,8 @@ if ADD_CUSTOM_INPUT:
     output_configuration = pypicongpu.customuserinput.CustomUserInput()
 
     output_configuration.addToCustomInput(
-        {"openPMD_period": 100, "openPMD_file": "simData", "openPMD_extension": "bp"}, "openPMD plugin configuration"
+        {"openPMD_period": 100, "openPMD_file": "simData", "openPMD_extension": "bp"},
+        "openPMD plugin configuration",
     )
 
     sim.picongpu_add_custom_user_input(output_configuration)
