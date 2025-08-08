@@ -51,10 +51,12 @@ gaussianProfile = picmi.distribution.GaussianDistribution(
 
 solver = picmi.ElectromagneticSolver(grid=grid, method="Yee")
 
+laser_duration = 5.0e-15
+pulse_init = 15.
 laser = picmi.GaussianLaser(
     wavelength=0.8e-6,
     waist=5.0e-6 / 1.17741,
-    duration=5.0e-15,
+    duration=laser_duration,
     propagation_direction=[0.0, 1.0, 0.0],
     polarization_direction=[1.0, 0.0, 0.0],
     focal_position=[
@@ -64,7 +66,7 @@ laser = picmi.GaussianLaser(
     ],
     centroid_position=[
         float(numberCells[0] * cellSize[0] / 2.0),
-        0.0,
+        -0.5 * pulse_init * laser_duration,
         float(numberCells[2] * cellSize[2] / 2.0),
     ],
     picongpu_polarization_type=pypicongpu.laser.GaussianLaser.PolarizationType.CIRCULAR,
