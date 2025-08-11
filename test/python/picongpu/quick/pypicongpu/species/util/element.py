@@ -16,24 +16,19 @@ from picongpu.pypicongpu.rendering import RenderedObject
 class TestElement(unittest.TestCase):
     def setUp(self):
         # create test case data
-        self.test_element = ["H", "#2H", "Cu", "#12C", "C"]
-        self.name = ["H", "D", "Cu", "C", "C"]
-        self.picongpu_names = ["Hydrogen", "Deuterium", "Copper", "Carbon", "Carbon"]
+        self.test_element = ["H", "#2H", "Cu", "#12C", "C", "Ne", "Ar"]
+        self.name = ["H", "D", "Cu", "C", "C", "Ne", "Ar"]
+        self.picongpu_names = ["Hydrogen", "Deuterium", "Copper", "Carbon", "Carbon", "Neon", "Argon"]
         self.mass = [
             1.00794 * scipy.constants.atomic_mass,
             2.014101778 * scipy.constants.atomic_mass,
             63.546 * scipy.constants.atomic_mass,
             12.0 * scipy.constants.atomic_mass,
             12.0107 * scipy.constants.atomic_mass,
+            20.1797 * scipy.constants.atomic_mass,
+            39.95 * scipy.constants.atomic_mass,
         ]
-        self.charge = [
-            1.0 * scipy.constants.elementary_charge,
-            1.0 * scipy.constants.elementary_charge,
-            27.0 * scipy.constants.elementary_charge,
-            6.0 * scipy.constants.elementary_charge,
-            6.0 * scipy.constants.elementary_charge,
-        ]
-        self.atomic_number = [1, 1, 29, 6, 6]
+        self.atomic_number = [1, 1, 29, 6, 6, 10, 18]
 
     def test_parse_openpmd(self):
         valid_test_strings = ["#3H", "#15He", "#1H", "#3He", "#56Cu"]
@@ -78,8 +73,10 @@ class TestElement(unittest.TestCase):
 
     def test_charge(self):
         """all elements have charge"""
-        for openpmd_name, charge in zip(self.test_element, self.charge):
-            self.assertAlmostEqual(Element(openpmd_name).get_charge_si(), charge)
+        for openpmd_name, atomic_number in zip(self.test_element, self.atomic_number):
+            self.assertAlmostEqual(
+                Element(openpmd_name).get_charge_si() / scipy.constants.elementary_charge, atomic_number
+            )
 
     def test_atomic_number(self):
         for openpmd_name, atomic_number in zip(self.test_element, self.atomic_number):
