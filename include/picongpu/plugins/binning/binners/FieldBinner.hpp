@@ -75,7 +75,8 @@ namespace picongpu
                     this->binningData.axisTuple,
                     [&](auto const& axis) -> decltype(auto) { return axis.getAxisKernel(); });
 
-                auto const functorBlock = FieldBinningKernel<typename TBinningData::AccumulationOp>{};
+                auto const functorBlock = FieldBinningKernel<
+                    pmacc::math::operation::traits::AlpakaAtomicOp_t<typename TBinningData::AccumulationOp>>{};
 
                 auto const userFunctorData = std::apply(
                     [&](auto&&... fields)

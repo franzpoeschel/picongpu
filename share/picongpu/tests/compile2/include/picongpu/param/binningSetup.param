@@ -178,7 +178,7 @@ namespace picongpu
 
             // doc-include-start: atomics
             binningCreator
-                .addParticleBinner<alpaka::AtomicMax>(
+                .addParticleBinner<pmacc::math::operation::Max>(
                     "particleBinning",
                     createTuple(ax_timeStep, ax_py),
                     speciesTuple,

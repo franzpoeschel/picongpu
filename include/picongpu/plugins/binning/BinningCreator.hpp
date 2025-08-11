@@ -26,7 +26,7 @@
 #    include "picongpu/plugins/binning/binners/ParticleBinner.hpp"
 #    include "picongpu/plugins/binning/utility.hpp"
 
-#    include <alpaka/atomic/Op.hpp>
+#    include <pmacc/math/operation/Add.hpp>
 
 #    include <memory>
 #    include <vector>
@@ -71,7 +71,7 @@ namespace picongpu
              * @return ParticleBinningData& reference to the created ParticleBinningData object.
              *         This can be used to further configure the binning setup if needed.
              */
-            template<typename T_AccumulateOp = alpaka::AtomicAdd, typename T_Extras = std::tuple<>>
+            template<typename T_AccumulateOp = pmacc::math::operation::Add, typename T_Extras = std::tuple<>>
             auto& addParticleBinner(
                 std::string const& binnerOutputName,
                 auto const& axisTupleObject,
@@ -109,7 +109,7 @@ namespace picongpu
              * @return FieldBinningData& reference to the created FieldBinningData object.
              *         This can be used to further configure the binning setup if needed.
              */
-            template<typename T_AccumulateOp = alpaka::AtomicAdd, typename T_Extras = std::tuple<>>
+            template<typename T_AccumulateOp = pmacc::math::operation::Add, typename T_Extras = std::tuple<>>
             auto& addFieldBinner(
                 std::string const& binnerOutputName,
                 auto const& axisTupleObject,

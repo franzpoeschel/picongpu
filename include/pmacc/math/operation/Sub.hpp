@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include "pmacc/math/operation/traits.hpp"
 #include "pmacc/types.hpp"
 
 namespace pmacc
@@ -43,6 +44,16 @@ namespace pmacc
                     dst -= src;
                 }
             };
+
+            namespace traits
+            {
+                template<>
+                struct AlpakaAtomicOp<Sub>
+                {
+                    using type = alpaka::AtomicSub;
+                };
+            } // namespace traits
+
         } // namespace operation
     } // namespace math
 } // namespace pmacc

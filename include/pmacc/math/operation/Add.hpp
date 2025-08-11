@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include "pmacc/math/operation/traits.hpp"
 #include "pmacc/mpi/GetMPI_Op.hpp"
 #include "pmacc/types.hpp"
 
@@ -44,6 +45,27 @@ namespace pmacc
                     dst += src;
                 }
             };
+
+            namespace traits
+            {
+                template<>
+                struct AlpakaAtomicOp<Add>
+                {
+                    using type = alpaka::AtomicAdd;
+                };
+
+                /**
+                 * @brief The neutral element for addition is 0.
+                 * @tparam T_Value The value type for which to get the neutral element.
+                 */
+                template<typename T_Value>
+                struct NeutralElement<Add, T_Value>
+                {
+                    static constexpr T_Value value = T_Value(0);
+                };
+
+            } // namespace traits
+
         } // namespace operation
     } // namespace math
 } // namespace pmacc

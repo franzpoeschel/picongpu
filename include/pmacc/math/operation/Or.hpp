@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include "pmacc/mpi/GetMPI_Op.hpp"
 #include "pmacc/types.hpp"
 
 #include <cstdint>
@@ -42,3 +43,12 @@ namespace pmacc::math::operation
         }
     };
 } // namespace pmacc::math::operation
+
+namespace pmacc::mpi
+{
+    template<>
+    HINLINE MPI_Op getMPI_Op<pmacc::math::operation::Or>()
+    {
+        return MPI_LOR;
+    }
+} // namespace pmacc::mpi

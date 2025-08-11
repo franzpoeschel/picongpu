@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Brian Marre
+/* Copyright 2025 Tapish Narwal
  *
  * This file is part of PMacc.
  *
@@ -25,31 +25,50 @@
 #include "pmacc/mpi/GetMPI_Op.hpp"
 #include "pmacc/types.hpp"
 
-#include <cstdint>
-
 namespace pmacc::math::operation
 {
-    //! logical and
-    struct And
+    //! Bitwise or
+    struct BitwiseOr
     {
-        HDINLINE void operator()(uint32_t& destination, uint32_t const& source) const
+        HDINLINE void operator()(auto& destination, auto const& source) const
         {
-            destination = static_cast<uint32_t>(static_cast<bool>(destination) && static_cast<bool>(source));
+            destination |= source;
         }
 
         template<typename T_Worker>
-        HDINLINE void operator()(T_Worker const&, uint32_t& destination, uint32_t const& source) const
+        HDINLINE void operator()(T_Worker const&, auto& destination, auto const& source) const
         {
-            destination = static_cast<uint32_t>(static_cast<bool>(destination) && static_cast<bool>(source));
+            destination |= source;
         }
     };
+
+    namespace traits
+    {
+        template<>
+        struct AlpakaAtomicOp<BitwiseOr>
+        {
+            using type = alpaka::AtomicOr;
+        };
+
+        /**
+         * @brief The neutral element for BitwiseOr is 0.
+         * @tparam T_Value The value type for which to get the neutral element.
+         */
+        template<typename T_Value>
+        struct NeutralElement<BitwiseOr, T_Value>
+        {
+            static constexpr T_Value value = T_Value(0);
+        };
+
+    } // namespace traits
+
 } // namespace pmacc::math::operation
 
 namespace pmacc::mpi
 {
     template<>
-    HINLINE MPI_Op getMPI_Op<pmacc::math::operation::And>()
+    HINLINE MPI_Op getMPI_Op<pmacc::math::operation::BitwiseOr>()
     {
-        return MPI_LAND;
+        return MPI_BOR;
     }
 } // namespace pmacc::mpi
