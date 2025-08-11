@@ -17,10 +17,13 @@
       ],
       "unevaluatedProperties": false,
       "properties": {
-        "gaussian": {
+        "dispersive": {
           "type": "boolean"
         },
-        "dispersive": {
+        "fromOpenPMDPulse": {
+          "type": "boolean"
+        },
+        "gaussian": {
           "type": "boolean"
         },
         "planewave": {
@@ -32,10 +35,13 @@
       "description": "configuration data of laser",
       "anyOf": [
         {
-          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.GaussianLaser"
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.DispersivePulseLaser"
         },
         {
-          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.DispersivePulseLaser"
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.FromOpenPMDPulseLaser"
+        },
+        {
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.GaussianLaser"
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.PlaneWaveLaser"

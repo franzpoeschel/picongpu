@@ -156,7 +156,7 @@ class TestGaussianLaser(unittest.TestCase):
     def test_translation(self):
         """is translated to context object"""
         # note: implicitly checks against schema
-        context = self.laser.get_rendering_context()
+        context = self.laser.get_rendering_context()["data"]
         self.assertEqual(context["wave_length_si"], self.laser.wavelength)
         self.assertEqual(context["waist_si"], self.laser.waist)
         self.assertEqual(context["pulse_duration_si"], self.laser.duration)

@@ -1,12 +1,12 @@
 """
 This file is part of PIConGPU.
-Copyright 2021-2024 PIConGPU contributors
+Copyright 2025 PIConGPU contributors
 Authors: Julian Lenz
 License: GPLv3+
 """
 
-from ..pypicongpu import laser
-from . import constants
+from ...pypicongpu import laser
+from .. import constants
 
 import math
 

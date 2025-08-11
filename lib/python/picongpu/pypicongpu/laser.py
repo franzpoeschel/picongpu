@@ -277,3 +277,63 @@ class DispersivePulseLaser(Laser):
                 },
             },
         }
+
+
+@typeguard.typechecked
+class FromOpenPMDPulseLaser(Laser):
+    """
+    PIConGPU FromOpenPMDPulseLaser
+
+    Holds Parameters to specify a laser pulse from an OpenPMD file
+    """
+
+    _name = "fromOpenPMDPulse"
+
+    propagation_direction = util.build_typesafe_property(typing.List[float])
+    """propagation direction (normalized vector)"""
+    polarization_direction = util.build_typesafe_property(typing.List[float])
+    """direction of polarization (normalized vector)"""
+    file_path = util.build_typesafe_property(str)
+    """File path to the OpenPMD file containing the pulse data"""
+    iteration = util.build_typesafe_property(int)
+    """Iteration in the OpenPMD file to use"""
+    dataset_name = util.build_typesafe_property(str)
+    """Name of the dataset in the OpenPMD file containing the pulse data"""
+    datatype = util.build_typesafe_property(str)
+    """Data type of the pulse data"""
+    time_offset_si = util.build_typesafe_property(float)
+    """Time offset in seconds to apply to the pulse data [s]"""
+    polarisationAxisOpenPMD = util.build_typesafe_property(str)
+    """Polarization axis name in the OpenPMD file"""
+    propagationAxisOpenPMD = util.build_typesafe_property(str)
+    """Propagation axis name in the OpenPMD file"""
+    huygens_surface_positions = util.build_typesafe_property(typing.List[typing.List[int]])
+    """Position in cells of the Huygens surface relative to start/
+       edge(negative numbers) of the total domain"""
+
+    def _get_serialized(self) -> dict:
+        return {
+            "propagation_direction": list(map(lambda x: {"component": x}, self.propagation_direction)),
+            "polarization_direction": list(map(lambda x: {"component": x}, self.polarization_direction)),
+            "file_path": self.file_path,
+            "iteration": self.iteration,
+            "dataset_name": self.dataset_name,
+            "datatype": self.datatype,
+            "time_offset_si": self.time_offset_si,
+            "polarisationAxisOpenPMD": self.polarisationAxisOpenPMD,
+            "propagationAxisOpenPMD": self.propagationAxisOpenPMD,
+            "huygens_surface_positions": {
+                "row_x": {
+                    "negative": self.huygens_surface_positions[0][0],
+                    "positive": self.huygens_surface_positions[0][1],
+                },
+                "row_y": {
+                    "negative": self.huygens_surface_positions[1][0],
+                    "positive": self.huygens_surface_positions[1][1],
+                },
+                "row_z": {
+                    "negative": self.huygens_surface_positions[2][0],
+                    "positive": self.huygens_surface_positions[2][1],
+                },
+            },
+        }

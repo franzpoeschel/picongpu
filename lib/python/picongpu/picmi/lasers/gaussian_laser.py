@@ -5,8 +5,8 @@ Authors: Hannes Troepgen, Brian Edward Marre, Alexander Debus, Richard Pausch
 License: GPLv3+
 """
 
-from ..pypicongpu import util, laser
-from . import constants
+from ...pypicongpu import util, laser
+from .. import constants
 
 import picmistandard
 import math

@@ -5,8 +5,8 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
-from ..pypicongpu import laser
-from . import constants
+from ...pypicongpu import laser
+from .. import constants
 
 import math
 

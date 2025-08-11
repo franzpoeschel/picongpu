@@ -65,7 +65,9 @@ namespace picongpu::fields::incidentField
 {
     {{#laser}}
     {{#laser.data}}
-    /** Base structure for parameters of all lasers
+
+    {{^laser.typeID.fromOpenPMDPulse}}
+    /** Base structure for parameters of most lasers
      *
      * The particular used parameter structures do not have to inherit this, but must define same members
      * with same meaning.
@@ -106,6 +108,7 @@ namespace picongpu::fields::incidentField
         static constexpr float_64 POLARISATION_DIRECTION_Y = polarisation_direction[1];
         static constexpr float_64 POLARISATION_DIRECTION_Z = polarisation_direction[2];
     };
+    {{/laser.typeID.fromOpenPMDPulse}}
 
     {{#typeID.gaussian}}
     struct PyPIConGPUGaussianPulseParam : public PyPIConGPULaserBaseParam
@@ -233,6 +236,41 @@ namespace picongpu::fields::incidentField
     };
     {{/typeID.dispersive}}
 
+    {{#typeID.fromOpenPMDPulse}}
+    struct PyPIConGPUFromOpenPMDPulseParam
+    {
+        static constexpr char const* filename = "{{{file_path}}}";
+        static constexpr uint32_t iteration = {{{iteration}}};
+        static constexpr char const* datasetEName = "{{{dataset_name}}}";
+
+        using dataType = {{{datatype}}};
+
+        static constexpr char const* polarisationAxisOpenPMD = "{{{polarisationAxisOpenPMD}}}";
+        static constexpr char const* propagationAxisOpenPMD = "{{{propagationAxisOpenPMD}}}";
+
+        static constexpr float_64 propagation_direction[3u] = {
+                {{#propagation_direction}}
+                {{{component}}}{{^_last}},{{/_last}}
+                {{/propagation_direction}}
+            };
+        static constexpr float_64 DIRECTION_X = propagation_direction[0];
+        static constexpr float_64 DIRECTION_Y = propagation_direction[1];
+        static constexpr float_64 DIRECTION_Z = propagation_direction[2];
+
+        static constexpr float_64 polarisation_direction[3u] = {
+                {{#polarization_direction}}
+                {{{component}}}{{^_last}},{{/_last}}
+                {{/polarization_direction}}
+            };
+        static constexpr float_64 POLARISATION_DIRECTION_X = polarisation_direction[0];
+        static constexpr float_64 POLARISATION_DIRECTION_Y = polarisation_direction[1];
+        static constexpr float_64 POLARISATION_DIRECTION_Z = polarisation_direction[2];
+
+        static constexpr float_64 TIME_DELAY_SI = {{{time_offset_si}}};
+    };
+    {{/typeID.fromOpenPMDPulse}}
+
+
     /** Position in cells of the Huygens surface relative to start of the total domain
      *
      * The position is set as an offset, in cells, counted from the start of the total domain.
@@ -277,6 +315,9 @@ namespace picongpu::fields::incidentField
     {{#typeID.dispersive}}
     using YMin = profiles::DispersivePulse<PyPIConGPUDispersivePulseParam>;
     {{/typeID.dispersive}}
+    {{#typeID.fromOpenPMDPulse}}
+    using YMin = profiles::FromOpenPMDPulse<PyPIConGPUFromOpenPMDPulseParam>;
+    {{/typeID.fromOpenPMDPulse}}
     {{/laser.data}}
     {{/laser}}
     {{^laser}}
