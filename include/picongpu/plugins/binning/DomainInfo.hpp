@@ -233,7 +233,12 @@ namespace picongpu
 
             template<DomainOrigin Origin, PositionPrecision Precision>
             concept ValidPositionRequest
-                = OneOf<Origin, DomainOrigin::TOTAL, DomainOrigin::LOCAL, DomainOrigin::GLOBAL>
+                = OneOf<
+                      Origin,
+                      DomainOrigin::TOTAL,
+                      DomainOrigin::LOCAL,
+                      DomainOrigin::GLOBAL,
+                      DomainOrigin::LOCAL_WITH_GUARDS>
                   || (Origin == DomainOrigin::MOVING_WINDOW && Precision == PositionPrecision::SUB_CELL);
         } // namespace concepts
 

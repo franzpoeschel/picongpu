@@ -17,6 +17,7 @@
         "energyhistogram",
         "macroparticlecount",
         "png",
+        "binning",
         "checkpoint"
       ],
       "unevaluatedProperties": false,
@@ -34,6 +35,9 @@
           "type": "boolean"
         },
         "png": {
+          "type": "boolean"
+        },
+        "binning": {
           "type": "boolean"
         },
         "checkpoint": {
@@ -58,6 +62,9 @@
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.png.Png"
+        },
+        {
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.binning.Binning"
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.checkpoint.Checkpoint"

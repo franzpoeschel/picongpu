@@ -5,9 +5,8 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
-import sys
-import openpmd_api as opmd
 import numpy as np
+import openpmd_api as opmd
 import pandas as pd
 
 
@@ -57,6 +56,34 @@ def compute_densities_from_particles(series_name):
     return compute_densities_per_setup_and_impl(read_particles(series_name))
 
 
+def _density_into_mesh(df, number_of_cells, cell_size):
+    from_particles = np.zeros(number_of_cells)
+    from_particles[*df.index.to_frame().to_numpy().T] = df["weighting"].to_numpy()
+    return from_particles / np.prod(cell_size)
+
+
+def read_densities_into_mesh(filename, number_of_cells, cell_size):
+    df = (
+        compute_densities_from_particles(filename)
+        .reset_index(drop=False)
+        .rename({"positionOffset_" + key: key for key in "xyz"}, axis=1)
+    )
+
+    for i, key in enumerate("xyz"):
+        df[key] *= 1 / cell_size[i]
+        df[key] = df[key].round()
+
+    return (
+        df.astype(dict(x=int, y=int, z=int))
+        .set_index(["x", "y", "z"])
+        .groupby(["setup", "impl"])
+        .apply(
+            lambda df: _density_into_mesh(df, number_of_cells, cell_size),
+            include_groups=False,
+        )
+    )
+
+
 def compare_particles(series_name):
     """
     Compare particles from the given series and return True if they all compare equal.
@@ -64,9 +91,26 @@ def compare_particles(series_name):
     return compare_particles_per_setup(read_particles(series_name))
 
 
-def main(series_name):
-    compare_particles(series_name)
+def read_binning(filename, cell_size):
+    series = opmd.Series(
+        str(filename),
+        opmd.Access.read_only,
+    )
+    data = series.iterations[0].meshes["Binning"]
+    mesh = data.load_chunk()
+    series.flush()
+    series.close()
+    return mesh / np.prod(cell_size)
 
 
-if __name__ == "__main__":
-    main(sys.argv[1])
+def read_position_check(filename):
+    series = opmd.Series(
+        str(filename),
+        opmd.Access.read_only,
+    )
+    data = series.iterations[0].meshes["Binning"]
+    mesh = data.load_chunk()
+    series.flush()
+    series.close()
+    # There's an under-/overflow bin respectively.
+    return mesh[1]
