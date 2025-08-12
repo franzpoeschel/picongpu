@@ -1,11 +1,11 @@
 """
 This file is part of PIConGPU.
 Copyright 2021-2024 PIConGPU contributors
-Authors: Hannes Troepgen, Brian Edward Marre
+Authors: Hannes Troepgen, Brian Edward Marre, Richard Pausch
 License: GPLv3+
 """
 
-from ..pypicongpu import util, solver
+from ..pypicongpu import util, field_solver
 
 import picmistandard
 import typeguard
@@ -19,9 +19,9 @@ class ElectromagneticSolver(picmistandard.PICMI_ElectromagneticSolver):
     See PICMI spec for full documentation.
     """
 
-    def get_as_pypicongpu(self) -> solver.Solver:
+    def get_as_pypicongpu(self) -> field_solver.Solver:
         solver_by_method = {
-            "Yee": solver.YeeSolver(),
+            "Yee": field_solver.YeeSolver(),
         }
 
         if self.method not in solver_by_method:

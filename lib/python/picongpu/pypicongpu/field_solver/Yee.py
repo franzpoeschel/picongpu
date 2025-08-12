@@ -5,20 +5,10 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-from .rendering import RenderedObject
+from ..rendering import RenderedObject
+from .DefaultSolver import Solver
 
 import typeguard
-
-
-@typeguard.typechecked
-class Solver:
-    """
-    represents a field solver
-
-    Parent class for type safety, does not contain anything.
-    """
-
-    pass
 
 
 @typeguard.typechecked
