@@ -10,6 +10,7 @@ from picongpu import picmi
 import unittest
 from picongpu import pypicongpu
 from math import sqrt
+from scipy.constants import c
 
 
 class TestPicmiGaussianLaser(unittest.TestCase):
@@ -22,7 +23,7 @@ class TestPicmiGaussianLaser(unittest.TestCase):
             propagation_direction=[0, 1, 0],
             polarization_direction=[0, 0, 1],
             focal_position=[5, 4, 5],
-            centroid_position=[5, 0, 5],
+            centroid_position=[5, -1.5, 5],
             E0=5,
             picongpu_laguerre_modes=[2.0, 3.0],
             picongpu_laguerre_phases=[4.0, 5.0],
@@ -50,7 +51,10 @@ class TestPicmiGaussianLaser(unittest.TestCase):
         self.assertEqual([[1, -1], [1, -1], [1, -1]], pypic_laser.huygens_surface_positions)
 
         # computed values
-        self.assertEqual(15, pypic_laser.pulse_init)
+        self.assertAlmostEqual(
+            -2.0 * picmi_laser.centroid_position[1] / picmi_laser.propagation_direction[1] / c / picmi_laser.duration,
+            pypic_laser.pulse_init,
+        )
 
     def test_scalar_values_negative(self):
         """waist, duration and wavelelngth must be > 0"""
@@ -171,7 +175,7 @@ class TestPicmiGaussianLaser(unittest.TestCase):
             2,
             3,
             focal_position=[0, 0, 0],
-            centroid_position=[0, 0, 0],
+            centroid_position=[0, -1, 0],
             propagation_direction=[0, 1, 0],
             polarization_direction=[1, 0, 0],
             E0=1,

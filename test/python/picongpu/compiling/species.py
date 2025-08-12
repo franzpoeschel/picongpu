@@ -6,6 +6,7 @@ License: GPLv3+
 """
 
 from picongpu import picmi
+from scipy.constants import c
 
 import unittest
 
@@ -29,7 +30,7 @@ class TestSpecies(unittest.TestCase):
             a0=8,
             propagation_direction=[0, 1, 0],
             polarization_direction=[1, 0, 0],
-            centroid_position=[0.5 * grid.upper_bound[0], 0, 0.5 * grid.upper_bound[2]],
+            centroid_position=[0.5 * grid.upper_bound[0], -10 * 5.0e-15 / c, 0.5 * grid.upper_bound[2]],
             focal_position=[
                 0.5 * grid.upper_bound[0],
                 4.62e-5,
