@@ -1,4 +1,4 @@
-/* Copyright 2020-2024 Sergei Bastrakov, Rene Widera, Brian Marre
+/* Copyright 2020-2025 Sergei Bastrakov, Rene Widera, Brian Marre, Julian Lenz
  *
  * This file is part of PIConGPU.
  *
@@ -17,46 +17,6 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file incidentField.param
- *
- * Configure incident field profile and offset of the Huygens surface for each boundary.
- *
- * Available profiles:
- *  - profiles::DispersivePulse<>     : Gaussian pulse allowing to set first-, second-, and third-order dispersion
- * in focus. That is, SD, AD, GDD, and TOD, respectively.
- *  - profiles::ExpRampWithPrepulse<> : exponential ramp with prepulse wavepacket with given parameters
- *  - profiles::Free<>                : custom profile with user-provided functors to calculate incident E and B
- *  - profiles::GaussianPulse<>       : Pulse with Gaussian profile in all three dimensions with given parameters
- *  - profiles::None                  : no incident field
- *  - profiles::PlaneWave<>           : plane wave profile with given parameters
- *  - profiles::Polynom<>             : wavepacket with a polynomial temporal intensity shape profile with given
- * parameters
- *  - profiles::Wavepacket<>          : wavepacket with Gaussian spatial and temporal envelope profile with given
- * parameters
- *
- * All profiles but `Free<>` and `None` are parametrized with a profile-specific structure.
- * Their interfaces are defined in the corresponding `.def` files inside directory
- * picongpu/fields/incidentField/profiles/. Note that all these parameter structures inherit common base structures
- * from `BaseParam.def`. Thus, a user-provided structure must also define all members according to the base struct.
- *
- * In the end, this file needs to define `XMin`, `XMax`, `YMin`, `YMax`, `ZMin`, `ZMax` (the latter two can be skipped
- * in 2d) type aliases in namespace `picongpu::fields::incidentField`. Each of them could be a single profile or a
- * typelist of profiles created with `MakeSeq_t`. In case a typelist is used, the resulting field is a sum of
- * effects of all profiles in the list. This file also has to define constexpr array `POSITION` that controls
- * positioning of the generating surface relative to total domain. For example:
- *
- * @code{.cpp}
- * using XMin = profiles::Free<UserFunctorIncidentE, UserFunctorIncidentB>;
- * using XMax = profiles::None;
- * using YMin = MakeSeq_t<profiles::PlaneWave<UserPlaneWaveParams>, profiles::Wavepacket<UserWavepacketParams>>;
- * using YMax = profiles::None;
- * using ZMin = profiles::Polynom<UserPolynomParams>;
- * using ZMax = profiles::GaussianPulse<UserGaussianPulseParams>;
- *
- * constexpr int32_t POSITION[3][2] = { {16, -16}, {16, -16}, {16, -16} };
- * @endcode
- */
-
 #pragma once
 
 #include "picongpu/fields/incidentField/profiles/profiles.def"
@@ -67,11 +27,6 @@ namespace picongpu::fields::incidentField
     {{#laser.data}}
 
     {{^laser.typeID.fromOpenPMDPulse}}
-    /** Base structure for parameters of most lasers
-     *
-     * The particular used parameter structures do not have to inherit this, but must define same members
-     * with same meaning.
-     */
     struct PyPIConGPULaserBaseParam : public profiles::BaseParam
     {
         static constexpr float_64 WAVE_LENGTH_SI = {{{wave_length_si}}}; // m
@@ -113,26 +68,8 @@ namespace picongpu::fields::incidentField
     {{#typeID.gaussian}}
     struct PyPIConGPUGaussianPulseParam : public PyPIConGPULaserBaseParam
     {
-        /** Beam waist: distance from the axis where the pulse intensity (E^2)
-         *              decreases to its 1/e^2-th part,
-         *              at the focus position of the laser
-         * W0_SI = FWHM_of_Intensity / sqrt{ 2* ln(2) }
-         *                             [   1.17741    ]
-         *
-         * unit: meter
-         */
         static constexpr float_64 W0_SI = {{{waist_si}}};
-
-        /** The laser pulse will be initialized PULSE_INIT times of the PULSE_DURATION
-         *
-         *  unit: none
-         */
         static constexpr float_64 PULSE_INIT = {{{pulse_init}}};
-
-        /** Laguerre mode parameters
-         *
-         * @{
-         */
         static constexpr uint32_t numModes = {{{modenumber}}};
         static constexpr auto laguerreModes = floatN_X<numModes+1>(
             {{#laguerre_modes}}
@@ -144,17 +81,12 @@ namespace picongpu::fields::incidentField
             {{{single_laguerre_phase}}}{{^_last}},{{/_last}}
             {{/laguerre_phases}}
             );
-        /** @} */
     };
     {{/typeID.gaussian}}
 
     {{#typeID.planewave}}
     struct PyPIConGPUPlaneWaveParam : public PyPIConGPULaserBaseParam
     {
-        /** The laser pulse will be initialized PULSE_INIT times of the PULSE_DURATION
-         *
-         *  unit: none
-         */
         static constexpr float_64 RAMP_INIT = {{{pulse_init}}};
         static constexpr float_64 LASER_NOFOCUS_CONSTANT_SI = {{{laser_nofocus_constant_si}}};
     };
@@ -163,75 +95,12 @@ namespace picongpu::fields::incidentField
     {{#typeID.dispersive}}
     struct PyPIConGPUDispersivePulseParam : public PyPIConGPULaserBaseParam
     {
-        /** Beam waist: distance from the axis where the pulse intensity (E^2)
-         *              decreases to its 1/e^2-th part,
-         *              at the focus position of the laser
-         * W0_SI = FWHM_of_Intensity / sqrt{ 2* ln(2) }
-         *                             [   1.17741    ]
-         *
-         * unit: meter
-         */
         static constexpr float_64 W0_SI = {{{waist_si}}};
-
-        /** The laser pulse will be initialized PULSE_INIT times of the PULSE_DURATION after
-         * TIME_DELAY_SI.
-         * WATCH OUT! Dispersion parameters may lead to pulse lenghtening
-         * Please ensure to choose a value high enough to cover the whole pulse,
-         * otherwise the Fourier Transformation will misbehave.
-         *
-         *  unit: none
-         */
         static constexpr float_64 PULSE_INIT = {{{pulse_init}}};
-
-        /** Width of the spectral support for the discrete Fourier transform of the pulse's field
-         * from frequency-space domain to time-space domain.
-         * Defined as number of sigmas of the laser pulse spectrum.
-         * NOTE: A too small value will artificially increase the pulse duration and
-         * too high values will increase the time per step during initialization of the pulse.
-         *
-         * unit: none
-         */
         static constexpr float_X SPECTRAL_SUPPORT = {{{spectral_support}}};
-
-        // Dispersion Parameters
-
-        /** SD: spatial dispersion in focus
-         * = d x_0 / d Omega
-         *
-         * Dispersion is along the polarization axis.
-         *
-         * unit: m * s
-         */
         static constexpr float_64 SD_SI = {{{sd_si}}};
-
-        /** AD: angular dispersion in focus
-         * d theta / d Omega, e.g.
-         * AD = tan(alpha_tilt) / Omega_0
-         *
-         * Resulting pulse-front tilt is along the polarization axis.
-         *
-         * unit: rad * s
-         */
         static constexpr float_64 AD_SI = {{{ad_si}}};
-
-        /** GDD: Dispersion of group velocity in focus
-         *     = (d^2 phi / d Omega^2)
-         * with phi being the spectral laser phase.
-         * The pulse's electric field in frequency domain is therefore
-         * ~ exp(-i * 1/2 * GDD*(Omega - Omega_0)^2)
-         *
-         * unit: s^2
-         */
         static constexpr float_64 GDD_SI = {{{gdd_si}}};
-
-        /** TOD: third order dispersion in focus
-         *     = (d^3 phi / d Omega^3)
-         * with phi being the spectral laser phase.
-         * The pulse's electric field in frequency domain is therefore
-         * ~ exp(-i * 1/6 * TOD*(Omega - Omega_0)^3)
-         *
-         * unit: s^3
-         */
         static constexpr float_64 TOD_SI = {{{tod_si}}};
     };
     {{/typeID.dispersive}}
@@ -336,4 +205,4 @@ namespace picongpu::fields::incidentField
     using ZMin = profiles::None;
     using ZMax = profiles::None;
     /**@}*/
-}
+} // namespace picongpu::fields::incidentField

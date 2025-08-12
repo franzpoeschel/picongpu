@@ -5,7 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre, Alexander Debus
 License: GPLv3+
 """
 
-from picongpu.pypicongpu.laser import GaussianLaser
+from picongpu.pypicongpu.laser import GaussianLaser, PolarizationType
 
 import unittest
 import logging
@@ -28,7 +28,7 @@ class TestGaussianLaser(unittest.TestCase):
         self.laser.E0 = 9.0
         self.laser.pulse_init = 1.3
         self.laser.propagation_direction = [0.0, 1.0, 0.0]
-        self.laser.polarization_type = GaussianLaser.PolarizationType.LINEAR
+        self.laser.polarization_type = PolarizationType.LINEAR
         self.laser.polarization_direction = [0.0, 1.0, 0.0]
         self.laser.laguerre_modes = [1.0]
         self.laser.laguerre_phases = [0.0]
@@ -79,8 +79,8 @@ class TestGaussianLaser(unittest.TestCase):
 
     def test_polarization_type(self):
         """polarization type enum sanity checks"""
-        lin = GaussianLaser.PolarizationType.LINEAR
-        circular = GaussianLaser.PolarizationType.CIRCULAR
+        lin = PolarizationType.LINEAR
+        circular = PolarizationType.CIRCULAR
 
         self.assertNotEqual(lin, circular)
 

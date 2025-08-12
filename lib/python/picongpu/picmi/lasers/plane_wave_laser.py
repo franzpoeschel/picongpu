@@ -5,17 +5,19 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
-from ...pypicongpu import laser
-from .. import constants
-
 import math
+import typing
 
 import typeguard
-import typing
+
+from ...pypicongpu import laser
+from .. import constants
+from .base_laser import BaseLaser
+from .polarization_type import PolarizationType
 
 
 @typeguard.typechecked
-class PlaneWaveLaser:
+class PlaneWaveLaser(BaseLaser):
     """
     Specifies a plane wave with a temporal shape
 
@@ -32,9 +34,6 @@ class PlaneWaveLaser:
 
     polarization_direction: unit vector of length 3 of floats
         Direction of polarization [1]
-
-    focal_position: vector of length 3 of floats
-        Position of the laser focus [m]
 
     centroid_position: vector of length 3 of floats
         Position of the laser centroid at time 0 [m]
@@ -60,9 +59,8 @@ class PlaneWaveLaser:
         centroid_position,
         a0=None,
         E0=None,
-        phi0=None,
-        picongpu_phase: float = 0.0,
-        picongpu_polarization_type=(laser.PlaneWaveLaser.PolarizationType.LINEAR),
+        phi0: float = 0.0,
+        picongpu_polarization_type=(PolarizationType.LINEAR),
         picongpu_plateau_duration=0.0,
         # make sure to always place Huygens-surface inside PML-boundaries,
         # default is valid for standard PMLs
@@ -76,96 +74,34 @@ class PlaneWaveLaser:
         ],
         **kw,
     ):
-        assert E0 is not None or a0 is not None, "One of E0 or a0 must be speficied"
-
-        k0 = 2.0 * math.pi / wavelength
-        if E0 is None:
-            E0 = a0 * constants.m_e * constants.c**2 * k0 / constants.q_e
-        if a0 is None:
-            a0 = E0 / (constants.m_e * constants.c**2 * k0 / constants.q_e)
+        if wavelength <= 0:
+            raise ValueError(f"wavelength must be > 0. You gave {wavelength=}.")
+        if duration <= 0:
+            raise ValueError(f"laser pulse duration must be > 0. You gave {duration=}.")
 
         self.wavelength = wavelength
-        self.k0 = k0
+        self.k0 = 2.0 * math.pi / wavelength
         self.duration = duration
         self.centroid_position = centroid_position
         self.propagation_direction = propagation_direction
         self.polarization_direction = polarization_direction
-        self.a0 = a0
-        self.E0 = E0
+        self.a0, self.E0 = self._compute_E0_and_a0(self.k0, E0, a0)
         self.phi0 = phi0
 
-        self.picongpu_phase = picongpu_phase
         self.picongpu_plateau_duration = picongpu_plateau_duration
         self.picongpu_polarization_type = picongpu_polarization_type
         self.picongpu_huygens_surface_positions = picongpu_huygens_surface_positions
 
     """PICMI object for Plane Wave Laser"""
 
-    def scalarProduct(self, a: typing.List[float], b: typing.List[float]) -> float:
-        assert len(a) == len(b), "the scalar product is only defined for two \
-            vector of equal dimension"
-
-        result = 0.0
-        for i in range(len(a)):
-            result += a[i] * b[i]
-
-        return result
-
-    @staticmethod
-    def testRelativeError(trueValue, testValue, relativeErrorLimit):
-        return abs((testValue - trueValue) / trueValue) < relativeErrorLimit
-
     def get_as_pypicongpu(self) -> laser.PlaneWaveLaser:
-        assert self.testRelativeError(
-            1,
-            self.scalarProduct(self.polarization_direction, self.polarization_direction),
-            1e-9,
-        ), "the polarization direction vector must be normalized"
-
-        # check for excessive phase values to avoid numerical precision errors
-        assert abs(self.picongpu_phase) <= 2 * math.pi, "abs(phase) must be < 2*pi"
-
-        # check that initialising from y_min-plane only is sensible
-        assert (
-            self.scalarProduct(self.propagation_direction, [0.0, 1.0, 0.0]) > 0.0
-        ), "laser propagation parallel to the y-plane or pointing outside \
-            from the inside of the simulation box is not supported by this \
-            laser in PIConGPU"
-        assert self.testRelativeError(
-            1,
-            (
-                self.propagation_direction[0] ** 2
-                + self.propagation_direction[1] ** 2
-                + self.propagation_direction[2] ** 2
-            ),
-            1e-9,
-        ), "propagation vector must be normalized"
-
-        # check centroid outside box
-        assert self.centroid_position[1] <= 0, "the laser maximum must be \
-            outside of the \
-            simulation box, otherwise it is impossible to correctly initialize\
-            it using a huygens surface in the box, centroid_y <= 0"
-        # @todo implement check that laser field strength sufficiently small
-        # at simulation box boundary
-
-        # check polarization vector normalization
-
-        assert self.testRelativeError(
-            1,
-            (
-                self.propagation_direction[0] ** 2
-                + self.propagation_direction[1] ** 2
-                + self.propagation_direction[2] ** 2
-            ),
-            1e-9,
-        ), "polarization vector must be normalized"
+        self._validate_common_properties()
 
         pypicongpu_laser = laser.PlaneWaveLaser()
         pypicongpu_laser.wavelength = self.wavelength
         pypicongpu_laser.duration = self.duration
         pypicongpu_laser.focus_pos = [0.0, 0.0, 0.0]
-        pypicongpu_laser.phase = self.picongpu_phase
+        pypicongpu_laser.phase = self.phi0
         pypicongpu_laser.E0 = self.E0
 
         pypicongpu_laser.pulse_init = max(
@@ -174,7 +110,7 @@ class PlaneWaveLaser:
         )
         # unit: duration
 
-        pypicongpu_laser.polarization_type = self.picongpu_polarization_type
+        pypicongpu_laser.polarization_type = self.picongpu_polarization_type.get_as_pypicongpu()
         pypicongpu_laser.polarization_direction = self.polarization_direction
         pypicongpu_laser.laser_nofocus_constant_si = self.picongpu_plateau_duration
         pypicongpu_laser.propagation_direction = self.propagation_direction

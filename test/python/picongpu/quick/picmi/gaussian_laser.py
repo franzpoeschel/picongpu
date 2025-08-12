@@ -8,7 +8,6 @@ License: GPLv3+
 from picongpu import picmi
 
 import unittest
-from picongpu import pypicongpu
 from math import sqrt
 from scipy.constants import c
 
@@ -27,7 +26,7 @@ class TestPicmiGaussianLaser(unittest.TestCase):
             E0=5,
             picongpu_laguerre_modes=[2.0, 3.0],
             picongpu_laguerre_phases=[4.0, 5.0],
-            picongpu_phase=-2,
+            phi0=-2,
             picongpu_huygens_surface_positions=[[1, -1], [1, -1], [1, -1]],
         )
 
@@ -42,7 +41,7 @@ class TestPicmiGaussianLaser(unittest.TestCase):
         # centroid is not a picongpu input
         self.assertEqual(5, pypic_laser.E0)
         self.assertEqual(
-            pypicongpu.laser.GaussianLaser.PolarizationType.LINEAR,
+            picmi.lasers.PolarizationType.LINEAR.get_as_pypicongpu(),
             pypic_laser.polarization_type,
         )
         self.assertEqual([2.0, 3.0], pypic_laser.laguerre_modes)
