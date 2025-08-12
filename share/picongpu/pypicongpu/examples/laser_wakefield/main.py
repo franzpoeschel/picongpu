@@ -66,7 +66,7 @@ laser = picmi.GaussianLaser(
     ],
     centroid_position=[
         float(numberCells[0] * cellSize[0] / 2.0),
-        -0.5 * pulse_init * laser_duration,
+        -0.5 * pulse_init * laser_duration * c,
         float(numberCells[2] * cellSize[2] / 2.0),
     ],
     picongpu_polarization_type=pypicongpu.laser.GaussianLaser.PolarizationType.CIRCULAR,
