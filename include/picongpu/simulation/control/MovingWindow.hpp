@@ -25,6 +25,8 @@
 
 #include <pmacc/types.hpp>
 
+#include <cstdint>
+
 namespace picongpu
 {
     using namespace pmacc;
@@ -42,7 +44,6 @@ namespace picongpu
 
         struct ComputedConstants
         {
-            float_64 moveRatio;
             uint32_t gpuNumberOfCellsInMoveDirection;
             float_64 cellSizeInMoveDirection;
             float_64 deltaWayPerStep;
@@ -52,8 +53,6 @@ namespace picongpu
 
             ComputedConstants(float_64 movePoint)
             {
-                moveRatio = movePoint;
-
                 SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
 
                 /* speed of the moving window */
@@ -210,6 +209,9 @@ namespace picongpu
             }
         }
 
+        /** tracks if endSlideOnStep has been called */
+        bool firstCallEndSlideOnStep = true;
+
         /** true is sliding window is activated
          *
          * How long the window is sliding is defined with endSlidingOnStep.
@@ -275,12 +277,26 @@ namespace picongpu
         void setMovePoint(float_64 const point)
         {
             movePoint = point;
+            computedConstants.reset();
+        }
+
+        void resetForTesting()
+        {
+            slidingWindowEnabled = false;
+            movePoint = 0.0;
+            slideCounter = 0u;
+            lastSlideStep = 0u;
+            endSlidingOnStep = 0u;
+            computedConstants.reset();
+            firstCallEndSlideOnStep = true;
         }
 
         /**
          * Set step where the simulation stops the moving window
          *
          * @param step 0 means no sliding window, else sliding is enabled until step is reached.
+         * Negative numbers are the way to use this if you don't want the sliding to end (practically) -1 sets it to
+         * the largest uint32 - 4,294,967,295
          */
         void setEndSlideOnStep(int32_t step)
         {
@@ -291,14 +307,13 @@ namespace picongpu
 
             endSlidingOnStep = maxSlideStep;
 
-            static bool firstCall = true;
             /* Disable or enable sliding window only in the first call.
              * Later changes of step will not influence if the sliding window is activated.
              */
-            if(firstCall && endSlidingOnStep != 0u)
+            if(firstCallEndSlideOnStep && endSlidingOnStep != 0u)
             {
                 slidingWindowEnabled = true;
-                firstCall = false;
+                firstCallEndSlideOnStep = false;
             }
         }
 
@@ -381,6 +396,11 @@ namespace picongpu
 
         /**
          * Get the moving window origin position in cell, not discretized to the cell grid
+         * This position is the total origin (0,0,0) until we get to the first move step
+         * On the first move step the position is equal to the moving window move location plus the distance moved with
+         * c in one timestep. This ensures that this comoving particle is always inside the region of the moving window
+         * After this, the particle continues moving with c, until we reach the step where the window stops
+         * moving, Then, the particle stops where ever it is (maybe in the middle of a cell)
          *
          * @param currentStep current simulation step
          * @return moving window origin position relative to total origin in cells
@@ -394,23 +414,24 @@ namespace picongpu
 
             auto const& constants = getOrComputeConstants();
 
+            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
+
+            uint32_t const globalWindowSizeInMoveDirection
+                = subGrid.getGlobalDomain().size[moveDirection] - constants.gpuNumberOfCellsInMoveDirection;
+
             // Clamp currentStep if sliding has ended
             if(currentStep > endSlidingOnStep)
                 currentStep = endSlidingOnStep;
 
-            if(constants.firstMoveStep <= static_cast<int32_t>(currentStep))
+            auto cellsPerStep = constants.deltaWayPerStep / constants.cellSizeInMoveDirection;
+
+            auto firstStep = constants.firstMoveStep > 0 ? constants.firstMoveStep : 0;
+
+            if(static_cast<int32_t>(currentStep) >= firstStep)
             {
-                auto cellsPerStep = constants.deltaWayPerStep / constants.cellSizeInMoveDirection;
-
-                SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
-                float_64 const virtualParticleCellsPassed = cellsPerStep * static_cast<float_64>(currentStep);
-                float_64 const moveLocationInCells
-                    = constants.moveRatio
-                      * (subGrid.getGlobalDomain().size[moveDirection] - constants.gpuNumberOfCellsInMoveDirection);
-
-                offsets[moveDirection] = virtualParticleCellsPassed - moveLocationInCells;
-
-                return offsets;
+                offsets[moveDirection] = constants.virtualParticleInitialStartCell
+                                         + cellsPerStep * static_cast<float_64>(currentStep + 1)
+                                         - globalWindowSizeInMoveDirection;
             }
 
             return offsets;
