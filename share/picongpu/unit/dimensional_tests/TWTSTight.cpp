@@ -44,12 +44,11 @@
 #include <picongpu/fields/background/templates/twtstight/TWTSTight.hpp>
 #include <picongpu/param/precision.param>
 
-//! Helper to setup the PMacc environment
-using TestFixture = pmacc::test::PMaccFixture<TEST_DIM>;
-static TestFixture fixture;
-
 using namespace picongpu;
 using namespace pmacc;
+
+//! Helper to setup the PMacc environment
+static pmacc::test::PMaccFixture<simDim> pmaccFixture;
 
 /** check if floating point result is equal
  *
