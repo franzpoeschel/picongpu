@@ -7,3 +7,4 @@ from .gaussian_laser import *  # pyflakes.ignore
 from .grid import *  # pyflakes.ignore
 from .diagnostics import *  # pyflakes.ignore
 from .normalise_template_dir import *  # pyflakes.ignore
+from .copy_attributes import *  # pyflakes.ignore
