@@ -22,7 +22,11 @@
       "description": "typical number of macroparticles per cell, used for normalization"
     },
     "solver": {
-      "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.solver.YeeSolver"
+      "anyOf": [
+        {
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.field_solver.Yee.YeeSolver"
+        }
+      ]
     },
     "grid": {
       "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.grid.Grid3D"
