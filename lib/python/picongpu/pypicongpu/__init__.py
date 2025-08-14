@@ -11,6 +11,7 @@ from .output.png import Png
 from .output.checkpoint import Checkpoint
 from .field_solver.DefaultSolver import Solver
 from .field_solver.Yee import YeeSolver
+from .field_solver.Lehe import LeheSolver
 
 from . import laser
 from . import grid
@@ -28,6 +29,7 @@ __all__ = [
     "rendering",
     "Solver",
     "YeeSolver",
+    "LeheSolver",
     "species",
     "util",
     "grid",

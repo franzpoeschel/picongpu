@@ -25,6 +25,9 @@
       "anyOf": [
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.field_solver.Yee.YeeSolver"
+        },
+        {
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.field_solver.Lehe.LeheSolver"
         }
       ]
     },
