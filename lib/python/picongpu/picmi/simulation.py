@@ -516,7 +516,7 @@ class Simulation(picmistandard.PICMI_Simulation):
             )
 
         if self.picongpu_walltime is None:
-            s.walltime = datetime.timedelta(hours=1)
+            s.walltime = None
         else:
             s.walltime = self.picongpu_walltime
 
