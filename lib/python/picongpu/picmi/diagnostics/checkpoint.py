@@ -5,6 +5,7 @@ Authors: Masoud Afshari
 License: GPLv3+
 """
 
+from picongpu.picmi.copy_attributes import converts_to
 from ...pypicongpu.output.checkpoint import Checkpoint as PyPIConGPUCheckpoint
 from .timestepspec import TimeStepSpec
 
@@ -12,6 +13,15 @@ import typeguard
 from typing import Optional, Dict
 
 
+@converts_to(
+    PyPIConGPUCheckpoint,
+    conversions={
+        "period": lambda self, _, time_step_size, num_steps: self.period.get_as_pypicongpu(time_step_size, num_steps)
+        if self.period is not None
+        else None
+    },
+    preamble=lambda self, *args, **kwargs: self.check(),
+)
 @typeguard.typechecked
 class Checkpoint:
     """
@@ -102,29 +112,3 @@ class Checkpoint:
         self.restartChunkSize = restartChunkSize
         self.restartLoop = restartLoop
         self.openPMD = openPMD
-
-    def get_as_pypicongpu(
-        self,
-        pypicongpu_by_picmi_species: Dict,
-        time_step_size: float,
-        num_steps: int,
-    ) -> PyPIConGPUCheckpoint:
-        self.check()
-
-        pypicongpu_checkpoint = PyPIConGPUCheckpoint()
-        pypicongpu_checkpoint.period = (
-            self.period.get_as_pypicongpu(time_step_size, num_steps) if self.period is not None else None
-        )
-        pypicongpu_checkpoint.timePeriod = self.timePeriod
-        pypicongpu_checkpoint.directory = self.directory
-        pypicongpu_checkpoint.file = self.file
-        pypicongpu_checkpoint.restart = self.restart
-        pypicongpu_checkpoint.tryRestart = self.tryRestart
-        pypicongpu_checkpoint.restartStep = self.restartStep
-        pypicongpu_checkpoint.restartDirectory = self.restartDirectory
-        pypicongpu_checkpoint.restartFile = self.restartFile
-        pypicongpu_checkpoint.restartChunkSize = self.restartChunkSize
-        pypicongpu_checkpoint.restartLoop = self.restartLoop
-        pypicongpu_checkpoint.openPMD = self.openPMD
-
-        return pypicongpu_checkpoint
