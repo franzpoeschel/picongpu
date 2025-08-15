@@ -37,9 +37,6 @@ class MacroParticleCount:
         Optional name for the macro particle count plugin.
     """
 
-    def check(self):
-        pass
-
     def __init__(self, species: PICMISpecies, period: TimeStepSpec):
         self.species = species
         self.period = period
@@ -50,8 +47,6 @@ class MacroParticleCount:
         time_step_size,
         num_steps,
     ) -> PyPIConGPUMacroParticleCount:
-        self.check()
-
         if self.species not in dict_species_picmi_to_pypicongpu.keys():
             raise ValueError(f"Species {self.species} is not known to Simulation")
 
