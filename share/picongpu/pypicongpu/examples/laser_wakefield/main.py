@@ -10,6 +10,7 @@ from picongpu import pypicongpu
 import numpy as np
 from scipy.constants import c
 import logging
+import datetime
 
 from picongpu.pypicongpu.output.png import EMFieldScaleEnum, ColorScaleEnum
 
@@ -141,6 +142,7 @@ sim = picmi.Simulation(
     max_steps=4000,
     time_step_size=1.39e-16,
     picongpu_moving_window_move_point=0.9,
+    picongpu_walltime=datetime.timedelta(hours=2.),
     picongpu_interaction=interaction,
 )
 
