@@ -23,22 +23,22 @@ class Gaussian(DensityProfile):
 
     _name = "gaussian"
 
-    gas_center_front = util.build_typesafe_property(float)
+    center_front = util.build_typesafe_property(float)
     """position of the front edge of the constant middle of the density profile, [m]"""
 
-    gas_center_rear = util.build_typesafe_property(float)
+    center_rear = util.build_typesafe_property(float)
     """position of the rear edge of the constant middle of the density profile, [m]"""
 
-    gas_sigma_front = util.build_typesafe_property(float)
+    sigma_front = util.build_typesafe_property(float)
     """distance from gasCenterFront until the gas density decreases to its 1/e-th part, [m]"""
 
-    gas_sigma_rear = util.build_typesafe_property(float)
+    sigma_rear = util.build_typesafe_property(float)
     """distance from gasCenterRear until the gas density decreases to its 1/e-th part, [m]"""
 
-    gas_factor = util.build_typesafe_property(float)
+    factor = util.build_typesafe_property(float)
     """exponential scaling factor, see formula above"""
 
-    gas_power = util.build_typesafe_property(float)
+    power = util.build_typesafe_property(float)
     """power-exponent in exponent of density function"""
 
     vacuum_cells_front = util.build_typesafe_property(int)
@@ -51,21 +51,21 @@ class Gaussian(DensityProfile):
         if self.density <= 0:
             raise ValueError("density must be > 0")
 
-        if self.gas_center_front < 0:
+        if self.center_front < 0:
             raise ValueError("gas_center_front must be >= 0")
-        if self.gas_center_rear < 0:
+        if self.center_rear < 0:
             raise ValueError("gas_center_rear must be >= 0")
-        if self.gas_center_rear < self.gas_center_front:
+        if self.center_rear < self.center_front:
             raise ValueError("gas_center_rear must be >= gas_center_front")
 
-        if self.gas_sigma_front == 0:
+        if self.sigma_front == 0:
             raise ValueError("gas_sigma_front must be != 0")
-        if self.gas_sigma_rear == 0:
+        if self.sigma_rear == 0:
             raise ValueError("gas_sigma_rear must be != 0")
 
-        if self.gas_factor >= 0:
+        if self.factor >= 0:
             raise ValueError("gas_factor must be < 0")
-        if self.gas_power == 0:
+        if self.power == 0:
             raise ValueError("gas_power must be != 0")
 
         if self.vacuum_cells_front < 0:
@@ -75,12 +75,12 @@ class Gaussian(DensityProfile):
         self.check()
 
         return {
-            "gas_center_front": self.gas_center_front,
-            "gas_center_rear": self.gas_center_rear,
-            "gas_sigma_front": self.gas_sigma_front,
-            "gas_sigma_rear": self.gas_sigma_rear,
-            "gas_factor": self.gas_factor,
-            "gas_power": self.gas_power,
+            "gas_center_front": self.center_front,
+            "gas_center_rear": self.center_rear,
+            "gas_sigma_front": self.sigma_front,
+            "gas_sigma_rear": self.sigma_rear,
+            "gas_factor": self.factor,
+            "gas_power": self.power,
             "vacuum_cells_front": self.vacuum_cells_front,
             "density": self.density,
         }
