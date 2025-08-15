@@ -9,18 +9,27 @@ import inspect
 from typing import Callable
 
 
+def has_attribute(instance, name):
+    # It should be this:
+    #
+    #     return hasattr(instance, name)
+    #
+    # But this seems to interact weirdly with our util.build_typesafe_property.
+    return name in dir(instance)
+
+
 def _sanitize_conversions(conversions, from_instance, to_instance):
     conversions = conversions or {}
 
     for new_key, old in conversions.items():
-        if not hasattr(to_instance, new_key):
+        if not has_attribute(to_instance, new_key):
             failed_conversion = {new_key: old}
             message = (
                 f"Conversion failed. '{new_key}' is not a member of the receiver {to_instance}. "
                 f"You gave {failed_conversion}."
             )
             raise ValueError(message)
-        if isinstance(old, str) and not hasattr(from_instance, old):
+        if isinstance(old, str) and not has_attribute(from_instance, old):
             failed_conversion = {new_key: old}
             message = (
                 f"Conversion failed. '{old}' is not a member of the provider {from_instance}. "
@@ -94,7 +103,7 @@ def converts_to(to_class, conversions=None, preamble=None, remove_prefix="", ign
 
     If given, it runs `preamble(self)` before copying.
     """
-    if hasattr(to_class, "get_as_pypicongpu"):
+    if has_attribute(to_class, "get_as_pypicongpu"):
         message = f"Adding 'get_as_pypicongpu' failed because it already existed on receiving class {to_class}."
         raise TypeError(message)
 

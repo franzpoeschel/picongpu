@@ -8,15 +8,55 @@ License: GPLv3+
 from ..pypicongpu import grid
 from ..pypicongpu import util
 
+from .copy_attributes import converts_to
+
 import picmistandard
 import typeguard
 
 
-def normalise_type(kw, key, t):
-    kw[key] = [t(bound) for bound in kw[key]]
+def _normalise_type(kw, key, t):
+    kw[key] = tuple(t(bound) for bound in kw[key])
     return kw
 
 
+PICONGPU_BOUNDARY_CONDITION_BY_PICMI_ID = {
+    "open": grid.BoundaryCondition.ABSORBING,
+    "periodic": grid.BoundaryCondition.PERIODIC,
+}
+
+
+def _normalise_n_gpus(n_gpus) -> tuple[int, int, int]:
+    picongpu_n_gpus = n_gpus
+    n_gpus = tuple(n_gpus or tuple([1, 1, 1]))
+    if len(n_gpus) == 1:
+        n_gpus = tuple([1, n_gpus[0], 1])
+
+    if len(n_gpus) != 3:
+        raise ValueError(
+            "The given number of gpus could not be mapped to a 3-component list of integers. "
+            f"You gave {picongpu_n_gpus} and we interpreted this as {n_gpus=}."
+        )
+
+    if any(map(lambda x: x <= 0, n_gpus)):
+        raise ValueError(
+            f"Number of gpus must be positive integer(s). "
+            f"You gave {picongpu_n_gpus=} and we interpreted this as {n_gpus=}."
+        )
+
+    return n_gpus
+
+
+@converts_to(
+    grid.Grid3D,
+    preamble=lambda self: self.check(),
+    conversions={
+        "boundary_condition": lambda self: tuple(
+            PICONGPU_BOUNDARY_CONDITION_BY_PICMI_ID[x] for x in self.lower_boundary_conditions
+        ),
+        "cell_cnt": "number_of_cells",
+    },
+    remove_prefix="picongpu_",
+)
 @typeguard.typechecked
 class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
     def __init__(
@@ -32,15 +72,16 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
             a single integer assumes parallelization in y (1, N, 1)
             a 3-integer-long list is distributed directly as (Nx, Ny, Nz)
         """
-        self.picongpu_n_gpus = picongpu_n_gpus
-        normalise_type(kw, "lower_bound", float)
-        normalise_type(kw, "upper_bound", float)
-        normalise_type(kw, "number_of_cells", int)
+        self.picongpu_n_gpus = _normalise_n_gpus(picongpu_n_gpus)
+        _normalise_type(kw, "lower_bound", float)
+        _normalise_type(kw, "upper_bound", float)
+        _normalise_type(kw, "number_of_cells", int)
         self.picongpu_grid_dist = picongpu_grid_dist
         self.picongpu_super_cell_size = picongpu_super_cell_size
 
         # continue with regular init
         super().__init__(**kw)
+        self.picongpu_cell_size_si = self.get_cell_size()
 
     def get_cell_size(self):
         return (
@@ -49,7 +90,7 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
             (self.upper_bound[2] - self.lower_bound[2]) / self.number_of_cells[2],
         )
 
-    def get_as_pypicongpu(self):
+    def check(self):
         # todo check
         if any(bound != 0.0 for bound in self.lower_bound):
             raise ValueError(
@@ -76,40 +117,12 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
         util.unsupported("guard cells", self.guard_cells)
         util.unsupported("pml cells", self.pml_cells)
 
-        picongpu_boundary_condition_by_picmi_id = {
-            "open": grid.BoundaryCondition.ABSORBING,
-            "periodic": grid.BoundaryCondition.PERIODIC,
-        }
-
-        if self.lower_boundary_conditions[0] not in picongpu_boundary_condition_by_picmi_id:
+        if self.lower_boundary_conditions[0] not in PICONGPU_BOUNDARY_CONDITION_BY_PICMI_ID:
             raise ValueError("X: boundary condition not supported")
-        if self.lower_boundary_conditions[1] not in picongpu_boundary_condition_by_picmi_id:
+        if self.lower_boundary_conditions[1] not in PICONGPU_BOUNDARY_CONDITION_BY_PICMI_ID:
             raise ValueError("Y: boundary condition not supported")
-        if self.lower_boundary_conditions[2] not in picongpu_boundary_condition_by_picmi_id:
+        if self.lower_boundary_conditions[2] not in PICONGPU_BOUNDARY_CONDITION_BY_PICMI_ID:
             raise ValueError("Z: boundary condition not supported")
-
-        g = grid.Grid3D()
-        g.cell_size_x_si, g.cell_size_y_si, g.cell_size_z_si = self.get_cell_size()
-        g.cell_cnt_x, g.cell_cnt_y, g.cell_cnt_z = self.number_of_cells
-        g.boundary_condition_x = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[0]]
-        g.boundary_condition_y = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[1]]
-        g.boundary_condition_z = picongpu_boundary_condition_by_picmi_id[self.lower_boundary_conditions[2]]
-
-        # gpu distribution
-        # convert input to 3 integer list
-        if self.picongpu_n_gpus is None:
-            g.n_gpus = tuple([1, 1, 1])
-        elif len(self.picongpu_n_gpus) == 1:
-            if not self.picongpu_n_gpus[0] > 0:
-                raise ValueError("number of gpus must be positive integer")
-            g.n_gpus = tuple([1, self.picongpu_n_gpus[0], 1])
-        elif len(self.picongpu_n_gpus) == 3:
-            for dim in range(3):
-                if self.picongpu_n_gpus[dim] <= 0:
-                    raise ValueError("number of gpus must be positive integer")
-            g.n_gpus = tuple(self.picongpu_n_gpus)
-        else:
-            raise ValueError("picongpu_n_gpus was neither None, a 1-integer-list or a 3-integer-list")
 
         if self.picongpu_grid_dist is not None:
             for i in range(3):
@@ -117,12 +130,12 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
                     raise ValueError("All values in grid distribution must be greater than 0.")
                 if sum(self.picongpu_grid_dist[i]) != self.number_of_cells[i]:
                     raise ValueError(f"sum of grid distribution in dimension {i} must match number of cells")
-                if len(self.picongpu_grid_dist[i]) != g.n_gpus[i]:
+                if len(self.picongpu_grid_dist[i]) != self.picongpu_n_gpus[i]:
                     raise ValueError(f"number of grid distributions in dimension {i} must match number of gpus")
+
         for i in range(3):
             if self.picongpu_super_cell_size[i] < 1:
                 raise ValueError("super cell size must be an integer greater than 1")
-        # check if gpu distribution fits grid
         cells = [
             self.number_of_cells[0],
             self.number_of_cells[1],
@@ -131,9 +144,9 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
         dim_name = ["x", "y", "z"]
         for dim in range(3):
             if self.picongpu_grid_dist is None:
-                if ((cells[dim] // g.n_gpus[dim]) // self.picongpu_super_cell_size[dim]) * g.n_gpus[
-                    dim
-                ] * self.picongpu_super_cell_size[dim] != cells[dim]:
+                if (
+                    (cells[dim] // self.picongpu_n_gpus[dim]) // self.picongpu_super_cell_size[dim]
+                ) * self.picongpu_n_gpus[dim] * self.picongpu_super_cell_size[dim] != cells[dim]:
                     raise ValueError(
                         "GPU- and/or super-cell-distribution in {} dimension does not match grid size".format(
                             dim_name[dim]
@@ -145,6 +158,3 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
                     raise ValueError(
                         f"grid distribution in {dim_name[dim]} dimension must be multiple of super cell size"
                     )
-        g.super_cell_size = self.picongpu_super_cell_size
-        g.grid_dist = self.picongpu_grid_dist
-        return g

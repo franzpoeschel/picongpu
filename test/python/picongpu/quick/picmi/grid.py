@@ -69,13 +69,12 @@ class TestCartesian3DGrid(unittest.TestCase):
     def test_n_gpus_wrong_numbers(self):
         """test negativ numbers or zero as number of gpus"""
         for not_ngpus_dist in [[0], [1, 1, 0], [-1], [-1, 1, 1], [-7]]:
-            grid = picmi.Cartesian3DGrid(
-                number_of_cells=[192, 2048, 12],
-                picongpu_n_gpus=not_ngpus_dist,
-                **self.COMMON_KWARGS,
-            )
-            with self.assertRaisesRegex(Exception, ".*number of gpus must be positive integer.*"):
-                grid.get_as_pypicongpu()
+            with self.assertRaisesRegex(Exception, ".*Number of gpus must be positive integer.*"):
+                picmi.Cartesian3DGrid(
+                    number_of_cells=[192, 2048, 12],
+                    picongpu_n_gpus=not_ngpus_dist,
+                    **self.COMMON_KWARGS,
+                )
 
     def test_supercell(self):
         """test explicitly setting the super cell size default value"""

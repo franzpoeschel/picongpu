@@ -206,15 +206,23 @@ class TestConvertsTo(unittest.TestCase):
     def test_get_as_pypicongpu_acts_like_copy_attributes(self):
         arbitrary_value2 = "arbitrary_string"
         arbitrary_value3 = 1234.5678
+        arbitrary_value4 = True
 
         DummyProvider, DummyReceiver = gen_two_classes(
             common_attributes={"arbitrary_name": ARBITRARY_VALUE},
-            only_provider={"provider_name": arbitrary_value2, "_private_member": ARBITRARY_VALUE},
-            only_receiver={"receiver_name": arbitrary_value3},
+            only_provider={
+                "prefixed_other_name": arbitrary_value4,
+                "provider_name": arbitrary_value2,
+                "_private_member": ARBITRARY_VALUE,
+            },
+            only_receiver={"receiver_name": arbitrary_value3, "other_name": None},
         )
-        dummy_provider = converts_to(DummyReceiver)(DummyProvider)()
+        dummy_provider = converts_to(DummyReceiver, remove_prefix="prefixed_")(DummyProvider)()
 
-        self.assertInstancesEqual(dummy_provider.get_as_pypicongpu(), copy_attributes(dummy_provider, DummyReceiver))
+        self.assertInstancesEqual(
+            dummy_provider.get_as_pypicongpu(),
+            copy_attributes(dummy_provider, DummyReceiver, remove_prefix="prefixed_"),
+        )
 
     def test_handles_custom_conversions(self):
         arbitrary_value2 = "arbitrary_string"
