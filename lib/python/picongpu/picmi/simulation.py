@@ -23,6 +23,7 @@ import typeguard
 import pathlib
 import logging
 import typing
+import datetime
 
 
 # may not use pydantic since inherits from _DocumentedMetaClass
@@ -76,6 +77,9 @@ class Simulation(picmistandard.PICMI_Simulation):
     picongpu_base_density = pypicongpu.util.build_typesafe_property(typing.Optional[float])
     """value to normalise densities with"""
 
+    picongpu_walltime = pypicongpu.util.build_typesafe_property(typing.Optional[datetime.timedelta])
+    """time after which the cluster scheduler will stop the simulation"""
+
     __runner = pypicongpu.util.build_typesafe_property(typing.Optional[pypicongpu.runner.Runner])
 
     # @todo remove boiler plate constructor argument list once picmistandard reference implementation switches to
@@ -88,6 +92,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         picongpu_moving_window_stop_iteration: typing.Optional[int] = None,
         picongpu_interaction: typing.Optional[Interaction] = None,
         picongpu_base_density: typing.Optional[float] = None,
+        picongpu_walltime: typing.Optional[datetime.timedelta] = None,
         **keyword_arguments,
     ):
         if picongpu_template_dir is not None:
@@ -100,6 +105,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.picongpu_moving_window_stop_iteration = picongpu_moving_window_stop_iteration
         self.picongpu_interaction = picongpu_interaction
         self.picongpu_base_density = picongpu_base_density
+        self.picongpu_walltime = picongpu_walltime
         self.picongpu_custom_user_input = None
         self.__runner = None
 
@@ -508,6 +514,11 @@ class Simulation(picmistandard.PICMI_Simulation):
                 move_point=self.picongpu_moving_window_move_point,
                 stop_iteration=self.picongpu_moving_window_stop_iteration,
             )
+
+        if self.picongpu_walltime is None:
+            s.walltime = datetime.timedelta(hours=1)
+        else:
+            s.walltime = self.picongpu_walltime
 
         return s
 
