@@ -60,6 +60,7 @@ TEST_CASE("unit::MovingWindow_origin", "[movingWindow test]")
         pmacc::DataSpace<3>{0, 0, 0}.shrink<simDim>());
 
     auto const globalWindowSizeInMoveDirection = 900;
+    auto const gpuNumCellsInMoveDirection = 100;
 
     auto const c = static_cast<float_64>(sim.pic.getSpeedOfLight());
     auto const dt = static_cast<float_64>(sim.pic.getDt());
@@ -87,7 +88,7 @@ TEST_CASE("unit::MovingWindow_origin", "[movingWindow test]")
 
     SECTION("Window enabled")
     {
-        float_64 const movePoint = 0.4;
+        float_64 const movePoint = GENERATE(0.4, 0.8);
         uint32_t const endStep = 10000;
         movingWindow.setMovePoint(movePoint);
         movingWindow.setEndSlideOnStep(endStep);
@@ -158,10 +159,38 @@ TEST_CASE("unit::MovingWindow_origin", "[movingWindow test]")
         CHECK(origin0[moveDirection] == Catch::Approx(cellsPerStep));
     }
 
+    SECTION("Alternative virtual particle definition from negative domain")
+    {
+        float_64 const movePoint = 0.341;
+        uint32_t const endStep = 10000;
+        movingWindow.setMovePoint(movePoint);
+        movingWindow.setEndSlideOnStep(endStep);
+        REQUIRE(movingWindow.isEnabled());
+
+        auto const classicVirtualParticleInitialStartCell = static_cast<uint32_t>(
+            std::ceil(static_cast<float_64>(globalWindowSizeInMoveDirection) * (1.0 - movePoint)));
+
+        auto const classicWayToFirstMove
+            = static_cast<float_64>(globalWindowSizeInMoveDirection - classicVirtualParticleInitialStartCell)
+              * cellSizeInMoveDirection;
+
+        auto const classicFirstMoveStep = static_cast<int32_t>(std::ceil(classicWayToFirstMove / 1.)) - 1;
+
+
+        // This virtual particle starts from the negative domain and moves immidiately with c
+        auto const virtualParticleInitialStartCell
+            = -1 * math::floor(static_cast<float_64>(globalWindowSizeInMoveDirection) * (movePoint));
+
+        auto const wayToFirstMove = static_cast<float_64>(-virtualParticleInitialStartCell) * cellSizeInMoveDirection;
+
+        auto const firstMoveStep = static_cast<int32_t>(std::ceil(wayToFirstMove / 1.)) - 1;
+
+        REQUIRE(firstMoveStep == classicFirstMoveStep);
+    }
 
     SECTION("Window position evolution")
     {
-        float_64 const movePoint = 0.341;
+        float_64 const movePoint = GENERATE(0, 0.341, 0.6);
         uint32_t const endStep = 10000;
         movingWindow.setMovePoint(movePoint);
         movingWindow.setEndSlideOnStep(endStep);
@@ -170,6 +199,8 @@ TEST_CASE("unit::MovingWindow_origin", "[movingWindow test]")
         // This virtual particle starts from the negative domain and moves immidiately with c
         auto const virtualParticleInitialStartCell
             = -1 * math::floor(static_cast<float_64>(globalWindowSizeInMoveDirection) * (movePoint));
+        auto const wayToFirstMove = static_cast<float_64>(-virtualParticleInitialStartCell) * cellSizeInMoveDirection;
+        auto const firstMoveStep = static_cast<int32_t>(std::ceil(wayToFirstMove / 1.)) - 1;
 
         for(int step = 1; step < endStep; ++step)
         {
@@ -179,6 +210,21 @@ TEST_CASE("unit::MovingWindow_origin", "[movingWindow test]")
                 = virtualParticleInitialStartCell + cellsPerStep * static_cast<float_64>(step + 1);
 
             CHECK(origin[moveDirection] == Catch::Approx(std::max(virtualParticlePosition, 0.0)));
+
+            auto window = movingWindow.getWindow(step);
+            auto windowRelativeParticlePos = origin[moveDirection]
+                                             - (window.globalDimensions.offset[moveDirection]
+                                                + movingWindow.getSlideCounter(step) * gpuNumCellsInMoveDirection);
+
+            // If step == firstMoveStep, this check can and should fail for some move points. We check strict less than
+            if(step < firstMoveStep)
+            {
+                CHECK(windowRelativeParticlePos == 0);
+            }
+            else
+            {
+                CHECK((windowRelativeParticlePos >= 0 && windowRelativeParticlePos < 1));
+            }
         }
     }
 
