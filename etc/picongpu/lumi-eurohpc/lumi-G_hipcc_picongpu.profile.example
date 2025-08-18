@@ -73,7 +73,6 @@ export PIC_LIBS=/projappl/$PROJID/workshop_software/local
 
 export LD_LIBRARY_PATH=$PIC_LIBS/lib64:$PIC_LIBS/lib:$LD_LIBRARY_PATH
 export PATH=$PIC_LIBS/bin:$PATH
-export PYTHONPATH=$PIC_LIBS/lib64/python3.11/site-packages/openpmd_api:$PYTHONPATH
 
 
 # Environment #################################################################

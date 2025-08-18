@@ -57,7 +57,6 @@ export PIC_SYSTEM_TEMPLATE_PATH=${PIC_SYSTEM_TEMPLATE_PATH:-"etc/picongpu/meluxi
 export PATH=$PICSRC/bin:$PATH
 export PATH=$PICSRC/src/tools/bin:$PATH
 
-export PYTHONPATH=$PICSRC/lib/python:$PYTHONPATH
 
 # "tbg" default options #######################################################
 #   - SLURM (sbatch)
