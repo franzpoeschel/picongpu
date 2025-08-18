@@ -26,11 +26,11 @@ dependencies = [
 # Included from: picongpu/extra/plugins/plot_mpl/requirements.txt
 "matplotlib",
 # Included from: picongpu/extra/plugins/plot_mpl/../data/requirements.txt
-"pandas>=0.21.0",
+"pandas>=2.2.3",
 "h5py",
 "pillow",
 "imageio",
-"openPMD-api>=0.10.3",
+"openPMD-api>=0.16.1",
 # Included from: picongpu/extra/utils/requirements.txt
 # Included from: picongpu/extra/utils/FLYonPICRateCalculationReference/requirements.txt
 "scipy >= 1.12.0",
@@ -45,6 +45,6 @@ dependencies = [
 "periodictable >= 1.7.1",
 # Included from: picongpu/picmi/requirements.txt
 "picmistandard >= 0.27.0",
-"sympy >= 1.9",
+"sympy >= 1.14",
 "particle >= 0.25.1",
 ]
