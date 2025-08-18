@@ -24,7 +24,7 @@ To use the PICMI interface you need a working PIConGPU environment, see :ref:`in
 
 In addition you need to install the picongpu Python package that includes our PICMI implementation to your Python environment.
 
-We suggest installing the picongpu package in edit mode (without copying source files out of picongpu source) with pip.
+We suggest installing the picongpu package with pip. Due to how our current PICMI implementation manages relative paths it has to be installed with the `-e` option (in edit mode, without copying source files out of PIConGPU source).
 This will also install all the required dependencies.
 
 .. code:: shell
