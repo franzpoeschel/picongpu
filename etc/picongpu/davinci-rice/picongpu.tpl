@@ -45,7 +45,7 @@
 # settings that can be controlled by environment variables before submit
 .TBG_mailSettings=${MY_MAILNOTIFY:-"n"}
 .TBG_mailAddress=${MY_MAIL:-"someone@example.com"}
-.TBG_author=${MY_NAME:+--author \"${MY_NAME}\"}"
+.TBG_author=${MY_NAME:+--author \"${MY_NAME}\"}
 .TBG_profile=${PIC_PROFILE:-"~/picongpu.profile"}
 
 ## end tbg calculation
