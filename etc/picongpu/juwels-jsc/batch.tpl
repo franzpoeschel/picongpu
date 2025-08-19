@@ -86,8 +86,6 @@ mkdir simOutput 2> /dev/null
 cd simOutput
 ln -s ../stdout output
 
-if [ $? -eq 0 ] ; then
-  # Run PIConGPU
-  export OMP_NUM_THREADS=48
-  srun --cpu_bind=sockets !TBG_dstPath/input/bin/picongpu !TBG_author !TBG_programParams
-fi
+# Run PIConGPU
+export OMP_NUM_THREADS=48
+srun --cpu_bind=sockets !TBG_dstPath/input/bin/picongpu !TBG_author !TBG_programParams
