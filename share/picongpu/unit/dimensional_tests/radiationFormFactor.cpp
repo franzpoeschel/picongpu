@@ -43,13 +43,11 @@
 #include <picongpu/plugins/radiation/radFormFactor.hpp>
 #include <picongpu/plugins/radiation/vector.hpp>
 
-
-//! Helper to setup the PMacc environment
-using TestFixture = pmacc::test::PMaccFixture<TEST_DIM>;
-static TestFixture fixture;
-
 using namespace picongpu;
 using namespace pmacc;
+
+//! Helper to setup the PMacc environment
+static pmacc::test::PMaccFixture<simDim> pmaccFixture;
 
 constexpr uint32_t numValues = 1024;
 constexpr uint32_t elemPerBlock = 256;

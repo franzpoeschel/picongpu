@@ -45,6 +45,14 @@ namespace pmacc
                 /* finalize the PMacc context */
                 pmacc::Environment<>::get().finalize();
             }
+
+            void initGrids(
+                DataSpace<T_dim> gridSizeGlobal,
+                DataSpace<T_dim> gridSizeLocal,
+                DataSpace<T_dim> gridOffset)
+            {
+                Environment<T_dim>::get().initGrids(gridSizeGlobal, gridSizeLocal, gridOffset);
+            }
         };
 
         using PMaccFixture2D = PMaccFixture<2>;

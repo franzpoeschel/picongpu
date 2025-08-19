@@ -89,16 +89,9 @@ if(USE_MPI_AS_ROOT_USER)
     set(MPI_RUNTIME_FLAGS "--allow-run-as-root")
 endif()
 
-# PIConGPU
-
-include_directories(BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/../../../include")
-
 ###############################################################################
 # Targets
 ###############################################################################
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test)
-include_directories(BEFORE ./include)
 
 # CTest
 enable_testing()
