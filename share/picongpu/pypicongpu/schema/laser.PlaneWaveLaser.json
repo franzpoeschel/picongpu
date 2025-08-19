@@ -32,9 +32,7 @@
       }
     },
     "phase": {
-      "type": "number",
-      "minimum": -3.1416,
-      "exclusiveMaximum": 6.2832
+      "type": "number"
     },
     "E0_si": {
       "type": "number",

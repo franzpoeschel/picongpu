@@ -74,9 +74,9 @@ laser = picmi.GaussianLaser(
         -0.5 * pulse_init * laser_duration * c,
         float(numberCells[2] * cellSize[2] / 2.0),
     ],
-    picongpu_polarization_type=pypicongpu.laser.GaussianLaser.PolarizationType.LINEAR,
+    picongpu_polarization_type=picmi.lasers.PolarizationType.LINEAR,
     a0=8.0,
-    picongpu_phase=0.0,
+    phi0=0.0,
 )
 
 random_layout = picmi.PseudoRandomLayout(n_macroparticles_per_cell=2)
@@ -89,9 +89,7 @@ species_list = []
 if not ENABLE_IONIZATION:
     interaction = None
 
-    electrons = picmi.Species(
-        particle_type="electron", name="electron", initial_distribution=gaussianProfile
-    )
+    electrons = picmi.Species(particle_type="electron", name="electron", initial_distribution=gaussianProfile)
     species_list.append((electrons, random_layout))
 
     if ENABLE_IONS:
@@ -114,9 +112,7 @@ else:
     )
     species_list.append((hydrogen_with_ionization, random_layout))
 
-    electrons = picmi.Species(
-        particle_type="electron", name="electron", initial_distribution=None
-    )
+    electrons = picmi.Species(particle_type="electron", name="electron", initial_distribution=None)
     species_list.append((electrons, None))
 
     adk_ionization_model = picmi.ADK(

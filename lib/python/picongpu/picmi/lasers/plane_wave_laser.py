@@ -11,7 +11,6 @@ import typing
 import typeguard
 
 from ...pypicongpu import laser
-from .. import constants
 from .base_laser import BaseLaser
 from .polarization_type import PolarizationType
 
@@ -103,13 +102,7 @@ class PlaneWaveLaser(BaseLaser):
         pypicongpu_laser.focus_pos = [0.0, 0.0, 0.0]
         pypicongpu_laser.phase = self.phi0
         pypicongpu_laser.E0 = self.E0
-
-        pypicongpu_laser.pulse_init = max(
-            -2 * self.centroid_position[1] / (self.propagation_direction[1] * constants.c) / self.duration,
-            15,
-        )
-        # unit: duration
-
+        pypicongpu_laser.pulse_init = self._compute_pulse_init()
         pypicongpu_laser.polarization_type = self.picongpu_polarization_type.get_as_pypicongpu()
         pypicongpu_laser.polarization_direction = self.polarization_direction
         pypicongpu_laser.laser_nofocus_constant_si = self.picongpu_plateau_duration

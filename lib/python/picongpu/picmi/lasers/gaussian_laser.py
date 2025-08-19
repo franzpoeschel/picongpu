@@ -5,14 +5,12 @@ Authors: Hannes Troepgen, Brian Edward Marre, Alexander Debus, Richard Pausch
 License: GPLv3+
 """
 
-import logging
 import typing
 
 import picmistandard
 import typeguard
 
 from ...pypicongpu import laser, util
-from .. import constants
 from .base_laser import BaseLaser
 from .polarization_type import PolarizationType
 
@@ -95,18 +93,7 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser, BaseLaser):
         pypicongpu_laser.focus_pos = self.focal_position
         pypicongpu_laser.phase = self.phi0
         pypicongpu_laser.E0 = self.E0
-
-        pypicongpu_laser.pulse_init = (
-            -2.0 * self.centroid_position[1] / (self.propagation_direction[1] * constants.c) / self.duration
-        )  # unit: multiple of laser pulse duration
-        # @todo extend this to other propagation directions than +y
-        if pypicongpu_laser.pulse_init < 3.0:
-            logging.warning(
-                "set centroid_position and propagation_direction indicate that laser "
-                + "initalization might be too short.\n"
-                + f"Details: laser.pulse_init = {pypicongpu_laser.pulse_init} < 3"
-            )
-
+        pypicongpu_laser.pulse_init = self._compute_pulse_init()
         pypicongpu_laser.polarization_type = self.picongpu_polarization_type.get_as_pypicongpu()
         pypicongpu_laser.polarization_direction = self.polarization_direction
 
