@@ -57,8 +57,7 @@ cat $PYPROJECT_TOML_PATH
 echo ""
 
 # install pypicongpu dependencies
-cd ${CI_PROJECT_DIR}/lib/python/
-pip3 install -e .
+pip3 install -e ${CI_PROJECT_DIR}/lib/python/
 
 # run quick tests
 cd $CI_PROJECT_DIR/test/python/picongpu
