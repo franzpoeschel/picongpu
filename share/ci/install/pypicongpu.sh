@@ -42,7 +42,7 @@ micromamba create -n pypicongpu python=${PYTHON_VERSION} --ssl-verify false
 micromamba activate pypicongpu
 python3 --version
 # install requirements of pyproject_toml_modifier.txt
-pip3 install -r ${CI_PROJECT_DIR}/share/ci/install/pyproject_toml_modifier_requirments.txt
+pip3 install -r ${CI_PROJECT_DIR}/share/ci/install/pyproject_toml_modifier_requirements.txt
 PYPROJECT_TOML_PATH=${CI_PROJECT_DIR}/lib/python/pyproject.toml
 
 python3 $CI_PROJECT_DIR/share/ci/install/pyproject_toml_modifier.py \
@@ -50,7 +50,7 @@ python3 $CI_PROJECT_DIR/share/ci/install/pyproject_toml_modifier.py \
     -o $PYPROJECT_TOML_PATH \
 
 # uninstall requirements of pyproject_toml_modifier.txt
-pip3 uninstall -y -r ${CI_PROJECT_DIR}/share/ci/install/pyproject_toml_modifier_requirments.txt
+pip3 uninstall -y -r ${CI_PROJECT_DIR}/share/ci/install/pyproject_toml_modifier_requirements.txt
 
 echo "modified pyproject.toml: "
 cat $PYPROJECT_TOML_PATH
