@@ -79,7 +79,6 @@ namespace picongpu
              * Use the return value of add...Binner() to modify them if needed. */
             std::function<void()> hostHook = [] {};
             bool timeAveraging = true;
-            bool normalizeByBinVolume = true;
             std::string notifyPeriod = "1";
             uint32_t dumpPeriod = 0u;
 
