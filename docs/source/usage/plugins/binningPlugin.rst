@@ -288,7 +288,7 @@ The plugin dumps on every notify if this is set to either 0 or 1. This is the de
 
 Time Averaging
 --------------
-When dumping the accumulated output, whether or not to divide by the dump period, i.e. do a time averaging. Enabled by default.
+When dumping the reduced output, whether or not to divide by the dump period, i.e. do a time averaging. Disabled by default.
 
 .. attention::
 
