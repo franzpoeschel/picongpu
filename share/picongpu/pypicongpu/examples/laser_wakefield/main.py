@@ -69,7 +69,7 @@ laser = picmi.GaussianLaser(
         -0.5 * pulse_init * laser_duration * c,
         float(numberCells[2] * cellSize[2] / 2.0),
     ],
-    picongpu_polarization_type=pypicongpu.laser.GaussianLaser.PolarizationType.CIRCULAR,
+    picongpu_polarization_type=pypicongpu.laser.GaussianLaser.PolarizationType.LINEAR,
     a0=8.0,
     picongpu_phase=0.0,
 )
@@ -111,7 +111,7 @@ else:
     species_list.append((electrons, None))
 
     adk_ionization_model = picmi.ADK(
-        ADK_variant=picmi.ADKVariant.CircularPolarization,
+        ADK_variant=picmi.ADKVariant.LinearPolarization,
         ion_species=hydrogen_with_ionization,
         ionization_electron_species=electrons,
         ionization_current=None,

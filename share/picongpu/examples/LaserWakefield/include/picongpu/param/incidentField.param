@@ -186,7 +186,7 @@ namespace picongpu
                  *
                  * Note: we use spelling 'Polarisation' for consistency with other lasers.
                  */
-                static constexpr PolarisationType Polarisation = PolarisationType::Circular;
+                static constexpr PolarisationType Polarisation = PolarisationType::Linear;
 
                 /** Unit E polarization direction
                  *
