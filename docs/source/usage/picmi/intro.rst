@@ -23,13 +23,7 @@ Usage Quick-start
 To use the PICMI interface you need a working PIConGPU environment, see :ref:`install instructions <install-path>` and :ref:`the Setup part of PIConGPU in 5 Minutes on Hemera <hemeraIn5min>` for instructions.
 
 In addition you need to install the picongpu Python package that includes our PICMI implementation to your Python environment.
-
-We suggest installing the picongpu package with pip. Due to how our current PICMI implementation manages relative paths it has to be installed with the `-e` option (in edit mode, without copying source files out of PIConGPU source).
-This will also install all the required dependencies.
-
-.. code:: shell
-
-  pip install -e $PICSRC/lib/python/
+Please follow the install instructions in :ref:`usage-python-utils`.
 
 
 .. note::
