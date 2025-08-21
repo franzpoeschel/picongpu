@@ -58,8 +58,7 @@ namespace picongpu
                 std::unique_ptr<HostBuffer<T_Type, 1u>> hReducedBuffer,
                 T_BinningData const& binningData,
                 uint32_t const currentStep,
-                bool const isCheckpoint = false,
-                uint32_t const reduceCounter = 0)
+                uint32_t const reduceCounter)
             {
                 using Type = T_Type;
 
@@ -115,6 +114,8 @@ namespace picongpu
 
                 std::string date = helper::getDateString("%F %T %z");
                 series.setDate(date);
+                series.setAttribute("timeAveragingEnabled", binningData.timeAveraging);
+
                 /* end recommended openPMD global attributes */
 
                 ::openPMD::Iteration iteration = series.writeIterations()[currentStep];
@@ -196,10 +197,7 @@ namespace picongpu
                         /* no-op, destroy data via destructor of captured hReducedBuffer */
                     });
                 record.storeChunk<Type>(std::move(data), histOffset, histExtent);
-                if(isCheckpoint)
-                {
-                    iteration.setAttribute("reduceCounter", reduceCounter);
-                }
+                iteration.setAttribute("reduceCounter", reduceCounter);
 
                 iteration.close();
             };

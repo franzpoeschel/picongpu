@@ -344,14 +344,15 @@ The number of bin edges written out for an axis is one more than the user-define
 These are the first and last edge, corresponding to the overflow bins, and they have the value of -inf and + inf.
 
 
-=========================== ==========================================================
-Attribute                   Description
-=========================== ==========================================================
-``unitSI``                  Scaling factor for the deposited quantity to convert to SI
-``<axisName>_bin_edges``    The edges of the bins of an axis in SI units
-``<axisName>_units``        The units of an axis
-=========================== ==========================================================
-
+=========================== =========== ==========================================================
+Attribute                   Hierarchy   Description
+=========================== =========== ==========================================================
+``unitSI``                  Mesh        Scaling factor for the deposited quantity to convert to SI
+``<axisName>_bin_edges``    Mesh        The edges of the bins of an axis in SI units
+``<axisName>_units``        Mesh        The units of an axis
+``reduceCounter``           Iteration   Reduction operations per dump period
+``timeAveragingEnabled``    Series      If time averaging of dumps is enabled
+=========================== =========== ==========================================================
 
 Reduction
 =========

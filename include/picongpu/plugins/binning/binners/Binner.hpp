@@ -157,7 +157,8 @@ namespace picongpu
                                 binningData.openPMDJsonCfg},
                             std::move(hReducedBuffer),
                             binningData,
-                            currentStep);
+                            currentStep,
+                            reduceCounter);
                     }
                     // reset device buffer
                     this->histBuffer->getDeviceBuffer().setValue(
@@ -212,7 +213,6 @@ namespace picongpu
                         std::move(hReducedBuffer),
                         binningData,
                         currentStep,
-                        true,
                         reduceCounter);
                 }
             }
