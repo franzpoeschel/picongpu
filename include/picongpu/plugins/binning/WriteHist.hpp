@@ -59,7 +59,7 @@ namespace picongpu
                 T_BinningData const& binningData,
                 uint32_t const currentStep,
                 bool const isCheckpoint = false,
-                uint32_t const accumulateCounter = 0)
+                uint32_t const reduceCounter = 0)
             {
                 using Type = T_Type;
 
@@ -198,7 +198,7 @@ namespace picongpu
                 record.storeChunk<Type>(std::move(data), histOffset, histExtent);
                 if(isCheckpoint)
                 {
-                    iteration.setAttribute("accCounter", accumulateCounter);
+                    iteration.setAttribute("reduceCounter", reduceCounter);
                 }
 
                 iteration.close();

@@ -61,7 +61,7 @@
     },
     "timeAveraging": {
       "type": "boolean",
-      "description": "Time average the accumulated data when doing the dump"
+      "description": "Time average the reduced data when doing the dump"
     },
     "dumpPeriod": {
       "type": "integer",

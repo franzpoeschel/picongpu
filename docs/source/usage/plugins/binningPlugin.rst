@@ -247,9 +247,9 @@ The signature of quantity functors is
 
 	auto myQuantityFunctor = [] ALPAKA_FN_ACC(auto const& worker, auto const& domainInfo, ...) -> returnType
 
-This option makes it evident that the binning is more than just about creating histograms. While histograms are a common use case, the binning plugin allows for the accumulation of various quantities within bins and not just noting the frequencies of occurrences. This means that users can define custom quantities to be accumulated in each bin, such as charge, energy, momentum, or any other property of interest. The flexibility of the functor description enables users to specify exactly what and how they want to accumulate data in the bins.
-For example, you might want to accumulate the total charge of particles within each bin, or the average kinetic energy of particles in a specific region. The deposited quantity functor provides the mechanism to calculate and return these values, which are then accumulated in the corresponding bins during the simulation.
-By default the deposited quantity is added for each bin, but this is configurable by the user by setting an :ref:`accumulate operation <usage/plugins/binningPlugin:Accumulation>`. 
+This option makes it evident that the binning is more than just about creating histograms. While histograms are a common use case, the binning plugin allows for using various binary operations to combine various quantities within bins and not just noting the frequencies of occurrences. This means that users can define custom quantities to be combined in each bin, such as charge, energy, momentum, or any other property of interest. The flexibility of the functor description enables users to specify exactly what and how they want to combine data in the bins.
+For example, you might want to combine the total charge of particles within each bin, or the average kinetic energy of particles in a specific region. The deposited quantity functor provides the mechanism to calculate and return these values, which are then combined in the corresponding bins during the simulation.
+By default the deposited quantity is added for each bin, but this is configurable by the user by setting a binary operation for the :ref:`reduce <usage/plugins/binningPlugin:Reduction>`.
 
 Extra Data
 ----------
@@ -280,9 +280,9 @@ Set the periodicity of the output. Follows the period syntax defined :ref:`here 
 
 Dump Period
 -----------
-Defines the number of notify steps to accumulate over. Note that this is not accumulating over actual PIC iterations, but over the notify periods.
+Defines the number of notify steps to reduce over. Note that this is not a reduction over actual PIC iterations, but over the notify periods.
 If time averaging is enabled, this is also the period to do time averaging over.
-For example a value of 10 means that after every 10 notifies, an accumulated file will be written out.
+For example a value of 10 means that after every 10 notifies, an reduced file will be written out.
 If PIConGPU exits before executing 10 notifies, then there will be no output.
 The plugin dumps on every notify if this is set to either 0 or 1. This is the default behaviour.
 
@@ -353,10 +353,10 @@ Attribute                   Description
 =========================== ==========================================================
 
 
-Accumulation
-============
-The binning plugin provides flexible options for accumulating data within bins. Instead of simply adding values to accumulate in a bin, users can utilize PMacc operations. This includes operations such as addition, multiplication, minimum, maximum, bitwise AND, bitwise OR, and bitwise XOR.
-This flexibility enables users to tailor the accumulation process to their specific needs. For instance, you might want to track the minimum or maximum value of a certain property within each bin.
+Reduction
+=========
+The binning plugin provides flexible options for reducing data within bins. This is useful when a dump period is set. Instead of simply adding values in a bin, users can utilize other PMacc operations as well. This includes operations such as addition, minimum, maximum, bitwise AND, bitwise OR, and bitwise XOR.
+This flexibility enables users to tailor the reduction process to their specific needs. For instance, you might want to track the minimum or maximum value of a certain property within each bin.
 A list of available PMacc operations can be found under `/include/pmacc/math/operation`. Only operations defining the `getMPI_Op` function and the `AlpakaAtomicOp` and `NeutralElement` traits are supported.
 
 .. note::
@@ -364,8 +364,8 @@ A list of available PMacc operations can be found under `/include/pmacc/math/ope
 	The operation is only viable if it has a corresponding MPI reduction operation, a neutral element, and a cooresponding alpaka operation. Only binary atomics on arithmetic types are supported. In particular CAS operations are not supported.
 
 
-The accumulate operation is passed as a template parameter to the `createBinner` functions.
-For example, to use the maximum operation for accumulation, you would pass the corresponding PMacc operation as a template parameter:
+The reduce operation is passed as a template parameter to the `createBinner` functions.
+For example, to use the maximum operation for reduction, you would pass the corresponding PMacc operation as a template parameter:
 
 .. literalinclude:: ../../../../share/picongpu/tests/compile2/include/picongpu/param/binningSetup.param
    :language: c++
@@ -377,7 +377,7 @@ Similarly, you can use other PMacc operations such as `pmacc::math::operation::M
 
 
 Example binning plugin usage: Laser Wakefield electron spectrometer
-==================================================================
+===================================================================
 
 The :ref:`LWFA example <LWFA-example>`  contains a sample binning plugin setup to calculate an in-situ electron spectrometer.
 The kinetic energy of the electrons :math:`E = (\gamma - 1) m_o c^2` is plotted on axis 1 and the direction of the electrons :math:`\theta = \mathrm{atan}(p_x/p_y)` is plotted on axis 2.

@@ -49,7 +49,7 @@ namespace picongpu
             /**
              * onParticleLeave is called every time step whenever particles leave, it is independent of the notify
              * period. onParticleLeave isnt called for timestep 0, whereas notify is. Even though it is called every
-             * timestep, notify must still be correctly set up for normalization, averaging and output. If binning only
+             * timestep, notify must still be correctly set up for averaging and output. If binning only
              * leaving particles, use notify starting from 1 if you use time averaging, otherwise you have an extra
              * accumulate count at 0, when notify is called but onParticleLeave isnt.
              */
@@ -129,7 +129,7 @@ namespace picongpu
                     },
                     this->binningData.extraData);
                 auto const functorBlock = ParticleBinningKernel<
-                    pmacc::math::operation::traits::AlpakaAtomicOp_t<typename TBinningData::AccumulationOp>>{};
+                    pmacc::math::operation::traits::AlpakaAtomicOp_t<typename TBinningData::ReductionOp>>{};
 
                 PMACC_LOCKSTEP_KERNEL(functorBlock)
                     .config(mapper.getGridDim(), particlesBox)(
@@ -201,7 +201,7 @@ namespace picongpu
                             binner->binningData.extraData);
 
                         auto const functorLeaving = LeavingParticleBinningKernel<
-                            pmacc::math::operation::traits::AlpakaAtomicOp_t<typename TBinningData::AccumulationOp>>{};
+                            pmacc::math::operation::traits::AlpakaAtomicOp_t<typename TBinningData::ReductionOp>>{};
 
                         PMACC_LOCKSTEP_KERNEL(functorLeaving)
                             .config(mapper.getGridDim(), particlesBox)(

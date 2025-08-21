@@ -63,7 +63,7 @@ namespace picongpu
             TBinningData binningData;
             MappingDesc* cellDescription;
             std::unique_ptr<HostDeviceBuffer<TDepositedQuantity, 1>> histBuffer;
-            uint32_t accumulateCounter = 0;
+            uint32_t reduceCounter = 0;
             mpi::MPIReduce reduce{};
             bool isMain = false;
             WriteHist histWriter;
@@ -81,7 +81,7 @@ namespace picongpu
                     binningData.axisExtentsND.productOfComponents());
                 this->histBuffer->getDeviceBuffer().setValue(
                     pmacc::math::operation::traits::
-                        NeutralElement<typename TBinningData::AccumulationOp, TDepositedQuantity>::value);
+                        NeutralElement<typename TBinningData::ReductionOp, TDepositedQuantity>::value);
                 isMain = reduce.hasResult(mpi::reduceMethods::Reduce());
             }
 
@@ -104,11 +104,11 @@ namespace picongpu
                  */
 
                 /**
-                 * Time averaging on n, means accumulate, then average over N notifies
+                 * Time averaging on n, means reduce, then average over N notifies
                  * dumpPeriod == 0 is the same as 1. No averaging, output at every step
                  */
-                ++accumulateCounter;
-                if(accumulateCounter >= binningData.dumpPeriod)
+                ++reduceCounter;
+                if(reduceCounter >= binningData.dumpPeriod)
                 {
                     auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
 
@@ -138,7 +138,7 @@ namespace picongpu
                     auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
 
                     reduce(
-                        typename TBinningData::AccumulationOp(),
+                        typename TBinningData::ReductionOp(),
                         hReducedBuffer->data(),
                         this->histBuffer->getHostBuffer().data(),
                         bufferExtent[0],
@@ -162,8 +162,8 @@ namespace picongpu
                     // reset device buffer
                     this->histBuffer->getDeviceBuffer().setValue(
                         pmacc::math::operation::traits::
-                            NeutralElement<typename TBinningData::AccumulationOp, TDepositedQuantity>::value);
-                    accumulateCounter = 0;
+                            NeutralElement<typename TBinningData::ReductionOp, TDepositedQuantity>::value);
+                    reduceCounter = 0;
                 }
             }
 
@@ -179,7 +179,7 @@ namespace picongpu
             void checkpoint(uint32_t currentStep, std::string const restartDirectory) override
             {
                 /**
-                 * State to hold, accumulateCounter and hReducedBuffer
+                 * State to hold, reduceCounter and hReducedBuffer
                  */
 
                 // do the mpi reduce (can be avoided if the notify did a data dump and histBuffer is empty)
@@ -191,7 +191,7 @@ namespace picongpu
                 auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
 
                 reduce(
-                    typename TBinningData::AccumulationOp(),
+                    typename TBinningData::ReductionOp(),
                     hReducedBuffer->data(),
                     this->histBuffer->getHostBuffer().data(),
                     bufferExtent[0], // this is a 1D dataspace, just access it?
@@ -213,7 +213,7 @@ namespace picongpu
                         binningData,
                         currentStep,
                         true,
-                        accumulateCounter);
+                        reduceCounter);
                 }
             }
 
@@ -253,9 +253,9 @@ namespace picongpu
                     }
 
                     auto openPMDdataFile = ::openPMD::Series(filename.str(), ::openPMD::Access::READ_ONLY);
-                    // restore accumulate counter
-                    accumulateCounter
-                        = openPMDdataFile.iterations[restartStep].getAttribute("accCounter").get<uint32_t>();
+                    // restore reduction counter
+                    reduceCounter
+                        = openPMDdataFile.iterations[restartStep].getAttribute("reduceCounter").get<uint32_t>();
                     // restore hostBuffer
                     ::openPMD::MeshRecordComponent dataset
                         = openPMDdataFile.iterations[restartStep]
