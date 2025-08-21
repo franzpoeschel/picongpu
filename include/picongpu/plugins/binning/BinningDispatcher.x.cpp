@@ -124,6 +124,14 @@ namespace picongpu
                     binner->load();
                 }
             }
+
+            void pluginUnload() override
+            {
+                for(auto&& binner : binnerVector)
+                {
+                    binner->unload();
+                }
+            }
         };
     } // namespace plugins::binning
 } // namespace picongpu

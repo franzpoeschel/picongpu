@@ -282,6 +282,64 @@ namespace picongpu
                 Environment<>::get().PluginConnector().setNotificationPeriod(this, binningData.notifyPeriod);
             }
 
+            void pluginUnload() override
+            {
+                if(!binningData.notifyPeriod.empty() && binningData.dumpPeriod > 1 && reduceCounter != 0)
+                {
+                    auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
+
+                    // Do time Averaging
+                    if(binningData.timeAveraging)
+                    {
+                        TDepositedQuantity factor = 1.0 / static_cast<double>(reduceCounter);
+
+                        constexpr uint32_t blockSize = 256u;
+                        // @todo is + blocksize - 1/ blocksize a better ceil for ints
+                        auto gridSize = (bufferExtent[0] + blockSize - 1) / blockSize;
+
+                        auto productKernel = ProductKernel<blockSize, TBinningData::getNAxes()>();
+
+                        PMACC_LOCKSTEP_KERNEL(productKernel)
+                            .template config<blockSize>(gridSize)(
+                                binningData.axisExtentsND,
+                                factor,
+                                this->histBuffer->getDeviceBuffer().getDataBox());
+                    }
+
+                    // do the mpi reduce
+                    this->histBuffer->deviceToHost();
+
+                    // allocate this only once?
+                    // using a unique_ptr here since HostBuffer does not implement move semantics
+                    auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
+
+                    reduce(
+                        typename TBinningData::ReductionOp(),
+                        hReducedBuffer->data(),
+                        this->histBuffer->getHostBuffer().data(),
+                        bufferExtent[0], // this is a 1D dataspace, just access it?
+                        mpi::reduceMethods::Reduce());
+
+                    if(isMain)
+                    {
+                        std::optional<::openPMD::Series> unload_series;
+
+                        histWriter(
+                            unload_series,
+                            OpenPMDWriteParams{
+                                std::string("/binningOpenPMD/"),
+                                std::string("end_of_run_") + binningData.binnerOutputName,
+                                binningData.openPMDInfix,
+                                binningData.openPMDExtension,
+                                binningData.openPMDJsonCfg},
+                            std::move(hReducedBuffer),
+                            binningData,
+                            Environment<>::get().SimulationDescription().getRunSteps() - 1,
+                            reduceCounter);
+                    }
+                }
+            }
+
             virtual void doBinning(uint32_t currentStep) = 0;
         };
 
