@@ -66,7 +66,6 @@ export CMAKE_PREFIX_PATH=$OPENPMD_ROOT:$CMAKE_PREFIX_PATH
 
 export PATH=$OPENPMD_ROOT/bin:$PATH
 
-export PYTHONPATH=$OPENPMD_ROOT/lib64/python3.11/site-packages/openpmd_api:$PYTHONPATH
 # Environment #################################################################
 
 export PICSRC=$PROJECT/src/picongpu
@@ -80,7 +79,7 @@ export PIC_SYSTEM_TEMPLATE_PATH=${PIC_SYSTEM_TEMPLATE_PATH:-"etc/picongpu/jureca
 export PATH=$PICSRC/bin:$PATH
 export PATH=$PICSRC/src/tools/bin:$PATH
 
-export PYTHONPATH=$PICSRC/lib/python:$PYTHONPATH
+
 
 # "tbg" default options #######################################################
 #   - SLURM (sbatch)

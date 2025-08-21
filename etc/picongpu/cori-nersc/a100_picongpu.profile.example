@@ -57,7 +57,7 @@ export PATH=$PICSRC/bin:$PATH
 export PATH=$PICSRC/src/tools/bin:$PATH
 
 export LD_LIBRARY_PATH=$ADIOS2_ROOT/lib64:$HDF5_ROOT/lib:$openPMD_ROOT/lib64:$PNGwriter_ROOT/lib64:$LD_LIBRARY_PATH
-export PYTHONPATH=$PICSRC/lib/python:$PYTHONPATH
+
 
 # "tbg" default options #######################################################
 #   - SLURM (sbatch)

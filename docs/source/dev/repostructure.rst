@@ -26,7 +26,7 @@ Directory Structure
     * ``python/``
 
       * python modules
-      * set ``PYTHONPATH`` here
+      * install piconpgu package as in :ref:`usage-python-utils` 
       * ``extra/``
 
         * modules, e.g. for RT interfaces, pre* & post-processing
