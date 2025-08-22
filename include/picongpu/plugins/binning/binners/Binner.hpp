@@ -31,6 +31,7 @@
 #    include <pmacc/mpi/reduceMethods/Reduce.hpp>
 
 #    include <cstdint>
+#    include <iostream>
 #    include <memory>
 #    include <optional>
 
@@ -252,27 +253,38 @@ namespace picongpu
                         filename << '.' << extension;
                     }
 
-                    auto openPMDdataFile = ::openPMD::Series(filename.str(), ::openPMD::Access::READ_ONLY);
-                    // restore reduction counter
-                    reduceCounter
-                        = openPMDdataFile.iterations[restartStep].getAttribute("reduceCounter").get<uint32_t>();
-                    // restore hostBuffer
-                    ::openPMD::MeshRecordComponent dataset
-                        = openPMDdataFile.iterations[restartStep]
-                              .meshes["Binning"][::openPMD::RecordComponent::SCALAR];
-                    ::openPMD::Extent extent = dataset.getExtent();
-                    ::openPMD::Offset offset(extent.size(), 0);
-                    dataset.loadChunk(
-                        std::shared_ptr<TDepositedQuantity>{histBuffer->getHostBuffer().data(), [](auto const*) {}},
-                        offset,
-                        extent);
-                    openPMDdataFile.flush();
-                    openPMDdataFile.iterations[restartStep].close();
+                    try
+                    {
+                        auto openPMDdataFile = ::openPMD::Series(filename.str(), ::openPMD::Access::READ_ONLY);
+                        // restore reduction counter
+                        reduceCounter
+                            = openPMDdataFile.iterations[restartStep].getAttribute("reduceCounter").get<uint32_t>();
+                        // restore hostBuffer
+                        ::openPMD::MeshRecordComponent dataset
+                            = openPMDdataFile.iterations[restartStep]
+                                  .meshes["Binning"][::openPMD::RecordComponent::SCALAR];
+                        ::openPMD::Extent extent = dataset.getExtent();
+                        ::openPMD::Offset offset(extent.size(), 0);
+                        dataset.loadChunk(
+                            std::shared_ptr<TDepositedQuantity>{
+                                histBuffer->getHostBuffer().data(),
+                                [](auto const*) {}},
+                            offset,
+                            extent);
+                        openPMDdataFile.flush();
+                        openPMDdataFile.iterations[restartStep].close();
 
-                    // @todo divide histBuffer by gc.getGlobalSize and call from all ranks
+                        // @todo divide histBuffer by gc.getGlobalSize and call from all ranks
 
-                    // transfer restored data to device so that it is not overwritten
-                    this->histBuffer->hostToDevice();
+                        // transfer restored data to device so that it is not overwritten
+                        this->histBuffer->hostToDevice();
+                    }
+                    catch(...)
+                    {
+                        std::cout << "Warning loading binning data from checkpoint. Will start a new binning, with "
+                                     "reduce counter starting from 0 at the first notify after restart. "
+                                  << std::endl;
+                    }
                 }
             }
 
