@@ -318,6 +318,42 @@ OpenPMD JSON Configuration
 --------------------------
 Users can set a json configuration string for the OpenPMD output format using the ``setOpenPMDJsonCfg`` setter method.
 
+Configuration Options Summary
+-----------------------------
+The following table summarizes the configuration options available for the binner object returned by `addParticleBinner()` or `addFieldBinner()`. These methods allow for fine-tuning the behavior of the binning plugin.
+
+.. list-table:: Binning Configuration Options
+   :widths: 30 50 20
+   :header-rows: 1
+
+   * - Option
+     - Description
+     - Default Value
+   * - ``setNotifyPeriod``
+     - Sets the periodicity of the output. Follows the period syntax defined :ref:`here <usage/plugins:period syntax>`.
+     - ``"1"`` (every time step)
+   * - ``setDumpPeriod``
+     - Defines the number of notify steps to reduce over before dumping. A value of 0 or 1 means dump on every notify.
+     - ``0u``
+   * - ``setHostSideHook``
+     - Sets a host-side hook (lambda/functor) to execute code before binning at each notify step.
+     - An empty lambda ``[]{}``.
+   * - ``enableRegion`` / ``disableRegion``
+     - Configures binning for particles inside (``Bounded``) or leaving (``Leaving``) the simulation volume. This is only for particle binning.
+     - ``Bounded`` region is enabled.
+   * - ``setOpenPMDWriteFunctor``
+     - Sets a functor to write custom data to the openPMD output file.
+     - An empty functor.
+   * - ``setOpenPMDJsonCfg``
+     - Sets a JSON configuration string for the openPMD output format.
+     - ``"{}"``
+   * - ``setOpenPMDExtension``
+     - Sets the file extension for the openPMD output.
+     - Default OpenPMD extension (e.g., ``.bp`` or ``.h5``).
+   * - ``setOpenPMDInfix``
+     - Sets the infix for file names in openPMD output. The default uses ``%06T`` for the time step.
+     - ``"_%06T."``
+
 OpenPMD Output
 ==============
 The binning outputs are stored in HDF5 files in ``simOutput/binningOpenPMD/`` directory.
