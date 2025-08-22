@@ -13,9 +13,9 @@ export MY_NAME="$(whoami) <$MY_MAIL>"
 # Project Information ######################################## (edit this line)
 #   - project for allocation and shared directories
 #   - use lumi-allocations to see all your projects
-#export PROJID=<your_project>
-#export PROJECT_DIR=/projappl/$PROJID/
-#export SCRATCH=/scratch/$PROJID/
+export PROJID=$(sacctmgr show assoc user=$USER format=Account%40 -n | grep project | head -n 1)
+export PROJECT_DIR=/projappl/$PROJID/
+export SCRATCH=/scratch/$PROJID/
 
 # Job control
 # Allocate more nodes then required to execute the jobs to be able to handle broken nodes
@@ -31,38 +31,33 @@ export PIC_NODE_OVERSUBSCRIPTION_PT=2
 # There are a lot of required modules already loaded when connecting
 # such as mpi, libfabric and others.
 # The following modules just add to these.
+module --force purge
 
-module load PrgEnv-cray/8.5.0 # Compiling with cray compiler wrapper CC
-module load craype-accel-amd-gfx90a
-module load rocm/6.0.3
-
-export MPICH_GPU_SUPPORT_ENABLED=1
-module load cray-mpich/8.1.29
-
-
+module load init-lumi/0.2
 module load LUMI/24.03  partition/G
-module load Boost/1.83.0-cpeCray-24.03
-
 module load buildtools/24.03
 
-## set environment variables required for compiling and linking
-##   see (https://docs.olcf.ornl.gov/systems/crusher_quick_start_guide.html#compiling-with-hipcc)
-
 export MPICH_GPU_SUPPORT_ENABLED=1
+# Compiling with amdclang from rocm module
+# Note, independent of the PrgEnv, all compilers are wrapped via cc (C-compiler) and CC (C++ compiler)
+module load PrgEnv-amd
+module load craype-accel-amd-gfx90a
+module load rocm/6.0.3
+module load Boost/1.83.0-cpeAMD-24.03
 
-export PATH=$ROCM_PATH/llvm/bin:$PATH
-export CC=clang
-export CXX=clang++
-
+## set environment variables required for compiling and linking
+##   see (https://docs.lumi-supercomputer.eu/development/compiling/prgenv/#using-the-wrappers-with-build-systems)
+#
+export CC=cc
+export CXX=CC
 export CXXFLAGS="$CXXFLAGS -I${MPICH_DIR}/include"
 export HIPFLAGS=$CXXFLAGS
-export LDFLAGS="$LDFLAGS -L${MPICH_DIR}/lib -lmpi ${PE_MPICH_GTL_DIR_amd_gfx90a} ${PE_MPICH_GTL_LIBS_amd_gfx90a}"
 
 # Other Software ##############################################################
 #
-module load libpng/1.6.40-cpeCray-24.03
-module load freetype/2.13.2-cpeCray-24.03
-module load bzip2/1.0.8-cpeCray-24.03
+module load libpng/1.6.40-cpeAMD-24.03
+module load freetype/2.13.2-cpeAMD-24.03
+module load bzip2/1.0.8-cpeAMD-24.03
 module load cray-python/3.11.7
 
 # Self-Build Software #########################################################
@@ -97,17 +92,6 @@ export TBG_SUBMIT="sbatch"
 export TBG_TPLFILE="etc/picongpu/lumi-eurohpc/standard-g.tpl"
 
 # allocate an interactive shell for one hour
-#   getNode 2  # allocates two interactive nodes (default: 1)
-function getNode() {
-    if [ -z "$1" ] ; then
-        numNodes=1
-    else
-        numNodes=$1
-    fi
-    srun  --time=1:00:00 --nodes=$numNodes --ntasks=$((numNodes * 8)) --gres=gpu:$((numNodes * 8)) --cpus-per-task=7 --ntasks-per-gpu=1 --gpu-bind=closest --mem-per-gpu=64000 -p standard-g -A $PROJID --pty bash
-}
-
-# allocate an interactive shell for one hour
 #   getDevice 2  # allocates two interactive devices (default: 1)
 function getDevice() {
     if [ -z "$1" ] ; then
@@ -120,7 +104,7 @@ function getDevice() {
             numGPUs=$1
         fi
     fi
-    srun  --time=1:00:00 --nodes=1 --ntasks=$(($numGPUs)) --gres=gpu:$(($numGPUs)) --cpus-per-task=7 --ntasks-per-gpu=1 --gpu-bind=closest --mem-per-gpu=64000 -p dev-g -A $PROJID --pty bash
+    srun  --time=1:00:00 --nodes=1 --ntasks=${numGPUs} --cpus-per-task=7 --gpus-per-task=1 --mem-per-gpu=64000 -p dev-g -A $PROJID --pty bash
 }
 
 # Load autocompletion for PIConGPU commands
