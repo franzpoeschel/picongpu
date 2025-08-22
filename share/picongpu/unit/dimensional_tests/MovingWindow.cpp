@@ -69,10 +69,12 @@ TEST_CASE("unit::MovingWindow_origin", "[movingWindow test]")
     REQUIRE(dt == 1.);
     // We now assume in tests that c and dt are 1
 
+    auto const lightDistancePerStep = c * dt;
+
     auto const cellSize = sim.pic.getCellSize();
     constexpr auto moveDirection = MovingWindow::moveDirection;
     auto const cellSizeInMoveDirection = static_cast<float_64>(cellSize[moveDirection]);
-    auto const cellsPerStep = 1. / cellSizeInMoveDirection;
+    auto const cellsPerStep = lightDistancePerStep / cellSizeInMoveDirection;
 
     SECTION("Window disabled")
     {
@@ -103,7 +105,7 @@ TEST_CASE("unit::MovingWindow_origin", "[movingWindow test]")
             = static_cast<float_64>(globalWindowSizeInMoveDirection - virtualParticleInitialStartCell)
               * cellSizeInMoveDirection;
 
-        auto const firstMoveStep = static_cast<int32_t>(std::ceil(wayToFirstMove / 1.)) - 1;
+        auto const firstMoveStep = static_cast<int32_t>(std::ceil(wayToFirstMove / lightDistancePerStep)) - 1;
 
 
         SECTION("Window enabled, but not yet moving")
@@ -169,21 +171,18 @@ TEST_CASE("unit::MovingWindow_origin", "[movingWindow test]")
 
         auto const classicVirtualParticleInitialStartCell = static_cast<uint32_t>(
             std::ceil(static_cast<float_64>(globalWindowSizeInMoveDirection) * (1.0 - movePoint)));
-
         auto const classicWayToFirstMove
             = static_cast<float_64>(globalWindowSizeInMoveDirection - classicVirtualParticleInitialStartCell)
               * cellSizeInMoveDirection;
-
-        auto const classicFirstMoveStep = static_cast<int32_t>(std::ceil(classicWayToFirstMove / 1.)) - 1;
+        auto const classicFirstMoveStep
+            = static_cast<int32_t>(std::ceil(classicWayToFirstMove / lightDistancePerStep)) - 1;
 
 
         // This virtual particle starts from the negative domain and moves immidiately with c
         auto const virtualParticleInitialStartCell
             = -1 * math::floor(static_cast<float_64>(globalWindowSizeInMoveDirection) * (movePoint));
-
         auto const wayToFirstMove = static_cast<float_64>(-virtualParticleInitialStartCell) * cellSizeInMoveDirection;
-
-        auto const firstMoveStep = static_cast<int32_t>(std::ceil(wayToFirstMove / 1.)) - 1;
+        auto const firstMoveStep = static_cast<int32_t>(std::ceil(wayToFirstMove / lightDistancePerStep)) - 1;
 
         REQUIRE(firstMoveStep == classicFirstMoveStep);
     }
@@ -200,7 +199,7 @@ TEST_CASE("unit::MovingWindow_origin", "[movingWindow test]")
         auto const virtualParticleInitialStartCell
             = -1 * math::floor(static_cast<float_64>(globalWindowSizeInMoveDirection) * (movePoint));
         auto const wayToFirstMove = static_cast<float_64>(-virtualParticleInitialStartCell) * cellSizeInMoveDirection;
-        auto const firstMoveStep = static_cast<int32_t>(std::ceil(wayToFirstMove / 1.)) - 1;
+        auto const firstMoveStep = static_cast<int32_t>(std::ceil(wayToFirstMove / lightDistancePerStep)) - 1;
 
         for(int step = 1; step < endStep; ++step)
         {
