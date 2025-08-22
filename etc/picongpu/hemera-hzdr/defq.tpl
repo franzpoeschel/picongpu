@@ -98,8 +98,7 @@ mkdir simOutput 2> /dev/null
 cd simOutput
 ln -s ../stdout output
 
-if [ $? -eq 0 ] ; then
-  # Run PIConGPU
-  source !TBG_dstPath/tbg/handleSlurmSignals.sh mpiexec -np !TBG_tasks --bind-to none !TBG_dstPath/tbg/cpuNumaStarter.sh \
-    !TBG_dstPath/input/bin/picongpu !TBG_author !TBG_programParams
-fi
+
+# Run PIConGPU
+source !TBG_dstPath/tbg/handleSlurmSignals.sh mpiexec -np !TBG_tasks --bind-to none !TBG_dstPath/tbg/cpuNumaStarter.sh \
+       !TBG_dstPath/input/bin/picongpu !TBG_author !TBG_programParams
