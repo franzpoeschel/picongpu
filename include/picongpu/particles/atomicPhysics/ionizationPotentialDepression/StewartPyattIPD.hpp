@@ -227,7 +227,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
 
             // (eV * sim.unit.length()) / (eV * sim.unit.length()), not weighted
             // unitless, not weighted
-            float_X const K = (debyeLength <= 0._X || temperatureTimesk_Boltzman <= 0._X)
+            float_X const K = (pmacc::math::isApproxZero(temperatureTimesk_Boltzman * debyeLength))
                                   ? 0._X
                                   : constFactor / (temperatureTimesk_Boltzman * debyeLength);
 
