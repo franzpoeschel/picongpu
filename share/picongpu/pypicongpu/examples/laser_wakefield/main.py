@@ -9,8 +9,13 @@ from picongpu import picmi
 from picongpu import pypicongpu
 import numpy as np
 from scipy.constants import c
+import logging
 
 from picongpu.pypicongpu.output.png import EMFieldScaleEnum, ColorScaleEnum
+
+# set log level:
+# options (in ascending order) are: DEBUG, INFO, WARNING, ERROR, CRITICAL
+logging.basicConfig(level=logging.WARNING)
 
 """
 @file PICMI user script reproducing the PIConGPU LWFA example

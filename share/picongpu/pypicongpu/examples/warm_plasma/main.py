@@ -4,9 +4,15 @@ Copyright 2021-2024 PIConGPU contributors
 Authors: Hannes Troepgen
 License: GPLv3+
 """
+import logging
 
 from picongpu import picmi
 from picongpu.picmi.diagnostics.timestepspec import TimeStepSpec
+
+# set log level:
+# options (in ascending order) are: DEBUG, INFO, WARNING, ERROR, CRITICAL
+logging.basicConfig(level=logging.WARNING)
+
 
 OUTPUT_DIRECTORY_PATH = "warm_plasma"
 
