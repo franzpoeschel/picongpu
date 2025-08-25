@@ -56,7 +56,7 @@ namespace picongpu
         {
         public:
             using TDepositedQuantity = typename TBinningData::DepositedQuantityType;
-
+            using ReductionOp = typename TBinningData::ReductionOp;
             friend class BinningCreator;
 
         protected:
@@ -81,8 +81,7 @@ namespace picongpu
                 this->histBuffer = std::make_unique<HostDeviceBuffer<TDepositedQuantity, 1>>(
                     binningData.axisExtentsND.productOfComponents());
                 this->histBuffer->getDeviceBuffer().setValue(
-                    pmacc::math::operation::traits::
-                        NeutralElement<typename TBinningData::ReductionOp, TDepositedQuantity>::value);
+                    pmacc::math::operation::traits::NeutralElement<ReductionOp, TDepositedQuantity>::value);
                 isMain = reduce.hasResult(mpi::reduceMethods::Reduce());
             }
 
@@ -139,7 +138,7 @@ namespace picongpu
                     auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
 
                     reduce(
-                        typename TBinningData::ReductionOp(),
+                        ReductionOp(),
                         hReducedBuffer->data(),
                         this->histBuffer->getHostBuffer().data(),
                         bufferExtent[0],
@@ -163,8 +162,7 @@ namespace picongpu
                     }
                     // reset device buffer
                     this->histBuffer->getDeviceBuffer().setValue(
-                        pmacc::math::operation::traits::
-                            NeutralElement<typename TBinningData::ReductionOp, TDepositedQuantity>::value);
+                        pmacc::math::operation::traits::NeutralElement<ReductionOp, TDepositedQuantity>::value);
                     reduceCounter = 0;
                 }
             }
@@ -193,7 +191,7 @@ namespace picongpu
                 auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
 
                 reduce(
-                    typename TBinningData::ReductionOp(),
+                    ReductionOp(),
                     hReducedBuffer->data(),
                     this->histBuffer->getHostBuffer().data(),
                     bufferExtent[0], // this is a 1D dataspace, just access it?
@@ -281,8 +279,8 @@ namespace picongpu
                     }
                     catch(...)
                     {
-                        std::cout << "Warning loading binning data from checkpoint. Will start a new binning, with "
-                                     "reduce counter starting from 0 at the first notify after restart. "
+                        std::cout << "Warning! Unable to load binning data from checkpoint. Will start a new binning, "
+                                     "with reduce counter starting from 0 at the first notify after restart."
                                   << std::endl;
                     }
                 }
@@ -326,7 +324,7 @@ namespace picongpu
                     auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
 
                     reduce(
-                        typename TBinningData::ReductionOp(),
+                        ReductionOp(),
                         hReducedBuffer->data(),
                         this->histBuffer->getHostBuffer().data(),
                         bufferExtent[0], // this is a 1D dataspace, just access it?

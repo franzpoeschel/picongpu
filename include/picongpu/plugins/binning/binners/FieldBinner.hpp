@@ -46,6 +46,8 @@ namespace picongpu
             }
 
         private:
+            using ReductionOp = typename Binner<TBinningData>::ReductionOp;
+
             void doBinning(uint32_t currentStep) override
             {
                 // Call fill fields function
@@ -75,8 +77,8 @@ namespace picongpu
                     this->binningData.axisTuple,
                     [&](auto const& axis) -> decltype(auto) { return axis.getAxisKernel(); });
 
-                auto const functorBlock = FieldBinningKernel<
-                    pmacc::math::operation::traits::AlpakaAtomicOp_t<typename TBinningData::ReductionOp>>{};
+                auto const functorBlock
+                    = FieldBinningKernel<pmacc::math::operation::traits::AlpakaAtomicOp_t<ReductionOp>>{};
 
                 auto const userFunctorData = std::apply(
                     [&](auto&&... fields)

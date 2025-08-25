@@ -42,6 +42,8 @@ namespace picongpu
         class ParticleBinner : public Binner<TBinningData>
         {
         public:
+            using ReductionOp = typename Binner<TBinningData>::ReductionOp;
+
             ParticleBinner(TBinningData const& bd, MappingDesc* cellDesc) : Binner<TBinningData>(bd, cellDesc)
             {
             }
@@ -128,8 +130,8 @@ namespace picongpu
                             transformFieldInfo(std::forward<decltype(extras)>(extras))...);
                     },
                     this->binningData.extraData);
-                auto const functorBlock = ParticleBinningKernel<
-                    pmacc::math::operation::traits::AlpakaAtomicOp_t<typename TBinningData::ReductionOp>>{};
+                auto const functorBlock
+                    = ParticleBinningKernel<pmacc::math::operation::traits::AlpakaAtomicOp_t<ReductionOp>>{};
 
                 PMACC_LOCKSTEP_KERNEL(functorBlock)
                     .config(mapper.getGridDim(), particlesBox)(
@@ -201,7 +203,7 @@ namespace picongpu
                             binner->binningData.extraData);
 
                         auto const functorLeaving = LeavingParticleBinningKernel<
-                            pmacc::math::operation::traits::AlpakaAtomicOp_t<typename TBinningData::ReductionOp>>{};
+                            pmacc::math::operation::traits::AlpakaAtomicOp_t<ReductionOp>>{};
 
                         PMACC_LOCKSTEP_KERNEL(functorLeaving)
                             .config(mapper.getGridDim(), particlesBox)(
