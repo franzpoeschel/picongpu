@@ -26,6 +26,7 @@
 #    include "picongpu/plugins/binning/binners/Binner.hpp"
 #    include "picongpu/plugins/binning/utility.hpp"
 
+#    include <pmacc/math/operation/traits.hpp>
 #    include <pmacc/memory/STLTuple.hpp>
 #    include <pmacc/meta/errorHandlerPolicies/ReturnType.hpp>
 #    include <pmacc/mpi/MPIReduce.hpp>

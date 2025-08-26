@@ -86,7 +86,6 @@ namespace picongpu::plugins::binning
       .setOpenPMDInfix("{{{openPMDInfix}}}")
       {{/openPMDInfix}}
       .setDumpPeriod({{{dumpPeriod}}})
-      .setTimeAveraging({{#timeAveraging}}true{{/timeAveraging}}{{^timeAveraging}}false{{/timeAveraging}})
       ;
   }
   {{/data}}

@@ -114,7 +114,6 @@ namespace picongpu
 
                 std::string date = helper::getDateString("%F %T %z");
                 series.setDate(date);
-                series.setAttribute("timeAveragingEnabled", binningData.timeAveraging);
 
                 /* end recommended openPMD global attributes */
 

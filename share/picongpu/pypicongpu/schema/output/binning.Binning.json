@@ -59,10 +59,6 @@
       ],
       "description": "Infix for openPMD output files"
     },
-    "timeAveraging": {
-      "type": "boolean",
-      "description": "Time average the reduced data when doing the dump"
-    },
     "dumpPeriod": {
       "type": "integer",
       "description": "The number of notify steps to accumulate over. Dump at the end."

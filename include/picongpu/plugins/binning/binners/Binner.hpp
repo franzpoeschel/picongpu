@@ -23,15 +23,13 @@
 
 #    include "picongpu/plugins/binning/UnitConversion.hpp"
 #    include "picongpu/plugins/binning/WriteHist.hpp"
-#    include "picongpu/plugins/binning/functors/helpers.hpp"
-#    include "picongpu/plugins/binning/utility.hpp"
 
+#    include <pmacc/math/operation/traits.hpp>
 #    include <pmacc/meta/errorHandlerPolicies/ReturnType.hpp>
 #    include <pmacc/mpi/MPIReduce.hpp>
 #    include <pmacc/mpi/reduceMethods/Reduce.hpp>
 
 #    include <cstdint>
-#    include <iostream>
 #    include <memory>
 #    include <optional>
 
@@ -98,38 +96,10 @@ namespace picongpu
                 // @todo auto range init. Init ranges and AxisKernels
                 doBinning(currentStep);
 
-                /**
-                 * Deal with time averaging and notify
-                 * if period, print output, reset memory to zero
-                 */
-
-                /**
-                 * Time averaging on n, means reduce, then average over N notifies
-                 * dumpPeriod == 0 is the same as 1. No averaging, output at every step
-                 */
                 ++reduceCounter;
                 if(reduceCounter >= binningData.dumpPeriod)
                 {
                     auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
-
-                    // Do time Averaging
-                    if(binningData.dumpPeriod > 1 && binningData.timeAveraging)
-                    {
-                        TDepositedQuantity factor = 1.0 / static_cast<double>(binningData.dumpPeriod);
-
-                        constexpr uint32_t blockSize = 256u;
-                        // @todo is + blocksize - 1/ blocksize a better ceil for ints
-                        auto gridSize = (bufferExtent[0] + blockSize - 1) / blockSize;
-
-                        auto productKernel = ProductKernel<blockSize, TBinningData::getNAxes()>();
-
-                        PMACC_LOCKSTEP_KERNEL(productKernel)
-                            .template config<blockSize>(gridSize)(
-                                binningData.axisExtentsND,
-                                factor,
-                                this->histBuffer->getDeviceBuffer().getDataBox());
-                    }
-
                     // do the mpi reduce
                     this->histBuffer->deviceToHost();
 
@@ -297,25 +267,6 @@ namespace picongpu
                 if(!binningData.notifyPeriod.empty() && binningData.dumpPeriod > 1 && reduceCounter != 0)
                 {
                     auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
-
-                    // Do time Averaging
-                    if(binningData.timeAveraging)
-                    {
-                        TDepositedQuantity factor = 1.0 / static_cast<double>(reduceCounter);
-
-                        constexpr uint32_t blockSize = 256u;
-                        // @todo is + blocksize - 1/ blocksize a better ceil for ints
-                        auto gridSize = (bufferExtent[0] + blockSize - 1) / blockSize;
-
-                        auto productKernel = ProductKernel<blockSize, TBinningData::getNAxes()>();
-
-                        PMACC_LOCKSTEP_KERNEL(productKernel)
-                            .template config<blockSize>(gridSize)(
-                                binningData.axisExtentsND,
-                                factor,
-                                this->histBuffer->getDeviceBuffer().getDataBox());
-                    }
-
                     // do the mpi reduce
                     this->histBuffer->deviceToHost();
 

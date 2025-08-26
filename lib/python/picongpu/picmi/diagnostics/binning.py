@@ -151,7 +151,6 @@ class Binning:
         openPMD: Optional[dict] = None,
         openPMDExt: Optional[str] = None,
         openPMDInfix: Optional[str] = None,
-        timeAveraging: bool = True,
         dumpPeriod: int = 1,
     ):
         self.name = name
@@ -164,7 +163,6 @@ class Binning:
         self.openPMD = openPMD
         self.openPMDExt = openPMDExt
         self.openPMDInfix = openPMDInfix
-        self.timeAveraging = timeAveraging
         self.dumpPeriod = dumpPeriod
 
     def get_as_pypicongpu(
@@ -186,6 +184,5 @@ class Binning:
             openPMD=self.openPMD,
             openPMDExt=self.openPMDExt,
             openPMDInfix=self.openPMDInfix,
-            timeAveraging=self.timeAveraging,
             dumpPeriod=self.dumpPeriod,
         )

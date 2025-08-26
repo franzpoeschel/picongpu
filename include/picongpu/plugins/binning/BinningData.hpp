@@ -78,7 +78,6 @@ namespace picongpu
             /* Optional parameters not initialized by constructor.
              * Use the return value of add...Binner() to modify them if needed. */
             std::function<void()> hostHook = [] {};
-            bool timeAveraging = false;
             std::string notifyPeriod = "1";
             uint32_t dumpPeriod = 0u;
 
@@ -118,13 +117,6 @@ namespace picongpu
             Child& interpretAsChild()
             {
                 return *static_cast<Child*>(this);
-            }
-
-            /** @brief Time average the reduced data when doing the dump. Defaults to false. */
-            Child& setTimeAveraging(bool timeAv)
-            {
-                timeAveraging = timeAv;
-                return interpretAsChild();
             }
 
             /** @brief The periodicity of the output. Defaults to 1 */

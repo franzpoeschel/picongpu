@@ -10,7 +10,6 @@ Users can
 	- Choose which species are used for particle binning
 	- Choose which fields are used for field binning
 	- Choose how frequently they want the binning to be executed
-	- Choose if the binning should be time averaging
 	- Write custom output to file, for example other quantities related to the simulation which the user is interested in
 	- Execute multiple binnings at the same time
 	- Pass extra parameters as a tuple, if additional information is required by the kernels to do binning.
@@ -281,18 +280,9 @@ Set the periodicity of the output. Follows the period syntax defined :ref:`here 
 Dump Period
 -----------
 Defines the number of notify steps to reduce over. Note that this is not a reduction over actual PIC iterations, but over the notify periods.
-If time averaging is enabled, this is also the period to do time averaging over.
 For example a value of 10 means that after every 10 notifies, an reduced file will be written out.
 If PIConGPU exits before executing 10 notifies, then there will be no output.
 The plugin dumps on every notify if this is set to either 0 or 1. This is the default behaviour.
-
-Time Averaging
---------------
-When dumping the reduced output, whether or not to divide by the dump period, i.e. do a time averaging. Disabled by default.
-
-.. attention::
-
-	The user needs to set a dump period to enable time averaging.
 
 
 Binning Particles Leaving the Simulation Volume
@@ -306,7 +296,7 @@ This can be configured using the ``enableRegion`` and ``disableRegion`` options 
 .. attention::
 
 Users must carefully configure the notify period when using the binning plugin for leaving particles. The plugin bins particles leaving the global simulation volume at every timestep (except 0) after particles are pushed, regardless of the notify period.
-If the plugin is not notified at every timestep, this can cause discrepancies between the binning process and time-averaged data or histogram dumps, which follow the notify period.
+If the plugin is not notified at every timestep, this can cause discrepancies between the binning process and histogram dumps, which follow the notify period.
 Additionally, the binning plugin is first notified at timestep 0, allowing users to bin initial conditions. However, leaving particles are first binned at timestep 1, after the initial particle push.
 Therefore, users should consider setting the notify period’s start at timestep 1, depending on their specific needs.
 
@@ -351,7 +341,6 @@ Attribute                   Hierarchy   Description
 ``<axisName>_bin_edges``    Mesh        The edges of the bins of an axis in SI units
 ``<axisName>_units``        Mesh        The units of an axis
 ``reduceCounter``           Iteration   Reduction operations per dump period
-``timeAveragingEnabled``    Series      If time averaging of dumps is enabled
 =========================== =========== ==========================================================
 
 Reduction

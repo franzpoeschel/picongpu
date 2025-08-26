@@ -28,6 +28,7 @@
 #    include "picongpu/plugins/binning/utility.hpp"
 #    include "picongpu/plugins/misc/ExecuteIf.hpp"
 
+#    include <pmacc/math/operation/traits.hpp>
 #    include <pmacc/meta/errorHandlerPolicies/ReturnType.hpp>
 #    include <pmacc/mpi/MPIReduce.hpp>
 #    include <pmacc/mpi/reduceMethods/Reduce.hpp>
