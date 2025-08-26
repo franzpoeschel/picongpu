@@ -81,3 +81,7 @@ repos:
         args: [-c, --diff, --no-warn-about-unknown-commands]
       - id: gersemi
         args: [-i, --no-warn-about-unknown-commands]
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "v2.5.0"
+    hooks:
+      - id: pyproject-fmt
