@@ -99,20 +99,7 @@ namespace picongpu
                 ++reduceCounter;
                 if(reduceCounter >= binningData.dumpPeriod)
                 {
-                    auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
-                    // do the mpi reduce
-                    this->histBuffer->deviceToHost();
-
-                    // allocate this only once?
-                    // using a unique_ptr here since HostBuffer does not implement move semantics
-                    auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
-
-                    reduce(
-                        ReductionOp(),
-                        hReducedBuffer->data(),
-                        this->histBuffer->getHostBuffer().data(),
-                        bufferExtent[0],
-                        mpi::reduceMethods::Reduce());
+                    auto hReducedBuffer = getReducedBuffer();
 
                     if(isMain)
                     {
@@ -146,26 +133,14 @@ namespace picongpu
                 return pluginName;
             }
 
+            // if reduceCounter is zero, i.e. notify did a data dump and histBuffer is empty, we still create a
+            // checkpoint with an empty buffer, so that restart doesnt throw a warning about missing a checkpoint
             void checkpoint(uint32_t currentStep, std::string const restartDirectory) override
             {
                 /**
                  * State to hold, reduceCounter and hReducedBuffer
                  */
-
-                // do the mpi reduce (can be avoided if the notify did a data dump and histBuffer is empty)
-                this->histBuffer->deviceToHost();
-                auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
-
-                // allocate this only once?
-                // using a unique_ptr here since HostBuffer does not implement move semantics
-                auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
-
-                reduce(
-                    ReductionOp(),
-                    hReducedBuffer->data(),
-                    this->histBuffer->getHostBuffer().data(),
-                    bufferExtent[0], // this is a 1D dataspace, just access it?
-                    mpi::reduceMethods::Reduce());
+                auto hReducedBuffer = getReducedBuffer();
 
                 if(isMain)
                 {
@@ -266,20 +241,7 @@ namespace picongpu
             {
                 if(!binningData.notifyPeriod.empty() && binningData.dumpPeriod > 1 && reduceCounter != 0)
                 {
-                    auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
-                    // do the mpi reduce
-                    this->histBuffer->deviceToHost();
-
-                    // allocate this only once?
-                    // using a unique_ptr here since HostBuffer does not implement move semantics
-                    auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
-
-                    reduce(
-                        ReductionOp(),
-                        hReducedBuffer->data(),
-                        this->histBuffer->getHostBuffer().data(),
-                        bufferExtent[0], // this is a 1D dataspace, just access it?
-                        mpi::reduceMethods::Reduce());
+                    auto hReducedBuffer = getReducedBuffer();
 
                     if(isMain)
                     {
@@ -302,6 +264,25 @@ namespace picongpu
             }
 
             virtual void doBinning(uint32_t currentStep) = 0;
+
+            std::unique_ptr<HostBuffer<TDepositedQuantity, 1>> getReducedBuffer()
+            {
+                // do the mpi reduce
+                this->histBuffer->deviceToHost();
+                auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
+
+                // allocate this only once?
+                // using a unique_ptr here since HostBuffer does not implement move semantics
+                auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
+
+                reduce(
+                    ReductionOp(),
+                    hReducedBuffer->data(),
+                    this->histBuffer->getHostBuffer().data(),
+                    bufferExtent[0], // this is a 1D dataspace, just access it?
+                    mpi::reduceMethods::Reduce());
+                return hReducedBuffer;
+            }
         };
 
 
