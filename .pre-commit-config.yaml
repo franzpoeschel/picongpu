@@ -74,3 +74,10 @@ repos:
       - id: require-ascii
         exclude_types: [rst]
         exclude: CHANGELOG.md|.zenodo.json
+  - repo: https://github.com/BlankSpruce/gersemi
+    rev: 0.22.1
+    hooks:
+      - id: gersemi
+        args: [-c, --diff, --no-warn-about-unknown-commands]
+      - id: gersemi
+        args: [-i, --no-warn-about-unknown-commands]
