@@ -38,7 +38,7 @@ variables:
 #   - check C++ code style
 pull-request-validation:
   stage: validate
-  image: ubuntu:focal
+  image: ubuntu:noble
   variables:
     PIP_BREAK_SYSTEM_PACKAGES: 1
   script:
