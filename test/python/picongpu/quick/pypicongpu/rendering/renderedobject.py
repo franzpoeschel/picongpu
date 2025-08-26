@@ -5,6 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from picongpu.pypicongpu.rendering.renderedobject import SelfRegisteringRenderedObject
 from picongpu.pypicongpu.rendering import RenderedObject
 
 from picongpu.pypicongpu.field_solver import YeeSolver
@@ -312,3 +313,128 @@ class TestRenderedObject(unittest.TestCase):
         with self.assertLogs(level="WARNING") as caught_logs_accepted:
             SimpleObject().get_rendering_context()
         self.assertEqual(1, len(caught_logs_accepted.output))
+
+
+class TestSelfRegisteringRenderedObject(unittest.TestCase):
+    def setUp(self):
+        class Base(SelfRegisteringRenderedObject):
+            def _get_serialized(self):
+                return {}
+
+        self.Base = Base
+        # We don't want to check against a schema for now:
+        RenderedObject.check_context_for_type = lambda _, c: c
+
+    def test_names_list_is_empty(self):
+        self.assertSequenceEqual(self.Base().get_rendering_context()["typeID"].keys(), [])
+
+    def test_subclass_without_name_is_not_registered(self):
+        class UnregisteredSubclass(self.Base):
+            pass
+
+        self.assertSequenceEqual(list(self.Base().get_rendering_context()["typeID"].keys()), [])
+
+    def test_subclass_with_name_is_registered(self):
+        class RegisteredSubclass(self.Base):
+            _name = "arbitrary_name"
+
+        self.assertSequenceEqual(list(self.Base().get_rendering_context()["typeID"].keys()), [RegisteredSubclass._name])
+
+    def test_two_subclasses_with_name_are_registered(self):
+        class RegisteredSubclass1(self.Base):
+            _name = "arbitrary_name1"
+
+        class RegisteredSubclass2(self.Base):
+            _name = "arbitrary_name2"
+
+        self.assertSequenceEqual(
+            list(self.Base().get_rendering_context()["typeID"].keys()),
+            [RegisteredSubclass1._name, RegisteredSubclass2._name],
+        )
+
+    def test_leaves_can_register(self):
+        class BaseClass(self.Base):
+            pass
+
+        class LeafClass(BaseClass):
+            _name = "arbitrary_name2"
+
+        self.assertSequenceEqual(list(self.Base().get_rendering_context()["typeID"].keys()), [LeafClass._name])
+
+    def test_z(self):
+        # This test is last in lexicographical ordering.
+        # It's to make sure that if the tests are run deterministically in lexicographical order,
+        # the preconditions are still fulfilled.
+        self.assertSequenceEqual(list(self.Base().get_rendering_context()["typeID"].keys()), [])
+
+    def test_multiple_hierarchies_are_independent(self):
+        class BaseClass1(SelfRegisteringRenderedObject):
+            pass
+
+        class LeafClass1(BaseClass1):
+            _name = "arbitrary_name2"
+
+            def _get_serialized(self):
+                return {}
+
+        class BaseClass2(SelfRegisteringRenderedObject):
+            pass
+
+        class LeafClass2(BaseClass2):
+            _name = "arbitrary_name2"
+
+            def _get_serialized(self):
+                return {}
+
+        self.assertSequenceEqual(list(LeafClass1().get_rendering_context()["typeID"].keys()), [LeafClass1._name])
+        self.assertSequenceEqual(list(LeafClass2().get_rendering_context()["typeID"].keys()), [LeafClass2._name])
+
+    def test_different_leaves_know_who_they_are(self):
+        class LeafClass1(self.Base):
+            _name = "arbitrary_name1"
+
+        class LeafClass2(self.Base):
+            _name = "arbitrary_name2"
+
+        self.assertTrue(LeafClass1().get_rendering_context()["typeID"][LeafClass1._name])
+        self.assertFalse(LeafClass1().get_rendering_context()["typeID"][LeafClass2._name])
+        self.assertFalse(LeafClass2().get_rendering_context()["typeID"][LeafClass1._name])
+        self.assertTrue(LeafClass2().get_rendering_context()["typeID"][LeafClass2._name])
+
+    def test_get_serialized_into_data(self):
+        arbitrary_value = 42
+
+        class LeafClass(self.Base):
+            _name = "another_arbitrary_name"
+
+            def _get_serialized(self):
+                return {"arbitrary_name": arbitrary_value}
+
+        self.assertDictEqual(LeafClass().get_rendering_context()["data"], LeafClass()._get_serialized())
+
+    def test_schema_is_checked_for_base_as_well_as_child(self):
+        types = []
+        RenderedObject.check_context_for_type = lambda t, c: types.append(t) or c
+
+        class LeafClass(self.Base):
+            _name = "arbitrary_name"
+
+        LeafClass().get_rendering_context()
+        self.assertSetEqual(set(types), {self.Base, LeafClass})
+
+    def test_in_deep_hierarchies_only_leaf_and_topmost_schemas_are_checked(self):
+        types = []
+        RenderedObject.check_context_for_type = lambda t, c: types.append(t) or c
+
+        class BaseClass(self.Base):
+            # This is an additional layer but it is not checked in the schema.
+            pass
+
+        class LeafClass(BaseClass):
+            _name = "arbitrary_name2"
+
+            def _get_serialized(self):
+                return {}
+
+        LeafClass().get_rendering_context()
+        self.assertSetEqual(set(types), {self.Base, LeafClass})
