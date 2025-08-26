@@ -5,18 +5,19 @@ Authors: Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
-from picongpu.picmi.copy_attributes import converts_to
-from ...pypicongpu.output.png import Png as PyPIConGPUPNG
-from ...pypicongpu.output.png import EMFieldScaleEnum, ColorScaleEnum
+from typing import List
 
+import typeguard
+
+from picongpu.picmi.copy_attributes import default_converts_to
+
+from ...pypicongpu.output.png import ColorScaleEnum, EMFieldScaleEnum
+from ...pypicongpu.output.png import Png as PyPIConGPUPNG
 from ..species import Species as PICMISpecies
 from .timestepspec import TimeStepSpec
 
-import typeguard
-from typing import List
 
-
-@converts_to(PyPIConGPUPNG, conversions={"species": lambda self, d, *args: d.get(self.species)})
+@default_converts_to(PyPIConGPUPNG, conversions={"species": lambda self, d, *args: d.get(self.species)})
 @typeguard.typechecked
 class Png:
     """

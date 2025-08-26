@@ -186,7 +186,7 @@ class TimeStepSpec(metaclass=_TimeStepSpecMeta):
             spec.step,
         )
 
-    def get_as_pypicongpu(self, time_step_size, num_steps):
+    def get_as_pypicongpu(self, time_step_size, num_steps, **kwargs):
         """
         Creates the corresponding pypicongpu object by translating every specification
         into non-negative (except for -1) slices in units of steps. It takes `time_step_size`

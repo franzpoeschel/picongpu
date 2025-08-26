@@ -5,17 +5,19 @@ Authors: Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
+import typeguard
+
+from picongpu.picmi.copy_attributes import default_converts_to
+
 from ...pypicongpu.output.macro_particle_count import (
     MacroParticleCount as PyPIConGPUMacroParticleCount,
 )
 from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
-
 from ..species import Species as PICMISpecies
 from .timestepspec import TimeStepSpec
 
-import typeguard
 
-
+@default_converts_to(PyPIConGPUMacroParticleCount, conversions={"species": lambda self, d, *args: d.get(self.species)})
 @typeguard.typechecked
 class MacroParticleCount:
     """
@@ -41,22 +43,11 @@ class MacroParticleCount:
         self.species = species
         self.period = period
 
-    def get_as_pypicongpu(
-        self,
-        dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies],
-        time_step_size,
-        num_steps,
+    def check(
+        self, dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies], *args, **kwargs
     ) -> PyPIConGPUMacroParticleCount:
         if self.species not in dict_species_picmi_to_pypicongpu.keys():
             raise ValueError(f"Species {self.species} is not known to Simulation")
-
         pypicongpu_species = dict_species_picmi_to_pypicongpu.get(self.species)
-
         if pypicongpu_species is None:
             raise ValueError(f"Species {self.species} is not mapped to a PyPIConGPUSpecies.")
-
-        pypicongpu_macro_count = PyPIConGPUMacroParticleCount()
-        pypicongpu_macro_count.species = pypicongpu_species
-        pypicongpu_macro_count.period = self.period.get_as_pypicongpu(time_step_size, num_steps)
-
-        return pypicongpu_macro_count

@@ -17,13 +17,7 @@ from ..species import Species as PICMISpecies
 import typeguard
 
 
-@default_converts_to(
-    PyPIConGPUEnergyHistogram,
-    conversions={
-        "period": lambda self, _, time_step_size, num_steps: self.period.get_as_pypicongpu(time_step_size, num_steps),
-        "species": lambda self, d, *args: d.get(self.species),
-    },
-)
+@default_converts_to(PyPIConGPUEnergyHistogram, conversions={"species": lambda self, d, *args: d.get(self.species)})
 @typeguard.typechecked
 class EnergyHistogram:
     """

@@ -524,7 +524,11 @@ class Simulation(picmistandard.PICMI_Simulation):
         s.init_manager, pypicongpu_by_picmi_species = self.__get_init_manager()
 
         s.plugins = [
-            entry.get_as_pypicongpu(pypicongpu_by_picmi_species, self.time_step_size, s.time_steps)
+            entry.get_as_pypicongpu(
+                dict_species_picmi_to_pypicongpu=pypicongpu_by_picmi_species,
+                time_step_size=self.time_step_size,
+                num_steps=s.time_steps,
+            )
             for entry in self.diagnostics
         ]
 

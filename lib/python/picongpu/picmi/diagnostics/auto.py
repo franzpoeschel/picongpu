@@ -30,6 +30,3 @@ class Auto:
 
     def __init__(self, period: TimeStepSpec) -> None:
         self.period = period
-
-    def check(self, *args, **kwargs):
-        pass
