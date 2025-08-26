@@ -57,9 +57,9 @@ class TestSimulation(unittest.TestCase):
         self.laser.wavelength = 1.2
         self.laser.waist = 3.4
         self.laser.duration = 5.6
-        self.laser.focus_pos = [0, 7.8, 0]
+        self.laser.focal_position = [0, 7.8, 0]
         self.laser.centroid_position = [0, 0, 0]
-        self.laser.phase = 2.9
+        self.laser.phi0 = 2.9
         self.laser.E0 = 9.0
         self.laser.pulse_init = 1.3
         self.laser.propagation_direction = [0, 1, 0]

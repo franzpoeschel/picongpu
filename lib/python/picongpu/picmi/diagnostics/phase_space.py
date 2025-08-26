@@ -5,25 +5,18 @@ Authors: Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
-from picongpu.picmi.copy_attributes import converts_to
-from ...pypicongpu.output.phase_space import PhaseSpace as PyPIConGPUPhaseSpace
+from typing import Literal
 
+import typeguard
+
+from picongpu.picmi.copy_attributes import default_converts_to
+
+from ...pypicongpu.output.phase_space import PhaseSpace as PyPIConGPUPhaseSpace
 from ..species import Species as PICMISpecies
 from .timestepspec import TimeStepSpec
 
-import typeguard
-from typing import Literal
 
-
-@converts_to(
-    PyPIConGPUPhaseSpace,
-    conversions={
-        "species": lambda self, d, *args: d.get(self.species),
-        "period": lambda self, _, *args: self.period.get_as_pypicongpu(*args),
-    },
-    preamble=lambda self, d, *args: self.check(d),
-    ignore=["check"],
-)
+@default_converts_to(PyPIConGPUPhaseSpace, conversions={"species": lambda self, d, *args: d.get(self.species)})
 @typeguard.typechecked
 class PhaseSpace:
     """

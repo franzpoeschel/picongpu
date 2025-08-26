@@ -11,10 +11,12 @@ import typing
 import typeguard
 
 from ...pypicongpu import laser
+from ..copy_attributes import default_converts_to
 from .base_laser import BaseLaser
 from .polarization_type import PolarizationType
 
 
+@default_converts_to(laser.PlaneWaveLaser)
 @typeguard.typechecked
 class PlaneWaveLaser(BaseLaser):
     """
@@ -90,24 +92,11 @@ class PlaneWaveLaser(BaseLaser):
         self.picongpu_plateau_duration = picongpu_plateau_duration
         self.picongpu_polarization_type = picongpu_polarization_type
         self.picongpu_huygens_surface_positions = picongpu_huygens_surface_positions
+        self.focus_pos = [0.0, 0.0, 0.0]
+        self._validate_common_properties()
+        self.pulse_init = self._compute_pulse_init()
 
     """PICMI object for Plane Wave Laser"""
 
-    def get_as_pypicongpu(self) -> laser.PlaneWaveLaser:
+    def check(self):
         self._validate_common_properties()
-
-        pypicongpu_laser = laser.PlaneWaveLaser()
-        pypicongpu_laser.wavelength = self.wavelength
-        pypicongpu_laser.duration = self.duration
-        pypicongpu_laser.focus_pos = [0.0, 0.0, 0.0]
-        pypicongpu_laser.phase = self.phi0
-        pypicongpu_laser.E0 = self.E0
-        pypicongpu_laser.pulse_init = self._compute_pulse_init()
-        pypicongpu_laser.polarization_type = self.picongpu_polarization_type.get_as_pypicongpu()
-        pypicongpu_laser.polarization_direction = self.polarization_direction
-        pypicongpu_laser.laser_nofocus_constant_si = self.picongpu_plateau_duration
-        pypicongpu_laser.propagation_direction = self.propagation_direction
-
-        pypicongpu_laser.huygens_surface_positions = self.picongpu_huygens_surface_positions
-
-        return pypicongpu_laser

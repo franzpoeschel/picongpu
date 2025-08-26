@@ -23,8 +23,8 @@ class TestGaussianLaser(unittest.TestCase):
         self.laser.wavelength = 1.2
         self.laser.waist = 3.4
         self.laser.duration = 5.6
-        self.laser.focus_pos = [0, 7.8, 0]
-        self.laser.phase = 2.9
+        self.laser.focal_position = [0, 7.8, 0]
+        self.laser.phi0 = 2.9
         self.laser.E0 = 9.0
         self.laser.pulse_init = 1.3
         self.laser.propagation_direction = [0.0, 1.0, 0.0]
@@ -45,7 +45,7 @@ class TestGaussianLaser(unittest.TestCase):
             with self.assertRaises(typeguard.TypeCheckError):
                 laser.duration = not_float
             with self.assertRaises(typeguard.TypeCheckError):
-                laser.phase = not_float
+                laser.phi0 = not_float
             with self.assertRaises(typeguard.TypeCheckError):
                 laser.E0 = not_float
             with self.assertRaises(typeguard.TypeCheckError):
@@ -53,7 +53,7 @@ class TestGaussianLaser(unittest.TestCase):
 
         for not_position_vector in [1, 1.0, None, ["string"]]:
             with self.assertRaises(typeguard.TypeCheckError):
-                laser.focus_pos = not_position_vector
+                laser.focal_position = not_position_vector
 
         for not_polarization_type in [1, 1.3, None, "", []]:
             with self.assertRaises(typeguard.TypeCheckError):
@@ -163,12 +163,12 @@ class TestGaussianLaser(unittest.TestCase):
         self.assertEqual(
             context["focus_pos_si"],
             [
-                {"component": self.laser.focus_pos[0]},
-                {"component": self.laser.focus_pos[1]},
-                {"component": self.laser.focus_pos[2]},
+                {"component": self.laser.focal_position[0]},
+                {"component": self.laser.focal_position[1]},
+                {"component": self.laser.focal_position[2]},
             ],
         )
-        self.assertEqual(context["phase"], self.laser.phase)
+        self.assertEqual(context["phase"], self.laser.phi0)
         self.assertEqual(context["E0_si"], self.laser.E0)
         self.assertEqual(context["pulse_init"], self.laser.pulse_init)
         self.assertEqual(

@@ -5,7 +5,7 @@ Authors: Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
-from picongpu.picmi.copy_attributes import converts_to
+from picongpu.picmi.copy_attributes import default_converts_to
 from .timestepspec import TimeStepSpec
 from ...pypicongpu.output.energy_histogram import (
     EnergyHistogram as PyPIConGPUEnergyHistogram,
@@ -17,13 +17,12 @@ from ..species import Species as PICMISpecies
 import typeguard
 
 
-@converts_to(
+@default_converts_to(
     PyPIConGPUEnergyHistogram,
     conversions={
         "period": lambda self, _, time_step_size, num_steps: self.period.get_as_pypicongpu(time_step_size, num_steps),
         "species": lambda self, d, *args: d.get(self.species),
     },
-    preamble=lambda self, d, *args: self.check(d),
 )
 @typeguard.typechecked
 class EnergyHistogram:
@@ -61,7 +60,7 @@ class EnergyHistogram:
         Optional name for the energy histogram plugin.
     """
 
-    def check(self, dict_species_picmi_to_pypicongpu):
+    def check(self, dict_species_picmi_to_pypicongpu, *args, **kwargs):
         if self.min_energy >= self.max_energy:
             raise ValueError("min_energy must be less than max_energy")
         if self.bin_count <= 0:

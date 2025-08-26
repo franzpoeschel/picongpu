@@ -7,7 +7,8 @@ License: GPLv3+
 
 import unittest
 import inspect
-from picongpu.picmi.copy_attributes import copy_attributes, converts_to
+import typeguard
+from picongpu.picmi.copy_attributes import copy_attributes, converts_to, default_converts_to
 
 CLASS_NAME = "TmpClass"
 ARBITRARY_VALUE = 42
@@ -44,6 +45,15 @@ class MiniMock:
         self.counter += 1
         self.args = args
         self.kwargs = kwargs
+
+
+@typeguard.typechecked
+class ClassWithProperty:
+    _attribute = 0
+
+    @property
+    def attribute(self):
+        return self._attribute
 
 
 class TestCopyAttributes(unittest.TestCase):
@@ -178,6 +188,15 @@ class TestCopyAttributes(unittest.TestCase):
         )
         self.assertEqual(copy_attributes(dummy_provider, DummyReceiver, ignore=["arbitrary_name"]).arbitrary_name, None)
 
+    def test_copies_property_by_value(self):
+        dummy_provider = ClassWithProperty()
+        DummyReceiver = gen_class({"attribute": None})
+        self.assertTrue(
+            isinstance(
+                getattr(copy_attributes(dummy_provider, DummyReceiver), "attribute"), type(dummy_provider._attribute)
+            )
+        )
+
 
 class TestConvertsTo(unittest.TestCase):
     def test_returns_same_class(self):
@@ -277,6 +296,17 @@ class TestConvertsTo(unittest.TestCase):
         DummyProvider, DummyReceiver = gen_two_classes(common_attributes={"arbitrary_name": ARBITRARY_VALUE})
         dummy_provider = converts_to(DummyReceiver, ignore=["arbitrary_name"])(DummyProvider)()
         self.assertEqual(dummy_provider.get_as_pypicongpu().arbitrary_name, None)
+
+    def test_default_converts_to_uses_get_as_pypicongpu(self):
+        DummyProvider, DummyReceiver = gen_two_classes(
+            common_attributes={
+                "arbitrary_name": gen_class({"get_as_pypicongpu": lambda self: ARBITRARY_VALUE}, use_values=True)()
+            }
+        )
+        dummy_provider = default_converts_to(DummyReceiver)(DummyProvider)()
+        self.assertEqual(
+            dummy_provider.get_as_pypicongpu().arbitrary_name, dummy_provider.arbitrary_name.get_as_pypicongpu()
+        )
 
 
 if __name__ == "__main__":

@@ -12,10 +12,12 @@ import picmistandard
 import typeguard
 
 from ...pypicongpu import laser, util
+from ..copy_attributes import default_converts_to
 from .base_laser import BaseLaser
 from .polarization_type import PolarizationType
 
 
+@default_converts_to(laser.GaussianLaser)
 @typeguard.typechecked
 class GaussianLaser(picmistandard.PICMI_GaussianLaser, BaseLaser):
     """PICMI object for Gaussian Laser"""
@@ -53,7 +55,9 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser, BaseLaser):
         if duration <= 0:
             raise ValueError(f"laser pulse duration must be > 0. You gave {duration=}.")
 
-        assert (picongpu_laguerre_modes is None and picongpu_laguerre_phases is None) or (
+        assert (
+            picongpu_laguerre_modes is None and picongpu_laguerre_phases is None
+        ) or (
             picongpu_laguerre_modes is not None and picongpu_laguerre_phases is not None
         ), (
             "laguerre_modes and laguerre_phases MUST BE both set or both \
@@ -61,8 +65,8 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser, BaseLaser):
         )
 
         self.picongpu_polarization_type = picongpu_polarization_type
-        self.picongpu_laguerre_modes = picongpu_laguerre_modes
-        self.picongpu_laguerre_phases = picongpu_laguerre_phases
+        self.picongpu_laguerre_modes = picongpu_laguerre_modes or [1.0]
+        self.picongpu_laguerre_phases = picongpu_laguerre_phases or [0.0]
         self.picongpu_huygens_surface_positions = picongpu_huygens_surface_positions
 
         # Calculate a0 and E0 using our base laser, as the PICMI standard does not provide consistency checks.
@@ -83,8 +87,10 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser, BaseLaser):
         )
 
         self.phi0 = self.phi0 or 0.0
+        self._validate_common_properties()
+        self.pulse_init = self._compute_pulse_init()
 
-    def get_as_pypicongpu(self) -> laser.GaussianLaser:
+    def check(self):
         util.unsupported("laser name", self.name)
         util.unsupported("laser zeta", self.zeta)
         util.unsupported("laser beta", self.beta)
@@ -96,30 +102,3 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser, BaseLaser):
         assert self._propagation_connects_centroid_and_focus(), (
             "propagation_direction must connect centroid_position and focus_position"
         )
-
-        pypicongpu_laser = laser.GaussianLaser()
-        pypicongpu_laser.wavelength = self.wavelength
-        pypicongpu_laser.waist = self.waist
-        pypicongpu_laser.duration = self.duration
-        pypicongpu_laser.focus_pos = self.focal_position
-        pypicongpu_laser.phase = self.phi0
-        pypicongpu_laser.E0 = self.E0
-        pypicongpu_laser.pulse_init = self._compute_pulse_init()
-        pypicongpu_laser.polarization_type = self.picongpu_polarization_type.get_as_pypicongpu()
-        pypicongpu_laser.polarization_direction = self.polarization_direction
-
-        pypicongpu_laser.propagation_direction = self.propagation_direction
-
-        if self.picongpu_laguerre_modes is None:
-            pypicongpu_laser.laguerre_modes = [1.0]
-        else:
-            pypicongpu_laser.laguerre_modes = self.picongpu_laguerre_modes
-
-        if self.picongpu_laguerre_phases is None:
-            pypicongpu_laser.laguerre_phases = [0.0]
-        else:
-            pypicongpu_laser.laguerre_phases = self.picongpu_laguerre_phases
-
-        pypicongpu_laser.huygens_surface_positions = self.picongpu_huygens_surface_positions
-
-        return pypicongpu_laser

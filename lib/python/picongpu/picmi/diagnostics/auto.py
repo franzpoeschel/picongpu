@@ -5,15 +5,14 @@ Authors: Pawel Ordyna
 License: GPLv3+
 """
 
-from ...pypicongpu.output.auto import Auto as PyPIConGPUAuto
-from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
-
-from ..species import Species as PICMISpecies
-from .timestepspec import TimeStepSpec
-
 import typeguard
 
+from ...pypicongpu.output.auto import Auto as PyPIConGPUAuto
+from ..copy_attributes import default_converts_to
+from .timestepspec import TimeStepSpec
 
+
+@default_converts_to(PyPIConGPUAuto)
 @typeguard.typechecked
 class Auto:
     """
@@ -32,17 +31,5 @@ class Auto:
     def __init__(self, period: TimeStepSpec) -> None:
         self.period = period
 
-    def check(self):
+    def check(self, *args, **kwargs):
         pass
-
-    def get_as_pypicongpu(
-        self,
-        # not used here, but needed for the interface
-        dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies],
-        time_step_size,
-        num_steps,
-    ) -> PyPIConGPUAuto:
-        self.check()
-        pypicongpu_auto = PyPIConGPUAuto()
-        pypicongpu_auto.period = self.period.get_as_pypicongpu(time_step_size, num_steps)
-        return pypicongpu_auto

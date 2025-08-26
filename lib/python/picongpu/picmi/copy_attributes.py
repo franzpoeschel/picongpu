@@ -45,7 +45,12 @@ def _value_generator(name):
 
 
 def copy_attributes(
-    from_instance, to, conversions: None | dict[str, str | Callable] = None, remove_prefix: str = "", ignore=tuple()
+    from_instance,
+    to,
+    conversions: None | dict[str, str | Callable] = None,
+    remove_prefix: str = "",
+    ignore=tuple(),
+    default_converter=lambda self: self,
 ):
     """
     Copy attributes from one object to another.
@@ -68,9 +73,7 @@ def copy_attributes(
     """
     if isinstance(to, type):
         try:
-            return copy_attributes(
-                from_instance, to(), conversions=conversions, remove_prefix=remove_prefix, ignore=ignore
-            )
+            to_instance = to()
         except TypeError as e:
             message = (
                 "Instantiation failed. The receiving class must be default constructible. "
@@ -78,6 +81,14 @@ def copy_attributes(
                 "You can work with an instance instead of a class in this case."
             )
             raise ValueError(message) from e
+        return copy_attributes(
+            from_instance,
+            to_instance,
+            conversions=conversions,
+            remove_prefix=remove_prefix,
+            ignore=ignore,
+            default_converter=default_converter,
+        )
 
     assignments = {
         to_name: _value_generator(from_name)
@@ -88,11 +99,18 @@ def copy_attributes(
     } | _sanitize_conversions(conversions, from_instance, to)
 
     for key, value_generator in assignments.items():
-        setattr(to, key, value_generator(from_instance))
+        setattr(to, key, default_converter(value_generator(from_instance)))
     return to
 
 
-def converts_to(to_class, conversions=None, preamble=None, remove_prefix="", ignore=tuple()):
+def converts_to(
+    to_class,
+    conversions=None,
+    preamble=None,
+    remove_prefix="",
+    ignore=tuple(),
+    default_converter=lambda self, *args, **kwargs: self,
+):
     """
     Add a get_as_pypicongpu method that uses copy_attributes.
 
@@ -121,10 +139,29 @@ def converts_to(to_class, conversions=None, preamble=None, remove_prefix="", ign
                 for key, value in (conversions or {}).items()
             }
             return copy_attributes(
-                self, to_class, conversions=local_conversions, remove_prefix=remove_prefix, ignore=ignore
+                self,
+                to_class,
+                conversions=local_conversions,
+                remove_prefix=remove_prefix,
+                ignore=ignore,
+                default_converter=lambda self: default_converter(self, *args, **kwargs),
             )
 
         cls.get_as_pypicongpu = get_as_pypicongpu
         return cls
 
     return decorator
+
+
+def default_converts_to(to_class, conversions=None, preamble=None, remove_prefix="", ignore=tuple()):
+    return converts_to(
+        to_class,
+        conversions=conversions,
+        preamble=preamble
+        or (lambda self, *args, **kwargs: self.check(*args, **kwargs) if has_attribute(self, "check") else None),
+        remove_prefix=remove_prefix or "picongpu_",
+        ignore=ignore or ("check",),
+        default_converter=lambda self, *args, **kwargs: self.get_as_pypicongpu(*args, **kwargs)
+        if has_attribute(self, "get_as_pypicongpu")
+        else self,
+    )

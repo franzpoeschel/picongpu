@@ -16,15 +16,7 @@ import typeguard
 from typing import List
 
 
-@converts_to(
-    PyPIConGPUPNG,
-    conversions={
-        "species": lambda self, d, *args: d.get(self.species),
-        "period": lambda self, _, *args: self.period.get_as_pypicongpu(*args),
-    },
-    preamble=lambda self, d, *args: self.check(d),
-    ignore=["check"],
-)
+@converts_to(PyPIConGPUPNG, conversions={"species": lambda self, d, *args: d.get(self.species)})
 @typeguard.typechecked
 class Png:
     """
@@ -112,7 +104,7 @@ class Png:
         Custom expression for channel 3.
     """
 
-    def check(self, dict_species_picmi_to_pypicongpu):
+    def check(self, dict_species_picmi_to_pypicongpu, *args, **kwargs):
         if not (0.0 <= self.slice_point <= 1.0):
             raise ValueError("Slice point must be between 0.0 and 1.0")
 
