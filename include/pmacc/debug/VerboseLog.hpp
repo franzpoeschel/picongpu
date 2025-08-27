@@ -23,13 +23,10 @@
 
 #include <pmacc/boost_workaround.hpp>
 
-#include "pmacc/debug/VerboseLogMakros.hpp"
-
 #include <boost/format.hpp>
 
 #include <cstdint>
 #include <iostream>
-#include <sstream>
 #include <string>
 
 namespace pmacc
@@ -45,22 +42,6 @@ namespace pmacc
     {
         return std::string("UNDEFINED_LVL");
     }
-
-    namespace verboseLog_detail
-    {
-        template<typename X, typename Y>
-        struct IsSameClassType
-        {
-            static constexpr bool result = false;
-        };
-
-        template<typename X>
-        struct IsSameClassType<X, X>
-        {
-            static constexpr bool result = true;
-        };
-
-    } // namespace verboseLog_detail
 
     template<uint64_t lvl_, class membership_>
     struct LogLvl
@@ -99,7 +80,7 @@ namespace pmacc
                  * If you get an linker error in the next two lines you have not used
                  * DEFINE_LOGLVL makro to define a named logLvl
                  */
-                if(logLvl & LogParent::log_level) /*compile-time check*/
+                if constexpr(static_cast<bool>(logLvl & LogParent::log_level))
                 {
                     std::cout << LogParent::getName() << " " << getLogName(LogClass()) << "("
                               << (logLvl & LogParent::log_level) << ")"
@@ -110,7 +91,7 @@ namespace pmacc
             template<typename T>
             VerboseLog& operator%(T value)
             {
-                if(logLvl & LogParent::log_level) /*compile-time check*/
+                if constexpr(static_cast<bool>(logLvl & LogParent::log_level))
                     fmt % value;
                 return *this;
             }

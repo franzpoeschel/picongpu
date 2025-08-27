@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include "pmacc/debug/VerboseLog.hpp"
 #include "pmacc/kernel/atomic.hpp"
 #include "pmacc/lockstep.hpp"
 #include "pmacc/math/Vector.hpp"

@@ -23,13 +23,12 @@
 #pragma once
 
 #include "pmacc/Environment.def"
-#include "pmacc/debug/VerboseLog.hpp"
+#include "pmacc/debug/PMaccVerbose.hpp"
 #include "pmacc/eventSystem/events/ComputeEvent.hpp"
 #include "pmacc/eventSystem/events/ComputeEventHandle.hpp"
 #include "pmacc/types.hpp"
 
 #include <list>
-#include <stdexcept>
 #include <vector>
 
 namespace pmacc
