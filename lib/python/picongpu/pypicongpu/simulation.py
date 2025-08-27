@@ -73,7 +73,7 @@ class Simulation(RenderedObject):
     moving_window = util.build_typesafe_property(typing.Optional[MovingWindow])
     """used moving Window, set to None to disable"""
 
-    walltime = util.build_typesafe_property(typing.Optional[datetime.timedelta])
+    walltime = util.build_typesafe_property(typing.Optional[Walltime])
     """time limit of the simulation run"""
 
     plugins = util.build_typesafe_property(typing.Optional[list[Plugin] | typing.Literal["auto"]])
@@ -144,7 +144,7 @@ class Simulation(RenderedObject):
             serialized["moving_window"] = None
 
         if self.walltime is not None:
-            serialized["walltime"] = Walltime(walltime=self.walltime).get_rendering_context()
+            serialized["walltime"] = self.walltime.get_rendering_context()
         else:
             serialized["walltime"] = Walltime(walltime=datetime.timedelta(hours=1)).get_rendering_context()
 

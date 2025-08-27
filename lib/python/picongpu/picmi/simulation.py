@@ -518,7 +518,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         if self.picongpu_walltime is None:
             s.walltime = None
         else:
-            s.walltime = self.picongpu_walltime
+            s.walltime = pypicongpu.walltime.Walltime(walltime=self.picongpu_walltime)
 
         return s
 
