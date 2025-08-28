@@ -211,7 +211,7 @@ class RenderedObject:
         """
         check if the given context is valid for the given type
 
-        Raises on error, passes silently if okay.
+        Raises on error, returns given context if okay.
 
         :raise ValidationError: on schema violation
         :raise RuntimeError: on schema not found
