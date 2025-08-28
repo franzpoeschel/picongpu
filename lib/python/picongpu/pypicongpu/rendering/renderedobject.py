@@ -251,6 +251,10 @@ class SelfRegistering:
     def _register(cls):
         if cls._name not in cls._names:
             cls._names.append(cls._name)
+        else:
+            raise TypeError(
+                f"Attempt to register {cls=} with name {cls._name=} failed because that was registered before."
+            )
 
     def __init_subclass__(cls):
         super().__init_subclass__()

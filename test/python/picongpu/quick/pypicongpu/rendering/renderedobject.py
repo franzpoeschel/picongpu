@@ -438,3 +438,16 @@ class TestSelfRegisteringRenderedObject(unittest.TestCase):
 
         LeafClass().get_rendering_context()
         self.assertSetEqual(set(types), {self.Base, LeafClass})
+
+    def test_raises_on_identical_names(self):
+        class LeafClass1(self.Base):
+            _name = "identical_name"
+
+        def define_class():
+            class _(self.Base):
+                _name = LeafClass1._name
+
+        with self.assertRaisesRegex(
+            TypeError, "Attempt to register cls=.* with name cls._name=.* failed because that was registered before."
+        ):
+            define_class()
