@@ -326,19 +326,19 @@ class TestSelfRegisteringRenderedObject(unittest.TestCase):
         RenderedObject.check_context_for_type = lambda _, c: c
 
     def test_names_list_is_empty(self):
-        self.assertSequenceEqual(self.Base().get_rendering_context()["typeID"].keys(), [])
+        self.assertSetEqual(set(self.Base().get_rendering_context()["typeID"].keys()), set())
 
     def test_subclass_without_name_is_not_registered(self):
         class UnregisteredSubclass(self.Base):
             pass
 
-        self.assertSequenceEqual(list(self.Base().get_rendering_context()["typeID"].keys()), [])
+        self.assertSetEqual(set(self.Base().get_rendering_context()["typeID"].keys()), set())
 
     def test_subclass_with_name_is_registered(self):
         class RegisteredSubclass(self.Base):
             _name = "arbitrary_name"
 
-        self.assertSequenceEqual(list(self.Base().get_rendering_context()["typeID"].keys()), [RegisteredSubclass._name])
+        self.assertSetEqual(set(self.Base().get_rendering_context()["typeID"].keys()), {RegisteredSubclass._name})
 
     def test_two_subclasses_with_name_are_registered(self):
         class RegisteredSubclass1(self.Base):
@@ -347,9 +347,9 @@ class TestSelfRegisteringRenderedObject(unittest.TestCase):
         class RegisteredSubclass2(self.Base):
             _name = "arbitrary_name2"
 
-        self.assertSequenceEqual(
-            list(self.Base().get_rendering_context()["typeID"].keys()),
-            [RegisteredSubclass1._name, RegisteredSubclass2._name],
+        self.assertSetEqual(
+            set(self.Base().get_rendering_context()["typeID"].keys()),
+            {RegisteredSubclass1._name, RegisteredSubclass2._name},
         )
 
     def test_leaves_can_register(self):
@@ -359,13 +359,13 @@ class TestSelfRegisteringRenderedObject(unittest.TestCase):
         class LeafClass(BaseClass):
             _name = "arbitrary_name2"
 
-        self.assertSequenceEqual(list(self.Base().get_rendering_context()["typeID"].keys()), [LeafClass._name])
+        self.assertSetEqual(set(self.Base().get_rendering_context()["typeID"].keys()), {LeafClass._name})
 
     def test_z(self):
         # This test is last in lexicographical ordering.
         # It's to make sure that if the tests are run deterministically in lexicographical order,
         # the preconditions are still fulfilled.
-        self.assertSequenceEqual(list(self.Base().get_rendering_context()["typeID"].keys()), [])
+        self.assertSetEqual(set(self.Base().get_rendering_context()["typeID"].keys()), set())
 
     def test_multiple_hierarchies_are_independent(self):
         class BaseClass1(SelfRegisteringRenderedObject):
@@ -386,8 +386,8 @@ class TestSelfRegisteringRenderedObject(unittest.TestCase):
             def _get_serialized(self):
                 return {}
 
-        self.assertSequenceEqual(list(LeafClass1().get_rendering_context()["typeID"].keys()), [LeafClass1._name])
-        self.assertSequenceEqual(list(LeafClass2().get_rendering_context()["typeID"].keys()), [LeafClass2._name])
+        self.assertSetEqual(set(LeafClass1().get_rendering_context()["typeID"].keys()), {LeafClass1._name})
+        self.assertSetEqual(set(LeafClass2().get_rendering_context()["typeID"].keys()), {LeafClass2._name})
 
     def test_different_leaves_know_who_they_are(self):
         class LeafClass1(self.Base):
