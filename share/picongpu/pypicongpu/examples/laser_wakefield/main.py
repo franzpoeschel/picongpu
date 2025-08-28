@@ -75,9 +75,9 @@ laser = picmi.GaussianLaser(
         -0.5 * pulse_init * laser_duration * c,
         float(numberCells[2] * cellSize[2] / 2.0),
     ],
-    picongpu_polarization_type=pypicongpu.laser.GaussianLaser.PolarizationType.LINEAR,
+    picongpu_polarization_type=picmi.lasers.PolarizationType.LINEAR,
     a0=8.0,
-    picongpu_phase=0.0,
+    phi0=0.0,
 )
 
 random_layout = picmi.PseudoRandomLayout(n_macroparticles_per_cell=2)

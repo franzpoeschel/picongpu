@@ -1,6 +1,6 @@
 {
-  "$id": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.GaussianLaser",
-  "description": "Specification of a (super-)gaussian laser pulse, optionally with higher laguerre modes",
+  "$id": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.DispersivePulseLaser",
+  "description": "Specification of a dispersive Gaussian laser pulse with dispersion parameters",
   "type": "object",
   "properties": {
     "wave_length_si": {
@@ -88,41 +88,26 @@
         }
       }
     },
-    "laguerre_modes": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "required": [
-          "single_laguerre_mode"
-        ],
-        "unevaluatedProperties": false,
-        "properties": {
-          "single_laguerre_mode": {
-            "type": "number"
-          }
-        }
-      }
+    "spectral_support": {
+      "description": "Width of the spectral support for the discrete Fourier transform [none]",
+      "type": "number",
+      "exclusiveMinimum": 0
     },
-    "laguerre_phases": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "required": [
-          "single_laguerre_phase"
-        ],
-        "unevaluatedProperties": false,
-        "properties": {
-          "single_laguerre_phase": {
-            "type": "number"
-          }
-        }
-      }
+    "sd_si": {
+      "description": "Spatial dispersion in focus [m*s]",
+      "type": "number"
     },
-    "modenumber": {
-      "type": "integer",
-      "minimum": 0
+    "ad_si": {
+      "description": "Angular dispersion in focus [rad*s]",
+      "type": "number"
+    },
+    "gdd_si": {
+      "description": "Group velocity dispersion in focus [s^2]",
+      "type": "number"
+    },
+    "tod_si": {
+      "description": "Third order dispersion in focus [s^3]",
+      "type": "number"
     },
     "huygens_surface_positions": {
       "description": "position of the huygens surface relative from domain boundaries",
@@ -171,9 +156,11 @@
     "propagation_direction",
     "polarization_type",
     "polarization_direction",
-    "laguerre_modes",
-    "laguerre_phases",
-    "modenumber",
+    "spectral_support",
+    "sd_si",
+    "ad_si",
+    "gdd_si",
+    "tod_si",
     "huygens_surface_positions"
   ],
   "unevaluatedProperties": false

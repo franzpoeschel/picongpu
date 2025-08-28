@@ -1,4 +1,4 @@
-/* Copyright 2020-2024 Sergei Bastrakov, Rene Widera, Brian Marre
+/* Copyright 2020-2025 Sergei Bastrakov, Rene Widera, Brian Marre, Julian Lenz
  *
  * This file is part of PIConGPU.
  *
@@ -17,46 +17,6 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file incidentField.param
- *
- * Configure incident field profile and offset of the Huygens surface for each boundary.
- *
- * Available profiles:
- *  - profiles::DispersivePulse<>     : Gaussian pulse allowing to set first-, second-, and third-order dispersion
- * in focus. That is, SD, AD, GDD, and TOD, respectively.
- *  - profiles::ExpRampWithPrepulse<> : exponential ramp with prepulse wavepacket with given parameters
- *  - profiles::Free<>                : custom profile with user-provided functors to calculate incident E and B
- *  - profiles::GaussianPulse<>       : Pulse with Gaussian profile in all three dimensions with given parameters
- *  - profiles::None                  : no incident field
- *  - profiles::PlaneWave<>           : plane wave profile with given parameters
- *  - profiles::Polynom<>             : wavepacket with a polynomial temporal intensity shape profile with given
- * parameters
- *  - profiles::Wavepacket<>          : wavepacket with Gaussian spatial and temporal envelope profile with given
- * parameters
- *
- * All profiles but `Free<>` and `None` are parametrized with a profile-specific structure.
- * Their interfaces are defined in the corresponding `.def` files inside directory
- * picongpu/fields/incidentField/profiles/. Note that all these parameter structures inherit common base structures
- * from `BaseParam.def`. Thus, a user-provided structure must also define all members according to the base struct.
- *
- * In the end, this file needs to define `XMin`, `XMax`, `YMin`, `YMax`, `ZMin`, `ZMax` (the latter two can be skipped
- * in 2d) type aliases in namespace `picongpu::fields::incidentField`. Each of them could be a single profile or a
- * typelist of profiles created with `MakeSeq_t`. In case a typelist is used, the resulting field is a sum of
- * effects of all profiles in the list. This file also has to define constexpr array `POSITION` that controls
- * positioning of the generating surface relative to total domain. For example:
- *
- * @code{.cpp}
- * using XMin = profiles::Free<UserFunctorIncidentE, UserFunctorIncidentB>;
- * using XMax = profiles::None;
- * using YMin = MakeSeq_t<profiles::PlaneWave<UserPlaneWaveParams>, profiles::Wavepacket<UserWavepacketParams>>;
- * using YMax = profiles::None;
- * using ZMin = profiles::Polynom<UserPolynomParams>;
- * using ZMax = profiles::GaussianPulse<UserGaussianPulseParams>;
- *
- * constexpr int32_t POSITION[3][2] = { {16, -16}, {16, -16}, {16, -16} };
- * @endcode
- */
-
 #pragma once
 
 #include "picongpu/fields/incidentField/profiles/profiles.def"
@@ -64,11 +24,9 @@
 namespace picongpu::fields::incidentField
 {
     {{#laser}}
-    /** Base structure for parameters of all lasers
-     *
-     * The particular used parameter structures do not have to inherit this, but must define same members
-     * with same meaning.
-     */
+    {{#laser.data}}
+
+    {{^laser.typeID.fromOpenPMDPulse}}
     struct PyPIConGPULaserBaseParam : public profiles::BaseParam
     {
         static constexpr float_64 WAVE_LENGTH_SI = {{{wave_length_si}}}; // m
@@ -105,29 +63,13 @@ namespace picongpu::fields::incidentField
         static constexpr float_64 POLARISATION_DIRECTION_Y = polarisation_direction[1];
         static constexpr float_64 POLARISATION_DIRECTION_Z = polarisation_direction[2];
     };
+    {{/laser.typeID.fromOpenPMDPulse}}
 
+    {{#typeID.gaussian}}
     struct PyPIConGPUGaussianPulseParam : public PyPIConGPULaserBaseParam
     {
-        /** Beam waist: distance from the axis where the pulse intensity (E^2)
-         *              decreases to its 1/e^2-th part,
-         *              at the focus position of the laser
-         * W0_SI = FWHM_of_Intensity / sqrt{ 2* ln(2) }
-         *                             [   1.17741    ]
-         *
-         * unit: meter
-         */
         static constexpr float_64 W0_SI = {{{waist_si}}};
-
-        /** The laser pulse will be initialized PULSE_INIT times of the PULSE_DURATION
-         *
-         *  unit: none
-         */
         static constexpr float_64 PULSE_INIT = {{{pulse_init}}};
-
-        /** Laguerre mode parameters
-         *
-         * @{
-         */
         static constexpr uint32_t numModes = {{{modenumber}}};
         static constexpr auto laguerreModes = floatN_X<numModes+1>(
             {{#laguerre_modes}}
@@ -139,8 +81,64 @@ namespace picongpu::fields::incidentField
             {{{single_laguerre_phase}}}{{^_last}},{{/_last}}
             {{/laguerre_phases}}
             );
-        /** @} */
     };
+    {{/typeID.gaussian}}
+
+    {{#typeID.planewave}}
+    struct PyPIConGPUPlaneWaveParam : public PyPIConGPULaserBaseParam
+    {
+        static constexpr float_64 RAMP_INIT = {{{pulse_init}}};
+        static constexpr float_64 LASER_NOFOCUS_CONSTANT_SI = {{{laser_nofocus_constant_si}}};
+    };
+    {{/typeID.planewave}}
+
+    {{#typeID.dispersive}}
+    struct PyPIConGPUDispersivePulseParam : public PyPIConGPULaserBaseParam
+    {
+        static constexpr float_64 W0_SI = {{{waist_si}}};
+        static constexpr float_64 PULSE_INIT = {{{pulse_init}}};
+        static constexpr float_X SPECTRAL_SUPPORT = {{{spectral_support}}};
+        static constexpr float_64 SD_SI = {{{sd_si}}};
+        static constexpr float_64 AD_SI = {{{ad_si}}};
+        static constexpr float_64 GDD_SI = {{{gdd_si}}};
+        static constexpr float_64 TOD_SI = {{{tod_si}}};
+    };
+    {{/typeID.dispersive}}
+
+    {{#typeID.fromOpenPMDPulse}}
+    struct PyPIConGPUFromOpenPMDPulseParam
+    {
+        static constexpr char const* filename = "{{{file_path}}}";
+        static constexpr uint32_t iteration = {{{iteration}}};
+        static constexpr char const* datasetEName = "{{{dataset_name}}}";
+
+        using dataType = {{{datatype}}};
+
+        static constexpr char const* polarisationAxisOpenPMD = "{{{polarisationAxisOpenPMD}}}";
+        static constexpr char const* propagationAxisOpenPMD = "{{{propagationAxisOpenPMD}}}";
+
+        static constexpr float_64 propagation_direction[3u] = {
+                {{#propagation_direction}}
+                {{{component}}}{{^_last}},{{/_last}}
+                {{/propagation_direction}}
+            };
+        static constexpr float_64 DIRECTION_X = propagation_direction[0];
+        static constexpr float_64 DIRECTION_Y = propagation_direction[1];
+        static constexpr float_64 DIRECTION_Z = propagation_direction[2];
+
+        static constexpr float_64 polarisation_direction[3u] = {
+                {{#polarization_direction}}
+                {{{component}}}{{^_last}},{{/_last}}
+                {{/polarization_direction}}
+            };
+        static constexpr float_64 POLARISATION_DIRECTION_X = polarisation_direction[0];
+        static constexpr float_64 POLARISATION_DIRECTION_Y = polarisation_direction[1];
+        static constexpr float_64 POLARISATION_DIRECTION_Z = polarisation_direction[2];
+
+        static constexpr float_64 TIME_DELAY_SI = {{{time_offset_si}}};
+    };
+    {{/typeID.fromOpenPMDPulse}}
+
 
     /** Position in cells of the Huygens surface relative to start of the total domain
      *
@@ -177,7 +175,19 @@ namespace picongpu::fields::incidentField
 
     /**@{*/
     //! Incident field profile types along each boundary, these 6 types (or aliases) are required.
+    {{#typeID.gaussian}}
     using YMin = profiles::GaussianPulse<PyPIConGPUGaussianPulseParam>;
+    {{/typeID.gaussian}}
+    {{#typeID.planewave}}
+    using YMin = profiles::PlaneWave<PyPIConGPUPlaneWaveParam>;
+    {{/typeID.planewave}}
+    {{#typeID.dispersive}}
+    using YMin = profiles::DispersivePulse<PyPIConGPUDispersivePulseParam>;
+    {{/typeID.dispersive}}
+    {{#typeID.fromOpenPMDPulse}}
+    using YMin = profiles::FromOpenPMDPulse<PyPIConGPUFromOpenPMDPulseParam>;
+    {{/typeID.fromOpenPMDPulse}}
+    {{/laser.data}}
     {{/laser}}
     {{^laser}}
     // no laser defined case

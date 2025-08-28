@@ -6,7 +6,7 @@ License: GPLv3+
 """
 
 from .grid import Grid3D
-from .laser import GaussianLaser
+from .laser import DispersivePulseLaser, FromOpenPMDPulseLaser, GaussianLaser, PlaneWaveLaser
 from .movingwindow import MovingWindow
 from .field_solver.DefaultSolver import Solver
 from . import species
@@ -47,7 +47,9 @@ class Simulation(RenderedObject):
     grid = util.build_typesafe_property(typing.Union[Grid3D])
     """Used grid Object"""
 
-    laser = util.build_typesafe_property(typing.Optional[GaussianLaser])
+    laser = util.build_typesafe_property(
+        typing.Union[DispersivePulseLaser, FromOpenPMDPulseLaser, GaussianLaser, PlaneWaveLaser, None]
+    )
     """Used (gaussian) Laser"""
 
     solver = util.build_typesafe_property(Solver)

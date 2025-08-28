@@ -6,7 +6,7 @@ License: GPLv3+
 """
 
 from picongpu.pypicongpu.simulation import Simulation
-from picongpu.pypicongpu.laser import GaussianLaser
+from picongpu.pypicongpu.laser import GaussianLaser, PolarizationType
 from picongpu.pypicongpu import grid, YeeSolver, species, customuserinput
 from picongpu.pypicongpu import rendering
 from picongpu.pypicongpu.species.operation.layout import Random
@@ -64,7 +64,7 @@ class TestSimulation(unittest.TestCase):
         self.laser.E0 = 9.0
         self.laser.pulse_init = 1.3
         self.laser.propagation_direction = [0, 1, 0]
-        self.laser.polarization_type = GaussianLaser.PolarizationType.LINEAR
+        self.laser.polarization_type = PolarizationType.LINEAR
         self.laser.polarization_direction = [0, 0, 1]
         self.laser.laguerre_modes = [1.2, 2.4]
         self.laser.laguerre_phases = [2.4, 3.4]

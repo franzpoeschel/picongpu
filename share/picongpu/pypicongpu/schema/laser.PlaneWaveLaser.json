@@ -1,16 +1,11 @@
 {
-  "$id": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.GaussianLaser",
-  "description": "Specification of a (super-)gaussian laser pulse, optionally with higher laguerre modes",
+  "$id": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.PlaneWaveLaser",
+  "description": "Specification of a plane wave laser",
   "type": "object",
   "properties": {
     "wave_length_si": {
       "type": "number",
       "description": "wavelength of laser [m]",
-      "exclusiveMinimum": 0
-    },
-    "waist_si": {
-      "type": "number",
-      "description": "Waist of the Gaussian pulse at focus [m]",
       "exclusiveMinimum": 0
     },
     "pulse_duration_si": {
@@ -88,41 +83,9 @@
         }
       }
     },
-    "laguerre_modes": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "required": [
-          "single_laguerre_mode"
-        ],
-        "unevaluatedProperties": false,
-        "properties": {
-          "single_laguerre_mode": {
-            "type": "number"
-          }
-        }
-      }
-    },
-    "laguerre_phases": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "required": [
-          "single_laguerre_phase"
-        ],
-        "unevaluatedProperties": false,
-        "properties": {
-          "single_laguerre_phase": {
-            "type": "number"
-          }
-        }
-      }
-    },
-    "modenumber": {
-      "type": "integer",
-      "minimum": 0
+    "laser_nofocus_constant_si": {
+      "description": "constant for plane wave laser without focus (unitless)",
+      "type": "number"
     },
     "huygens_surface_positions": {
       "description": "position of the huygens surface relative from domain boundaries",
@@ -162,7 +125,6 @@
   },
   "required": [
     "wave_length_si",
-    "waist_si",
     "pulse_duration_si",
     "focus_pos_si",
     "phase",
@@ -171,9 +133,6 @@
     "propagation_direction",
     "polarization_type",
     "polarization_direction",
-    "laguerre_modes",
-    "laguerre_phases",
-    "modenumber",
     "huygens_surface_positions"
   ],
   "unevaluatedProperties": false
