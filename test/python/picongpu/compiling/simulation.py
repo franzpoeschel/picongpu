@@ -60,6 +60,7 @@ class TestSimulation(unittest.TestCase):
         sim.laser = None
         sim.custom_user_input = None
         sim.moving_window = None
+        sim.walltime = None
         sim.solver = pypicongpu.field_solver.Yee.YeeSolver()
         sim.plugins = "auto"
         sim.init_manager = pypicongpu.species.InitManager()
@@ -71,6 +72,7 @@ class TestSimulation(unittest.TestCase):
         sim = self._set_up_minimal_sim()
 
         runner = pypicongpu.Runner(sim)
+
         runner.generate(printDirToConsole=True)
         runner.build()
         runner.run()

@@ -47,7 +47,9 @@ set -u
 ## Section: Required Variables ##
 #################################
 
-TBG_wallTime="1:00:00"
+{{#walltime}}
+TBG_wallTime="{{{walltime}}}"
+{{/walltime}}
 
 {{#grid.gpu_cnt}}
   TBG_devices_x={{{x}}}

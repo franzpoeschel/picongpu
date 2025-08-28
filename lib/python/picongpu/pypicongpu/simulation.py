@@ -16,10 +16,12 @@ from .rendering import RenderedObject
 from .customuserinput import InterfaceCustomUserInput
 from .output.plugin import Plugin
 from .output.timestepspec import TimeStepSpec
+from .walltime import Walltime
 
 import typing
 import typeguard
 import logging
+import datetime
 
 
 @typeguard.typechecked
@@ -70,6 +72,9 @@ class Simulation(RenderedObject):
 
     moving_window = util.build_typesafe_property(typing.Optional[MovingWindow])
     """used moving Window, set to None to disable"""
+
+    walltime = util.build_typesafe_property(typing.Optional[Walltime])
+    """time limit of the simulation run"""
 
     plugins = util.build_typesafe_property(typing.Optional[list[Plugin] | typing.Literal["auto"]])
 
@@ -137,6 +142,11 @@ class Simulation(RenderedObject):
             serialized["moving_window"] = self.moving_window.get_rendering_context()
         else:
             serialized["moving_window"] = None
+
+        if self.walltime is not None:
+            serialized["walltime"] = self.walltime.get_rendering_context()
+        else:
+            serialized["walltime"] = Walltime(walltime=datetime.timedelta(hours=1)).get_rendering_context()
 
         if self.custom_user_input is not None:
             serialized["customuserinput"] = self.__render_custom_user_input_list()

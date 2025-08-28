@@ -54,6 +54,9 @@
         }
       ]
     },
+    "walltime": {
+      "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.walltime.Walltime"
+    },
     "species_initmanager": {
       "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.species.initmanager.InitManager"
     },
@@ -91,6 +94,7 @@
     "grid",
     "laser",
     "moving_window",
+    "walltime",
     "customuserinput"
   ],
   "unevaluatedProperties": false
