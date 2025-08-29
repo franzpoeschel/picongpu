@@ -21,9 +21,7 @@
 
 #pragma once
 
-#include "pmacc/debug/VerboseLog.hpp"
-
-#include <cstdint>
+#include "pmacc/debug/VerboseLogMakros.hpp"
 
 #ifndef PMACC_VERBOSE_LVL
 #    define PMACC_VERBOSE_LVL 0

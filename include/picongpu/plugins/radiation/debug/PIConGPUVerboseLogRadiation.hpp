@@ -22,9 +22,7 @@
 
 #include "picongpu/plugins/radiation/param.hpp"
 
-#include <pmacc/debug/VerboseLog.hpp>
-
-#include <cstdint>
+#include <pmacc/debug/VerboseLogMakros.hpp>
 
 namespace picongpu
 {
