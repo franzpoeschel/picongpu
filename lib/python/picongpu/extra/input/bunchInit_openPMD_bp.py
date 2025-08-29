@@ -4,6 +4,7 @@ This file is a modified version of the pipe script from the openPMD-api.
 Authors: Richard Pausch, Franz Poeschel, Nico Wrobel, Finn-Ole Carstens
 License: LGPLv3+
 """
+
 import sys
 
 import openpmd_api as opmd

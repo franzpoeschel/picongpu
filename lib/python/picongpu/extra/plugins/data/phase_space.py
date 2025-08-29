@@ -5,6 +5,7 @@ Copyright 2017-2024 PIConGPU contributors
 Authors: Axel Huebl
 License: GPLv3+
 """
+
 from .base_reader import DataReader
 
 import numpy as np

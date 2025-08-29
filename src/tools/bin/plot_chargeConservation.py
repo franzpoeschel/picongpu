@@ -212,7 +212,7 @@ if __name__ == "__main__":
     parser.add_argument(
         metavar="openPMD file name",
         dest="filename",
-        help="openPMD file or series pattern " "with PIConGPU data",
+        help="openPMD file or series pattern with PIConGPU data",
         action="store",
         type=str,
     )
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-t",
         dest="selected_timestep",
-        help="simulation step used if file is an " "openPMD file series pattern e.g. simData_%%T.bp",
+        help="simulation step used if file is an openPMD file series pattern e.g. simData_%%T.bp",
         action="store",
         default=-1,
         type=int,

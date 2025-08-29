@@ -36,7 +36,6 @@ list(APPEND CMAKE_PREFIX_PATH "$ENV{VT_ROOT}")
 # Add from environment after specific env vars
 list(APPEND CMAKE_PREFIX_PATH "$ENV{CMAKE_PREFIX_PATH}")
 
-
 ################################################################################
 # CMake policies
 #
@@ -48,7 +47,6 @@ if(POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
 endif()
 
-
 ###############################################################################
 # Language Flags
 ###############################################################################
@@ -57,7 +55,6 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
-
 
 ################################################################################
 # Directory of this file.
@@ -73,13 +70,11 @@ get_filename_component(PMACC_ROOT_DIR "${PMACC_ROOT_DIR}" ABSOLUTE)
 
 find_package(PMacc REQUIRED CONFIG PATHS ${CMAKE_CURRENT_SOURCE_DIR})
 
-
 ###############################################################################
 # Catch2
 ###############################################################################
 
 add_subdirectory(${PMACC_ROOT_DIR}/../../thirdParty/catch2 ${CMAKE_BINARY_DIR}/catch2)
-
 
 ################################################################################
 # MPI
@@ -113,7 +108,10 @@ foreach(dim 2 3)
         target_compile_definitions(${testExe} PRIVATE TEST_DIM=${dim})
         target_link_libraries(${testExe} PUBLIC Catch2 Catch2WithMain)
         target_link_libraries(${testExe} PRIVATE pmacc::pmacc)
-        add_test(NAME "${testCase}-${dim}D" COMMAND mpiexec ${MPI_RUNTIME_FLAGS} -n 1 ./${testExe})
+        add_test(
+            NAME "${testCase}-${dim}D"
+            COMMAND mpiexec ${MPI_RUNTIME_FLAGS} -n 1 ./${testExe}
+        )
     endforeach()
     string(REPLACE "-DTEST_DIM=${dim}" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endforeach()

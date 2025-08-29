@@ -50,7 +50,7 @@ class FindTime(object):
 
         data_file_path = os.path.join(sim_output_dir, self.data_file)
         if not os.path.isfile(data_file_path):
-            raise IOError("The file {} does not exist.\n" "Did the simulation already run?".format(data_file_path))
+            raise IOError("The file {} does not exist.\nDid the simulation already run?".format(data_file_path))
 
         return data_file_path
 

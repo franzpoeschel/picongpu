@@ -25,7 +25,6 @@
 
 cmake_minimum_required(VERSION 3.25.0)
 
-
 ################################################################################
 # Project
 ################################################################################
@@ -95,7 +94,10 @@ function(PIC_dependency_set_status name)
     else()
         set(PIC_HAVE_${name} FALSE PARENT_SCOPE)
         if(PIC_USE_${name} STREQUAL ON)
-            message(FATAL_ERROR "Optional dependency '${name}' not found but explicitly requested with 'PIC_USE_${name}=ON'.")
+            message(
+                FATAL_ERROR
+                "Optional dependency '${name}' not found but explicitly requested with 'PIC_USE_${name}=ON'."
+            )
         endif()
     endif()
     # guard to set the value only once
@@ -113,7 +115,6 @@ if(POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
 endif()
 
-
 ###############################################################################
 # Language Flags
 ###############################################################################
@@ -123,26 +124,25 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 
-
 ################################################################################
 # Disallow in-source build
 ################################################################################
 
 get_filename_component(SOURCE_DIR_ROOT ${PIConGPUapp_SOURCE_DIR}/../.. ABSOLUTE)
-string(FIND "${PIConGPUapp_BINARY_DIR}"
-            "${SOURCE_DIR_ROOT}/" IN_SRC_POS)
+string(FIND "${PIConGPUapp_BINARY_DIR}" "${SOURCE_DIR_ROOT}/" IN_SRC_POS)
 if(IN_SRC_POS GREATER -1)
-  message(FATAL_ERROR
-    "PIConGPU requires an out of source build. "
-    "Please remove \n"
-    "  - CMakeCache.txt\n"
-    "  - CMakeFiles/\n"
-    "and create a separate build directory. "
-    "See: INSTALL.rst")
+    message(
+        FATAL_ERROR
+        "PIConGPU requires an out of source build. "
+        "Please remove \n"
+        "  - CMakeCache.txt\n"
+        "  - CMakeFiles/\n"
+        "and create a separate build directory. "
+        "See: INSTALL.rst"
+    )
 endif()
 
 unset(IN_SRC_POS)
-
 
 ################################################################################
 # Find PMacc
@@ -177,7 +177,6 @@ if(NOT WIN32 AND NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     list(PREPEND HOST_LIBS m)
 endif()
 
-
 ################################################################################
 # Find Boost
 ################################################################################
@@ -190,29 +189,36 @@ else()
     list(PREPEND HOST_LIBS ${Boost_LIBRARIES})
 endif()
 
-
 ################################################################################
 # PARAM (overwrite) defines
 ################################################################################
 
 if(PARAM_OVERWRITES)
     foreach(param ${PARAM_OVERWRITES})
-       add_definitions(${param})
+        add_definitions(${param})
     endforeach(param)
 endif(PARAM_OVERWRITES)
-
 
 ################################################################################
 # load cuda_memtest and mpiInfo projects
 ################################################################################
 
-option(CUDAMEMTEST_ENABLE "Build cuda_memtest and the helper mpiInfo \
-                          (allow GPU health test before running PIConGPU)" ON)
+option(
+    CUDAMEMTEST_ENABLE
+    "Build cuda_memtest and the helper mpiInfo \
+                          (allow GPU health test before running PIConGPU)"
+    ON
+)
 
-if( NOT (alpaka_ACC_GPU_CUDA_ENABLE OR alpaka_ACC_GPU_HIP_ENABLE) OR alpaka_CUDA_COMPILER MATCHES "clang")
+if(NOT (alpaka_ACC_GPU_CUDA_ENABLE OR alpaka_ACC_GPU_HIP_ENABLE) OR alpaka_CUDA_COMPILER MATCHES "clang")
     # cuda_memtest is not compiling with host accelerator of alpaka or clang
-    set(CUDAMEMTEST_ENABLE OFF CACHE BOOL "Build cuda_memtest and the helper mpiInfo \
-                           (allow GPU health test before running PIConGPU)" FORCE)
+    set(CUDAMEMTEST_ENABLE
+        OFF
+        CACHE BOOL
+        "Build cuda_memtest and the helper mpiInfo \
+                           (allow GPU health test before running PIConGPU)"
+        FORCE
+    )
     message(STATUS "Disable 'cuda_memtest' build: not supported by clang or non CUDA/HIP alpaka backends")
 endif()
 
@@ -220,45 +226,40 @@ if(CUDAMEMTEST_ENABLE)
     if(alpaka_ACC_GPU_CUDA_ENABLE)
         # Enabling CUDA solves a bug in mpiInfo
         # Error message: No known features for CUDA compiler "" version .
-        ENABLE_LANGUAGE(CUDA)
+        enable_language(CUDA)
     endif()
     set(SAME_NVCC_FLAGS_IN_SUBPROJECTS OFF)
-    find_path(CUDA_MEMTEST_DIR
-            NAMES cuda_memtest.h
-            PATHS "${PIConGPUapp_SOURCE_DIR}/../../thirdParty/cuda_memtest"
-            DOC "path to cuda_memtest"
+    find_path(
+        CUDA_MEMTEST_DIR
+        NAMES cuda_memtest.h
+        PATHS "${PIConGPUapp_SOURCE_DIR}/../../thirdParty/cuda_memtest"
+        DOC "path to cuda_memtest"
     )
     if(alpaka_ACC_GPU_HIP_ENABLE)
         set(CUDA_MEMTEST_BACKEND hip CACHE STRING "Select the backend API used for the test." FORCE)
     endif()
-    add_subdirectory(${CUDA_MEMTEST_DIR}
-                     "${CMAKE_CURRENT_BINARY_DIR}/build_cuda_memtest")
-
+    add_subdirectory(${CUDA_MEMTEST_DIR} "${CMAKE_CURRENT_BINARY_DIR}/build_cuda_memtest")
 
     # mpiInfo utility
-    find_path(MPI_INFO_DIR
-            NAMES mpiInfo.cpp
-            PATHS "${PIConGPUapp_SOURCE_DIR}/../mpiInfo"
-            DOC "path to mpiInfo"
-    )
-    add_subdirectory(${MPI_INFO_DIR}
-                     "${CMAKE_CURRENT_BINARY_DIR}/build_mpiInfo")
+    find_path(MPI_INFO_DIR NAMES mpiInfo.cpp PATHS "${PIConGPUapp_SOURCE_DIR}/../mpiInfo" DOC "path to mpiInfo")
+    add_subdirectory(${MPI_INFO_DIR} "${CMAKE_CURRENT_BINARY_DIR}/build_mpiInfo")
 endif()
-
 
 ################################################################################
 # PIConGPU options
 ################################################################################
 
-set(PIC_VERBOSE "1" CACHE STRING
-    "Set verbosity level for PIConGPU (default is only physics output)")
+set(PIC_VERBOSE "1" CACHE STRING "Set verbosity level for PIConGPU (default is only physics output)")
 add_definitions(-DPIC_VERBOSE_LVL=${PIC_VERBOSE})
 
-set(PIC_OPENPMD_TIMETRACE_NUMBER_OF_FILES "0" CACHE STRING "Set the maximum number of MPI ranks that create a file with trace information.")
+set(PIC_OPENPMD_TIMETRACE_NUMBER_OF_FILES
+    "0"
+    CACHE STRING
+    "Set the maximum number of MPI ranks that create a file with trace information."
+)
 add_definitions(-DPIC_OPENPMD_TIMETRACE_NUMBER_OF_FILES=${PIC_OPENPMD_TIMETRACE_NUMBER_OF_FILES})
 
 option(PIC_ADD_RPATH "Add RPATH's to binaries." ON)
-
 
 ################################################################################
 # Additional defines for PIConGPU outputs
@@ -276,7 +277,6 @@ add_definitions(-DCMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR})
 add_definitions(-DCMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID})
 add_definitions(-DCMAKE_CXX_COMPILER_VERSION=${CMAKE_CXX_COMPILER_VERSION})
 
-
 ################################################################################
 # Warnings
 ################################################################################
@@ -291,13 +291,13 @@ if(PIC_CI_COMPILE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-    # ICC
+        # ICC
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-    # PGI
+        # PGI
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "PGI")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Minform=inform")
-    # MSVS
+        # MSVS
     elseif(MSVC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
         # Required for MSVS 15.8+ due to alignment change
@@ -308,12 +308,11 @@ if(PIC_CI_COMPILE)
     endif()
 endif()
 
-
 ################################################################################
 # openPMD
 ################################################################################
 
-PIC_dependency(openPMD "API for IO" AUTO)
+pic_dependency(openPMD "API for IO" AUTO)
 
 if(PIC_SEARCH_openPMD)
     # find openPMD installation
@@ -327,12 +326,8 @@ if(PIC_SEARCH_openPMD)
             message(STATUS "Found openPMD: ${openPMD_DIR}")
             add_definitions(-DENABLE_OPENPMD=1)
             # TOML
-            set(
-                PIC_toml11_PROVIDER "intern" CACHE
-                STRING "Use internally shipped or external toml11 library.")
-            set_property(
-                CACHE PIC_toml11_PROVIDER
-                PROPERTY STRINGS "intern;extern")
+            set(PIC_toml11_PROVIDER "intern" CACHE STRING "Use internally shipped or external toml11 library.")
+            set_property(CACHE PIC_toml11_PROVIDER PROPERTY STRINGS "intern;extern")
             mark_as_advanced(PIC_toml11_PROVIDER)
             if(${PIC_toml11_PROVIDER} STREQUAL "intern")
                 add_subdirectory(
@@ -344,7 +339,8 @@ if(PIC_SEARCH_openPMD)
                     # PIConGPU targets is sufficient.
                     # It needs not be part of any build or install targets
                     # explicitly.
-                    EXCLUDE_FROM_ALL)
+                    EXCLUDE_FROM_ALL
+                )
             else()
                 # Since toml11 4.0 was a breaking change,
                 # it needs separate find_package() calls
@@ -356,17 +352,20 @@ if(PIC_SEARCH_openPMD)
             endif()
             list(PREPEND HOST_LIBS openPMD::openPMD)
         else()
-            message(STATUS "Found openPMD at ${openPMD_DIR}, but PIConGPU requires"
-                           " availability of either its ADIOS2 or HDF5 backend - "
-                           "NOT BUILDING the openPMD plugin")
-            PIC_dependency_set_status(openPMD FALSE)
+            message(
+                STATUS
+                "Found openPMD at ${openPMD_DIR}, but PIConGPU requires"
+                " availability of either its ADIOS2 or HDF5 backend - "
+                "NOT BUILDING the openPMD plugin"
+            )
+            pic_dependency_set_status(openPMD FALSE)
         endif()
     else(openPMD_FOUND)
         message(STATUS "Could NOT find openPMD - set openPMD_DIR or check your CMAKE_PREFIX_PATH")
     endif(openPMD_FOUND)
 endif()
 
-PIC_dependency_set_status(openPMD ${openPMD_FOUND})
+pic_dependency_set_status(openPMD ${openPMD_FOUND})
 
 ################################################################################
 # JSON
@@ -376,31 +375,27 @@ PIC_dependency_set_status(openPMD ${openPMD_FOUND})
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(JSON_MultipleHeaders OFF CACHE INTERNAL "")
 set(JSON_ImplicitConversions OFF CACHE INTERNAL "")
-set(JSON_Install OFF CACHE INTERNAL "")  # only used PRIVATE
+set(JSON_Install OFF CACHE INTERNAL "") # only used PRIVATE
 
 # allow using externally installed nlohmann_json
-set(
-    PIC_nlohmann_json_PROVIDER "intern" CACHE
-    STRING "Use internally shipped or external nlohmann_json library.")
-set_property(
-    CACHE PIC_nlohmann_json_PROVIDER
-    PROPERTY STRINGS "intern;extern")
+set(PIC_nlohmann_json_PROVIDER "intern" CACHE STRING "Use internally shipped or external nlohmann_json library.")
+set_property(CACHE PIC_nlohmann_json_PROVIDER PROPERTY STRINGS "intern;extern")
 mark_as_advanced(PIC_nlohmann_json_PROVIDER)
 if(${PIC_nlohmann_json_PROVIDER} STREQUAL "intern")
     add_subdirectory(
         "${PIConGPUapp_SOURCE_DIR}/../../thirdParty/nlohmann_json"
-        "${CMAKE_CURRENT_BINARY_DIR}/build_nlohmann_json")
+        "${CMAKE_CURRENT_BINARY_DIR}/build_nlohmann_json"
+    )
 else()
     find_package(nlohmann_json 3.9.1 CONFIG REQUIRED)
     message(STATUS "nlohmann-json: Found version '${nlohmann_json_VERSION}'")
 endif()
 
-
 ################################################################################
 # PNGwriter
 ################################################################################
 
-PIC_dependency(PNGwriter "API for IO with HDF5" AUTO)
+pic_dependency(PNGwriter "API for IO with HDF5" AUTO)
 
 if(PIC_SEARCH_PNGwriter)
     # find PNGwriter installation
@@ -411,26 +406,25 @@ if(PIC_SEARCH_PNGwriter)
         add_definitions(-DPIC_ENABLE_PNG=1)
         message(STATUS "Found PNGwriter: ${PNGwriter_DIR}")
     else()
-        message(STATUS "Could NOT find PNGwriter - "
-                       "set PNGwriter_DIR or check your CMAKE_PREFIX_PATH")
-        PIC_dependency_set_status(PNGwriter FALSE)
+        message(STATUS "Could NOT find PNGwriter - " "set PNGwriter_DIR or check your CMAKE_PREFIX_PATH")
+        pic_dependency_set_status(PNGwriter FALSE)
     endif(PNGwriter_FOUND)
 endif()
 
-PIC_dependency_set_status(PNGwriter ${PNGwriter_FOUND})
+pic_dependency_set_status(PNGwriter ${PNGwriter_FOUND})
 
 ################################################################################
 # ISAAC
 ################################################################################
 
-PIC_dependency(ISAAC "Framework to in-situ visualize PIConGPU during the execution." AUTO)
+pic_dependency(ISAAC "Framework to in-situ visualize PIConGPU during the execution." AUTO)
 
 if(PIC_SEARCH_ISAAC)
     find_package(ISAAC 1.4.0 CONFIG QUIET)
     if(ISAAC_FOUND)
         message(STATUS "Found ISAAC: ${ISAAC_DIR}")
-        SET(ISAAC_STEREO "No" CACHE STRING "Using stereoscopy")
-        SET_PROPERTY(CACHE ISAAC_STEREO PROPERTY STRINGS No SideBySide Anaglyph)
+        set(ISAAC_STEREO "No" CACHE STRING "Using stereoscopy")
+        set_property(CACHE ISAAC_STEREO PROPERTY STRINGS No SideBySide Anaglyph)
 
         if(${ISAAC_STEREO} STREQUAL "No")
             add_definitions(-DISAAC_STEREO=0)
@@ -445,8 +439,8 @@ if(PIC_SEARCH_ISAAC)
         include_directories(SYSTEM ${ISAAC_INCLUDE_DIRS})
         set(LIBS ${LIBS} ${ISAAC_LIBRARIES})
 
-        set(ISAAC_MAX_FUNCTORS "3" CACHE STRING "Max length of the isaac functor chain" )
-        set(ISAAC_DEFAULT_WEIGHT "7" CACHE STRING "Default weight of an isaac source" )
+        set(ISAAC_MAX_FUNCTORS "3" CACHE STRING "Max length of the isaac functor chain")
+        set(ISAAC_DEFAULT_WEIGHT "7" CACHE STRING "Default weight of an isaac source")
         add_definitions(${ISAAC_DEFINITIONS})
         add_definitions(-DISAAC_MAX_FUNCTORS=${ISAAC_MAX_FUNCTORS})
         add_definitions(-DISAAC_FUNCTOR_POW_ENABLED=0)
@@ -455,22 +449,21 @@ if(PIC_SEARCH_ISAAC)
         add_definitions(-DENABLE_ISAAC=1)
     else(ISAAC_FOUND)
         if(DEFINED ISAAC_DEPENDENCY_HINTS)
-            message(STATUS "ISAAC was found, but detected the following "
-                           "problems:" ${ISAAC_DEPENDENCY_HINTS})
+            message(STATUS "ISAAC was found, but detected the following " "problems:" ${ISAAC_DEPENDENCY_HINTS})
         else()
             message(STATUS "Could NOT find ISAAC - set ISAAC_DIR or check your CMAKE_PREFIX_PATH")
         endif()
-        PIC_dependency_set_status(ISAAC FALSE)
+        pic_dependency_set_status(ISAAC FALSE)
     endif(ISAAC_FOUND)
 endif()
 
-PIC_dependency_set_status(ISAAC ${ISAAC_FOUND})
+pic_dependency_set_status(ISAAC ${ISAAC_FOUND})
 
 ################################################################################
 # Find FFTW3
 ################################################################################
 
-PIC_dependency(FFTW3 "FFT library for shadowgraphy plugin" AUTO)
+pic_dependency(FFTW3 "FFT library for shadowgraphy plugin" AUTO)
 
 if(PIC_SEARCH_FFTW3)
     # look at https://stackoverflow.com/questions/44277114/how-to-use-fftw-library-in-cmake for the PkgConfig-things
@@ -481,16 +474,14 @@ if(PIC_SEARCH_FFTW3)
         if(TARGET PkgConfig::FFTW3)
             message(STATUS "Found FFTW3: ${FFTW3_LIBRARY_DIRS}")
         else()
-            message(STATUS "Could NOT find FFTW3 - "
-                    "set FFTW3_Dir or check your CMAKE_PREFIX_PATH")
+            message(STATUS "Could NOT find FFTW3 - " "set FFTW3_Dir or check your CMAKE_PREFIX_PATH")
         endif()
     else(PkgConfig_FOUND)
-        message(STATUS "Could NOT find PkgConfig for fftw3- "
-                       "set Pkgconfig_DIR or check your CMAKE_PREFIX_PATH")
+        message(STATUS "Could NOT find PkgConfig for fftw3- " "set Pkgconfig_DIR or check your CMAKE_PREFIX_PATH")
     endif(PkgConfig_FOUND)
 endif(PIC_SEARCH_FFTW3)
 
-PIC_dependency_set_status(FFTW3 ${FFTW3_FOUND})
+pic_dependency_set_status(FFTW3 ${FFTW3_FOUND})
 
 ################################################################################
 # PIConGPU Workarounds
@@ -500,8 +491,12 @@ set(PIC_COMPUTE_CURRENT_THREAD_LIMITER_DEFAULT OFF)
 if(ALPAKA_ACC_GPU_HIP_ENABLE)
     set(PIC_COMPUTE_CURRENT_THREAD_LIMITER_DEFAULT ON)
 endif()
-option(PIC_COMPUTE_CURRENT_THREAD_LIMITER "Compute current results with HIP alpaka backend are wrong when more threads than particles in a frame will be used (possible compiler BUG).\
- ON means the number of threads will be limited to number of particles in a frame." ${PIC_COMPUTE_CURRENT_THREAD_LIMITER_DEFAULT})
+option(
+    PIC_COMPUTE_CURRENT_THREAD_LIMITER
+    "Compute current results with HIP alpaka backend are wrong when more threads than particles in a frame will be used (possible compiler BUG).\
+ ON means the number of threads will be limited to number of particles in a frame."
+    ${PIC_COMPUTE_CURRENT_THREAD_LIMITER_DEFAULT}
+)
 
 if(PIC_COMPUTE_CURRENT_THREAD_LIMITER)
     add_definitions(-DPIC_COMPUTE_CURRENT_THREAD_LIMITER=1)
@@ -511,23 +506,25 @@ endif()
 # Check if PIC_EXTENSION_PATH is relative or absolute
 ################################################################################
 
-find_path(PIC_EXTENSION_PATH
+find_path(
+    PIC_EXTENSION_PATH
     NAMES include/picongpu/param/precision.param
     PATHS "${PIConGPUapp_SOURCE_DIR}"
     DOC "search PATH to extension folder"
     NO_DEFAULT_PATH
     NO_CMAKE_ENVIRONMENT_PATH
     NO_CMAKE_SYSTEM_PATH
-    )
+)
 
-set(PIC_COPY_ON_INSTALL "include/picongpu;etc/picongpu;lib"
+set(PIC_COPY_ON_INSTALL
+    "include/picongpu;etc/picongpu;lib"
     CACHE STRING
-    "Folders that are copied to installation path during install" )
+    "Folders that are copied to installation path during install"
+)
 
 # enforce that all picongpu includes must be prefixed with `picongpu/`
 include_directories(..)
 include_directories(BEFORE ${PIC_EXTENSION_PATH}/include)
-
 
 ################################################################################
 # Compile & Link PIConGPU
@@ -540,10 +537,7 @@ file(GLOB_RECURSE ACCSRCFILES "*.x.cpp")
 file(GLOB_RECURSE SRCFILES "*.cpp")
 list(REMOVE_ITEM SRCFILES ${ACCSRCFILES})
 
-add_library(picongpu-hostonly
-    STATIC
-    ${SRCFILES}
-)
+add_library(picongpu-hostonly STATIC ${SRCFILES})
 target_link_libraries(picongpu-hostonly PUBLIC ${HOST_LIBS})
 # Some host compiled libraries depend on std::filesystem,
 # compatibility to std::experimental::filesystem is handled in pmacc.
@@ -566,22 +560,25 @@ endif(PIC_HAVE_FFTW3)
 # (Doesn't work for nvcc??)
 target_include_directories(
     picongpu-hostonly
-    SYSTEM PRIVATE
-    $<TARGET_PROPERTY:nlohmann_json::nlohmann_json,INTERFACE_INCLUDE_DIRECTORIES>)
+    SYSTEM
+    PRIVATE $<TARGET_PROPERTY:nlohmann_json::nlohmann_json,INTERFACE_INCLUDE_DIRECTORIES>
+)
 target_link_libraries(picongpu-hostonly PRIVATE nlohmann_json::nlohmann_json)
 
 target_include_directories(
     picongpu
-    SYSTEM PRIVATE
-    $<TARGET_PROPERTY:nlohmann_json::nlohmann_json,INTERFACE_INCLUDE_DIRECTORIES>)
+    SYSTEM
+    PRIVATE $<TARGET_PROPERTY:nlohmann_json::nlohmann_json,INTERFACE_INCLUDE_DIRECTORIES>
+)
 target_link_libraries(picongpu PRIVATE nlohmann_json::nlohmann_json)
 
 if(PIC_HAVE_openPMD)
     # same tricks for toml11
     target_include_directories(
         picongpu-hostonly
-        SYSTEM PRIVATE
-        $<TARGET_PROPERTY:toml11::toml11,INTERFACE_INCLUDE_DIRECTORIES>)
+        SYSTEM
+        PRIVATE $<TARGET_PROPERTY:toml11::toml11,INTERFACE_INCLUDE_DIRECTORIES>
+    )
     target_link_libraries(picongpu-hostonly PRIVATE toml11::toml11)
 
     # This is a workaround for a missing API call in the openPMD-api,
@@ -592,9 +589,10 @@ if(PIC_HAVE_openPMD)
             target_compile_definitions(
                 ${target}
                 PRIVATE
-                ADIOS2_VERSION_MAJOR=${ADIOS2_VERSION_MAJOR}
-                ADIOS2_VERSION_MINOR=${ADIOS2_VERSION_MINOR}
-                ADIOS2_VERSION_PATCH=${ADIOS2_VERSION_PATCH})
+                    ADIOS2_VERSION_MAJOR=${ADIOS2_VERSION_MAJOR}
+                    ADIOS2_VERSION_MINOR=${ADIOS2_VERSION_MINOR}
+                    ADIOS2_VERSION_PATCH=${ADIOS2_VERSION_PATCH}
+            )
         endforeach()
     endif()
 endif()
@@ -613,7 +611,6 @@ if(PIC_ADD_RPATH)
     endif()
 endif()
 
-
 ################################################################################
 # Clang-Tidy (3.9+) Target for CI
 ################################################################################
@@ -624,14 +621,9 @@ find_program(
     NAMES clang-tidy clang-tidy-3.9 clang-tidy-4.0
     DOC "Path to clang-tidy in version 3.9 or newer"
 )
-execute_process(
-    COMMAND ${CLANG_TIDY_BIN} --version
-    RESULT_VARIABLE CLANG_TIDY_RETURN
-    OUTPUT_VARIABLE CLANG_TIDY_OUTPUT
-)
+execute_process(COMMAND ${CLANG_TIDY_BIN} --version RESULT_VARIABLE CLANG_TIDY_RETURN OUTPUT_VARIABLE CLANG_TIDY_OUTPUT)
 if(${CLANG_TIDY_RETURN} EQUAL 0)
-    string(REGEX MATCH "[0-9]+(\\.[0-9]+)+"
-           CLANG_TIDY_VERSION ${CLANG_TIDY_OUTPUT})
+    string(REGEX MATCH "[0-9]+(\\.[0-9]+)+" CLANG_TIDY_VERSION ${CLANG_TIDY_OUTPUT})
 
     if("${CLANG_TIDY_VERSION}" VERSION_GREATER_EQUAL "3.9.0")
         get_directory_property(ALL_INCLUDES DIRECTORY ${PIConGPUapp_SOURCE_DIR} INCLUDE_DIRECTORIES)
@@ -645,29 +637,21 @@ if(${CLANG_TIDY_RETURN} EQUAL 0)
 
         add_custom_target(
             clang-tidy
-            COMMAND ${CLANG_TIDY_BIN}
-            ${SRCFILES} ${ACCSRCFILES}
-            -header-filter='.*'
-            -config=''
-            # -warnings-as-errors='*'
-            # -checks='-*,modernize-use-using'
-            # -fix # -fix-errors
-            --
-            -std=c++20
-            ${OpenMP_CXX_FLAGS}
-            ${ALL_INCLUDES_STR}
-            ${ALL_DEFINES_STR}
+            COMMAND
+                ${CLANG_TIDY_BIN} ${SRCFILES} ${ACCSRCFILES} -header-filter='.*' -config=''
+                # -warnings-as-errors='*'
+                # -checks='-*,modernize-use-using'
+                # -fix # -fix-errors
+                -- -std=c++20 ${OpenMP_CXX_FLAGS} ${ALL_INCLUDES_STR} ${ALL_DEFINES_STR}
         )
     endif()
 endif()
-
 
 ################################################################################
 # Install PIConGPU
 ################################################################################
 
-install(TARGETS picongpu
-         RUNTIME DESTINATION bin)
+install(TARGETS picongpu RUNTIME DESTINATION bin)
 
 #file(GLOB scripts_to_copy "${PIConGPUapp_SOURCE_DIR}/bin/*.sh")
 #foreach(f ${scripts_to_copy})
@@ -676,41 +660,41 @@ install(TARGETS picongpu
 #           OWNER_WRITE GROUP_READ GROUP_EXECUTE)
 #endforeach(f)
 
-install(DIRECTORY "${PIConGPUapp_SOURCE_DIR}/../../bin/" DESTINATION bin
-    FILES_MATCHING PATTERN "*"
-    PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE
+install(
+    DIRECTORY "${PIConGPUapp_SOURCE_DIR}/../../bin/"
+    DESTINATION bin
+    FILES_MATCHING
+    PATTERN "*" PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE
     PATTERN .svn EXCLUDE
 )
 
 # If the installation prefix does not equal extension path, check if folder must be copied.
 # If there is no include folder in installation prefix, also copy all missing folders.
-if( (NOT "${CMAKE_INSTALL_PREFIX}" STREQUAL "${PIC_EXTENSION_PATH}") OR
-    (NOT EXISTS "${CMAKE_INSTALL_PREFIX}/include"))
-
+if((NOT "${CMAKE_INSTALL_PREFIX}" STREQUAL "${PIC_EXTENSION_PATH}") OR (NOT EXISTS "${CMAKE_INSTALL_PREFIX}/include"))
     # copy all important subfolders to install folder
     foreach(dir ${PIC_COPY_ON_INSTALL})
+        #if source not exists than copy
+        if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/${dir}")
+            #copy important subfolders from extension path (default PIConGPU parameter)
+            if(EXISTS "${PIConGPUapp_SOURCE_DIR}/../../${dir}/")
+                install(
+                    DIRECTORY "${PIConGPUapp_SOURCE_DIR}/../../${dir}/."
+                    DESTINATION "${CMAKE_INSTALL_PREFIX}/${dir}"
+                    PATTERN .svn EXCLUDE
+                    PATTERN .git EXCLUDE
+                )
+            endif()
 
-      #if source not exists than copy
-      if(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/${dir}")
-          #copy important subfolders from extension path (default PIConGPU parameter)
-          if(EXISTS "${PIConGPUapp_SOURCE_DIR}/../../${dir}/")
-            install(DIRECTORY "${PIConGPUapp_SOURCE_DIR}/../../${dir}/."
-              DESTINATION "${CMAKE_INSTALL_PREFIX}/${dir}"
-              PATTERN .svn EXCLUDE
-              PATTERN .git EXCLUDE
-            )
-          endif()
-
-          #copy important subfolders from extension path (from extension path)
-          if(EXISTS "${PIC_EXTENSION_PATH}/${dir}/")
-            install(DIRECTORY "${PIC_EXTENSION_PATH}/${dir}/."
-               DESTINATION "${CMAKE_INSTALL_PREFIX}/${dir}"
-               PATTERN .svn EXCLUDE
-               PATTERN .git EXCLUDE
-            )
-          endif()
-      endif()
-
+            #copy important subfolders from extension path (from extension path)
+            if(EXISTS "${PIC_EXTENSION_PATH}/${dir}/")
+                install(
+                    DIRECTORY "${PIC_EXTENSION_PATH}/${dir}/."
+                    DESTINATION "${CMAKE_INSTALL_PREFIX}/${dir}"
+                    PATTERN .svn EXCLUDE
+                    PATTERN .git EXCLUDE
+                )
+            endif()
+        endif()
     endforeach()
 endif()
 

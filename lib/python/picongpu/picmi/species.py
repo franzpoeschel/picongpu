@@ -66,7 +66,7 @@ class Species(picmistandard.PICMI_Species):
         :return: temperature in keV
         """
         assert rms_velocity_si[0] == rms_velocity_si[1] and rms_velocity_si[1] == rms_velocity_si[2], (
-            "all thermal velcoity spread (rms velocity) components must be " "equal"
+            "all thermal velcoity spread (rms velocity) components must be equal"
         )
         # see
         # https://en.wikipedia.org/wiki/Maxwell%E2%80%93Boltzmann_distribution
@@ -144,35 +144,35 @@ class Species(picmistandard.PICMI_Species):
         """
 
         if self.particle_type is None:
-            assert not self.has_ionization(
-                interaction
-            ), f"Species {self.name} configured with active ionization but required particle_type not set."
+            assert not self.has_ionization(interaction), (
+                f"Species {self.name} configured with active ionization but required particle_type not set."
+            )
             assert self.charge_state is None, (
                 f"Species {self.name} specified initial charge state via charge_state without also specifying particle "
                 "type, must either set particle_type explicitly or only use charge instead"
             )
-            assert (
-                self.picongpu_fixed_charge is False
-            ), f"Species {self.name} specified fixed charge without also specifying particle_type"
+            assert self.picongpu_fixed_charge is False, (
+                f"Species {self.name} specified fixed charge without also specifying particle_type"
+            )
         else:
             # particle type is
             if (self.particle_type in self.__non_element_particle_types) or re.match(r"other:.*", self.particle_type):
                 # non ion predefined particle, or custom particle type
                 assert self.charge_state is None, "charge_state may only be set for ions"
-                assert not self.has_ionization(
-                    interaction
-                ), f"Species {self.name} configured with active ionization but particle type indicates non ion."
-                assert (
-                    self.picongpu_fixed_charge is False
-                ), f"Species {self.name} configured with fixed charge state but particle_type indicates non ion"
+                assert not self.has_ionization(interaction), (
+                    f"Species {self.name} configured with active ionization but particle type indicates non ion."
+                )
+                assert self.picongpu_fixed_charge is False, (
+                    f"Species {self.name} configured with fixed charge state but particle_type indicates non ion"
+                )
             elif Element.is_element(self.particle_type):
                 # ion
 
                 # check for unphysical charge state
                 if self.charge_state is not None:
-                    assert (
-                        Element(self.particle_type).get_atomic_number() >= self.charge_state
-                    ), f"Species {self.name} intial charge state is unphysical"
+                    assert Element(self.particle_type).get_atomic_number() >= self.charge_state, (
+                        f"Species {self.name} intial charge state is unphysical"
+                    )
 
                 if self.has_ionization(interaction):
                     assert self.picongpu_fixed_charge is False, (
@@ -215,12 +215,12 @@ class Species(picmistandard.PICMI_Species):
             # custom species may not have mass or charge
             pass
         elif not self.__previous_check:
-            assert (
-                self.charge is None
-            ), f"Species' {self.name}, charge is specified implicitly via particle type, do NOT set charge explictly"
-            assert (
-                self.mass is None
-            ), f"Species' {self.name}, mass is specified implicitly via particle type, do NOT set mass explictly"
+            assert self.charge is None, (
+                f"Species' {self.name}, charge is specified implicitly via particle type, do NOT set charge explictly"
+            )
+            assert self.mass is None, (
+                f"Species' {self.name}, mass is specified implicitly via particle type, do NOT set mass explictly"
+            )
 
         self.__check_interaction_configuration(interaction)
         self.__previous_check = True
@@ -295,9 +295,7 @@ class Species(picmistandard.PICMI_Species):
         self.check(interaction)
         self.__maybe_apply_particle_type()
 
-        assert pypicongpu_species.name == self.name, (
-            "to generate " "operations for PyPIConGPU species: names must match"
-        )
+        assert pypicongpu_species.name == self.name, "to generate operations for PyPIConGPU species: names must match"
 
         all_operations = []
 

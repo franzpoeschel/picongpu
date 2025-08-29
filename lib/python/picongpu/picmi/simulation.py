@@ -307,14 +307,14 @@ class Simulation(picmistandard.PICMI_Simulation):
             profile = picmi_species.initial_distribution
             ratio = picmi_species.density_scale
 
-            assert 1 != [layout, profile].count(
-                None
-            ), "species need BOTH layout AND initial distribution set (or neither)"
+            assert 1 != [layout, profile].count(None), (
+                "species need BOTH layout AND initial distribution set (or neither)"
+            )
 
             if ratio is not None:
-                assert (
-                    layout is not None and profile is not None
-                ), "layout and initial distribution must be set to use density scale"
+                assert layout is not None and profile is not None, (
+                    "layout and initial distribution must be set to use density scale"
+                )
 
     def __get_translated_species_and_ionization_models(
         self,

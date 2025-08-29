@@ -79,7 +79,7 @@ class Renderer:
                 allowed_types = [str, bool, type(None), int, float]
                 if type(value) not in allowed_types:
                     raise TypeError(
-                        "leaf may only be str, bool, None, number;" " found: {} at {}.{}".format(type(value), path, key)
+                        "leaf may only be str, bool, None, number; found: {} at {}.{}".format(type(value), path, key)
                     )
 
     @staticmethod
@@ -184,7 +184,7 @@ class Renderer:
             if block_content[0] not in "{^#/>!":
                 # note: use string composition instead of normal formatstrings
                 logging.warning(
-                    "do NOT use HTML escaped syntax (only {{two braces}}) for " "vars, offending var: " + match.group(1)
+                    "do NOT use HTML escaped syntax (only {{two braces}}) for vars, offending var: " + match.group(1)
                 )
         return chevron.render(template, context, warn=True)
 

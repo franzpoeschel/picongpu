@@ -12,7 +12,6 @@ The positions of the particle before and after the movement are needed.
 
 """
 
-
 import numpy as np
 from assignment_and_W_func import NGP, CIC, TSC, PQS, W
 

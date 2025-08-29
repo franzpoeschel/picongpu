@@ -90,7 +90,7 @@ class ParamReader(rF.ReadFiles):
             all_paramFiles = self.getParam(parameter)
 
             if len(all_paramFiles) > 1:
-                warnings.warn("Multiple files could be found" ' with an "undefined block" for' " the same parameter.")
+                warnings.warn('Multiple files could be found with an "undefined block" for the same parameter.')
 
             parameter = None
 
@@ -203,7 +203,7 @@ class ParamReader(rF.ReadFiles):
                 result[number] = line
 
         if not result:
-            raise ValueError("The parameter {}" " could not be found".format(parameter))
+            raise ValueError("The parameter {} could not be found".format(parameter))
         else:
             return result
 
@@ -278,7 +278,7 @@ class ParamReader(rF.ReadFiles):
         """
 
         if not self.getParam(parameter):
-            raise ValueError("No .param file containing the" " parameter.")
+            raise ValueError("No .param file containing the parameter.")
 
         all_paramFiles = self.getParam(parameter)
         for filename in all_paramFiles:

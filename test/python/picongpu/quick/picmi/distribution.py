@@ -565,7 +565,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
         dist = self._get_distribution(exponential_pre_plasma_length=1.0)
         with self.assertRaisesRegex(
             ValueError,
-            "either both exponential_pre_plasma_length and" " exponential_pre_plasma_cutoff must be set.*",
+            "either both exponential_pre_plasma_length and exponential_pre_plasma_cutoff must be set.*",
         ):
             dist.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
@@ -573,7 +573,7 @@ class TestPicmiCylindricalDistribution(unittest.TestCase, HelperTestPicmiBoundar
         dist = self._get_distribution(exponential_pre_plasma_cutoff=1.0)
         with self.assertRaisesRegex(
             ValueError,
-            "either both exponential_pre_plasma_length and" " exponential_pre_plasma_cutoff must be set.*",
+            "either both exponential_pre_plasma_length and exponential_pre_plasma_cutoff must be set.*",
         ):
             dist.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 

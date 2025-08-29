@@ -29,7 +29,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 
-
 ################################################################################
 # CMake policies
 #
@@ -55,14 +54,15 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdParty/catch2 ${CMAKE_
 # JSON
 ###############################################################################
 
- set(JSON_BuildTests OFF CACHE INTERNAL "")
- set(JSON_MultipleHeaders OFF CACHE INTERNAL "")
- set(JSON_ImplicitConversions OFF CACHE INTERNAL "")
- set(JSON_Install OFF CACHE INTERNAL "")  # only used PRIVATE
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_MultipleHeaders OFF CACHE INTERNAL "")
+set(JSON_ImplicitConversions OFF CACHE INTERNAL "")
+set(JSON_Install OFF CACHE INTERNAL "") # only used PRIVATE
 
 add_subdirectory(
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../thirdParty/nlohmann_json"
-    "${CMAKE_CURRENT_BINARY_DIR}/build_nlohmann_json")
+    "${CMAKE_CURRENT_BINARY_DIR}/build_nlohmann_json"
+)
 
 ################################################################################
 # Find Boost
@@ -97,9 +97,10 @@ endif()
 enable_testing()
 
 # We need to build and link this to check CLI aspects.
-add_library(argparser
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../../include/picongpu/ArgsParser.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../../include/picongpu/versionFormat.x.cpp"
+add_library(
+    argparser
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../include/picongpu/ArgsParser.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../include/picongpu/versionFormat.x.cpp"
 )
 
 target_link_libraries(argparser PRIVATE ${HOST_LIBS})

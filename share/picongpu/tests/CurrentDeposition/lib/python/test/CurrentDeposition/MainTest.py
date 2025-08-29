@@ -15,7 +15,6 @@ Returns whether they coincide or not.
 
 """
 
-
 import openpmd_api as opmd
 import numpy as np
 from grid_class import grid
@@ -44,10 +43,10 @@ def get_params(path):
     i = series.iterations[indices[0]]
 
     if len(series.iterations) == 1:
-        raise ValueError("There is just 1 iteration in the series " "make sure, there are at least two")
+        raise ValueError("There is just 1 iteration in the series make sure, there are at least two")
 
     elif len(np.array(i.particles)) != 2:
-        raise ValueError("There is more than one particle in the series " "make sure, there are exactly 2")
+        raise ValueError("There is more than one particle in the series make sure, there are exactly 2")
 
     else:
         # read the order of the assignment function

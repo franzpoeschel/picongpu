@@ -7,7 +7,6 @@ Authors: Marco Garten, Brian Marre
 License: GPLv3+
 """
 
-
 import numpy as np
 import scipy.constants as sc
 

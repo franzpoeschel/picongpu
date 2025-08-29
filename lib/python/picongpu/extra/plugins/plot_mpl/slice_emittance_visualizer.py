@@ -117,7 +117,7 @@ if __name__ == "__main__":
             print(
                 "python",
                 sys.argv[0],
-                "-p <path to run_directory> -i <iteration>" " -s <particle species> -f <species_filter>",
+                "-p <path to run_directory> -i <iteration> -s <particle species> -f <species_filter>",
             )
 
         path = None

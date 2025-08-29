@@ -36,7 +36,6 @@ set(CMAKE_CXX_STANDARD 20)
 ################################################################################
 find_package(PMacc REQUIRED CONFIG PATHS "${PMACC_ROOT_DIR}")
 
-
 set(_TARGET_NAME "headerCheckTest")
 
 ###############################################################################
@@ -56,17 +55,14 @@ set(_GENERATED_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/src")
 
 file(REMOVE_RECURSE ${_GENERATED_SOURCE_DIR})
 
-foreach (_HEADER_FILE ${PMACC_FILES_HEADER})
+foreach(_HEADER_FILE ${PMACC_FILES_HEADER})
     # Remove the parent directory from the path.
     # NOTE: This is not correct because it does not only replace at the beginning of the string.
     #  "STRING(REGEX REPLACE" would be correct if there was an easy way to escape arbitrary strings.
-    string(
-            REPLACE "${PMACC_SUFFIXED_INCLUDE_DIR}/" ""
-            _HEADER_FILE
-            "${_HEADER_FILE}")
+    string(REPLACE "${PMACC_SUFFIXED_INCLUDE_DIR}/" "" _HEADER_FILE "${_HEADER_FILE}")
     set(_SOURCE_FILE "${_GENERATED_SOURCE_DIR}/${_HEADER_FILE}.cpp")
     file(WRITE "${_SOURCE_FILE}" "#include <pmacc/${_HEADER_FILE}>\n#include <pmacc/Environment.hpp>\n")
-endforeach ()
+endforeach()
 
 #---------------------------------------------------------------------------
 # Add executable.
@@ -77,7 +73,8 @@ list(APPEND _FILES_SOURCE "src/main.cpp")
 # Always add all files to the target executable build call to add them to the build project.
 alpaka_add_executable(
         ${_TARGET_NAME}
-        ${_FILES_SOURCE})
+        ${_FILES_SOURCE}
+)
 
 target_link_libraries(${_TARGET_NAME} PUBLIC Catch2 Catch2WithMain)
 target_compile_definitions(${_TARGET_NAME} PRIVATE "PMACC_NO_TPP_INCLUDE")

@@ -5,6 +5,7 @@ Copyright 2017-2024 PIConGPU contributors
 Authors: Sebastian Starke
 License: GPLv3+
 """
+
 import numpy as np
 
 from ..data import EnergyHistogramData
@@ -125,7 +126,7 @@ if __name__ == "__main__":
             print(
                 "python",
                 sys.argv[0],
-                "-p <path to run_directory> -i <iteration>" " -s <particle species> -f <species_filter>",
+                "-p <path to run_directory> -i <iteration> -s <particle species> -f <species_filter>",
             )
 
         path = None

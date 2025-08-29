@@ -19,9 +19,7 @@ import itertools
 
 
 def _get_debug_data(sim_path, collider_id, pair_id):
-    debug_file_path = (
-        Path(sim_path) / "simOutput" / f"debug_values_collider_{collider_id}_" f"species_pair_{pair_id}.dat"
-    )
+    debug_file_path = Path(sim_path) / "simOutput" / f"debug_values_collider_{collider_id}_species_pair_{pair_id}.dat"
     debug_data = None
     with open(debug_file_path, "r") as f:
         debug_data = np.loadtxt(

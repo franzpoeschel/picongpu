@@ -23,7 +23,11 @@ set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR riscv64)
 
 if(DEFINED ENV{RISCV_GNU_INSTALL_ROOT} AND NOT DEFINED RISCV_GNU_INSTALL_ROOT)
-    set(RISCV_GNU_INSTALL_ROOT "$ENV{RISCV_GNU_INSTALL_ROOT}" CACHE PATH "Path to GNU for RISC-V cross compiler installation directory")
+    set(RISCV_GNU_INSTALL_ROOT
+        "$ENV{RISCV_GNU_INSTALL_ROOT}"
+        CACHE PATH
+        "Path to GNU for RISC-V cross compiler installation directory"
+    )
 else()
     set(RISCV_GNU_INSTALL_ROOT /opt/riscv CACHE PATH "Path to GNU for RISC-V cross compiler installation directory")
 endif()

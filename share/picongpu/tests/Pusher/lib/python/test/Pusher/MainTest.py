@@ -48,10 +48,10 @@ def get_params(path):
     i = series.iterations[indices[0]]
 
     if len(series.iterations) == 1:
-        raise ValueError("There is just 1 iteration in the series" "make sure, there are at least two")
+        raise ValueError("There is just 1 iteration in the seriesmake sure, there are at least two")
 
     elif len(np.array(i.particles)) != 1:
-        raise ValueError("There is not only 1 particle in the series" "make sure, there is only one")
+        raise ValueError("There is not only 1 particle in the seriesmake sure, there is only one")
 
     else:
         # read parameters of the simulation

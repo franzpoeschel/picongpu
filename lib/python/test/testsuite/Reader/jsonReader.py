@@ -22,7 +22,6 @@ getValue(parameter:str, direction:str = None)
     returns the value of the searched parameter
 """
 
-
 __all__ = ["JSONReader"]
 
 import json
@@ -133,7 +132,7 @@ class JSONReader(rF.ReadFiles):
         """
 
         if not self.getJSONwithParam(parameter):
-            raise ValueError("The parameter could not be found in" " the .json Files")
+            raise ValueError("The parameter could not be found in the .json Files")
 
         all_files = self.getJSONwithParam(parameter)
 
@@ -144,6 +143,6 @@ class JSONReader(rF.ReadFiles):
                 if "value" not in locals():
                     value = data[parameter]
                 elif "value" in locals() and value != data[parameter]:
-                    raise ValueError("More than one value could be found" " for {}".format(parameter))
+                    raise ValueError("More than one value could be found for {}".format(parameter))
 
         return value["values"]

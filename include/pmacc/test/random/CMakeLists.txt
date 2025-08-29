@@ -33,7 +33,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 
-
 ################################################################################
 # CMake policies
 #
@@ -56,8 +55,4 @@ find_package(PMacc REQUIRED CONFIG PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 alpaka_add_executable(TestRng 2DDistribution.cpp)
 target_link_libraries(TestRng PRIVATE pmacc::pmacc)
 
-add_custom_target(run
-    COMMAND mpiexec -n 1 TestRng
-    DEPENDS TestRng
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
+add_custom_target(run COMMAND mpiexec -n 1 TestRng DEPENDS TestRng WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})

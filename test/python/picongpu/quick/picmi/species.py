@@ -185,7 +185,7 @@ class TestPicmiSpecies(unittest.TestCase):
                             ]
                         else:
                             # fail: unkown distribution type
-                            assert False, "unkown distribution type in " "test: {}".format(type(dist))
+                            assert False, "unkown distribution type in test: {}".format(type(dist))
 
                     picmi_s = picmi.Species(name="name", mass=1, initial_distribution=dist)
 

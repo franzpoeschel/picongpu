@@ -133,7 +133,7 @@ class CMAKEFlagReader(rF.ReadFiles):
         allparameters = self.getAllSetups()[setup]
 
         if (parameter and parameter.upper()) not in allparameters:
-            raise ValueError("The parameter {} could not be" " found.".format(parameter))
+            raise ValueError("The parameter {} could not be found.".format(parameter))
 
         allparameters = allparameters.split(";")
 

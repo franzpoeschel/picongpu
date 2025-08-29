@@ -24,7 +24,6 @@
 
 cmake_minimum_required(VERSION 3.25.0)
 
-
 ################################################################################
 # Project
 ################################################################################
@@ -44,7 +43,6 @@ list(APPEND CMAKE_PREFIX_PATH "$ENV{CMAKE_PREFIX_PATH}")
 # Last add generic system path to the end (as last fallback)
 list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu/")
 
-
 ################################################################################
 # CMake policies
 #
@@ -56,13 +54,11 @@ if(POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
 endif()
 
-
 ################################################################################
 # mpiInfo options
 ################################################################################
 
 option(MPIINFO_ADD_RPATH "Add RPATH's to binary." ON)
-
 
 ###############################################################################
 # Language Flags
@@ -72,7 +68,6 @@ option(MPIINFO_ADD_RPATH "Add RPATH's to binary." ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
-
 
 ################################################################################
 # Warnings
@@ -86,7 +81,7 @@ set(CMAKE_CXX_FLAGS_DEFAULT "-Wall")
 
 # Allow users to override the "-pthread" preference.
 if(NOT THREADS_PREFER_PTHREAD_FLAG)
-     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 endif()
 
 # WARNING: in case were we cross compile we need to add '-DDMPI_CXX_WORKS=ON` and
@@ -96,7 +91,6 @@ if(NOT APPLE)
     # librt: undefined reference to `clock_gettime'
     find_library(RT_LIBRARY rt)
 endif()
-
 
 ################################################################################
 # Find MPI
@@ -116,14 +110,11 @@ else()
     set(MPIINFO_LIBS ${MPIINFO_LIBS} ${Boost_LIBRARIES})
 endif()
 
-
 ################################################################################
 # Compile & Link mpiInfo
 ################################################################################
 
-add_executable(mpiInfo
-    mpiInfo.cpp
-)
+add_executable(mpiInfo mpiInfo.cpp)
 
 target_link_libraries(mpiInfo PRIVATE ${MPIINFO_LIBS} Threads::Threads)
 if(RT_LIBRARY AND NOT APPLE)
@@ -132,7 +123,7 @@ if(RT_LIBRARY AND NOT APPLE)
 endif()
 target_link_libraries(mpiInfo PRIVATE MPI::MPI_CXX)
 
-if( CMAKE_TRY_COMPILE_TARGET_TYPE STREQUAL "STATIC_LIBRARY" AND CMAKE_EXE_LINKER_FLAGS)
+if(CMAKE_TRY_COMPILE_TARGET_TYPE STREQUAL "STATIC_LIBRARY" AND CMAKE_EXE_LINKER_FLAGS)
     # Workaround for linker issues when linking static MPI libraries.
     # Because of CMAKE_TRY_COMPILE_TARGET_TYPE CMake providing the statics libraries before the object file from
     # `add_executable` therefore MPI, symbols can not be resolved. Linking the linker flags to the target again will
@@ -154,10 +145,8 @@ if(MPIINFO_ADD_RPATH)
     endif()
 endif()
 
-
 ################################################################################
 # Install mpiInfo
 ################################################################################
 
-install(TARGETS mpiInfo
-         RUNTIME DESTINATION bin)
+install(TARGETS mpiInfo RUNTIME DESTINATION bin)

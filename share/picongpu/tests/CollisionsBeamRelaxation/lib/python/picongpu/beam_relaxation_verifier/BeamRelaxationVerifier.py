@@ -24,7 +24,7 @@ def plot_with_std(ax, x, y, y_std, label=None):
 
 
 def _get_debug_data(sim_path, collider_id):
-    debug_file_path = Path(sim_path) / "simOutput" / f"debug_values_collider_{collider_id}_" "species_pair_0.dat"
+    debug_file_path = Path(sim_path) / "simOutput" / f"debug_values_collider_{collider_id}_species_pair_0.dat"
     debug_data = None
     with open(debug_file_path, "r") as f:
         debug_data = np.loadtxt(
@@ -215,22 +215,22 @@ class BeamRelaxationVerifier:
             ax.legend()
 
         ax_dict["equal_std_mean"].set_title(
-            "(equal) 1000 ions per cell, 1000 electrons per cell \n with std " "of the mean"
+            "(equal) 1000 ions per cell, 1000 electrons per cell \n with std of the mean"
         )
         ax_dict["moreIons_std_mean"].set_title(
-            "(moreIons) 1000 ions per cell, 100 electrons per cell \n with " "std of the mean"
+            "(moreIons) 1000 ions per cell, 100 electrons per cell \n with std of the mean"
         )
         ax_dict["lessIons_std_mean"].set_title(
-            "(lessIons) 100 ions per cell, 1000 electrons per cell \n with " "std of the mean"
+            "(lessIons) 100 ions per cell, 1000 electrons per cell \n with std of the mean"
         )
         ax_dict["equal_std_dist"].set_title(
-            "(equal) 1000 ions per cell, 1000 electrons per cell \n with std " "of the distribution"
+            "(equal) 1000 ions per cell, 1000 electrons per cell \n with std of the distribution"
         )
         ax_dict["moreIons_std_dist"].set_title(
-            "(moreIons) 1000 ions per cell, 100 electrons per cell \n with " "std of the distribution"
+            "(moreIons) 1000 ions per cell, 100 electrons per cell \n with std of the distribution"
         )
         ax_dict["lessIons_std_dist"].set_title(
-            "(lessIons) 100 ions per cell, 1000 electrons per cell \n with " "std of the distribution"
+            "(lessIons) 100 ions per cell, 1000 electrons per cell \n with std of the distribution"
         )
 
         ax_dict["all_pic"].set_title("all PIConGPU")

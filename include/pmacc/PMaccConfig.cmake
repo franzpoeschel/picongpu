@@ -19,7 +19,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 # - Config file for the pmacc package and provide the target pmacc::pmacc
 
 ###############################################################################
@@ -36,8 +35,7 @@ list(APPEND CMAKE_PREFIX_PATH "$ENV{VT_ROOT}")
 list(APPEND CMAKE_PREFIX_PATH "$ENV{CMAKE_PREFIX_PATH}")
 
 # own modules for find_packages e.g. FindmallocMC
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
-    ${PMacc_DIR}/../../thirdParty/cmake-modules/)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PMacc_DIR}/../../thirdParty/cmake-modules/)
 
 ################################################################################
 # alpaka path
@@ -97,7 +95,6 @@ set(_PMACC_MAX_ALPAKA_VERSION 1.2.0)
 # do not search for alpaka if it already exists
 # for example, a project that includes alpaka via add_subdirectory before including pmacc via add_subdirectory
 if(NOT TARGET alpaka::alpaka)
-
     # the alpaka provider for the internal alpaka is only available,
     # if pmacc is used via add_subdirectory in another project
     # or examples are build
@@ -113,12 +110,18 @@ if(NOT TARGET alpaka::alpaka)
     else()
         find_package(alpaka ${_PMACC_MAX_ALPAKA_VERSION} HINTS $ENV{ALPAKA_ROOT})
         if(NOT TARGET alpaka::alpaka)
-            message(STATUS "Could not find alpaka ${_PMACC_MAX_ALPAKA_VERSION}. Now searching for alpaka ${_PMACC_MIN_ALPAKA_VERSION}")
+            message(
+                STATUS
+                "Could not find alpaka ${_PMACC_MAX_ALPAKA_VERSION}. Now searching for alpaka ${_PMACC_MIN_ALPAKA_VERSION}"
+            )
             find_package(alpaka ${_PMACC_MIN_ALPAKA_VERSION} REQUIRED HINTS $ENV{ALPAKA_ROOT})
         endif()
         if(alpaka_VERSION VERSION_GREATER _PMACC_MAX_ALPAKA_VERSION)
-            message(WARNING "Unsupported alpaka version ${alpaka_VERSION}. "
-                    "Supported versions [${_PMACC_MIN_ALPAKA_VERSION},${_PMACC_MAX_ALPAKA_VERSION}].")
+            message(
+                WARNING
+                "Unsupported alpaka version ${alpaka_VERSION}. "
+                "Supported versions [${_PMACC_MIN_ALPAKA_VERSION},${_PMACC_MAX_ALPAKA_VERSION}]."
+            )
         endif()
     endif()
 
@@ -141,10 +144,7 @@ alpaka_add_library(
         ${PMACC_SRC_FILES}
 )
 
-target_include_directories(pmacc
-        PUBLIC
-        $<BUILD_INTERFACE:${PMacc_DIR}/..>
-        $<INSTALL_INTERFACE:${PMacc_DIR}/..>)
+target_include_directories(pmacc PUBLIC $<BUILD_INTERFACE:${PMacc_DIR}/..> $<INSTALL_INTERFACE:${PMacc_DIR}/..>)
 
 # Even if there are no sources CMAKE has to know the language.
 set_target_properties(pmacc PROPERTIES LINKER_LANGUAGE CXX)
@@ -166,7 +166,6 @@ if(NOT PMACC_FOUND_CXX17_STD_FILESYSTEM)
     target_link_libraries(pmacc_filesystem INTERFACE stdc++fs)
 endif()
 
-
 ###############################################################################
 # Build Flags
 ###############################################################################
@@ -177,7 +176,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "${PMACC_BUILD_TYPE}")
 unset(PMACC_BUILD_TYPE)
-
 
 ################################################################################
 # CMake policies
@@ -190,7 +188,6 @@ if(POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
 endif()
 
-
 ###############################################################################
 # Language Flags
 ###############################################################################
@@ -199,7 +196,6 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
-
 
 ###############################################################################
 # Definitely Unsupported Compilers
@@ -211,7 +207,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
         message(WARNING "GCC < 9.0 is not a official supported, please try a newer!")
     endif()
-# Clang
+    # Clang
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
         message(FATAL_ERROR "Apple Clang (Xcode) too old! Use Xcode 8.0 or newer")
@@ -224,7 +220,6 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     endif()
 endif()
 
-
 ###############################################################################
 # CPU Architecture: available instruction sets for e.g. SIMD extensions
 #
@@ -232,9 +227,7 @@ endif()
 # For unsupported compilers, ignore this option and set CXXFLAGS.
 ###############################################################################
 
-set(PMACC_CPU_ARCH $ENV{PMACC_CPU_ARCH} CACHE STRING
-    "compiler dependent CPU architecture string"
-)
+set(PMACC_CPU_ARCH $ENV{PMACC_CPU_ARCH} CACHE STRING "compiler dependent CPU architecture string")
 
 # list of known compiler flags to set the CPU architecture
 # GNU
@@ -248,14 +241,14 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     else()
         set(PMACC_CPU_ARCH_TEMPLATE "-march={} -mtune={}")
     endif()
-# ICC
+    # ICC
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     if("${PMACC_CPU_ARCH}" STREQUAL "native")
         set(PMACC_CPU_ARCH_TEMPLATE "-march={} -mtune={}")
     else()
         set(PMACC_CPU_ARCH_TEMPLATE "-x{}")
     endif()
-# Clang
+    # Clang
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
         set(PMACC_CPU_ARCH_TEMPLATE "-mcpu={}")
@@ -264,10 +257,10 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     else()
         set(PMACC_CPU_ARCH_TEMPLATE "-march={} -mtune={}")
     endif()
-# XL
+    # XL
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
     set(PMACC_CPU_ARCH_TEMPLATE "-qarch={}")
-# PGI
+    # PGI
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "PGI")
     if(NOT "${PMACC_CPU_ARCH}" STREQUAL "native")
         set(PMACC_CPU_ARCH_TEMPLATE "-tp={}")
@@ -276,14 +269,9 @@ endif()
 
 # architecture is set and compiler is known
 if(PMACC_CPU_ARCH AND PMACC_CPU_ARCH_TEMPLATE)
-    string(REPLACE
-       "{}"
-       "${PMACC_CPU_ARCH}"
-       PMACC_CPU_ARCH_STRING
-       "${PMACC_CPU_ARCH_TEMPLATE}")
+    string(REPLACE "{}" "${PMACC_CPU_ARCH}" PMACC_CPU_ARCH_STRING "${PMACC_CPU_ARCH_TEMPLATE}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PMACC_CPU_ARCH_STRING}")
 endif()
-
 
 ################################################################################
 # Find MPI
@@ -293,7 +281,7 @@ find_package(MPI REQUIRED)
 target_link_libraries(pmacc PUBLIC MPI::MPI_CXX)
 target_link_libraries(pmacc_filesystem INTERFACE MPI::MPI_CXX)
 
-if( CMAKE_TRY_COMPILE_TARGET_TYPE STREQUAL "STATIC_LIBRARY" AND CMAKE_EXE_LINKER_FLAGS)
+if(CMAKE_TRY_COMPILE_TARGET_TYPE STREQUAL "STATIC_LIBRARY" AND CMAKE_EXE_LINKER_FLAGS)
     # Workaround for linker issues when linking static MPI libraries.
     # Because of CMAKE_TRY_COMPILE_TARGET_TYPE CMake is providing the statics libraries before the object file from
     # `add_executable` therefore MPI symbols can not be resolved. Linking the linker flaks to the target again will
@@ -301,13 +289,12 @@ if( CMAKE_TRY_COMPILE_TARGET_TYPE STREQUAL "STATIC_LIBRARY" AND CMAKE_EXE_LINKER
     target_link_libraries(pmacc PUBLIC ${CMAKE_EXE_LINKER_FLAGS})
 endif()
 
-
 ################################################################################
 # Find Threads
 ################################################################################
 
 if(NOT THREADS_PREFER_PTHREAD_FLAG)
-     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 endif()
 find_package(Threads REQUIRED)
 if(NOT APPLE)
@@ -317,7 +304,6 @@ if(NOT APPLE)
         target_link_libraries(pmacc PUBLIC ${RT_LIBRARY})
     endif()
 endif()
-
 
 ################################################################################
 # Find Boost
@@ -354,18 +340,23 @@ endif()
 
 # Newer Boost releases: probably troublesome, warn at least
 if(Boost_VERSION GREATER 107000)
-    message(WARNING "Untested Boost release > 1.70.0 (Found ${Boost_VERSION})! "
-                    "Maybe use a newer PIConGPU?")
+    message(WARNING "Untested Boost release > 1.70.0 (Found ${Boost_VERSION})! " "Maybe use a newer PIConGPU?")
 endif()
 
 ################################################################################
 # Find OpenMP
 ################################################################################
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (alpaka_ACC_GPU_HIP_ENABLE OR (alpaka_ACC_GPU_CUDA_ENABLE AND alpaka_CUDA_COMPILER MATCHES "clang")))
+if(
+    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"
+    AND (alpaka_ACC_GPU_HIP_ENABLE OR (alpaka_ACC_GPU_CUDA_ENABLE AND alpaka_CUDA_COMPILER MATCHES "clang"))
+)
     # For HIP the problem is that in alpaka '::isnan(), ::sinh(), ::isfinite(), ::isinf()' is not found.
     # The reason could be that if OpenMP is activated clang is using math C headers where all of these functions are macros.
-    message(WARNING "OpenMP host side acceleration is disabled: CUDA/HIP compilation with clang is not supporting OpenMP.")
+    message(
+        WARNING
+        "OpenMP host side acceleration is disabled: CUDA/HIP compilation with clang is not supporting OpenMP."
+    )
 else()
     find_package(OpenMP)
     if(OPENMP_FOUND)
@@ -373,14 +364,17 @@ else()
     endif()
 endif()
 
-
 ################################################################################
 # Find mallocMC
 ################################################################################
 
 if(alpaka_ACC_GPU_CUDA_ENABLE OR alpaka_ACC_GPU_HIP_ENABLE)
     if(PMACC_alpaka_PROVIDER STREQUAL "intern")
-      set(mallocMC_USE_alpaka "${PMacc_DIR}/../../thirdParty/alpaka" CACHE STRING "Select which alpaka is used for mallocMC")
+        set(mallocMC_USE_alpaka
+            "${PMacc_DIR}/../../thirdParty/alpaka"
+            CACHE STRING
+            "Select which alpaka is used for mallocMC"
+        )
     endif()
     find_package(mallocMC 3.0.0 QUIET)
 
@@ -392,7 +386,6 @@ if(alpaka_ACC_GPU_CUDA_ENABLE OR alpaka_ACC_GPU_HIP_ENABLE)
     target_link_libraries(pmacc PUBLIC mallocMC::mallocMC)
 endif()
 
-
 ################################################################################
 # PMacc options
 ################################################################################
@@ -401,8 +394,7 @@ option(PMACC_ASYNC_QUEUES "Enable asynchronous alpaka queues" ON)
 if(PMACC_ASYNC_QUEUES)
     target_compile_definitions(pmacc PUBLIC "PMACC_USE_ASYNC_QUEUES=1")
 endif()
-option(PMACC_BLOCKING_KERNEL
-    "activate checks for every kernel call and synch after every kernel call" OFF)
+option(PMACC_BLOCKING_KERNEL "activate checks for every kernel call and synch after every kernel call" OFF)
 if(PMACC_BLOCKING_KERNEL)
     target_compile_definitions(pmacc PUBLIC "-DPMACC_SYNC_KERNEL=1")
 endif(PMACC_BLOCKING_KERNEL)
