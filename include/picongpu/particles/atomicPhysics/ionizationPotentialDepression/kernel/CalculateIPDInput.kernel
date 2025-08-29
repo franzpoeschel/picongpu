@@ -27,6 +27,7 @@
 #include "picongpu/defines.hpp"
 #include "picongpu/particles/atomicPhysics/KernelIndexation.hpp"
 
+#include <pmacc/math/isApprox.hpp>
 #include <pmacc/particles/algorithm/ForEach.hpp>
 
 #include <cstdint>
@@ -135,7 +136,9 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                 {
                     /* unit: (unitless * weight / typicalNumParticlesPerMacroParticle)
                      *  / (unitless * weight / typicalNumParticlesPerMacroParticle) = unitless */
-                    zStarBox(superCellFieldIdx) = sumChargeNumberSquared / sumChargeNumber;
+                    zStarBox(superCellFieldIdx) = (!pmacc::math::isApproxZero(sumChargeNumber))
+                                                      ? sumChargeNumberSquared / sumChargeNumber
+                                                      : 0._X;
 
                     // eV / unit_energy
                     constexpr float_X eV = sim.pic.get_eV();
@@ -144,7 +147,9 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                      *  / (weight / typicalNumParticlesPerMacroParticle) = unit_energy
                      *
                      * k_Boltzman * Temperature, energy equivalent to the local temperature */
-                    float_X const temperatureEnergy_PIC = sumTemperatureTerm / sumWeightAllNormalized;
+                    float_X const temperatureEnergy_PIC = (!pmacc::math::isApproxZero(sumWeightAllNormalized))
+                                                              ? sumTemperatureTerm / sumWeightAllNormalized
+                                                              : 0._X;
 
                     // (eV / unit_energy) * unit_energy = eV
                     temperatureEnergyBox(superCellFieldIdx) = eV * temperatureEnergy_PIC;
@@ -169,9 +174,13 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                      *
                      * unit:  sqrt(unit_length^2 / unit_energy / typicalNumParticlesPerMacroParticle
                      *  * unit_energy / (1/typicalNumParticlesPerMacroParticle)) = unit_length */
-                    debyeLengthBox(superCellFieldIdx) = math::sqrt(
-                        constFactorDebyeLength * temperatureEnergy_PIC
-                        / (sumChargeNumberSquared + sumWeightElectronNormalized));
+                    debyeLengthBox(superCellFieldIdx)
+                        = (!pmacc::math::isApproxZero(sumChargeNumberSquared + sumWeightElectronNormalized))
+                              ? math::sqrt(
+                                    constFactorDebyeLength * temperatureEnergy_PIC
+                                    / (sumChargeNumberSquared + sumWeightElectronNormalized))
+                              : -1._X;
+                    ;
                 });
         }
     };
