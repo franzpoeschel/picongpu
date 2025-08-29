@@ -30,7 +30,7 @@
 #SBATCH --ntasks-per-node=!TBG_gpusPerNode
 #SBATCH --mincpus=!TBG_mpiTasksPerNode
 #SBATCH --cpus-per-task=!TBG_coresPerGPU
-#SBATCH --mem=0
+#SBATCH --mem=752520
 #SBATCH --gres=gpu:!TBG_gpusPerNode
 #SBATCH --exclusive
 

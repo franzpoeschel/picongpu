@@ -69,7 +69,7 @@ function getNode() {
         numNodes=$1
     fi
     export OMP_NUM_THREADS=14
-    srun --time=2:00:00 --nodes=$numNodes --ntasks=$((4 * $numNodes)) --ntasks-per-node=4 --cpus-per-task=14 --mem=0 --exclusive --gres=gpu:4 -p capella --pty bash
+    srun --time=2:00:00 --nodes=$numNodes --ntasks=$((4 * $numNodes)) --ntasks-per-node=4 --cpus-per-task=14 --mem=752520 --exclusive --gres=gpu:4 -p capella --pty bash
 }
 
 # allocate an interactive shell for two hours
@@ -86,7 +86,7 @@ function getDevice() {
         fi
     fi
     export OMP_NUM_THREADS=14
-    srun --time=2:00:00 --nodes=1 --ntasks=$numDevices --ntasks-per-node=$(($numDevices)) --cpus-per-task=14 --mem=$((1530000 * $numDevices)) --gres=gpu:$numDevices -p capella --pty bash
+    srun --time=2:00:00 --nodes=1 --ntasks=$numDevices --ntasks-per-node=$(($numDevices)) --cpus-per-task=14 --mem=$((188130 * $numDevices)) --gres=gpu:$numDevices -p capella --pty bash
 }
 
 # Load autocompletion for PIConGPU commands
