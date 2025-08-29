@@ -50,6 +50,7 @@ class TestSimulation(unittest.TestCase):
         self.s.custom_user_input = None
         self.s.moving_window = None
         self.s.walltime = None
+        self.s.binomial_current_interpolation = False
         self.s.plugins = "auto"
         self.s.init_manager = species.InitManager()
         self.s.base_density = 1.0e25

@@ -95,6 +95,13 @@ fi
   {{/stop_iteration}}
 {{/moving_window}}
 
+{{#binomialCurrentInterpolation}}
+TBG_currentInterpolation="--currentInterpolation binomial"
+{{/binomialCurrentInterpolation}}
+{{^binomialCurrentInterpolation}}
+TBG_currentInterpolation="--currentInterpolation none"
+{{/binomialCurrentInterpolation}}
+
 pypicongpu_output_with_newlines="
   {{#output}}
       {{#data}}
@@ -219,6 +226,7 @@ TBG_programParams="-d !TBG_deviceDist   \
                     !TBG_gridDist       \
                    {{/grid.grid_dist}}
                    !TBG_periodic        \
+           !TBG_currentInterpolation   \
                    !TBG_plugins         \
                    {{#moving_window}}
                     !TBG_movingWindow    \
