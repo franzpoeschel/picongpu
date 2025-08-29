@@ -140,9 +140,7 @@ class Visualizer(object):
             return run_directories
 
         if isinstance(run_directories[0], str):
-            warn(
-                "First element is str. Assuming the same for all " "other elements. Will use enumeration for labeling!"
-            )
+            warn("First element is str. Assuming the same for all other elements. Will use enumeration for labeling!")
             run_directories = list(enumerate(run_directories))
 
         return run_directories

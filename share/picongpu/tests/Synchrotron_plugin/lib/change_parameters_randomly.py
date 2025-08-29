@@ -33,7 +33,6 @@ If not, see <http://www.gnu.org/licenses/>.
 # are in the directory ../include/picongpu/param
 # and that the output directory ./simOutput exists
 
-
 import numpy as np
 from synchrotron_lib import calculate_dt, predictNumPhotons
 from pathlib import Path

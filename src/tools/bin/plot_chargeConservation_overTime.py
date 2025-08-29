@@ -148,7 +148,7 @@ if __name__ == "__main__":
     parser.add_argument(
         metavar="simulation directories",
         dest="file_pattern",
-        help="openPMD series pattern with PIConGPU " "data e.g. simData_%%T.bp",
+        help="openPMD series pattern with PIConGPU data e.g. simData_%%T.bp",
         action="store",
         nargs="+",
     )

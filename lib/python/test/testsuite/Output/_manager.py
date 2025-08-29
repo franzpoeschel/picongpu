@@ -45,7 +45,7 @@ def __calculate(axis, parameter, *args):
 def getaxisvalues(parameter, axis: str = "plot_xaxis"):
     # check if variable has an allowed value
     if axis not in ["plot_xaxis", "plot_yaxis", "plot_zaxis"]:
-        raise ValueError("variable has to be plot_xaxis, plot_yaxis" " or plot_zaxis")
+        raise ValueError("variable has to be plot_xaxis, plot_yaxis or plot_zaxis")
 
     # check if a function is given
     if axis in [func[0] for func in getmembers(config, isfunction)]:

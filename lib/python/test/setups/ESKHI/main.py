@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument(
     "-r",
-    help="Path of the folder where the results" " of the test-suite should be saved",
+    help="Path of the folder where the results of the test-suite should be saved",
     dest="result",
     type=str,
     const=None,
@@ -35,7 +35,7 @@ parser.add_argument(
 
 parser.add_argument(
     "-s",
-    help="Path of the folder in which the results" " of the simulation were saved",
+    help="Path of the folder in which the results of the simulation were saved",
     dest="data",
     type=str,
     const=None,
@@ -45,7 +45,7 @@ parser.add_argument(
 
 parser.add_argument(
     "-p",
-    help="Path of the folder in which the parameter" " files .params of the simulation were saved.",
+    help="Path of the folder in which the parameter files .params of the simulation were saved.",
     dest="param",
     type=str,
     const=None,
@@ -55,7 +55,7 @@ parser.add_argument(
 
 parser.add_argument(
     "-o",
-    help="Path of the folder in which the files for" " openPMD evaluation can be found.",
+    help="Path of the folder in which the files for openPMD evaluation can be found.",
     dest="openPmd",
     type=str,
     const=None,
@@ -65,7 +65,7 @@ parser.add_argument(
 
 parser.add_argument(
     "-j",
-    help="Path of the folder to the json files" " if used.",
+    help="Path of the folder to the json files if used.",
     dest="json",
     type=str,
     const=None,

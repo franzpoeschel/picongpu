@@ -45,25 +45,18 @@ find_package(PMacc REQUIRED CONFIG PATHS "${PIC_ROOT_DIR}/../pmacc")
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(JSON_MultipleHeaders OFF CACHE INTERNAL "")
 set(JSON_ImplicitConversions OFF CACHE INTERNAL "")
-set(JSON_Install OFF CACHE INTERNAL "")  # only used PRIVATE
+set(JSON_Install OFF CACHE INTERNAL "") # only used PRIVATE
 
 # allow using externally installed nlohmann_json
-set(
-        PIC_nlohmann_json_PROVIDER "intern" CACHE
-        STRING "Use internally shipped or external nlohmann_json library.")
-set_property(
-        CACHE PIC_nlohmann_json_PROVIDER
-        PROPERTY STRINGS "intern;extern")
+set(PIC_nlohmann_json_PROVIDER "intern" CACHE STRING "Use internally shipped or external nlohmann_json library.")
+set_property(CACHE PIC_nlohmann_json_PROVIDER PROPERTY STRINGS "intern;extern")
 mark_as_advanced(PIC_nlohmann_json_PROVIDER)
 if(${PIC_nlohmann_json_PROVIDER} STREQUAL "intern")
-    add_subdirectory(
-            "${PIC_ROOT_DIR}/../../thirdParty/nlohmann_json"
-            "${CMAKE_CURRENT_BINARY_DIR}/build_nlohmann_json")
+    add_subdirectory("${PIC_ROOT_DIR}/../../thirdParty/nlohmann_json" "${CMAKE_CURRENT_BINARY_DIR}/build_nlohmann_json")
 else()
     find_package(nlohmann_json 3.9.1 CONFIG REQUIRED)
     message(STATUS "nlohmann-json: Found version '${nlohmann_json_VERSION}'")
 endif()
-
 
 set(_TARGET_NAME "PIConGPU-HeaderCheckTest")
 
@@ -82,17 +75,14 @@ set(_GENERATED_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/src")
 
 file(REMOVE_RECURSE ${_GENERATED_SOURCE_DIR})
 
-foreach (_HEADER_FILE ${PIC_FILES_HEADER})
+foreach(_HEADER_FILE ${PIC_FILES_HEADER})
     # Remove the parent directory from the path.
     # NOTE: This is not correct because it does not only replace at the beginning of the string.
     #  "STRING(REGEX REPLACE" would be correct if there was an easy way to escape arbitrary strings.
-    string(
-            REPLACE "${PIC_SUFFIXED_INCLUDE_DIR}/" ""
-            _HEADER_FILE
-            "${_HEADER_FILE}")
+    string(REPLACE "${PIC_SUFFIXED_INCLUDE_DIR}/" "" _HEADER_FILE "${_HEADER_FILE}")
     set(_SOURCE_FILE "${_GENERATED_SOURCE_DIR}/${_HEADER_FILE}.cpp")
     file(WRITE "${_SOURCE_FILE}" "#include <picongpu/${_HEADER_FILE}>")
-endforeach ()
+endforeach()
 
 #---------------------------------------------------------------------------
 # Add executable.
@@ -103,14 +93,16 @@ list(APPEND _FILES_SOURCE "src/main.cpp")
 # Always add all files to the target executable build call to add them to the build project.
 alpaka_add_executable(
         ${_TARGET_NAME}
-        ${_FILES_SOURCE})
+        ${_FILES_SOURCE}
+)
 
 target_link_libraries(${_TARGET_NAME} PUBLIC Catch2 Catch2WithMain)
 target_link_libraries(${_TARGET_NAME} PRIVATE pmacc::pmacc)
 target_include_directories(
-        ${_TARGET_NAME}
-        SYSTEM PRIVATE
-        $<TARGET_PROPERTY:nlohmann_json::nlohmann_json,INTERFACE_INCLUDE_DIRECTORIES>)
+    ${_TARGET_NAME}
+    SYSTEM
+    PRIVATE $<TARGET_PROPERTY:nlohmann_json::nlohmann_json,INTERFACE_INCLUDE_DIRECTORIES>
+)
 target_link_libraries(${_TARGET_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 set_target_properties(${_TARGET_NAME} PROPERTIES FOLDER "picongpu-headerCheck")

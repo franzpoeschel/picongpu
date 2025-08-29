@@ -125,9 +125,9 @@ class DispersivePulseLaser(BaseLaser):
 
     def get_as_pypicongpu(self) -> laser.DispersivePulseLaser:
         self._validate_common_properties()
-        assert (
-            self._propagation_connects_centroid_and_focus()
-        ), "propagation_direction must connect centroid_position and focus_position"
+        assert self._propagation_connects_centroid_and_focus(), (
+            "propagation_direction must connect centroid_position and focus_position"
+        )
         pypicongpu_laser = laser.DispersivePulseLaser()
         pypicongpu_laser.wavelength = self.wavelength
         pypicongpu_laser.waist = self.waist

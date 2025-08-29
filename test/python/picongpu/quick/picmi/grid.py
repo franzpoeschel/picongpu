@@ -47,7 +47,7 @@ class TestCartesian3DGrid(unittest.TestCase):
         for i, not_ngpus_type in enumerate([1, 1.0, 1.2, "abc", tuple([1])]):
             with self.assertRaisesRegex(
                 typeguard.TypeCheckError,
-                '.*argument "picongpu_n_gpus"' "(.*) did not match any element.*",
+                '.*argument "picongpu_n_gpus"(.*) did not match any element.*',
             ):
                 picmi.Cartesian3DGrid(
                     number_of_cells=[192, 2048, 12],

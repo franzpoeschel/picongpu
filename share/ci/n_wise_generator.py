@@ -371,7 +371,7 @@ for stage in range(num_stages):
                 print("    DISABLE_OpenPMD: 'yes'")
             print("  before_script:")
             if backend == "hip":
-                print("    - wget -q -O - " "https://repo.radeon.com/rocm/rocm.gpg.key | " "apt-key add -")
+                print("    - wget -q -O - https://repo.radeon.com/rocm/rocm.gpg.key | apt-key add -")
             if backend == "cuda":
                 print(
                     "    - apt-key adv --fetch-keys "
@@ -380,6 +380,6 @@ for stage in range(num_stages):
                     "/x86_64/3bf863cc.pub"
                 )
             print("    - apt-get update -qq")
-            print("    - apt-get install -y -qq libopenmpi-dev " "openmpi-bin openssh-server")
+            print("    - apt-get install -y -qq libopenmpi-dev openmpi-bin openssh-server")
             print("  extends: " + get_base_image(pairs[0], pairs[1]) + image_prefix)
             print("")

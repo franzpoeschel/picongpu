@@ -6,6 +6,7 @@ Copyright 2017-2024 PIConGPU contributors
 Authors: Sebastian Starke, Jeffrey Kelling
 License: GPLv3+
 """
+
 import collections
 import pint
 

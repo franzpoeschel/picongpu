@@ -342,10 +342,10 @@ class InitManager(RenderedObject):
                         )
 
                     # actual check:
-                    assert (
-                        required_attr.PICONGPU_NAME in species_attr_names
-                    ), "constant {} of species {} requires attribute {} to be present, but it is not".format(
-                        constant, species.name, required_attr
+                    assert required_attr.PICONGPU_NAME in species_attr_names, (
+                        "constant {} of species {} requires attribute {} to be present, but it is not".format(
+                            constant, species.name, required_attr
+                        )
                     )
 
     def __check_constant_constant_dependencies(self):
@@ -378,10 +378,10 @@ class InitManager(RenderedObject):
                         raise ReferenceError("constants may not depend on themselves")
 
                     # check if constant exists
-                    assert species.has_constant_of_type(
-                        required_constant
-                    ), "species {}: required constant {} not found, (required by constant {})".format(
-                        species.name, required_constant, constant
+                    assert species.has_constant_of_type(required_constant), (
+                        "species {}: required constant {} not found, (required by constant {})".format(
+                            species.name, required_constant, constant
+                        )
                     )
 
     def bake(self) -> None:

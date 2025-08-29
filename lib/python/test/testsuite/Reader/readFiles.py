@@ -57,7 +57,7 @@ class ReadFiles:
         """
 
         if direction is None and directiontype is None:
-            raise TypeError("You must set at least one of the" " values(direction or directiontype)")
+            raise TypeError("You must set at least one of the values(direction or directiontype)")
 
         if directiontype is None:
             directiontype = "undefined"

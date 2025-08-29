@@ -3,13 +3,13 @@ default_install_hook_types: [pre-commit, pre-push]
 exclude: "thirdParty"
 repos:
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v20.1.0
+    rev: v20.1.8
     hooks:
       - id: clang-format
         types_or: [file]
         files: \.(cpp|def|h|cu|tpp|kernel|loader|unitless|hpp|param)$
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: no-commit-to-branch
         args: [-b, dev]
@@ -29,7 +29,7 @@ repos:
           - "--no-ensure-ascii"
           - "--no-sort-keys"
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.4
+    rev: v1.5.5
     hooks:
       - id: forbid-tabs
         types_or: [file]
@@ -55,7 +55,7 @@ repos:
         stages: [manual, pre-push]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.2.1
+    rev: v0.12.10
     hooks:
       # Run the linter.
       - id: ruff
@@ -74,3 +74,14 @@ repos:
       - id: require-ascii
         exclude_types: [rst]
         exclude: CHANGELOG.md|.zenodo.json
+  - repo: https://github.com/BlankSpruce/gersemi
+    rev: 0.22.1
+    hooks:
+      - id: gersemi
+        args: [-c, --diff, --no-warn-about-unknown-commands]
+      - id: gersemi
+        args: [-i, --no-warn-about-unknown-commands]
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: "v2.5.0"
+    hooks:
+      - id: pyproject-fmt

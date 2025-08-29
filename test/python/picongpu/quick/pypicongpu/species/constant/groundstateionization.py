@@ -5,7 +5,6 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-
 from picongpu.pypicongpu.species import Species
 from picongpu.pypicongpu.species.attribute import Position, Momentum, BoundElectrons
 from picongpu.pypicongpu.species.constant import Mass, Charge, GroundStateIonization, ElementProperties

@@ -362,9 +362,9 @@ class PrepRoutines:
         ny = int(self.yc_NF / self.dy_NF + 0.5)
 
         # check shift for validity: should be less than half the size of the data extent
-        assert (
-            nx < len(self.x_NF) / 2 and ny < len(self.y_NF) / 2
-        ), "Something's off, can't shift more than half the size of the data extent!"
+        assert nx < len(self.x_NF) / 2 and ny < len(self.y_NF) / 2, (
+            "Something's off, can't shift more than half the size of the data extent!"
+        )
 
         if nx == 0 and ny == 0:
             print("already centered, no corrections necessary")
@@ -674,9 +674,9 @@ class PrepRoutines:
 
         # check that propagated beam will still fit into the window
         w_exp = self.waist * np.sqrt(1 + (z / self.zR) ** 2)
-        assert w_exp < 0.2 * min(
-            self.dx * self.Ew.shape[0], self.dy * self.Ew.shape[1]
-        ), "Oops, you wanted to propagate too far! The pulse will not fit in the transverse window."
+        assert w_exp < 0.2 * min(self.dx * self.Ew.shape[0], self.dy * self.Ew.shape[1]), (
+            "Oops, you wanted to propagate too far! The pulse will not fit in the transverse window."
+        )
 
         a = 2 * np.pi * c * np.fft.fftfreq(self.x.size, d=np.diff(self.x)[0])
         b = 2 * np.pi * c * np.fft.fftfreq(self.y.size, d=np.diff(self.y)[0])
@@ -798,7 +798,7 @@ class PrepRoutines:
         # if the field was cropped, look how much pulse energy was discarded
         I_sum = np.sum(np.real(self.Et))
         if crop_x > 0 or crop_y > 0 or crop_t_neg > 0 or crop_t_pos > 0:
-            print(f"Discarded pulse energy due to smaller window: {(1-I_sum_crop/I_sum):.2%}")
+            print(f"Discarded pulse energy due to smaller window: {(1 - I_sum_crop / I_sum):.2%}")
 
         series = openpmd.Series(outputpath + outputname, openpmd.Access.create)
         ite = series.iterations[0]  # use the 0th iteration

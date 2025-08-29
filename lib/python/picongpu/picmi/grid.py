@@ -135,7 +135,7 @@ class Cartesian3DGrid(picmistandard.PICMI_Cartesian3DGrid):
                     dim
                 ] * self.picongpu_super_cell_size[dim] != cells[dim]:
                     raise ValueError(
-                        "GPU- and/or super-cell-distribution in {} dimension does " "not match grid size".format(
+                        "GPU- and/or super-cell-distribution in {} dimension does not match grid size".format(
                             dim_name[dim]
                         )
                     )

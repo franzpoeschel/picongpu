@@ -47,4 +47,4 @@ class NoBoundElectrons(Operation):
         generated attribute -> there is no code generated -> nothing to
         serialize
         """
-        raise RuntimeError("NoBoundElectrons operation has no rendering " "context representation")
+        raise RuntimeError("NoBoundElectrons operation has no rendering context representation")

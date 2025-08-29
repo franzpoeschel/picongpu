@@ -37,18 +37,18 @@ def main():
     parser.add_argument(
         "dir",
         nargs="?",
-        help="simulation directory containing the simOutput " "directory",
+        help="simulation directory containing the simOutput directory",
         default=os.getcwd(),
     )
     parser.add_argument(
         "--n_cells",
-        help="number of cells to use to calculate average " "values, by default all available",
+        help="number of cells to use to calculate average values, by default all available",
         type=int,
     )
     parser.add_argument("--file", help="figure file name", type=str)
     parser.add_argument(
         "--smilei_dir",
-        help="path to smilei test simulation if" " it should be plotted together" " with PIConGPU data",
+        help="path to smilei test simulation if it should be plotted together with PIConGPU data",
         type=str,
     )
     parser.add_argument("--file_debug", help="debug values figure file name", type=str)

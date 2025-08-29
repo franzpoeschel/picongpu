@@ -5,6 +5,7 @@ Copyright 2017-2024 PIConGPU contributors
 Authors: Sebastian Starke
 License: GPLv3+
 """
+
 from ...utils.find_time import FindTime
 
 import numpy as np
@@ -92,7 +93,7 @@ class DataReader(object):
         dependent format and type.
         """
         if "iteration" not in kwargs and "time" not in kwargs:
-            raise ValueError("One of 'iteration' and 'time' parameters" " has to be present!")
+            raise ValueError("One of 'iteration' and 'time' parameters has to be present!")
 
         iteration = None
         if "iteration" in kwargs:

@@ -89,7 +89,7 @@ class Species(RenderedObject):
         # - re.fullmatch: match *actually* full string
         #   -> "abc\n" is rejected
         if not re.fullmatch(r"^[A-Za-z0-9_]+$", self.name):
-            raise ValueError("species names must be c++ compatible " "([A-Za-z0-9_]+)")
+            raise ValueError("species names must be c++ compatible ([A-Za-z0-9_]+)")
 
         # position is mandatory attribute
         # position
@@ -118,7 +118,7 @@ class Species(RenderedObject):
         non_unique_attributes = set([c for c in attr_names if attr_names.count(c) > 1])
         if 0 != len(non_unique_attributes):
             raise ValueError(
-                "attribute names must be unique per species, " "offending: {}".format(", ".join(non_unique_attributes))
+                "attribute names must be unique per species, offending: {}".format(", ".join(non_unique_attributes))
             )
 
     def get_constant_by_type(self, needle_type: typing.Type[Constant]) -> Constant:

@@ -118,7 +118,7 @@ class GaussianLaser(_BaseLaser):
         if [] == self.laguerre_phases:
             raise ValueError("Laguerre phases MUST NOT be empty.")
         if len(self.laguerre_phases) != len(self.laguerre_modes):
-            raise ValueError("Laguerre modes and Laguerre phases MUST BE " "arrays of equal length.")
+            raise ValueError("Laguerre modes and Laguerre phases MUST BE arrays of equal length.")
         if len(list(filter(lambda x: x < 0, self.laguerre_modes))) > 0:
             logging.warning("Laguerre mode magnitudes SHOULD BE positive definite.")
 

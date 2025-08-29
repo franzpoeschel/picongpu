@@ -5,7 +5,6 @@ Authors: Pawel Ordyna
 License: GPLv3+
 """
 
-
 from ...pypicongpu.output.auto import Auto as PyPIConGPUAuto
 from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
 

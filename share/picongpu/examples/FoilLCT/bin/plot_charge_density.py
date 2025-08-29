@@ -7,6 +7,7 @@ Copyright 2017-2024 PIConGPU contributors
 Authors: Axel Huebl
 License: GPLv3+
 """
+
 import matplotlib.pyplot as plt
 import h5py as h5
 import numpy as np
