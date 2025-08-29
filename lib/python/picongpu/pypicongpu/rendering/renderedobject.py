@@ -213,6 +213,8 @@ class RenderedObject:
 
         Raises on error, returns given context if okay.
 
+        :return: given rendering context
+
         :raise ValidationError: on schema violation
         :raise RuntimeError: on schema not found
         """
