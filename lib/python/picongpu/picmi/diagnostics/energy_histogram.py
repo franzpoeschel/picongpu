@@ -5,19 +5,18 @@ Authors: Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
-from picongpu.picmi.copy_attributes import default_converts_to
-from .timestepspec import TimeStepSpec
+import typeguard
+
+from picongpu.picmi.diagnostics.util import diagnostic_converts_to
+
 from ...pypicongpu.output.energy_histogram import (
     EnergyHistogram as PyPIConGPUEnergyHistogram,
 )
-
-
 from ..species import Species as PICMISpecies
+from .timestepspec import TimeStepSpec
 
-import typeguard
 
-
-@default_converts_to(PyPIConGPUEnergyHistogram, conversions={"species": lambda self, d, *args: d.get(self.species)})
+@diagnostic_converts_to(PyPIConGPUEnergyHistogram)
 @typeguard.typechecked
 class EnergyHistogram:
     """

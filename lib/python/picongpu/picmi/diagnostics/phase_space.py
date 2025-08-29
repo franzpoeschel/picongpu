@@ -9,14 +9,14 @@ from typing import Literal
 
 import typeguard
 
-from picongpu.picmi.copy_attributes import default_converts_to
+from picongpu.picmi.diagnostics.util import diagnostic_converts_to
 
 from ...pypicongpu.output.phase_space import PhaseSpace as PyPIConGPUPhaseSpace
 from ..species import Species as PICMISpecies
 from .timestepspec import TimeStepSpec
 
 
-@default_converts_to(PyPIConGPUPhaseSpace, conversions={"species": lambda self, d, *args: d.get(self.species)})
+@diagnostic_converts_to(PyPIConGPUPhaseSpace)
 @typeguard.typechecked
 class PhaseSpace:
     """
@@ -52,7 +52,7 @@ class PhaseSpace:
         Optional name for the phase-space plugin.
     """
 
-    def check(self, dict_species_picmi_to_pypicongpu):
+    def check(self, dict_species_picmi_to_pypicongpu, *args, **kwargs):
         if self.min_momentum >= self.max_momentum:
             raise ValueError("min_momentum must be less than max_momentum")
 

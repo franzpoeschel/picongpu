@@ -9,7 +9,7 @@ from typing import List
 
 import typeguard
 
-from picongpu.picmi.copy_attributes import default_converts_to
+from picongpu.picmi.diagnostics.util import diagnostic_converts_to
 
 from ...pypicongpu.output.png import ColorScaleEnum, EMFieldScaleEnum
 from ...pypicongpu.output.png import Png as PyPIConGPUPNG
@@ -17,7 +17,7 @@ from ..species import Species as PICMISpecies
 from .timestepspec import TimeStepSpec
 
 
-@default_converts_to(PyPIConGPUPNG, conversions={"species": lambda self, d, *args: d.get(self.species)})
+@diagnostic_converts_to(PyPIConGPUPNG)
 @typeguard.typechecked
 class Png:
     """

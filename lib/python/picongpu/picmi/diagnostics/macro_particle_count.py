@@ -7,7 +7,7 @@ License: GPLv3+
 
 import typeguard
 
-from picongpu.picmi.copy_attributes import default_converts_to
+from picongpu.picmi.diagnostics.util import diagnostic_converts_to
 
 from ...pypicongpu.output.macro_particle_count import (
     MacroParticleCount as PyPIConGPUMacroParticleCount,
@@ -17,7 +17,7 @@ from ..species import Species as PICMISpecies
 from .timestepspec import TimeStepSpec
 
 
-@default_converts_to(PyPIConGPUMacroParticleCount, conversions={"species": lambda self, d, *args: d.get(self.species)})
+@diagnostic_converts_to(PyPIConGPUMacroParticleCount)
 @typeguard.typechecked
 class MacroParticleCount:
     """
@@ -43,9 +43,7 @@ class MacroParticleCount:
         self.species = species
         self.period = period
 
-    def check(
-        self, dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies], *args, **kwargs
-    ) -> PyPIConGPUMacroParticleCount:
+    def check(self, dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies], *args, **kwargs):
         if self.species not in dict_species_picmi_to_pypicongpu.keys():
             raise ValueError(f"Species {self.species} is not known to Simulation")
         pypicongpu_species = dict_species_picmi_to_pypicongpu.get(self.species)

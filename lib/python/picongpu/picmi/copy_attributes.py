@@ -15,6 +15,9 @@ def has_attribute(instance, name):
     #     return hasattr(instance, name)
     #
     # But this seems to interact weirdly with our util.build_typesafe_property.
+    #
+    # This version works fine but throws a warning for pydantic models.
+    # We could get rid of this by using instance.model_dump() instead.
     return name in dir(instance)
 
 
