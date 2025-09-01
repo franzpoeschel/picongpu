@@ -10,6 +10,7 @@ Users can
 	- Choose which species are used for particle binning
 	- Choose which fields are used for field binning
 	- Choose how frequently they want the binning to be executed
+	- Choose how many times the binned quantity should be combined over time before dumping
 	- Write custom output to file, for example other quantities related to the simulation which the user is interested in
 	- Execute multiple binnings at the same time
 	- Pass extra parameters as a tuple, if additional information is required by the kernels to do binning.
@@ -39,7 +40,7 @@ The basic building block for the binning plugin is the Functor Description objec
 It describes the properties which we find interesting and how we can calculate/get this property from the particle or field.
 A functor description is created using createFunctorDescription.
 
-.. doxygenfunction:: picongpu::plugins::binning::createFunctorDescription
+.. doxygenfunction:: picongpu::plugins::binning::createFunctorDescription(FunctorType functor, std::string const& name, std::array<double, numUnits> units)
 
 
 Functor
@@ -208,7 +209,7 @@ Fields
 PIConGPU fields which should be used in field binning.
 Fields must be instances of the ``FieldInfo`` type.
 
-.. doxygenclass:: picongpu::plugins::binning::FieldInfo
+.. doxygenstruct:: picongpu::plugins::binning::FieldInfo
 	:members:
 
 For example,

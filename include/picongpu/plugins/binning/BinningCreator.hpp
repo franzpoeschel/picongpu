@@ -59,15 +59,16 @@ namespace picongpu
              * The Particle binner will bin particle quantities to create histograms on a grid defined by axes.
              * The results will be written to openPMD files.
              *
+             * @tparam T_BinaryOp The binary operation to be used for reduction. Optional. Defaults to addition.
              * @param binnerOutputName filename and dataset name for openPMD output. Must be unique to avoid overwrites
              * during data dumps and undefined behaviour during restarts.
              * @param axisTupleObject tuple holding the axes. Each element in the tuple describes an axis for binning.
              * @param speciesTupleObject tuple holding the species to bin. Each element specifies a species to be
              * included in the binning.
-             * @param depositionData functor description of the deposited quantity.  Defines which particle property to
+             * @param depositionData functor description of the deposited quantity. Defines which particle property to
              * bin.
              * @param extraData tuple holding extra data to be passed to the binner. Can be used for optional
-             * configurations.
+             * configurations. Optional. Defaults to an empty tuple.
              * @return ParticleBinningData& reference to the created ParticleBinningData object.
              *         This can be used to further configure the binning setup if needed.
              */
@@ -97,15 +98,16 @@ namespace picongpu
              * The Field binner will bin field quantities to create histograms on a grid defined by axes.
              * The results will be written to openPMD files.
              *
+             * @tparam T_BinaryOp The binary operation to be used for reduction. Optional. Defaults to addition.
              * @param binnerOutputName filename and dataset name for openPMD output. Must be unique to avoid overwrites
              * during data dumps and undefined behaviour during restarts.
              * @param axisTupleObject tuple holding the axes. Each element in the tuple describes an axis for binning.
              * @param fieldsTupleObject tuple holding the fields to bin. Each element specifies a field to be
              * included in the binning.
-             * @param depositionData functor description of the deposited quantity.  Defines which field property to
+             * @param depositionData functor description of the deposited quantity. Defines which field property to
              * bin.
              * @param extraData tuple holding extra data to be passed to the binner. Can be used for optional
-             * configurations.
+             * configurations. Optional. Defaults to an empty tuple.
              * @return FieldBinningData& reference to the created FieldBinningData object.
              *         This can be used to further configure the binning setup if needed.
              */
