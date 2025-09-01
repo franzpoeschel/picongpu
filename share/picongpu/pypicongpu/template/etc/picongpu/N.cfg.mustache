@@ -95,12 +95,12 @@ fi
   {{/stop_iteration}}
 {{/moving_window}}
 
-{{#binomialCurrentInterpolation}}
+{{#binomial_current_interpolation}}
 TBG_currentInterpolation="--currentInterpolation binomial"
-{{/binomialCurrentInterpolation}}
-{{^binomialCurrentInterpolation}}
+{{/binomial_current_interpolation}}
+{{^binomial_current_interpolation}}
 TBG_currentInterpolation="--currentInterpolation none"
-{{/binomialCurrentInterpolation}}
+{{/binomial_current_interpolation}}
 
 pypicongpu_output_with_newlines="
   {{#output}}
