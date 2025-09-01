@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -l
 # Copyright 2013-2024 Axel Huebl, Richard Pausch, Rene Widera, Sergei Bastrakov, Klaus Steinger
 #
 # This file is part of PIConGPU.
@@ -28,9 +28,9 @@
 #SBATCH --job-name=!TBG_jobName
 #SBATCH --nodes=!TBG_nodes_adjusted
 #SBATCH --ntasks=!TBG_tasks_adjusted
+#SBATCH --ntasks-per-node=!TBG_devicesPerNode
 #SBATCH --gpus-per-node=!TBG_devicesPerNode
 #SBATCH --mem-per-gpu=!TBG_memPerDevice
-#SBATCH --gres=gpu:!TBG_devicesPerNode
 
 #SBATCH --mail-type=!TBG_mailSettings
 #SBATCH --mail-user=!TBG_mailAddress
@@ -175,6 +175,9 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
     echo "Start PIConGPU."
     test $n_broken_nodes -ne 0 && exclude_nodes="-x./bad_nodes.txt"
 
+    # As of 2025-08-22 with LUMI/24.03 software, `--mpiDirect` leads to errors of the form
+    # `Memory access fault by GPU node-10 (Agent handle: 0xcc8ea0) on address 0x150bea400000. Reason: Unknown.`
+    # Therefore, it is not applied.
     srun --cpu-bind=${CPU_BIND}  -n !TBG_tasks --nodes=!TBG_nodes $exclude_nodes -K1 ./select_gpu !TBG_dstPath/input/bin/picongpu --mpiDirect !TBG_author !TBG_programParams
 else
     echo "Job stopped because of previous issues."
