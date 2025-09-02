@@ -120,20 +120,12 @@ More details on the order of initialization of particles inside a particle speci
 
 :ref:`List of all pre-defined particle manipulators <usage-params-core-particles-manipulation>`.
 
-unit.param
-^^^^^^^^^^
-
-.. doxygenfile:: unit.param
-   :project: PIConGPU
-   :path: include/picongpu/simulation_defines/param/unit.param
-   :no-link:
-
 particleFilters.param
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. doxygenfile:: particleFilters.param
    :project: PIConGPU
-   :path: include/picongpu/simulation_defines/param/particleFilters.param
+   :path: include/picongpu/param/particleFilters.param
    :no-link:
 
 :ref:`List of all pre-defined particle filters <usage-params-core-particles-filters>`.
