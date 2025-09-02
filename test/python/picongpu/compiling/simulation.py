@@ -61,6 +61,7 @@ class TestSimulation(unittest.TestCase):
         sim.custom_user_input = None
         sim.moving_window = None
         sim.walltime = None
+        sim.binomial_current_interpolation = False
         sim.solver = pypicongpu.field_solver.Yee.YeeSolver()
         sim.plugins = "auto"
         sim.init_manager = pypicongpu.species.InitManager()

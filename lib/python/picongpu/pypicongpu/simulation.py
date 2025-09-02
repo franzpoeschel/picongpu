@@ -78,6 +78,9 @@ class Simulation(RenderedObject):
     walltime = util.build_typesafe_property(typing.Optional[Walltime])
     """time limit of the simulation run"""
 
+    binomial_current_interpolation = util.build_typesafe_property(bool)
+    """switch on a binomial current interpolation"""
+
     plugins = util.build_typesafe_property(typing.Optional[list[Plugin] | typing.Literal["auto"]])
 
     def __get_output_context(self) -> dict | list[dict] | None:
@@ -149,6 +152,8 @@ class Simulation(RenderedObject):
             serialized["walltime"] = self.walltime.get_rendering_context()
         else:
             serialized["walltime"] = Walltime(walltime=datetime.timedelta(hours=1)).get_rendering_context()
+
+        serialized["binomial_current_interpolation"] = self.binomial_current_interpolation
 
         if self.custom_user_input is not None:
             serialized["customuserinput"] = self.__render_custom_user_input_list()

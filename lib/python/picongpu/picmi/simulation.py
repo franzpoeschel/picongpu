@@ -80,6 +80,9 @@ class Simulation(picmistandard.PICMI_Simulation):
     picongpu_walltime = pypicongpu.util.build_typesafe_property(typing.Optional[datetime.timedelta])
     """time after which the cluster scheduler will stop the simulation"""
 
+    picongpu_binomial_current_interpolation = pypicongpu.util.build_typesafe_property(bool)
+    """switch on a binomial current interpolation"""
+
     __runner = pypicongpu.util.build_typesafe_property(typing.Optional[pypicongpu.runner.Runner])
 
     # @todo remove boiler plate constructor argument list once picmistandard reference implementation switches to
@@ -93,6 +96,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         picongpu_interaction: typing.Optional[Interaction] = None,
         picongpu_base_density: typing.Optional[float] = None,
         picongpu_walltime: typing.Optional[datetime.timedelta] = None,
+        picongpu_binomial_current_interpolation: bool = False,
         **keyword_arguments,
     ):
         if picongpu_template_dir is not None:
@@ -106,6 +110,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.picongpu_interaction = picongpu_interaction
         self.picongpu_base_density = picongpu_base_density
         self.picongpu_walltime = picongpu_walltime
+        self.picongpu_binomial_current_interpolation = picongpu_binomial_current_interpolation
         self.picongpu_custom_user_input = None
         self.__runner = None
 
@@ -519,6 +524,8 @@ class Simulation(picmistandard.PICMI_Simulation):
             s.walltime = None
         else:
             s.walltime = pypicongpu.walltime.Walltime(walltime=self.picongpu_walltime)
+
+        s.binomial_current_interpolation = self.picongpu_binomial_current_interpolation
 
         return s
 
