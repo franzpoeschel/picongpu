@@ -133,7 +133,6 @@ class Binning(Plugin):
     openPMD = util.build_typesafe_property(Optional[dict])
     openPMDExt = util.build_typesafe_property(Optional[str])
     openPMDInfix = util.build_typesafe_property(Optional[str])
-    timeAveraging = util.build_typesafe_property(bool)
     dumpPeriod = util.build_typesafe_property(int)
 
     _name = "binning"
@@ -148,7 +147,6 @@ class Binning(Plugin):
         openPMD,
         openPMDExt,
         openPMDInfix,
-        timeAveraging,
         dumpPeriod,
     ):
         self.name = name
@@ -159,7 +157,6 @@ class Binning(Plugin):
         self.openPMD = openPMD
         self.openPMDExt = openPMDExt
         self.openPMDInfix = openPMDInfix
-        self.timeAveraging = timeAveraging
         self.dumpPeriod = dumpPeriod
 
     def _get_serialized(self) -> dict:
@@ -172,6 +169,5 @@ class Binning(Plugin):
             "openPMD": json.dumps(self.openPMD) if self.openPMD else self.openPMD,
             "openPMDExtension": self.openPMDExt,
             "openPMDInfix": self.openPMDInfix,
-            "timeAveraging": self.timeAveraging,
             "dumpPeriod": self.dumpPeriod,
         }

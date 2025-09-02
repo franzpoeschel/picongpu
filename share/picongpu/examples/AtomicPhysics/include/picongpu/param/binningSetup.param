@@ -91,7 +91,6 @@ namespace picongpu::plugins::binning
         binningCreator.addParticleBinner("atomicStateBinning", axisTuple, speciesTuple, weightingData)
             .setDumpPeriod(numberTimeSteps)
             .setOpenPMDExtension("bp")
-            .setTimeAveraging(false)
             .setOpenPMDWriteFunctor(appendWeightScalingFactor);
     }
 } // namespace picongpu::plugins::binning

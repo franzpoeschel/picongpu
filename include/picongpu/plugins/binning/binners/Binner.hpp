@@ -23,9 +23,8 @@
 
 #    include "picongpu/plugins/binning/UnitConversion.hpp"
 #    include "picongpu/plugins/binning/WriteHist.hpp"
-#    include "picongpu/plugins/binning/functors/helpers.hpp"
-#    include "picongpu/plugins/binning/utility.hpp"
 
+#    include <pmacc/math/operation/traits.hpp>
 #    include <pmacc/meta/errorHandlerPolicies/ReturnType.hpp>
 #    include <pmacc/mpi/MPIReduce.hpp>
 #    include <pmacc/mpi/reduceMethods/Reduce.hpp>
@@ -55,7 +54,7 @@ namespace picongpu
         {
         public:
             using TDepositedQuantity = typename TBinningData::DepositedQuantityType;
-
+            using ReductionOp = typename TBinningData::ReductionOp;
             friend class BinningCreator;
 
         protected:
@@ -63,7 +62,7 @@ namespace picongpu
             TBinningData binningData;
             MappingDesc* cellDescription;
             std::unique_ptr<HostDeviceBuffer<TDepositedQuantity, 1>> histBuffer;
-            uint32_t accumulateCounter = 0;
+            uint32_t reduceCounter = 0;
             mpi::MPIReduce reduce{};
             bool isMain = false;
             WriteHist histWriter;
@@ -80,8 +79,7 @@ namespace picongpu
                 this->histBuffer = std::make_unique<HostDeviceBuffer<TDepositedQuantity, 1>>(
                     binningData.axisExtentsND.productOfComponents());
                 this->histBuffer->getDeviceBuffer().setValue(
-                    pmacc::math::operation::traits::
-                        NeutralElement<typename TBinningData::AccumulationOp, TDepositedQuantity>::value);
+                    pmacc::math::operation::traits::NeutralElement<ReductionOp, TDepositedQuantity>::value);
                 isMain = reduce.hasResult(mpi::reduceMethods::Reduce());
             }
 
@@ -98,51 +96,10 @@ namespace picongpu
                 // @todo auto range init. Init ranges and AxisKernels
                 doBinning(currentStep);
 
-                /**
-                 * Deal with time averaging and notify
-                 * if period, print output, reset memory to zero
-                 */
-
-                /**
-                 * Time averaging on n, means accumulate, then average over N notifies
-                 * dumpPeriod == 0 is the same as 1. No averaging, output at every step
-                 */
-                ++accumulateCounter;
-                if(accumulateCounter >= binningData.dumpPeriod)
+                ++reduceCounter;
+                if(reduceCounter >= binningData.dumpPeriod)
                 {
-                    auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
-
-                    // Do time Averaging
-                    if(binningData.dumpPeriod > 1 && binningData.timeAveraging)
-                    {
-                        TDepositedQuantity factor = 1.0 / static_cast<double>(binningData.dumpPeriod);
-
-                        constexpr uint32_t blockSize = 256u;
-                        // @todo is + blocksize - 1/ blocksize a better ceil for ints
-                        auto gridSize = (bufferExtent[0] + blockSize - 1) / blockSize;
-
-                        auto productKernel = ProductKernel<blockSize, TBinningData::getNAxes()>();
-
-                        PMACC_LOCKSTEP_KERNEL(productKernel)
-                            .template config<blockSize>(gridSize)(
-                                binningData.axisExtentsND,
-                                factor,
-                                this->histBuffer->getDeviceBuffer().getDataBox());
-                    }
-
-                    // do the mpi reduce
-                    this->histBuffer->deviceToHost();
-
-                    // allocate this only once?
-                    // using a unique_ptr here since HostBuffer does not implement move semantics
-                    auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
-
-                    reduce(
-                        typename TBinningData::AccumulationOp(),
-                        hReducedBuffer->data(),
-                        this->histBuffer->getHostBuffer().data(),
-                        bufferExtent[0],
-                        mpi::reduceMethods::Reduce());
+                    auto hReducedBuffer = getReducedBuffer();
 
                     if(isMain)
                     {
@@ -157,13 +114,13 @@ namespace picongpu
                                 binningData.openPMDJsonCfg},
                             std::move(hReducedBuffer),
                             binningData,
-                            currentStep);
+                            currentStep,
+                            reduceCounter);
                     }
                     // reset device buffer
                     this->histBuffer->getDeviceBuffer().setValue(
-                        pmacc::math::operation::traits::
-                            NeutralElement<typename TBinningData::AccumulationOp, TDepositedQuantity>::value);
-                    accumulateCounter = 0;
+                        pmacc::math::operation::traits::NeutralElement<ReductionOp, TDepositedQuantity>::value);
+                    reduceCounter = 0;
                 }
             }
 
@@ -176,26 +133,14 @@ namespace picongpu
                 return pluginName;
             }
 
+            // if reduceCounter is zero, i.e. notify did a data dump and histBuffer is empty, we still create a
+            // checkpoint with an empty buffer, so that restart doesnt throw a warning about missing a checkpoint
             void checkpoint(uint32_t currentStep, std::string const restartDirectory) override
             {
                 /**
-                 * State to hold, accumulateCounter and hReducedBuffer
+                 * State to hold, reduceCounter and hReducedBuffer
                  */
-
-                // do the mpi reduce (can be avoided if the notify did a data dump and histBuffer is empty)
-                this->histBuffer->deviceToHost();
-                auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
-
-                // allocate this only once?
-                // using a unique_ptr here since HostBuffer does not implement move semantics
-                auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
-
-                reduce(
-                    typename TBinningData::AccumulationOp(),
-                    hReducedBuffer->data(),
-                    this->histBuffer->getHostBuffer().data(),
-                    bufferExtent[0], // this is a 1D dataspace, just access it?
-                    mpi::reduceMethods::Reduce());
+                auto hReducedBuffer = getReducedBuffer();
 
                 if(isMain)
                 {
@@ -212,8 +157,7 @@ namespace picongpu
                         std::move(hReducedBuffer),
                         binningData,
                         currentStep,
-                        true,
-                        accumulateCounter);
+                        reduceCounter);
                 }
             }
 
@@ -252,27 +196,38 @@ namespace picongpu
                         filename << '.' << extension;
                     }
 
-                    auto openPMDdataFile = ::openPMD::Series(filename.str(), ::openPMD::Access::READ_ONLY);
-                    // restore accumulate counter
-                    accumulateCounter
-                        = openPMDdataFile.iterations[restartStep].getAttribute("accCounter").get<uint32_t>();
-                    // restore hostBuffer
-                    ::openPMD::MeshRecordComponent dataset
-                        = openPMDdataFile.iterations[restartStep]
-                              .meshes["Binning"][::openPMD::RecordComponent::SCALAR];
-                    ::openPMD::Extent extent = dataset.getExtent();
-                    ::openPMD::Offset offset(extent.size(), 0);
-                    dataset.loadChunk(
-                        std::shared_ptr<TDepositedQuantity>{histBuffer->getHostBuffer().data(), [](auto const*) {}},
-                        offset,
-                        extent);
-                    openPMDdataFile.flush();
-                    openPMDdataFile.iterations[restartStep].close();
+                    try
+                    {
+                        auto openPMDdataFile = ::openPMD::Series(filename.str(), ::openPMD::Access::READ_ONLY);
+                        // restore reduction counter
+                        reduceCounter
+                            = openPMDdataFile.iterations[restartStep].getAttribute("reduceCounter").get<uint32_t>();
+                        // restore hostBuffer
+                        ::openPMD::MeshRecordComponent dataset
+                            = openPMDdataFile.iterations[restartStep]
+                                  .meshes["Binning"][::openPMD::RecordComponent::SCALAR];
+                        ::openPMD::Extent extent = dataset.getExtent();
+                        ::openPMD::Offset offset(extent.size(), 0);
+                        dataset.loadChunk(
+                            std::shared_ptr<TDepositedQuantity>{
+                                histBuffer->getHostBuffer().data(),
+                                [](auto const*) {}},
+                            offset,
+                            extent);
+                        openPMDdataFile.flush();
+                        openPMDdataFile.iterations[restartStep].close();
 
-                    // @todo divide histBuffer by gc.getGlobalSize and call from all ranks
+                        // @todo divide histBuffer by gc.getGlobalSize and call from all ranks
 
-                    // transfer restored data to device so that it is not overwritten
-                    this->histBuffer->hostToDevice();
+                        // transfer restored data to device so that it is not overwritten
+                        this->histBuffer->hostToDevice();
+                    }
+                    catch(...)
+                    {
+                        std::cout << "Warning! Unable to load binning data from checkpoint. Will start a new binning, "
+                                     "with reduce counter starting from 0 at the first notify after restart."
+                                  << std::endl;
+                    }
                 }
             }
 
@@ -282,7 +237,52 @@ namespace picongpu
                 Environment<>::get().PluginConnector().setNotificationPeriod(this, binningData.notifyPeriod);
             }
 
+            void pluginUnload() override
+            {
+                if(!binningData.notifyPeriod.empty() && binningData.dumpPeriod > 1 && reduceCounter != 0)
+                {
+                    auto hReducedBuffer = getReducedBuffer();
+
+                    if(isMain)
+                    {
+                        std::optional<::openPMD::Series> unload_series;
+
+                        histWriter(
+                            unload_series,
+                            OpenPMDWriteParams{
+                                std::string("/binningOpenPMD/"),
+                                std::string("end_of_run_") + binningData.binnerOutputName,
+                                binningData.openPMDInfix,
+                                binningData.openPMDExtension,
+                                binningData.openPMDJsonCfg},
+                            std::move(hReducedBuffer),
+                            binningData,
+                            Environment<>::get().SimulationDescription().getRunSteps() - 1,
+                            reduceCounter);
+                    }
+                }
+            }
+
             virtual void doBinning(uint32_t currentStep) = 0;
+
+            std::unique_ptr<HostBuffer<TDepositedQuantity, 1>> getReducedBuffer()
+            {
+                // do the mpi reduce
+                this->histBuffer->deviceToHost();
+                auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
+
+                // allocate this only once?
+                // using a unique_ptr here since HostBuffer does not implement move semantics
+                auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
+
+                reduce(
+                    ReductionOp(),
+                    hReducedBuffer->data(),
+                    this->histBuffer->getHostBuffer().data(),
+                    bufferExtent[0], // this is a 1D dataspace, just access it?
+                    mpi::reduceMethods::Reduce());
+                return hReducedBuffer;
+            }
         };
 
 

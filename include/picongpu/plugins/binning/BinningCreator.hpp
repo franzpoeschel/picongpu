@@ -71,7 +71,7 @@ namespace picongpu
              * @return ParticleBinningData& reference to the created ParticleBinningData object.
              *         This can be used to further configure the binning setup if needed.
              */
-            template<typename T_AccumulateOp = pmacc::math::operation::Add, typename T_Extras = std::tuple<>>
+            template<typename T_BinaryOp = pmacc::math::operation::Add, typename T_Extras = std::tuple<>>
             auto& addParticleBinner(
                 std::string const& binnerOutputName,
                 auto const& axisTupleObject,
@@ -79,7 +79,7 @@ namespace picongpu
                 auto const& depositionData,
                 T_Extras const& extraData = {})
             {
-                auto bd = makeParticleBinningData<T_AccumulateOp>(
+                auto bd = makeParticleBinningData<T_BinaryOp>(
                     binnerOutputName,
                     axisTupleObject,
                     speciesTupleObject,
@@ -109,7 +109,7 @@ namespace picongpu
              * @return FieldBinningData& reference to the created FieldBinningData object.
              *         This can be used to further configure the binning setup if needed.
              */
-            template<typename T_AccumulateOp = pmacc::math::operation::Add, typename T_Extras = std::tuple<>>
+            template<typename T_BinaryOp = pmacc::math::operation::Add, typename T_Extras = std::tuple<>>
             auto& addFieldBinner(
                 std::string const& binnerOutputName,
                 auto const& axisTupleObject,
@@ -117,7 +117,7 @@ namespace picongpu
                 auto const& depositionData,
                 T_Extras const& extraData = {})
             {
-                auto bd = makeFieldBinningData<T_AccumulateOp>(
+                auto bd = makeFieldBinningData<T_BinaryOp>(
                     binnerOutputName,
                     axisTupleObject,
                     fieldsTupleObject,
