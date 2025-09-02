@@ -211,7 +211,9 @@ class RenderedObject:
         """
         check if the given context is valid for the given type
 
-        Raises on error, passes silently if okay.
+        Raises on error, returns given context if okay.
+
+        :return: given rendering context
 
         :raise ValidationError: on schema violation
         :raise RuntimeError: on schema not found
@@ -251,6 +253,10 @@ class SelfRegistering:
     def _register(cls):
         if cls._name not in cls._names:
             cls._names.append(cls._name)
+        else:
+            raise TypeError(
+                f"Attempt to register {cls=} with name {cls._name=} failed because that was registered before."
+            )
 
     def __init_subclass__(cls):
         super().__init_subclass__()
