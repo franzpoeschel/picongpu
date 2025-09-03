@@ -10,6 +10,7 @@ Users can
 	- Choose which species are used for particle binning
 	- Choose which fields are used for field binning
 	- Choose how frequently they want the binning to be executed
+	- Choose how many times the binned quantity should be combined over time before dumping
 	- Write custom output to file, for example other quantities related to the simulation which the user is interested in
 	- Execute multiple binnings at the same time
 	- Pass extra parameters as a tuple, if additional information is required by the kernels to do binning.
@@ -39,7 +40,7 @@ The basic building block for the binning plugin is the Functor Description objec
 It describes the properties which we find interesting and how we can calculate/get this property from the particle or field.
 A functor description is created using createFunctorDescription.
 
-.. doxygenfunction:: picongpu::plugins::binning::createFunctorDescription
+.. doxygenfunction:: picongpu::plugins::binning::createFunctorDescription(FunctorType functor, std::string const& name, std::array<double, numUnits> units)
 
 
 Functor
@@ -208,7 +209,7 @@ Fields
 PIConGPU fields which should be used in field binning.
 Fields must be instances of the ``FieldInfo`` type.
 
-.. doxygenclass:: picongpu::plugins::binning::FieldInfo
+.. doxygenstruct:: picongpu::plugins::binning::FieldInfo
 	:members:
 
 For example,
@@ -317,6 +318,42 @@ This is a lambda with the following signature, and is set using the ``setWriteOp
 OpenPMD JSON Configuration
 --------------------------
 Users can set a json configuration string for the OpenPMD output format using the ``setOpenPMDJsonCfg`` setter method.
+
+Configuration Options Summary
+-----------------------------
+The following table summarizes the configuration options available for the binner object returned by `addParticleBinner()` or `addFieldBinner()`. These methods allow for fine-tuning the behavior of the binning plugin.
+
+.. list-table:: Binning Configuration Options
+   :widths: 30 50 20
+   :header-rows: 1
+
+   * - Option
+     - Description
+     - Default Value
+   * - ``setNotifyPeriod``
+     - Sets the periodicity of the output. Follows the period syntax defined :ref:`here <usage/plugins:period syntax>`.
+     - ``"1"`` (every time step)
+   * - ``setDumpPeriod``
+     - Defines the number of notify steps to reduce over before dumping. A value of 0 or 1 means dump on every notify.
+     - ``0u``
+   * - ``setHostSideHook``
+     - Sets a host-side hook (lambda/functor) to execute code before binning at each notify step.
+     - An empty lambda ``[]{}``.
+   * - ``enableRegion`` / ``disableRegion``
+     - Configures binning for particles inside (``Bounded``) or leaving (``Leaving``) the simulation volume. This is only for particle binning.
+     - ``Bounded`` region is enabled.
+   * - ``setOpenPMDWriteFunctor``
+     - Sets a functor to write custom data to the openPMD output file.
+     - An empty functor.
+   * - ``setOpenPMDJsonCfg``
+     - Sets a JSON configuration string for the openPMD output format.
+     - ``"{}"``
+   * - ``setOpenPMDExtension``
+     - Sets the file extension for the openPMD output.
+     - Default OpenPMD extension (e.g., ``.bp`` or ``.h5``).
+   * - ``setOpenPMDInfix``
+     - Sets the infix for file names in openPMD output. The default uses ``%06T`` for the time step.
+     - ``"_%06T."``
 
 OpenPMD Output
 ==============
