@@ -55,9 +55,7 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser, BaseLaser):
         if duration <= 0:
             raise ValueError(f"laser pulse duration must be > 0. You gave {duration=}.")
 
-        assert (
-            picongpu_laguerre_modes is None and picongpu_laguerre_phases is None
-        ) or (
+        assert (picongpu_laguerre_modes is None and picongpu_laguerre_phases is None) or (
             picongpu_laguerre_modes is not None and picongpu_laguerre_phases is not None
         ), (
             "laguerre_modes and laguerre_phases MUST BE both set or both \
