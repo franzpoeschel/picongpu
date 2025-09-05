@@ -9,6 +9,7 @@ License: GPLv3+
 import datetime
 import logging
 import math
+from os import PathLike
 import typing
 from pathlib import Path
 
@@ -33,31 +34,37 @@ def is_iterable(obj):
         return False
 
 
-def _not_allowed_template_directories(directories: tuple[Path]):
-    return set(directories) - set(filter(Path.is_dir, directories))
+def _not_allowed_template_directories(directories: tuple[Path]) -> dict[Path, str]:
+    """
+    Check the directories and return a path->reason mapping of non-allowed ones.
+    """
+    return {d: "is not an existing directory" for d in filter(lambda p: not p.is_dir(), directories)}
 
 
-def _normalise_template_dir(directory: None | str | Path | typing.Iterable[str | Path]) -> tuple[Path]:
+def _normalise_template_dir(directory: None | PathLike | typing.Iterable[PathLike]) -> tuple[Path]:
     """
     Allow strings, Paths and an iterable thereof and return tuple[Path].
     """
     # The ordering of these recursions matters!
     if directory is None:
         return tuple()
-    elif isinstance(directory, str):
-        return _normalise_template_dir(Path(directory))
 
-    if isinstance(directory, Path):
-        result = (directory,)
-    elif is_iterable(directory):
-        result = sum(map(_normalise_template_dir, directory), tuple())
-    else:
+    try:
+        directory = (Path(directory),)
+    except TypeError:
+        try:
+            directory = sum(map(_normalise_template_dir, directory), tuple())
+        except TypeError:
+            pass
+
+    if any(filter(lambda p: not isinstance(p, Path), directory)):
         raise ValueError(
             f"Can't understand {directory=} of {type(directory)=}. Must be one of str, Path or iterable thereof."
         )
-    if not_allowed := _not_allowed_template_directories(result):
+
+    if not_allowed := _not_allowed_template_directories(directory):
         raise ValueError(f"Found {not_allowed=} as values for template directories. These are invalid.")
-    return result
+    return directory
 
 
 # may not use pydantic since inherits from _DocumentedMetaClass
@@ -123,7 +130,7 @@ class Simulation(picmistandard.PICMI_Simulation):
     #   pydantic, Brian Marre, 2024
     def __init__(
         self,
-        picongpu_template_dir: typing.Optional[str | Path | typing.Iterable[str | Path]] = None,
+        picongpu_template_dir: None | PathLike | typing.Iterable[PathLike] = None,
         picongpu_typical_ppc: typing.Optional[int] = None,
         picongpu_moving_window_move_point: typing.Optional[float] = None,
         picongpu_moving_window_stop_iteration: typing.Optional[int] = None,
