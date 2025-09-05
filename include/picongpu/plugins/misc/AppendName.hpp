@@ -40,6 +40,16 @@ namespace picongpu
                     vector.emplace_back(T_Filter::getName());
                 }
             };
+
+            template<typename T_Species>
+            struct AppendSpeciesName
+            {
+                void operator()(std::vector<std::string>& vector) const
+                {
+                    vector.emplace_back(T_Species::FrameType::getName());
+                }
+            };
+
         } // namespace misc
     } // namespace plugins
 } // namespace picongpu

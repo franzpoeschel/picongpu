@@ -337,6 +337,11 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                      meta::ForEach<AllFieldSources, plugins::misc::AppendName<boost::mpl::_1>> appendFieldSourceNames;
                      appendFieldSourceNames(allowedDataSources);
 
+                     // add all species to allow the selection of single species only
+                     meta::ForEach<VectorAllSpecies, plugins::misc::AppendSpeciesName<boost::mpl::_1>>
+                         appendSpecieseNames;
+                     appendSpecieseNames(allowedDataSources);
+
                      // string list with all possible particle sources
                      std::string concatenatedSourceNames
                          = plugins::misc::concatenateToString(allowedDataSources, ", ");
@@ -1872,6 +1877,17 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                             WriteSpecies<plugins::misc::UnfilteredSpecies<boost::mpl::_1>>>
                             writeSpecies;
                         writeSpecies(threadParams, currentStep, particleToTotalDomainOffset);
+                    }
+                    else
+                    {
+                        // if not "species_all" is used we need to check of the user wants to dump single species only
+                        using AllSpecies = typename pmacc::
+                            OperateOnSeq<VectorAllSpecies, plugins::misc::UnfilteredSpecies<boost::mpl::_1>>::type;
+                        meta::ForEach<AllSpecies, CallWriteSpecies<boost::mpl::_1>>{}(
+                            vectorOfDataSourceNames,
+                            threadParams,
+                            currentStep,
+                            particleToTotalDomainOffset);
                     }
 
                     // move over all species data sources
