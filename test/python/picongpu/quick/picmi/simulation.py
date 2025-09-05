@@ -5,19 +5,19 @@ Authors: Hannes Troepgen, Brian Edward Marre, Richard Pausch
 License: GPLv3+
 """
 
-from picongpu import picmi
-from picongpu.pypicongpu import species, customuserinput
-from picongpu.picmi.interaction.ionization.fieldionization import ADK, ADKVariant
-from picongpu.picmi.interaction import Interaction
-
-import unittest
-import tempfile
-import shutil
-import os
-import pathlib
-import typeguard
-import typing
 import copy
+import os
+import shutil
+import tempfile
+import typing
+import unittest
+from pathlib import Path
+
+import typeguard
+from picongpu import picmi
+from picongpu.picmi.interaction import Interaction
+from picongpu.picmi.interaction.ionization.fieldionization import ADK, ADKVariant
+from picongpu.pypicongpu import customuserinput, species
 
 
 @typeguard.typechecked
@@ -496,13 +496,9 @@ class TestPicmiSimulation(unittest.TestCase):
             )
             runner = sim.picongpu_get_runner()
 
-            self.assertEqual(
-                # note: this is the mangled name to access a private attribute
-                # *actually* you should not access private variables,
-                # however the alternative would be executing the runner,
-                # which is very costly
-                os.path.abspath(runner._Runner__pypicongpu_template_dir),
-                os.path.abspath(tmpdir),
+            self.assertSequenceEqual(
+                tuple(map(Path.absolute, runner._pypicongpu_template_dir)),
+                (Path(tmpdir).absolute(),),
             )
 
     def test_custom_template_dir_optional(self):
@@ -517,17 +513,13 @@ class TestPicmiSimulation(unittest.TestCase):
         runner = sim.picongpu_get_runner()
 
         # good default template dir is selected
-        self.assertNotEqual(None, runner._Runner__pypicongpu_template_dir)
-        self.assertNotEqual("", runner._Runner__pypicongpu_template_dir)
+        self.assertNotEqual(None, runner._pypicongpu_template_dir)
+        self.assertNotEqual("", runner._pypicongpu_template_dir)
 
     def test_custom_template_dir_checks(self):
         """sanity checks are run on template dir"""
         grid = get_grid(1, 1, 1, 32)
         solver = picmi.ElectromagneticSolver(method="Yee", grid=grid)
-
-        # empty string
-        with self.assertRaisesRegex(Exception, ".*template.*"):
-            picmi.Simulation(time_step_size=17, max_steps=4, solver=solver, picongpu_template_dir="")
 
         # existing dir is ok:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -558,7 +550,7 @@ class TestPicmiSimulation(unittest.TestCase):
         grid = get_grid(1, 1, 1, 32)
         solver = picmi.ElectromagneticSolver(method="Yee", grid=grid)
 
-        valid_paths = [None, "/", pathlib.Path("/")]
+        valid_paths = [None, "/", Path("/")]
         for valid_path in valid_paths:
             sim = picmi.Simulation(
                 time_step_size=17,
@@ -570,7 +562,7 @@ class TestPicmiSimulation(unittest.TestCase):
             # no throw:
             sim.picongpu_get_runner()
 
-        invalid_paths = [1, ["/"], {}]
+        invalid_paths = [1, 42.0]
         for invalid_path in invalid_paths:
             with self.assertRaises(typeguard.TypeCheckError):
                 picmi.Simulation(
