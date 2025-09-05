@@ -5,6 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre, Alexander Debus, Richard Pausch
 License: GPLv3+
 """
 
+import math
 import typing
 
 import picmistandard
@@ -28,6 +29,8 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser, BaseLaser):
         polarization_direction,
         focal_position,
         centroid_position,
+        a0=None,
+        E0=None,
         picongpu_polarization_type=(PolarizationType.LINEAR),
         picongpu_laguerre_modes: typing.Optional[typing.List[float]] = None,
         picongpu_laguerre_phases: typing.Optional[typing.List[float]] = None,
@@ -61,6 +64,12 @@ class GaussianLaser(picmistandard.PICMI_GaussianLaser, BaseLaser):
         self.picongpu_laguerre_modes = picongpu_laguerre_modes
         self.picongpu_laguerre_phases = picongpu_laguerre_phases
         self.picongpu_huygens_surface_positions = picongpu_huygens_surface_positions
+
+        # Calculate a0 and E0 using our base laser, as the PICMI standard does not provide consistency checks.
+        self.k0 = 2.0 * math.pi / wavelength
+        self.a0, self.E0 = self._compute_E0_and_a0(self.k0, E0, a0)
+        kw["E0"] = self.E0
+        kw["a0"] = self.a0
 
         super().__init__(
             wavelength,

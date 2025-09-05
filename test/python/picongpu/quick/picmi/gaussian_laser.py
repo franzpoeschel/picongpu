@@ -332,3 +332,33 @@ class TestPicmiGaussianLaser(unittest.TestCase):
 
         # translates without issue:
         self.assertNotEqual({}, sim_valid.get_as_pypicongpu().get_rendering_context())
+
+    def test_overdefinition_a0_E0(self):
+        """only either a0 or E0 allowed to be set"""
+
+        with self.assertRaisesRegex(ValueError, "Only one of E0 or a0 should be specified. You set both."):
+            picmi.GaussianLaser(
+                1,
+                2,
+                3,
+                focal_position=[0.5, 0, 0.5],
+                centroid_position=[0.5, 0, 0.5],
+                propagation_direction=[0, 1, 0],
+                polarization_direction=[1, 0, 0],
+                E0=1,
+                a0=1,
+            )
+
+    def test_no_a0_E0(self):
+        """either a0 or E0 have to be set"""
+
+        with self.assertRaisesRegex(ValueError, "Both E0 or a0 are None. You must specify exactly one."):
+            picmi.GaussianLaser(
+                1,
+                2,
+                3,
+                focal_position=[0.5, 0, 0.5],
+                centroid_position=[0.5, 0, 0.5],
+                propagation_direction=[0, 1, 0],
+                polarization_direction=[1, 0, 0],
+            )
