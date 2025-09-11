@@ -30,8 +30,8 @@
 #include <pmacc/types.hpp>
 
 #include <cstdlib>
+#include <exception>
 #include <iostream>
-#include <stdexcept>
 #include <string>
 #include <typeinfo>
 

@@ -28,6 +28,7 @@
 #    include "picongpu/plugins/common/openPMDVersion.def"
 #    include "picongpu/plugins/common/stringHelpers.hpp"
 #    include "picongpu/plugins/openPMD/openPMDWriter.def"
+#    include "picongpu/simulation/stage/FieldBackground.hpp"
 #    include "picongpu/traits/SIBaseUnits.hpp"
 
 #    include <pmacc/Environment.hpp>
@@ -179,6 +180,9 @@ namespace picongpu
 
                     meshes.setAttribute("fieldBoundary", listFieldBoundary);
                     meshes.setAttribute("fieldBoundaryParameters", listFieldBoundaryParam);
+                    DataConnector& dc = Environment<>::get().DataConnector();
+                    auto fieldBackground = dc.get<simulation::stage::FieldBackground>("FieldBackground");
+                    meshes.setAttribute("BackgroundFieldIncluded", fieldBackground->getInfluencesDumps());
                 }
 
                 if(writeParticleMeta)

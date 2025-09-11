@@ -101,7 +101,7 @@ namespace pmacc
          *
          * @param currentStep simulation step
          */
-        void notifyPlugins(uint32_t currentStep);
+        virtual void notifyPlugins(uint32_t currentStep);
 
         /** Write a checkpoint if needed for the given step
          *
