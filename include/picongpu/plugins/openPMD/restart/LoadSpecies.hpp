@@ -198,6 +198,19 @@ namespace picongpu
                     SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
                     pmacc::Selection<simDim> const localDomain = subGrid.getLocalDomain();
                     pmacc::Selection<simDim> const globalDomain = subGrid.getGlobalDomain();
+                    /* Offset to transform local particle offsets into total offsets for all particles within the
+                     * current local domain.
+                     * @attention A window can be the full simulation domain or the moving window.
+                     */
+                    DataSpace<simDim> localToTotalDomainOffset(localDomain.offset + globalDomain.offset);
+
+                    /* params->localWindowToDomainOffset is in PIConGPU for a restart zero but to stay generic we take
+                     * the variable into account.
+                     */
+                    DataSpace<simDim> const patchTotalOffset
+                        = localToTotalDomainOffset + params->localWindowToDomainOffset;
+                    DataSpace<simDim> const patchExtent = params->window.localDimensions.size;
+                    DataSpace<simDim> const patchUpperCorner = patchTotalOffset + patchExtent;
 
                     uint64_t totalNumParticles = std::transform_reduce(
                         partialMatches.begin(),
@@ -221,6 +234,18 @@ namespace picongpu
                     meta::ForEach<typename NewParticleDescription::ValueTypeSeq, MallocMappedMemory<boost::mpl::_1>>
                         mallocMem;
                     mallocMem(buffers, mappedFrame, maxChunkSize);
+                    constexpr bool isMappedMemorySupported
+                        = alpaka::hasMappedBufSupport<::alpaka::Platform<pmacc::ComputeDevice>>;
+                    PMACC_VERIFY_MSG(isMappedMemorySupported, "Device must support mapped memory!");
+                    // alpaka::Buf<HostDevice, char, AlpakaDim<DIM1>> filter;
+                    auto filter = alpaka::allocMappedBuf<char, MemIdxType>(
+                        manager::Device<HostDevice>::get().current(),
+                        manager::Device<ComputeDevice>::get().getPlatform(),
+                        MemSpace<DIM1>(maxChunkSize).toAlpakaMemVec());
+                    auto remap = alpaka::allocMappedBuf<MemIdxType, MemIdxType>(
+                        manager::Device<HostDevice>::get().current(),
+                        manager::Device<ComputeDevice>::get().getPlatform(),
+                        MemSpace<DIM1>(maxChunkSize).toAlpakaMemVec());
                     for(size_t const patchIdx : partialMatches)
                     {
                         uint64_t particleOffset = patchNumParticlesOffset[patchIdx];
@@ -256,8 +281,49 @@ namespace picongpu
                                     numParticlesCurrentBatch);
 
                                 // now filter
-                                mappedFrame.getIdentifier(position());
-                                mappedFrame.getIdentifier(totalCellIdx()); // positionOffset
+                                auto position_ = mappedFrame.getIdentifier(position()).getPointer();
+                                auto positionOffset = mappedFrame.getIdentifier(totalCellIdx()).getPointer();
+
+                                // TODO: Run this on GPU
+                                constexpr char filterIn{1}, filterOut{0};
+                                char filterCurrent;
+                                for(size_t particleIndex = 0; particleIndex < numParticlesCurrentBatch;
+                                    ++particleIndex)
+                                {
+                                    auto& positionVec = position_[particleIndex];
+                                    auto& positionOffsetVec = positionOffset[particleIndex];
+
+                                    filterCurrent = filterIn;
+                                    for(size_t d = 0; d < simDim; ++d)
+                                    {
+                                        auto positionInD = positionVec[d] + positionOffsetVec[d];
+                                        if(positionInD < patchTotalOffset[d] || positionInD > patchUpperCorner[d])
+                                        {
+                                            filterCurrent = filterOut;
+                                            break;
+                                        }
+                                    }
+                                    filter[particleIndex] = filterCurrent;
+                                }
+
+                                // This part is inherently sequential, keep it on CPU
+                                std::cout << "REMAP: ";
+                                MemIdxType remapCurrent = 0;
+                                for(size_t particleIndex = 0; particleIndex < numParticlesCurrentBatch;
+                                    ++particleIndex)
+                                {
+                                    if(filter[particleIndex] == filterIn)
+                                    {
+                                        remap[particleIndex] = remapCurrent++;
+                                        std::cout << '1';
+                                    }
+                                    else
+                                    {
+                                        remap[particleIndex] = std::numeric_limits<MemIdxType>::max();
+                                        std::cout << '0';
+                                    }
+                                }
+                                std::cout << std::endl;
 
                                 pmacc::particles::operations::splitIntoListOfFrames(
                                     *speciesTmp,
