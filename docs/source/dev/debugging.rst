@@ -26,6 +26,15 @@ An example build command is
 
    pic-build -c "-DPIC_VERBOSE=127 -DPMACC_VERBOSE=127 -DPMACC_BLOCKING_KERNEL=ON -DPMACC_ASYNC_QUEUES=OFF"
 
+
+If you encounter an error during reading or writing of openPMD files, it can be helpful to run openPMD-api with verbose output.
+This can be done by setting the following environment variable either in your environment (e.g. ``picongpu.profile``) or in your submit script ``./tbg/submit.start`` befor executing ``picongpu``.
+
+.. code:: bash
+
+   export OPENPMD_VERBOSE=1
+
+
 When reporting a crash, it is helpful if you attached the output ``stdout`` and ``stderr`` of such a build.
 
 For further debugging tips and use of tools please refer to `our Wiki <https://github.com/ComputationalRadiationPhysics/picongpu/wiki/Debugging>`_.
