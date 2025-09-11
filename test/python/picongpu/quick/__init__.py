@@ -1,3 +1,6 @@
-# flake8: noqa
-from .pypicongpu import *  # pyflakes.ignore
-from .picmi import *  # pyflakes.ignore
+from . import picmi, pypicongpu
+
+
+def load_tests(loader, standard_tests, pattern):
+    standard_tests.addTests((loader.loadTestsFromModule(module, pattern=pattern) for module in (picmi, pypicongpu)))
+    return standard_tests
