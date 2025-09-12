@@ -174,11 +174,12 @@ namespace picongpu
                 DataSpace<simDim> gridPos = Environment<simDim>::get().GridController().getPosition();
                 ::openPMD::Offset start;
                 ::openPMD::Extent count;
+                ::openPMD::Extent extent = mrc.getExtent();
                 start.reserve(ndim);
                 count.reserve(ndim);
                 for(int d = 0; d < ndim; ++d)
                 {
-                    start.push_back(gridPos.revert()[d]);
+                    start.push_back(gridPos.revert()[d] % extent[d]); // well well well, TODO fix this but how
                     count.push_back(1);
                 }
 
