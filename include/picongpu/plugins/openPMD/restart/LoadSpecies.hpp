@@ -48,6 +48,34 @@ namespace picongpu
     {
         using namespace pmacc;
 
+        template<typename T_Identifier>
+        struct RedistributeFilteredParticles
+        {
+            template<typename FrameType, typename FilterType, typename RemapType>
+            HINLINE void operator()(
+                FrameType& frame,
+                FilterType const& filter,
+                RemapType const& remap,
+                uint64_t const numParticlesCurrentBatch,
+                char const filterOut)
+            {
+                using Identifier = T_Identifier;
+                using ValueType = typename pmacc::traits::Resolve<Identifier>::type::type;
+                using ComponentType = typename GetComponentsType<ValueType>::type;
+
+                ValueType* dataPtr = frame.getIdentifier(Identifier()).getPointer();
+
+                for(size_t particleIndex = 0; particleIndex < numParticlesCurrentBatch; ++particleIndex)
+                {
+                    if(filter[particleIndex] == filterOut)
+                    {
+                        continue;
+                    }
+                    dataPtr[remap[particleIndex]] = dataPtr[particleIndex];
+                }
+            }
+        };
+
         /** Load species from openPMD checkpoint storage
          *
          * @tparam T_Species type of species
@@ -325,10 +353,21 @@ namespace picongpu
                                 }
                                 std::cout << std::endl;
 
+                                meta::ForEach<
+                                    typename NewParticleDescription::ValueTypeSeq,
+                                    RedistributeFilteredParticles<boost::mpl::_1>>
+                                    redistributeFilteredParticles;
+                                redistributeFilteredParticles(
+                                    mappedFrame,
+                                    filter,
+                                    remap,
+                                    numParticlesCurrentBatch,
+                                    filterOut);
+
                                 pmacc::particles::operations::splitIntoListOfFrames(
                                     *speciesTmp,
                                     mappedFrame,
-                                    numParticlesCurrentBatch,
+                                    remapCurrent, // !! not numParticlesCurrentBatch, filtered vs. unfiltered number
                                     cellOffsetToTotalDomain,
                                     totalCellIdx_,
                                     *(params->cellDescription),
