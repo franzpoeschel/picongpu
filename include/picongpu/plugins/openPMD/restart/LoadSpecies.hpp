@@ -57,7 +57,7 @@ namespace picongpu
                 FilterType const& filter,
                 RemapType const& remap,
                 uint64_t const numParticlesCurrentBatch,
-                char const filterOut)
+                char const filterRemove)
             {
                 using Identifier = T_Identifier;
                 using ValueType = typename pmacc::traits::Resolve<Identifier>::type::type;
@@ -67,11 +67,60 @@ namespace picongpu
 
                 for(size_t particleIndex = 0; particleIndex < numParticlesCurrentBatch; ++particleIndex)
                 {
-                    if(filter[particleIndex] == filterOut)
+                    if(filter[particleIndex] == filterRemove)
                     {
                         continue;
                     }
                     dataPtr[remap[particleIndex]] = dataPtr[particleIndex];
+                }
+            }
+        };
+
+        struct KernelFilterParticles
+        {
+            template<typename T_Worker, typename FrameType, typename FilterType>
+            DINLINE void operator()(
+                T_Worker const& worker,
+                FrameType&& loadedData,
+                MemIdxType size,
+                DataSpace<simDim> patchTotalOffset,
+                DataSpace<simDim> patchUpperCorner,
+                char const filterKeep,
+                char const filterRemove,
+                FilterType&& filterOut) const
+            {
+                // DataSpace<1> particleIndex = worker.blockDomIdxND();
+                constexpr uint32_t blockDomSize = T_Worker::blockDomSize();
+                auto numDataBlocks = (size + blockDomSize - 1u) / blockDomSize;
+                auto position_ = loadedData.getIdentifier(position()).getPointer();
+                auto positionOffset = loadedData.getIdentifier(totalCellIdx()).getPointer();
+
+                // grid-strided loop over the chunked data
+                for(int dataBlock = worker.blockDomIdx(); dataBlock < numDataBlocks; dataBlock += worker.gridDomSize())
+                {
+                    auto dataBlockOffset = dataBlock * blockDomSize;
+                    auto forEach = pmacc::lockstep::makeForEach(worker);
+                    forEach(
+                        [&](uint32_t const inBlockIdx)
+                        {
+                            auto idx = dataBlockOffset + inBlockIdx;
+                            if(idx < size)
+                            {
+                                auto& positionVec = position_[idx];
+                                auto& positionOffsetVec = positionOffset[idx];
+                                char filterCurrent = filterKeep;
+                                for(size_t d = 0; d < simDim; ++d)
+                                {
+                                    auto positionInD = positionVec[d] + positionOffsetVec[d];
+                                    if(positionInD < patchTotalOffset[d] || positionInD > patchUpperCorner[d])
+                                    {
+                                        filterCurrent = filterRemove;
+                                        break;
+                                    }
+                                }
+                                filterOut[idx] = filterCurrent;
+                            }
+                        });
                 }
             }
         };
@@ -132,14 +181,6 @@ namespace picongpu
                 auto numRanks = gc.getGlobalSize();
 
                 auto [fullMatches, partialMatches] = getPatchIdx(params, particleSpecies);
-
-                if(!partialMatches.empty())
-                {
-                    std::cerr << "WARNING: Found " << partialMatches.size()
-                              << " particle patches that only partially intersect with the local domain. Will ignore "
-                                 "this patch and lose those particles."
-                              << std::endl;
-                }
 
                 std::shared_ptr<uint64_t> numParticlesShared
                     = particleSpecies.particlePatches["numParticles"].load<uint64_t>();
@@ -312,46 +353,36 @@ namespace picongpu
                                 auto position_ = mappedFrame.getIdentifier(position()).getPointer();
                                 auto positionOffset = mappedFrame.getIdentifier(totalCellIdx()).getPointer();
 
-                                // TODO: Run this on GPU
-                                constexpr char filterIn{1}, filterOut{0};
-                                char filterCurrent;
-                                for(size_t particleIndex = 0; particleIndex < numParticlesCurrentBatch;
-                                    ++particleIndex)
-                                {
-                                    auto& positionVec = position_[particleIndex];
-                                    auto& positionOffsetVec = positionOffset[particleIndex];
-
-                                    filterCurrent = filterIn;
-                                    for(size_t d = 0; d < simDim; ++d)
-                                    {
-                                        auto positionInD = positionVec[d] + positionOffsetVec[d];
-                                        if(positionInD < patchTotalOffset[d] || positionInD > patchUpperCorner[d])
-                                        {
-                                            filterCurrent = filterOut;
-                                            break;
-                                        }
-                                    }
-                                    filter[particleIndex] = filterCurrent;
-                                }
+                                constexpr char filterKeep{1}, filterRemove{0};
+                                PMACC_LOCKSTEP_KERNEL(KernelFilterParticles{})
+                                    .config<DIM1>(pmacc::math::Vector{numParticlesCurrentBatch})(
+                                        mappedFrame,
+                                        numParticlesCurrentBatch,
+                                        patchTotalOffset,
+                                        patchUpperCorner,
+                                        filterKeep,
+                                        filterRemove,
+                                        alpaka::getPtrNative(filter));
+                                eventSystem::getTransactionEvent().waitForFinished();
 
                                 // This part is inherently sequential, keep it on CPU
-                                std::cout << "REMAP: ";
+                                // std::cout << "REMAP: ";
                                 MemIdxType remapCurrent = 0;
                                 for(size_t particleIndex = 0; particleIndex < numParticlesCurrentBatch;
                                     ++particleIndex)
                                 {
-                                    if(filter[particleIndex] == filterIn)
+                                    if(filter[particleIndex] == filterKeep)
                                     {
                                         remap[particleIndex] = remapCurrent++;
-                                        std::cout << '1';
+                                        // std::cout << '1';
                                     }
                                     else
                                     {
                                         remap[particleIndex] = std::numeric_limits<MemIdxType>::max();
-                                        std::cout << '0';
+                                        // std::cout << '0';
                                     }
                                 }
-                                std::cout << std::endl;
+                                // std::cout << std::endl;
 
                                 meta::ForEach<
                                     typename NewParticleDescription::ValueTypeSeq,
@@ -362,7 +393,10 @@ namespace picongpu
                                     filter,
                                     remap,
                                     numParticlesCurrentBatch,
-                                    filterOut);
+                                    filterRemove);
+
+                                std::cout << "Filtered " << remapCurrent << " out of " << numParticlesCurrentBatch
+                                          << " particles" << std::endl;
 
                                 pmacc::particles::operations::splitIntoListOfFrames(
                                     *speciesTmp,
