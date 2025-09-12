@@ -48,8 +48,45 @@ namespace picongpu
     {
         using namespace pmacc;
 
+#    if false
+        struct RedistributeFilteredParticlesKernel
+        {
+            template<typename T_Worker, typename T_DataBox>
+            HDINLINE void operator()(T_Worker const& worker, T_DataBox data, uint32_t size) const
+            {
+                constexpr uint32_t blockDomSize = T_Worker::blockDomSize();
+                auto numDataBlocks = (size + blockDomSize - 1u) / blockDomSize;
+
+                uint32_t* s_mem = ::alpaka::getDynSharedMem<uint32_t>(worker.getAcc());
+
+                // grid-strided loop over the chunked data
+                for(int dataBlock = worker.blockDomIdx(); dataBlock < numDataBlocks; dataBlock += worker.gridDomSize())
+                {
+                    auto dataBlockOffset = dataBlock * blockDomSize;
+                    auto forEach = pmacc::lockstep::makeForEach(worker);
+                    forEach(
+                        [&](uint32_t const inBlockIdx)
+                        {
+                            auto idx = dataBlockOffset + inBlockIdx;
+                            s_mem[inBlockIdx] = idx;
+                            if(idx < size)
+                            {
+                                // ensure that each block is not overwriting data from other blocks
+                                PMACC_DEVICE_VERIFY_MSG(
+                                    data[idx] == 0u,
+                                    "%s\n",
+                                    "Result buffer not valid initialized!");
+                                data[idx] = s_mem[inBlockIdx];
+                            }
+                        });
+                }
+            }
+        };
+#    endif
+
         template<typename T_Identifier>
         struct RedistributeFilteredParticles
+
         {
             template<typename FrameType, typename FilterType, typename RemapType>
             HINLINE void operator()(
@@ -62,6 +99,10 @@ namespace picongpu
                 using Identifier = T_Identifier;
                 using ValueType = typename pmacc::traits::Resolve<Identifier>::type::type;
                 using ComponentType = typename GetComponentsType<ValueType>::type;
+
+
+                constexpr uint32_t = decltype(lockstep::makeBlockCfg<DIM1>())::blockDomSize();
+
 
                 ValueType* dataPtr = frame.getIdentifier(Identifier()).getPointer();
 
@@ -350,8 +391,6 @@ namespace picongpu
                                     numParticlesCurrentBatch);
 
                                 // now filter
-                                auto position_ = mappedFrame.getIdentifier(position()).getPointer();
-                                auto positionOffset = mappedFrame.getIdentifier(totalCellIdx()).getPointer();
 
                                 constexpr char filterKeep{1}, filterRemove{0};
                                 PMACC_LOCKSTEP_KERNEL(KernelFilterParticles{})
