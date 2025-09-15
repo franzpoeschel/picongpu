@@ -12,14 +12,8 @@ import typeguard
 
 from ...pypicongpu.output.binning import (
     Binning as PyPIConGPUBinning,
-)
-from ...pypicongpu.output.binning import (
     BinningAxis as PyPIConGPUBinningAxis,
-)
-from ...pypicongpu.output.binning import (
     BinningFunctor as PyPIConGPUBinningFunctor,
-)
-from ...pypicongpu.output.binning import (
     BinSpec as PyPIConGPUBinSpec,
 )
 from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
