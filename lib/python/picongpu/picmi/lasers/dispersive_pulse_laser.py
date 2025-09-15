@@ -95,7 +95,6 @@ class DispersivePulseLaser(BaseLaser):
             [16, -16],
             [16, -16],
         ],
-        **kw,
     ):
         if waist <= 0:
             raise ValueError(f"waist must be > 0. You gave {waist=}.")
