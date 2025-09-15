@@ -6,24 +6,65 @@ License: GPLv3+
 """
 
 # make pypicongpu classes accessible for conversion to pypicongpu
-from .. import pypicongpu
-from .species import Species
-from .interaction.ionization import IonizationModel
+import datetime
+import logging
+import math
+from os import PathLike
+import typing
+from pathlib import Path
+
+import picmistandard
+import typeguard
 
 from picongpu.pypicongpu.species.initmanager import InitManager
 
+from .. import pypicongpu
 from . import constants
 from .grid import Cartesian3DGrid
 from .interaction import Interaction
+from .interaction.ionization import IonizationModel
+from .species import Species
 
-import picmistandard
 
-import math
-import typeguard
-import pathlib
-import logging
-import typing
-import datetime
+def is_iterable(obj):
+    try:
+        iter(obj)
+        return True
+    except TypeError:
+        return False
+
+
+def _not_allowed_template_directories(directories: tuple[Path]) -> dict[Path, str]:
+    """
+    Check the directories and return a path->reason mapping of non-allowed ones.
+    """
+    return {d: "is not an existing directory" for d in filter(lambda p: not p.is_dir(), directories)}
+
+
+def _normalise_template_dir(directory: None | PathLike | typing.Iterable[PathLike]) -> tuple[Path]:
+    """
+    Allow strings, Paths and an iterable thereof and return tuple[Path].
+    """
+    # The ordering of these recursions matters!
+    if directory is None:
+        return tuple()
+
+    try:
+        directory = (Path(directory),)
+    except TypeError:
+        try:
+            directory = sum(map(_normalise_template_dir, directory), tuple())
+        except TypeError:
+            pass
+
+    if any(filter(lambda p: not isinstance(p, Path), directory)):
+        raise ValueError(
+            f"Can't understand {directory=} of {type(directory)=}. Must be one of str, Path or iterable thereof."
+        )
+
+    if not_allowed := _not_allowed_template_directories(directory):
+        raise ValueError(f"Found {not_allowed=} as values for template directories. These are invalid.")
+    return directory
 
 
 # may not use pydantic since inherits from _DocumentedMetaClass
@@ -57,7 +98,7 @@ class Simulation(picmistandard.PICMI_Simulation):
     optional, if set to None, will be set to median ppc of all species ppcs
     """
 
-    picongpu_template_dir = pypicongpu.util.build_typesafe_property(typing.Optional[str])
+    picongpu_template_dir = pypicongpu.util.build_typesafe_property(typing.Iterable[Path])
     """directory containing templates to use for generating picongpu setups"""
 
     picongpu_moving_window_move_point = pypicongpu.util.build_typesafe_property(typing.Optional[float])
@@ -89,7 +130,7 @@ class Simulation(picmistandard.PICMI_Simulation):
     #   pydantic, Brian Marre, 2024
     def __init__(
         self,
-        picongpu_template_dir: typing.Optional[typing.Union[str, pathlib.Path]] = None,
+        picongpu_template_dir: None | PathLike | typing.Iterable[PathLike] = None,
         picongpu_typical_ppc: typing.Optional[int] = None,
         picongpu_moving_window_move_point: typing.Optional[float] = None,
         picongpu_moving_window_stop_iteration: typing.Optional[int] = None,
@@ -99,11 +140,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         picongpu_binomial_current_interpolation: bool = False,
         **keyword_arguments,
     ):
-        if picongpu_template_dir is not None:
-            self.picongpu_template_dir = str(picongpu_template_dir)
-        else:
-            self.picongpu_template_dir = picongpu_template_dir
-
+        self.picongpu_template_dir = _normalise_template_dir(picongpu_template_dir)
         self.picongpu_typical_ppc = picongpu_typical_ppc
         self.picongpu_moving_window_move_point = picongpu_moving_window_move_point
         self.picongpu_moving_window_stop_iteration = picongpu_moving_window_stop_iteration
@@ -124,15 +161,6 @@ class Simulation(picmistandard.PICMI_Simulation):
             and isinstance(self.solver.grid, Cartesian3DGrid)
         ):
             self.__yee_compute_cfl_or_delta_t()
-
-        # checks on picongpu specific stuff
-        ## template_path is valid
-        if picongpu_template_dir == "":
-            raise ValueError("picongpu_template_dir MUST NOT be empty string")
-        if picongpu_template_dir is not None:
-            template_path = pathlib.Path(picongpu_template_dir)
-            if not template_path.is_dir():
-                raise ValueError("picongpu_template_dir must be existing directory")
 
     def __yee_compute_cfl_or_delta_t(self) -> None:
         """

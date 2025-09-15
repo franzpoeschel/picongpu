@@ -5,13 +5,13 @@ Authors: Hannes Troepgen, Brian Edward Marre, Simeon Ehrig
 License: GPLv3+
 """
 
-from picongpu import pypicongpu, picmi
+import logging
+import tempfile
+import unittest
+from pathlib import Path
 
 import typeguard
-import unittest
-import tempfile
-import os
-import logging
+from picongpu import picmi, pypicongpu
 
 
 @typeguard.typechecked
@@ -118,8 +118,8 @@ class TestSimulation(unittest.TestCase):
         runner = sim.picongpu_get_runner()
 
         # check for generated (rendered) dir
-        self.assertTrue(os.path.isdir(runner.setup_dir))
-        self.assertEqual(
-            os.path.abspath(template_dir_name),
-            os.path.abspath(runner._Runner__pypicongpu_template_dir),
+        self.assertTrue(Path(runner.setup_dir).is_dir())
+        self.assertSequenceEqual(
+            [Path(template_dir_name).absolute()],
+            list(map(Path.absolute, runner._pypicongpu_template_dir)),
         )

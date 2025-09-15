@@ -5,28 +5,26 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-from picongpu.pypicongpu.runner import Runner
-
-import unittest
-import typeguard
-
-from picongpu import picmi
-
-import tempfile
+import json
 import os
 import re
-import pathlib
-import json
+import tempfile
+import unittest
+from pathlib import Path
+
+import typeguard
+from picongpu import picmi
+from picongpu.pypicongpu.runner import Runner
 
 
 class TestRunner(unittest.TestCase):
     # note: tests involving actual running/building are in the long tests
 
-    def __get_tmpdir_name(self):
+    def __get_tmpdir_name(self, relative_to=None):
         name = None
         with tempfile.TemporaryDirectory() as tmpdir:
             name = tmpdir
-        return name
+        return name if relative_to is None else str(Path(name).relative_to(Path().absolute()))
 
     def setUp(self):
         # Note that this picmi simulation is a valid specification,
@@ -62,9 +60,9 @@ class TestRunner(unittest.TestCase):
         self.nonexisting_dir2 = self.__get_tmpdir_name()
         self.nonexisting_dir3 = self.__get_tmpdir_name()
 
-        self.nonexisting_relative_dir1 = "BHJADSdir1"
-        self.nonexisting_relative_dir2 = "BHJADSdir2"
-        self.existing_relative_dir1 = "NBJCMACBAkjsdir1"
+        self.nonexisting_relative_dir1 = self.__get_tmpdir_name(relative_to="")
+        self.nonexisting_relative_dir2 = self.__get_tmpdir_name(relative_to="")
+        self.existing_relative_dir1 = self.__get_tmpdir_name(relative_to="")
         os.mkdir(self.existing_relative_dir1)
 
         self.__maybe_tmpdir_destroy = [
@@ -410,7 +408,7 @@ class TestRunner(unittest.TestCase):
         """runner renders templates from template dir"""
         # generate test template
         with tempfile.TemporaryDirectory() as template_dir:
-            template_path = pathlib.Path(template_dir)
+            template_path = Path(template_dir)
             # note: put in subdir, b/c not all directories are cloned by
             # pic-create
             os.makedirs(template_path / "etc" / "picongpu")
@@ -422,11 +420,11 @@ class TestRunner(unittest.TestCase):
 
             # create ruunner with previous tempalte dir, rest of directories
             # is not predefined
-            runner = Runner(self.sim, pypicongpu_template_dir=template_dir)
+            runner = Runner(self.sim, pypicongpu_template_dir=(template_path,))
 
             runner.generate()
 
-            setup_path = pathlib.Path(runner.setup_dir)
+            setup_path = Path(runner.setup_dir)
 
             testfile_rendered = setup_path / "etc" / "picongpu" / "date"
             with open(testfile_rendered, "r") as rendered_file:
@@ -442,7 +440,7 @@ class TestRunner(unittest.TestCase):
         """rendering context is dumped on generation"""
         runner = Runner(self.sim)
         runner.generate()
-        setup_path = pathlib.Path(runner.setup_dir)
+        setup_path = Path(runner.setup_dir)
         dump_file = setup_path / "pypicongpu.json"
 
         self.assertTrue(dump_file.exists())

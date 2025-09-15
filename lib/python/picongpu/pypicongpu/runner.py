@@ -10,7 +10,7 @@ from . import util
 from .rendering import Renderer
 
 from os import path, environ, chdir
-from functools import reduce
+from pathlib import Path
 
 import typeguard
 import tempfile
@@ -21,6 +21,8 @@ import re
 import datetime
 import pathlib
 import json
+
+DEFAULT_TEMPLATE_DIRECTORY = (Path(__file__).parents[4] / "share" / "picongpu" / "pypicongpu" / "template").absolute()
 
 
 def runArgs(name, args):
@@ -133,7 +135,7 @@ class Runner:
     def __init__(
         self,
         sim,
-        pypicongpu_template_dir: typing.Optional[str] = None,
+        pypicongpu_template_dir: typing.Iterable[Path] | None = None,
         scratch_dir: typing.Optional[str] = None,
         setup_dir: typing.Optional[str] = None,
         run_dir: typing.Optional[str] = None,
@@ -198,7 +200,7 @@ class Runner:
 
         # use helper to perform various checks
         # note that the order matters: run_dir depends on scratch_dir
-        self.__helper_set_pypicongpu_template_dir(pypicongpu_template_dir)
+        self._pypicongpu_template_dir = pypicongpu_template_dir or (DEFAULT_TEMPLATE_DIRECTORY,)
         self.__helper_set_scratch_dir(scratch_dir)
         self.__helper_set_setup_dir(setup_dir)
         self.__helper_set_run_dir(run_dir)
@@ -222,21 +224,6 @@ class Runner:
             # and (2) be copied to run_dir/input by tbg
             self.setup_dir = get_tmpdir_with_name("setup")
         assert not path.isdir(self.setup_dir), "setup dir must NOT exist yet"
-
-    def __helper_set_pypicongpu_template_dir(self, pypicongpu_template_dir: typing.Optional[str]) -> None:
-        """sets the pypicongpu template dir as described in __init__()"""
-        # guess template
-        # store in private var, because people should not mess with it
-        if pypicongpu_template_dir is None:
-            # find source of pypicongpu repo,
-            # from there derive template location
-            self.__pypicongpu_template_dir = path.join(
-                reduce(lambda x, f: f(x), [path.dirname] * 5, __file__),
-                "share/picongpu/pypicongpu/template",
-            )
-        else:
-            self.__pypicongpu_template_dir = path.abspath(pypicongpu_template_dir)
-        assert path.isdir(self.__pypicongpu_template_dir), "template directory must exist"
 
     def __helper_set_scratch_dir(self, scratch_dir: typing.Optional[str]) -> None:
         """sets the scratch dir according to description in __init__()"""
@@ -284,7 +271,7 @@ class Runner:
 
     def __log_dirs(self):
         """print human-readble list of paths to log"""
-        logging.info(" template dir: {}".format(self.__pypicongpu_template_dir))
+        logging.info(" template dir: {}".format(self._pypicongpu_template_dir))
         logging.info("    setup dir: {}".format(self.setup_dir))
         logging.info("      run dir: {}".format(self.run_dir))
         logging.info("  params file: {}".format(self.__params_file()))
@@ -292,10 +279,8 @@ class Runner:
 
     def __copy_template(self):
         """copy template files to be built from"""
-        runArgs(
-            "add template",
-            ["pic-create", "--force", self.__pypicongpu_template_dir, self.setup_dir],
-        )
+        for d in self._pypicongpu_template_dir:
+            runArgs("add template", ["pic-create", "--force", str(d), self.setup_dir])
 
     def __render_templates(self):
         """
