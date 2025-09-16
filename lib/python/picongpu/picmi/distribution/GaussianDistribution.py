@@ -5,7 +5,8 @@ Authors: Brian Edward Marre
 License: GPLv3+
 """
 
-from ...pypicongpu import species
+from picongpu.picmi.copy_attributes import converts_to
+from picongpu.pypicongpu.species.operation.densityprofile.gaussian import Gaussian
 from ...pypicongpu import util
 
 from .Distribution import Distribution
@@ -15,6 +16,12 @@ import typing
 import numpy as np
 
 
+@converts_to(
+    Gaussian,
+    conversions={"vacuum_cells_front": lambda self, _: int(self.vacuum_front / self.cell_size[1])},
+    preamble=lambda self, grid: setattr(self, "cell_size", grid.get_cell_size()) or self.check(),
+    ignore=["check"],
+)
 @typeguard.typechecked
 class GaussianDistribution(Distribution):
     """
@@ -66,34 +73,14 @@ class GaussianDistribution(Distribution):
     # @details pydantic provides an automatically generated __init__/constructor method which allows initialization off
     #   all attributes as keyword arguments
 
-    # @note user may add additional attributes by hand, these will be available but not type verified
-
-    def get_as_pypicongpu(self, grid) -> species.operation.densityprofile.DensityProfile:
-        self.cell_size = grid.get_cell_size()
+    def check(self):
         util.unsupported("fill in not active", self.fill_in, True)
-
-        # @todo support bounds, Brian Marre, 2024
         util.unsupported("lower bound", self.lower_bound, (None, None, None))
         util.unsupported("upper bound", self.upper_bound, (None, None, None))
-
-        gaussian_profile = species.operation.densityprofile.Gaussian()
-
         if self.center_rear < self.center_front:
             raise ValueError("center_front must be <= center_rear")
         if self.density <= 0.0:
             raise ValueError("density must be > 0")
-
-        # @todo change to constructor call once we switched PyPIConGPU to use pydantic, Brian Marre, 2024
-        gaussian_profile.gas_center_front = self.center_front
-        gaussian_profile.gas_center_rear = self.center_rear
-        gaussian_profile.gas_sigma_front = self.sigma_front
-        gaussian_profile.gas_sigma_rear = self.sigma_rear
-        gaussian_profile.gas_factor = self.factor
-        gaussian_profile.gas_power = self.power
-        gaussian_profile.vacuum_cells_front = int(self.vacuum_front / grid.get_cell_size()[1])
-        gaussian_profile.density = self.density
-
-        return gaussian_profile
 
     def __call__(self, x, y, z):
         if self.cell_size is None:

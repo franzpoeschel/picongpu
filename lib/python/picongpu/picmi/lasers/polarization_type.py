@@ -6,6 +6,7 @@ License: GPLv3+
 """
 
 from enum import Enum
+
 from ...pypicongpu.laser import PolarizationType as PyPIConGPUPolarizationType
 
 

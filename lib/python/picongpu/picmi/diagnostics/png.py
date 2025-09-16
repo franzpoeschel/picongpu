@@ -1,21 +1,23 @@
 """
 This file is part of PIConGPU.
-Copyright 2021-2024 PIConGPU contributors
-Authors: Masoud Afshari
+Copyright 2021-2025 PIConGPU contributors
+Authors: Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
-from ...pypicongpu.output.png import Png as PyPIConGPUPNG
-from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
-from ...pypicongpu.output.png import EMFieldScaleEnum, ColorScaleEnum
+from typing import List
 
+import typeguard
+
+from picongpu.picmi.diagnostics.util import diagnostic_converts_to
+
+from ...pypicongpu.output.png import ColorScaleEnum, EMFieldScaleEnum
+from ...pypicongpu.output.png import Png as PyPIConGPUPNG
 from ..species import Species as PICMISpecies
 from .timestepspec import TimeStepSpec
 
-import typeguard
-from typing import List
 
-
+@diagnostic_converts_to(PyPIConGPUPNG)
 @typeguard.typechecked
 class Png:
     """
@@ -103,7 +105,7 @@ class Png:
         Custom expression for channel 3.
     """
 
-    def check(self):
+    def check(self, dict_species_picmi_to_pypicongpu, *args, **kwargs):
         if not (0.0 <= self.slice_point <= 1.0):
             raise ValueError("Slice point must be between 0.0 and 1.0")
 
@@ -133,6 +135,14 @@ class Png:
             raise ValueError(f"Invalid color scale for channel 2. Valid options are {list(ColorScaleEnum)}.")
         if self.pre_channel3_color_scales not in ColorScaleEnum:
             raise ValueError(f"Invalid color scale for channel 3. Valid options are {list(ColorScaleEnum)}.")
+
+        if self.species not in dict_species_picmi_to_pypicongpu.keys():
+            raise ValueError(f"Species {self.species} is not known to Simulation")
+
+        pypicongpu_species = dict_species_picmi_to_pypicongpu.get(self.species)
+
+        if pypicongpu_species is None:
+            raise ValueError(f"Species {self.species} is not mapped to a PyPIConGPUSpecies.")
 
     def __init__(
         self,
@@ -183,46 +193,3 @@ class Png:
         self.pre_channel1 = pre_channel1
         self.pre_channel2 = pre_channel2
         self.pre_channel3 = pre_channel3
-
-    def get_as_pypicongpu(
-        self,
-        dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies],
-        time_step_size,
-        num_steps,
-    ) -> PyPIConGPUPNG:
-        self.check()
-
-        if self.species not in dict_species_picmi_to_pypicongpu.keys():
-            raise ValueError(f"Species {self.species} is not known to Simulation")
-
-        pypicongpu_species = dict_species_picmi_to_pypicongpu.get(self.species)
-
-        if pypicongpu_species is None:
-            raise ValueError(f"Species {self.species} is not mapped to a PyPIConGPUSpecies.")
-
-        pypicongpu_png = PyPIConGPUPNG()
-        pypicongpu_png.period = self.period.get_as_pypicongpu(time_step_size, num_steps)
-        pypicongpu_png.axis = self.axis
-        pypicongpu_png.slicePoint = self.slice_point
-        pypicongpu_png.species = pypicongpu_species
-        pypicongpu_png.folder = self.folder_name
-        pypicongpu_png.scale_image = self.scale_image
-        pypicongpu_png.scale_to_cellsize = self.scale_to_cellsize
-        pypicongpu_png.white_box_per_GPU = self.white_box_per_gpu
-        pypicongpu_png.EM_FIELD_SCALE_CHANNEL1 = self.em_field_scale_channel1
-        pypicongpu_png.EM_FIELD_SCALE_CHANNEL2 = self.em_field_scale_channel2
-        pypicongpu_png.EM_FIELD_SCALE_CHANNEL3 = self.em_field_scale_channel3
-        pypicongpu_png.preParticleDensCol = self.pre_particle_density_color_scales
-        pypicongpu_png.preChannel1Col = self.pre_channel1_color_scales
-        pypicongpu_png.preChannel2Col = self.pre_channel2_color_scales
-        pypicongpu_png.preChannel3Col = self.pre_channel3_color_scales
-        pypicongpu_png.customNormalizationSI = self.custom_normalization_si
-        pypicongpu_png.preParticleDens_opacity = self.pre_particle_density_opacity
-        pypicongpu_png.preChannel1_opacity = self.pre_channel1_opacity
-        pypicongpu_png.preChannel2_opacity = self.pre_channel2_opacity
-        pypicongpu_png.preChannel3_opacity = self.pre_channel3_opacity
-        pypicongpu_png.preChannel1 = self.pre_channel1
-        pypicongpu_png.preChannel2 = self.pre_channel2
-        pypicongpu_png.preChannel3 = self.pre_channel3
-
-        return pypicongpu_png

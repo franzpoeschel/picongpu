@@ -29,12 +29,12 @@ class TestGaussian(unittest.TestCase):
     def _getGaussian(self):
         g = Gaussian()
 
-        g.gas_center_front = self.values["gas_center_front"]
-        g.gas_center_rear = self.values["gas_center_rear"]
-        g.gas_sigma_front = self.values["gas_sigma_front"]
-        g.gas_sigma_rear = self.values["gas_sigma_rear"]
-        g.gas_power = self.values["gas_power"]
-        g.gas_factor = self.values["gas_factor"]
+        g.center_front = self.values["gas_center_front"]
+        g.center_rear = self.values["gas_center_rear"]
+        g.sigma_front = self.values["gas_sigma_front"]
+        g.sigma_rear = self.values["gas_sigma_rear"]
+        g.power = self.values["gas_power"]
+        g.factor = self.values["gas_factor"]
         g.vacuum_cells_front = self.values["vacuum_cells_front"]
         g.density = self.values["density"]
         return g
@@ -54,12 +54,12 @@ class TestGaussian(unittest.TestCase):
         """values are passed through"""
         g = self._getGaussian()
 
-        self.assertAlmostEqual(self.values["gas_center_front"], g.gas_center_front)
-        self.assertAlmostEqual(self.values["gas_center_rear"], g.gas_center_rear)
-        self.assertAlmostEqual(self.values["gas_sigma_front"], g.gas_sigma_front)
-        self.assertAlmostEqual(self.values["gas_sigma_rear"], g.gas_sigma_rear)
-        self.assertAlmostEqual(self.values["gas_power"], g.gas_power)
-        self.assertAlmostEqual(self.values["gas_factor"], g.gas_factor)
+        self.assertAlmostEqual(self.values["gas_center_front"], g.center_front)
+        self.assertAlmostEqual(self.values["gas_center_rear"], g.center_rear)
+        self.assertAlmostEqual(self.values["gas_sigma_front"], g.sigma_front)
+        self.assertAlmostEqual(self.values["gas_sigma_rear"], g.sigma_rear)
+        self.assertAlmostEqual(self.values["gas_power"], g.power)
+        self.assertAlmostEqual(self.values["gas_factor"], g.factor)
         self.assertEqual(self.values["vacuum_cells_front"], g.vacuum_cells_front)
         self.assertAlmostEqual(self.values["density"], g.density)
 
@@ -77,27 +77,27 @@ class TestGaussian(unittest.TestCase):
 
         for invalid in [None, "1", [], {}]:
             with self.assertRaises(typeguard.TypeCheckError):
-                g.gas_factor = invalid
+                g.factor = invalid
 
         for invalid in [None, "1", [], {}]:
             with self.assertRaises(typeguard.TypeCheckError):
-                g.gas_power = invalid
+                g.power = invalid
 
         for invalid in [None, "1", [], {}]:
             with self.assertRaises(typeguard.TypeCheckError):
-                g.gas_sigma_front = invalid
+                g.sigma_front = invalid
 
         for invalid in [None, "1", [], {}]:
             with self.assertRaises(typeguard.TypeCheckError):
-                g.gas_sigma_rear = invalid
+                g.sigma_rear = invalid
 
         for invalid in [None, "1", [], {}]:
             with self.assertRaises(typeguard.TypeCheckError):
-                g.gas_center_front = invalid
+                g.center_front = invalid
 
         for invalid in [None, "1", [], {}]:
             with self.assertRaises(typeguard.TypeCheckError):
-                g.gas_center_rear = invalid
+                g.center_rear = invalid
 
     def test_check_unsetParameters(self):
         """validity check on self for no parameters set"""
@@ -137,7 +137,7 @@ class TestGaussian(unittest.TestCase):
         # invalid gas_factor
         for invalid in [0.0, 1.0]:
             # assignment passes, but check catches the error
-            g.gas_factor = invalid
+            g.factor = invalid
             with self.assertRaisesRegex(ValueError, ".*gas_factor.* < 0.*"):
                 g.check()
 
@@ -148,7 +148,7 @@ class TestGaussian(unittest.TestCase):
         # invalid gas_power
         for invalid in [0.0]:
             # assignment passes, but check catches the error
-            g.gas_power = invalid
+            g.power = invalid
             with self.assertRaisesRegex(ValueError, ".*gas_power.* != 0.*"):
                 g.check()
 
@@ -159,7 +159,7 @@ class TestGaussian(unittest.TestCase):
         # invalid gas_sigma_rear
         for invalid in [0.0]:
             # assignment passes, but check catches the error
-            g.gas_sigma_rear = invalid
+            g.sigma_rear = invalid
             with self.assertRaisesRegex(ValueError, ".*gas_sigma_rear.* != 0.*"):
                 g.check()
 
@@ -170,7 +170,7 @@ class TestGaussian(unittest.TestCase):
         # invalid gas_sigma_front
         for invalid in [0.0]:
             # assignment passes, but check catches the error
-            g.gas_sigma_front = invalid
+            g.sigma_front = invalid
             with self.assertRaisesRegex(ValueError, ".*gas_sigma_front.* != 0.*"):
                 g.check()
 
@@ -181,13 +181,13 @@ class TestGaussian(unittest.TestCase):
         # invalid gas_center_rear
         for invalid in [-1.0]:
             # assignment passes, but check catches the error
-            g.gas_center_rear = invalid
+            g.center_rear = invalid
             with self.assertRaisesRegex(ValueError, ".*gas_center_rear.* >= 0.*"):
                 g.check()
 
         # rear < front
         # assignment passes, but check catches the error
-        g.gas_center_rear = 0.9 * self.values["gas_center_front"]
+        g.center_rear = 0.9 * self.values["gas_center_front"]
         with self.assertRaisesRegex(ValueError, ".*gas_center_rear.* >= gas_center_front.*"):
             g.check()
 
@@ -198,13 +198,13 @@ class TestGaussian(unittest.TestCase):
         # invalid gas_center_front
         for invalid in [-1.0]:
             # assignment passes, but check catches the error
-            g.gas_center_front = invalid
+            g.center_front = invalid
             with self.assertRaisesRegex(ValueError, ".*gas_center_front.* >= 0.*"):
                 g.check()
 
         # front > rear
         # assignment passes, but check catches the error
-        g.gas_center_front = 1.1 * self.values["gas_center_rear"]
+        g.center_front = 1.1 * self.values["gas_center_rear"]
         with self.assertRaisesRegex(ValueError, ".*gas_center_rear.* >= gas_center_front.*"):
             g.check()
 
@@ -215,12 +215,12 @@ class TestGaussian(unittest.TestCase):
         context = g.get_rendering_context()
         self.assertTrue(context["typeID"]["gaussian"])
         context = context["data"]
-        self.assertAlmostEqual(g.gas_center_front, context["gas_center_front"])
-        self.assertAlmostEqual(g.gas_center_rear, context["gas_center_rear"])
-        self.assertAlmostEqual(g.gas_sigma_front, context["gas_sigma_front"])
-        self.assertAlmostEqual(g.gas_sigma_rear, context["gas_sigma_rear"])
-        self.assertAlmostEqual(g.gas_power, context["gas_power"])
-        self.assertAlmostEqual(g.gas_factor, context["gas_factor"])
+        self.assertAlmostEqual(g.center_front, context["gas_center_front"])
+        self.assertAlmostEqual(g.center_rear, context["gas_center_rear"])
+        self.assertAlmostEqual(g.sigma_front, context["gas_sigma_front"])
+        self.assertAlmostEqual(g.sigma_rear, context["gas_sigma_rear"])
+        self.assertAlmostEqual(g.power, context["gas_power"])
+        self.assertAlmostEqual(g.factor, context["gas_factor"])
         self.assertEqual(g.vacuum_cells_front, context["vacuum_cells_front"])
         self.assertAlmostEqual(g.density, context["density"])
 

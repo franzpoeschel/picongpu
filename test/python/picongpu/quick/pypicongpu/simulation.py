@@ -33,16 +33,14 @@ class TestSimulation(unittest.TestCase):
         self.s.time_steps = 42
         self.s.typical_ppc = 1
         self.s.grid = grid.Grid3D()
-        self.s.grid.cell_size_x_si = 1
-        self.s.grid.cell_size_y_si = 2
-        self.s.grid.cell_size_z_si = 3
-        self.s.grid.cell_cnt_x = 4
-        self.s.grid.cell_cnt_y = 5
-        self.s.grid.cell_cnt_z = 6
-        self.s.grid.n_gpus = tuple([1, 1, 1])
-        self.s.grid.boundary_condition_x = grid.BoundaryCondition.PERIODIC
-        self.s.grid.boundary_condition_y = grid.BoundaryCondition.PERIODIC
-        self.s.grid.boundary_condition_z = grid.BoundaryCondition.PERIODIC
+        self.s.grid.cell_size_si = (1, 2, 3)
+        self.s.grid.cell_cnt = (4, 5, 6)
+        self.s.grid.n_gpus = (1, 1, 1)
+        self.s.grid.boundary_condition = (
+            grid.BoundaryCondition.PERIODIC,
+            grid.BoundaryCondition.PERIODIC,
+            grid.BoundaryCondition.PERIODIC,
+        )
         self.s.grid.super_cell_size = (8, 8, 4)
         self.s.grid.grid_dist = None
         self.s.solver = YeeSolver()
@@ -59,9 +57,9 @@ class TestSimulation(unittest.TestCase):
         self.laser.wavelength = 1.2
         self.laser.waist = 3.4
         self.laser.duration = 5.6
-        self.laser.focus_pos = [0, 7.8, 0]
+        self.laser.focal_position = [0, 7.8, 0]
         self.laser.centroid_position = [0, 0, 0]
-        self.laser.phase = 2.9
+        self.laser.phi0 = 2.9
         self.laser.E0 = 9.0
         self.laser.pulse_init = 1.3
         self.laser.propagation_direction = [0, 1, 0]

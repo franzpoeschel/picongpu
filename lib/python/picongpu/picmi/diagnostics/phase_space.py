@@ -1,20 +1,22 @@
 """
 This file is part of PIConGPU.
-Copyright 2021-2024 PIConGPU contributors
-Authors: Masoud Afshari
+Copyright 2021-2025 PIConGPU contributors
+Authors: Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
-from ...pypicongpu.output.phase_space import PhaseSpace as PyPIConGPUPhaseSpace
-from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
+from typing import Literal
 
+import typeguard
+
+from picongpu.picmi.diagnostics.util import diagnostic_converts_to
+
+from ...pypicongpu.output.phase_space import PhaseSpace as PyPIConGPUPhaseSpace
 from ..species import Species as PICMISpecies
 from .timestepspec import TimeStepSpec
 
-import typeguard
-from typing import Literal
 
-
+@diagnostic_converts_to(PyPIConGPUPhaseSpace)
 @typeguard.typechecked
 class PhaseSpace:
     """
@@ -50,9 +52,17 @@ class PhaseSpace:
         Optional name for the phase-space plugin.
     """
 
-    def check(self):
+    def check(self, dict_species_picmi_to_pypicongpu, *args, **kwargs):
         if self.min_momentum >= self.max_momentum:
             raise ValueError("min_momentum must be less than max_momentum")
+
+        if self.species not in dict_species_picmi_to_pypicongpu.keys():
+            raise ValueError(f"Species {self.species} is not known to Simulation")
+
+        # checks if PICMISpecies instance exists in the dictionary. If yes, it returns the corresponding PyPIConGPUSpecies instance.
+        # self.species refers to the species attribute of the class  PhaseSpace(picmistandard.PICMI_PhaseSpace).
+        if dict_species_picmi_to_pypicongpu.get(self.species) is None:
+            raise ValueError(f"Species {self.species} is not mapped to a PyPIConGPUSpecies.")
 
     def __init__(
         self,
@@ -69,32 +79,3 @@ class PhaseSpace:
         self.momentum_coordinate = momentum_coordinate
         self.min_momentum = min_momentum
         self.max_momentum = max_momentum
-
-    def get_as_pypicongpu(
-        # to get the corresponding PyPIConGPUSpecies instance for the given PICMISpecies.
-        self,
-        dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies],
-        time_step_size,
-        num_steps,
-    ) -> PyPIConGPUPhaseSpace:
-        self.check()
-
-        if self.species not in dict_species_picmi_to_pypicongpu.keys():
-            raise ValueError(f"Species {self.species} is not known to Simulation")
-
-        # checks if PICMISpecies instance exists in the dictionary. If yes, it returns the corresponding PyPIConGPUSpecies instance.
-        # self.species refers to the species attribute of the class  PhaseSpace(picmistandard.PICMI_PhaseSpace).
-        pypicongpu_species = dict_species_picmi_to_pypicongpu.get(self.species)
-
-        if pypicongpu_species is None:
-            raise ValueError(f"Species {self.species} is not mapped to a PyPIConGPUSpecies.")
-
-        pypicongpu_phase_space = PyPIConGPUPhaseSpace()
-        pypicongpu_phase_space.species = pypicongpu_species
-        pypicongpu_phase_space.period = self.period.get_as_pypicongpu(time_step_size, num_steps)
-        pypicongpu_phase_space.spatial_coordinate = self.spatial_coordinate
-        pypicongpu_phase_space.momentum_coordinate = self.momentum_coordinate
-        pypicongpu_phase_space.min_momentum = self.min_momentum
-        pypicongpu_phase_space.max_momentum = self.max_momentum
-
-        return pypicongpu_phase_space

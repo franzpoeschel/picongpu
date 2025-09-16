@@ -1,7 +1,7 @@
 """
 This file is part of PIConGPU.
-Copyright 2021-2024 PIConGPU contributors
-Authors: Hannes Troepgen, Brian Edward Marre, Richard Pausch
+Copyright 2021-2025 PIConGPU contributors
+Authors: Hannes Troepgen, Brian Edward Marre, Richard Pausch, Julian Lenz
 License: GPLv3+
 """
 
@@ -48,26 +48,14 @@ class Grid3D(RenderedObject):
     The bounding box is implicitly given as TODO.
     """
 
-    cell_size_x_si = util.build_typesafe_property(float)
-    """Width of individual cell in X direction"""
-    cell_size_y_si = util.build_typesafe_property(float)
-    """Width of individual cell in Y direction"""
-    cell_size_z_si = util.build_typesafe_property(float)
-    """Width of individual cell in Z direction"""
+    cell_size_si = util.build_typesafe_property(tuple[float, float, float])
+    """Width of individual cell in each direction"""
 
-    cell_cnt_x = util.build_typesafe_property(int)
-    """total number of cells in X direction"""
-    cell_cnt_y = util.build_typesafe_property(int)
-    """total number of cells in Y direction"""
-    cell_cnt_z = util.build_typesafe_property(int)
-    """total number of cells in Z direction"""
+    cell_cnt = util.build_typesafe_property(tuple[int, int, int])
+    """total number of cells in each direction"""
 
-    boundary_condition_x = util.build_typesafe_property(BoundaryCondition)
-    """behavior towards particles crossing the X boundary"""
-    boundary_condition_y = util.build_typesafe_property(BoundaryCondition)
-    """behavior towards particles crossing the Y boundary"""
-    boundary_condition_z = util.build_typesafe_property(BoundaryCondition)
-    """behavior towards particles crossing the Z boundary"""
+    boundary_condition = util.build_typesafe_property(tuple[BoundaryCondition, BoundaryCondition, BoundaryCondition])
+    """behavior towards particles crossing each boundary"""
 
     n_gpus = util.build_typesafe_property(typing.Tuple[int, int, int])
     """number of GPUs in x y and z direction as 3-integer tuple"""
@@ -80,42 +68,19 @@ class Grid3D(RenderedObject):
 
     def _get_serialized(self) -> dict:
         """serialized representation provided for RenderedObject"""
-        assert self.cell_cnt_x > 0, "cell_cnt_x must be greater than 0"
-        assert self.cell_cnt_y > 0, "cell_cnt_y must be greater than 0"
-        assert self.cell_cnt_z > 0, "cell_cnt_z must be greater than 0"
-        for i in range(3):
-            assert self.n_gpus[i] > 0, "all n_gpus entries must be greater than 0"
+        assert all(x > 0 for x in self.cell_cnt), "cell_cnt must be greater than 0"
+        assert all(x > 0 for x in self.n_gpus), "all n_gpus entries must be greater than 0"
         if self.grid_dist is not None:
-            assert sum(self.grid_dist[0]) == self.cell_cnt_x, "sum of grid_dists in x must be equal to number_of_cells"
-            assert sum(self.grid_dist[1]) == self.cell_cnt_y, "sum of grid_dists in y must be equal to number_of_cells"
-            assert sum(self.grid_dist[2]) == self.cell_cnt_z, "sum of grid_dists in z must be equal to number_of_cells"
+            assert sum(self.grid_dist[0]) == self.cell_cnt[0], "sum of grid_dists in x must be equal to number_of_cells"
+            assert sum(self.grid_dist[1]) == self.cell_cnt[1], "sum of grid_dists in y must be equal to number_of_cells"
+            assert sum(self.grid_dist[2]) == self.cell_cnt[2], "sum of grid_dists in z must be equal to number_of_cells"
 
         result_dict = {
-            "cell_size": {
-                "x": self.cell_size_x_si,
-                "y": self.cell_size_y_si,
-                "z": self.cell_size_z_si,
-            },
-            "cell_cnt": {
-                "x": self.cell_cnt_x,
-                "y": self.cell_cnt_y,
-                "z": self.cell_cnt_z,
-            },
-            "boundary_condition": {
-                "x": self.boundary_condition_x.get_cfg_str(),
-                "y": self.boundary_condition_y.get_cfg_str(),
-                "z": self.boundary_condition_z.get_cfg_str(),
-            },
-            "gpu_cnt": {
-                "x": self.n_gpus[0],
-                "y": self.n_gpus[1],
-                "z": self.n_gpus[2],
-            },
-            "super_cell_size": {
-                "x": self.super_cell_size[0],
-                "y": self.super_cell_size[1],
-                "z": self.super_cell_size[2],
-            },
+            "cell_size": dict(zip("xyz", self.cell_size_si)),
+            "cell_cnt": dict(zip("xyz", self.cell_cnt)),
+            "boundary_condition": dict(zip("xyz", map(BoundaryCondition.get_cfg_str, self.boundary_condition))),
+            "gpu_cnt": dict(zip("xyz", self.n_gpus)),
+            "super_cell_size": dict(zip("xyz", self.super_cell_size)),
         }
         if self.grid_dist is not None:
             result_dict["grid_dist"] = {

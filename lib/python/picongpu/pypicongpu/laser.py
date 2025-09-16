@@ -65,10 +65,10 @@ class _BaseLaser(Laser):
     """wave length in m"""
     duration = util.build_typesafe_property(float)
     """duration in s (1 sigma)"""
-    focus_pos = util.build_typesafe_property(typing.List[float])
+    focal_position = util.build_typesafe_property(typing.List[float])
     """focus position vector in m"""
-    phase = util.build_typesafe_property(float)
-    """phase in rad, periodic in 2*pi"""
+    phi0 = util.build_typesafe_property(float)
+    """phi0 in rad, periodic in 2*pi"""
     E0 = util.build_typesafe_property(float)
     """E0 in V/m"""
     pulse_init = util.build_typesafe_property(float)
@@ -84,8 +84,8 @@ class _BaseLaser(Laser):
         return {
             "wave_length_si": self.wavelength,
             "pulse_duration_si": self.duration,
-            "focus_pos_si": list(map(lambda x: {"component": x}, self.focus_pos)),
-            "phase": self.phase,
+            "focus_pos_si": list(map(lambda x: {"component": x}, self.focal_position)),
+            "phase": self.phi0,
             "E0_si": self.E0,
             "pulse_init": self.pulse_init,
             "propagation_direction": list(map(lambda x: {"component": x}, self.propagation_direction)),

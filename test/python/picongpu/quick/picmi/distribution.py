@@ -411,12 +411,12 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
         self.assertTrue(isinstance(pypic, species.operation.densityprofile.Gaussian))
 
         self.assertEqual(self.values["density"], pypic.density)
-        self.assertEqual(self.values["center_front"], pypic.gas_center_front)
-        self.assertEqual(self.values["center_rear"], pypic.gas_center_rear)
-        self.assertEqual(self.values["sigma_front"], pypic.gas_sigma_front)
-        self.assertEqual(self.values["sigma_rear"], pypic.gas_sigma_rear)
-        self.assertEqual(self.values["power"], pypic.gas_power)
-        self.assertEqual(self.values["factor"], pypic.gas_factor)
+        self.assertEqual(self.values["center_front"], pypic.center_front)
+        self.assertEqual(self.values["center_rear"], pypic.center_rear)
+        self.assertEqual(self.values["sigma_front"], pypic.sigma_front)
+        self.assertEqual(self.values["sigma_rear"], pypic.sigma_rear)
+        self.assertEqual(self.values["power"], pypic.power)
+        self.assertEqual(self.values["factor"], pypic.factor)
         self.assertEqual(self.values["vacuum_front"], pypic.vacuum_cells_front)
 
         # @todo repect bounding boxes, Brian Marre, 2024

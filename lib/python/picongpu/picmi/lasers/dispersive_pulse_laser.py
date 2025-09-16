@@ -11,10 +11,12 @@ import typing
 import typeguard
 
 from ...pypicongpu import laser
+from ..copy_attributes import default_converts_to
 from .base_laser import BaseLaser
 from .polarization_type import PolarizationType
 
 
+@default_converts_to(laser.DispersivePulseLaser)
 @typeguard.typechecked
 class DispersivePulseLaser(BaseLaser):
     """
@@ -121,30 +123,11 @@ class DispersivePulseLaser(BaseLaser):
         self.picongpu_gdd_si = picongpu_gdd_si
         self.picongpu_tod_si = picongpu_tod_si
         self.picongpu_huygens_surface_positions = picongpu_huygens_surface_positions
+        self._validate_common_properties()
+        self.pulse_init = self._compute_pulse_init()
 
-    def get_as_pypicongpu(self) -> laser.DispersivePulseLaser:
+    def check(self):
         self._validate_common_properties()
         assert self._propagation_connects_centroid_and_focus(), (
             "propagation_direction must connect centroid_position and focus_position"
         )
-        pypicongpu_laser = laser.DispersivePulseLaser()
-        pypicongpu_laser.wavelength = self.wavelength
-        pypicongpu_laser.waist = self.waist
-        pypicongpu_laser.duration = self.duration
-        pypicongpu_laser.focus_pos = self.focal_position
-        pypicongpu_laser.phase = self.phi0
-        pypicongpu_laser.E0 = self.E0
-        pypicongpu_laser.pulse_init = self._compute_pulse_init()
-        pypicongpu_laser.polarization_type = self.picongpu_polarization_type.get_as_pypicongpu()
-        pypicongpu_laser.polarization_direction = self.polarization_direction
-        pypicongpu_laser.propagation_direction = self.propagation_direction
-
-        pypicongpu_laser.spectral_support = self.picongpu_spectral_support
-        pypicongpu_laser.sd_si = self.picongpu_sd_si
-        pypicongpu_laser.ad_si = self.picongpu_ad_si
-        pypicongpu_laser.gdd_si = self.picongpu_gdd_si
-        pypicongpu_laser.tod_si = self.picongpu_tod_si
-
-        pypicongpu_laser.huygens_surface_positions = self.picongpu_huygens_surface_positions
-
-        return pypicongpu_laser

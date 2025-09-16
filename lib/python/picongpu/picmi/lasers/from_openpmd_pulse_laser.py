@@ -5,11 +5,13 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
-from ...pypicongpu import laser
-
 import typeguard
 
+from ...pypicongpu import laser
+from ..copy_attributes import default_converts_to
 
+
+@default_converts_to(laser.FromOpenPMDPulseLaser)
 @typeguard.typechecked
 class FromOpenPMDPulseLaser:
     """PICMI object for FromOpenPMDPulseLaser"""
@@ -46,18 +48,3 @@ class FromOpenPMDPulseLaser:
         self.polarisationAxisOpenPMD = polarisationAxisOpenPMD
         self.propagationAxisOpenPMD = propagationAxisOpenPMD
         self.picongpu_huygens_surface_positions = picongpu_huygens_surface_positions
-
-    def get_as_pypicongpu(self) -> laser.FromOpenPMDPulseLaser:
-        pypicongpu_laser = laser.FromOpenPMDPulseLaser()
-        pypicongpu_laser.propagation_direction = self.propagation_direction
-        pypicongpu_laser.polarization_direction = self.polarization_direction
-        pypicongpu_laser.file_path = self.file_path
-        pypicongpu_laser.iteration = self.iteration
-        pypicongpu_laser.dataset_name = self.dataset_name
-        pypicongpu_laser.datatype = self.datatype
-        pypicongpu_laser.time_offset_si = self.time_offset_si
-        pypicongpu_laser.polarisationAxisOpenPMD = self.polarisationAxisOpenPMD
-        pypicongpu_laser.propagationAxisOpenPMD = self.propagationAxisOpenPMD
-        pypicongpu_laser.huygens_surface_positions = self.picongpu_huygens_surface_positions
-
-        return pypicongpu_laser

@@ -5,19 +5,20 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
+from typing import Any, Callable, Optional
+
 import sympy
+import typeguard
+
 from ...pypicongpu.output.binning import (
     Binning as PyPIConGPUBinning,
-    BinningFunctor as PyPIConGPUBinningFunctor,
     BinningAxis as PyPIConGPUBinningAxis,
+    BinningFunctor as PyPIConGPUBinningFunctor,
     BinSpec as PyPIConGPUBinSpec,
 )
 from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
-
 from ..species import Species as PICMISpecies
-from typing import Callable, Any, Optional
 from .timestepspec import TimeStepSpec
-import typeguard
 
 _COORDINATE_SYSTEM = {
     (
