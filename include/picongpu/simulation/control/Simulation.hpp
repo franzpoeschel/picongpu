@@ -30,7 +30,7 @@
 #include "picongpu/fields/FieldTmp.hpp"
 #include "picongpu/fields/MaxwellSolver/Solvers.hpp"
 #include "picongpu/fields/absorber/pml/Field.hpp"
-#include "picongpu/initialization/IInitPlugin.hpp"
+#include "picongpu/initialization/InitialiserController.hpp"
 #include "picongpu/initialization/ParserGridDistribution.hpp"
 #include "picongpu/particles/ParticlesFunctors.hpp"
 #include "picongpu/particles/debyeLength/Check.hpp"
@@ -487,7 +487,6 @@ namespace picongpu
                 }
                 else
                 {
-                    initialiserController->init();
                     simulation::stage::ParticleInit{}(step);
                     (*atomicPhysics).fixAtomicStateInit(*cellDescription);
                     // Check Debye resolution
@@ -512,6 +511,7 @@ namespace picongpu
             EventTask eRfieldB = fieldB->asyncCommunication(eventSystem::getTransactionEvent());
             eventSystem::setTransactionEvent(eRfieldB);
 
+            log<picLog::SIMULATION_STATE>("Starting simulation from timestep 0");
             return step;
         }
 
@@ -587,16 +587,15 @@ namespace picongpu
             {
                 log<picLog::SIMULATION_STATE>("slide in step %1%") % currentStep;
                 resetAll(currentStep);
-                initialiserController->slide(currentStep);
                 simulation::stage::ParticleInit{}(currentStep);
                 (*atomicPhysics).fixAtomicStateInit(*cellDescription);
             }
         }
 
-        virtual void setInitController(IInitPlugin* initController)
+        virtual void setInitController(InitialiserController& initController)
         {
-            PMACC_ASSERT(initController != nullptr);
-            this->initialiserController = initController;
+            PMACC_ASSERT(&initController != nullptr);
+            this->initialiserController = &initController;
         }
 
         MappingDesc* getMappingDescription()
@@ -632,7 +631,7 @@ namespace picongpu
         // Because of it, has a special init() method that has to be called during initialization of the simulation
         simulation::stage::RuntimeDensityFile runtimeDensityFile;
 
-        IInitPlugin* initialiserController{nullptr};
+        InitialiserController* initialiserController{nullptr};
 
         std::unique_ptr<MappingDesc> cellDescription;
 

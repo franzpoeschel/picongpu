@@ -22,16 +22,12 @@
 #pragma once
 
 #include "pmacc/Environment.def"
-#include "pmacc/assert.hpp"
-#include "pmacc/dataManagement/AbstractInitialiser.hpp"
 #include "pmacc/dataManagement/ISimulationData.hpp"
 #include "pmacc/debug/PMaccVerbose.hpp"
 
-#include <algorithm>
 #include <list>
 #include <memory>
 #include <stdexcept>
-#include <utility>
 
 namespace pmacc
 {
@@ -57,15 +53,6 @@ namespace pmacc
          * @return if dataset with id is registered
          */
         bool hasId(SimulationDataId id);
-
-        /**
-         * Initialises all Datasets using initialiser.
-         * After initialising, the Datasets will be invalid.
-         *
-         * @param initialiser class used for initialising Datasets
-         * @param currentStep current simulation step
-         */
-        void initialise(AbstractInitialiser& initialiser, uint32_t currentStep);
 
         /** Register a new Dataset and share its ownership.
          *
