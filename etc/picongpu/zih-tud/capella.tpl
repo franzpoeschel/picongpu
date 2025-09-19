@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2013-2024 Axel Huebl, Richard Pausch
+# Copyright 2013-2024 Axel Huebl, Richard Pausch, Alexander Debus, Klaus Steiniger
 #
 # This file is part of PIConGPU.
 #
@@ -19,7 +19,7 @@
 #
 
 
-# PIConGPU batch script for taurus' SLURM batch system
+# PIConGPU batch script for alpha centauri's SLURM batch system
 
 #SBATCH --partition=!TBG_queue
 #SBATCH --time=!TBG_wallTime
@@ -27,10 +27,16 @@
 #SBATCH --job-name=!TBG_jobName
 #SBATCH --nodes=!TBG_nodes
 #SBATCH --ntasks=!TBG_tasks
+#SBATCH --ntasks-per-node=!TBG_gpusPerNode
 #SBATCH --mincpus=!TBG_mpiTasksPerNode
 #SBATCH --cpus-per-task=!TBG_coresPerGPU
-#SBATCH --mem-per-cpu=2583
+#SBATCH --mem=752520
 #SBATCH --gres=gpu:!TBG_gpusPerNode
+#SBATCH --exclusive
+
+# disable hyperthreading (default on taurus)
+#SBATCH --hint=nomultithread
+
 #SBATCH --mail-type=!TBG_mailSettings
 #SBATCH --mail-user=!TBG_mailAddress
 #SBATCH --chdir=!TBG_dstPath
@@ -40,25 +46,24 @@
 
 
 ## calculations will be performed by tbg ##
-.TBG_queue="gpu2"
+.TBG_queue="capella"
 
 # settings that can be controlled by environment variables before submit
-.TBG_mailSettings=${MY_MAILNOTIFY:-"NONE"}
+.TBG_mailSettings=${MY_MAILNOTIFY:-"ALL"}
 .TBG_mailAddress=${MY_MAIL:-"someone@example.com"}
 .TBG_author=${MY_NAME:+--author \"${MY_NAME}\"}
 .TBG_profile=${PIC_PROFILE:-"~/picongpu.profile"}
 
-# 4 gpus per node
-.TBG_gpusPerNode=`if [ $TBG_tasks -gt 4 ] ; then echo 4; else echo $TBG_tasks; fi`
-
-# number of cores to block per GPU - we got 6 cpus per gpu
-#   and we will be accounted 6 CPUs per GPU anyway
-.TBG_coresPerGPU=6
+# number of CPU cores to block per GPU
+# we got 14 CPU cores per GPU ((65-8)cores/4gpus = 14cores)
+.TBG_coresPerGPU=14
+.TBG_numHostedGPUPerNode=4
+.TBG_gpusPerNode=$(if [ $TBG_tasks -gt $TBG_numHostedGPUPerNode ] ; then echo $TBG_numHostedGPUPerNode; else echo $TBG_tasks; fi)
 
 # We only start 1 MPI task per GPU
 .TBG_mpiTasksPerNode="$(( TBG_gpusPerNode * 1 ))"
 
-# use ceil to caculate nodes
+# use ceil to calculate nodes
 .TBG_nodes="$((( TBG_tasks + TBG_gpusPerNode -1 ) / TBG_gpusPerNode))"
 
 ## end calculations ##
@@ -75,7 +80,7 @@ if [ $? -ne 0 ] ; then
 fi
 unset MODULES_NO_OUTPUT
 
-#set user rights to u=rwx;g=r-x;o=---
+# set user rights to u=rwx;g=r-x;o=---
 umask 0027
 
 mkdir simOutput 2> /dev/null
