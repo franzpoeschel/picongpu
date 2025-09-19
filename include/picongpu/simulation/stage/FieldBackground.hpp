@@ -165,7 +165,7 @@ namespace picongpu
             } // namespace detail
 
             //! Functor for the stage of the PIC loop applying field background
-            class FieldBackground
+            class FieldBackground : public ISimulationData
             {
             public:
                 /** Register program options for field background
@@ -179,7 +179,13 @@ namespace picongpu
                         po::value<bool>(&duplicateFields)->zero_tokens(),
                         "duplicate E and B field storage inside field background to improve its performance "
                         "and potentially avoid some numerical noise at cost of using more memory, "
-                        "only affects the fields with activated background");
+                        "only affects the fields with activated background")(
+                        "fieldBackground.influencesPlugins",
+                        po::value<bool>(&influencesPlugins)->default_value(true),
+                        "enable the field background to be seen by the plugins")(
+                        "fieldBackground.influencesDumps",
+                        po::value<bool>(&influencesDumps)->default_value(true),
+                        "enable the field background to be included in dumps (incl. checkpoints).");
                 }
 
                 /** Initialize field background stage
@@ -195,6 +201,99 @@ namespace picongpu
                     applyB = std::make_unique<ApplyB>(cellDescription, duplicateFields);
                 }
 
+                /** Enable field background if not already enabled
+                 *
+                 * Adds the field background if it hasn't been applied yet. This ensures the background is only added
+                 * once regardless of multiple calls to this method.
+                 *
+                 * @param step index of time iteration
+                 */
+                void enable(uint32_t const step)
+                {
+                    if(!appliedState)
+                    {
+                        add(step);
+                        appliedState = true;
+                    }
+                }
+
+                /** Disable field background if currently enabled
+                 *
+                 * Removes the field background if it is currently applied. This ensures the background is only
+                 * subtracted once regardless of multiple calls to this method.
+                 *
+                 * @param step index of time iteration
+                 */
+                void disable(uint32_t const step)
+                {
+                    if(appliedState)
+                    {
+                        subtract(step);
+                        appliedState = false;
+                    }
+                }
+
+                /** Set field background state for plugin processing
+                 *
+                 * Plugins see the background only if influencesPlugins is true.
+                 *
+                 * @param step index of time iteration
+                 */
+                void toPluginState(uint32_t const step)
+                {
+                    influencesPlugins ? enable(step) : disable(step);
+                }
+
+                /** Set field background state for dumps/checkpoints
+                 *
+                 * Dumps include the background only if influencesDumps is true
+                 *
+                 * @param step index of time iteration
+                 */
+                void toDumpState(uint32_t const step)
+                {
+                    influencesDumps ? enable(step) : disable(step);
+                }
+
+                /** Set field background state on restart
+                 *
+                 * Sets the internal state to indicate that the field background has already
+                 * been applied. This should be called when restarting. If restarting from a checkpoint where
+                 * the fields already contain the background values, this prevents the background
+                 * from being added twice.
+                 *
+                 * @param oldDumpState Whether the field background was already included in the checkpoint
+                 */
+                void restart(bool const oldDumpState)
+                {
+                    if(oldDumpState)
+                    {
+                        appliedState = true;
+                    }
+                }
+
+                bool getInfluencesDumps() const
+                {
+                    return influencesDumps;
+                }
+
+                /**
+                 * Return the globally unique identifier for this simulation data.
+                 *
+                 * @return globally unique identifier
+                 */
+                SimulationDataId getUniqueId() override
+                {
+                    return "FieldBackground";
+                }
+
+                /**
+                 * Synchronizes simulation data, meaning accessing (host side) data
+                 * will return up-to-date values.
+                 */
+                void synchronize() override {};
+
+            private:
                 /** Add field background to the electromagnetic field
                  *
                  * Affects data sets named FieldE::getName(), FieldB::getName().
@@ -227,7 +326,6 @@ namespace picongpu
                     applyB->subtract(step);
                 }
 
-            private:
                 //! Check if this class was properly initialized, throws when failed
                 void checkInitialization() const
                 {
@@ -249,6 +347,13 @@ namespace picongpu
 
                 //! Flag to store duplicates fields with enabled backgrounds
                 bool duplicateFields = false;
+
+                //! Flag to indicate if field background is seen by plugins
+                bool influencesPlugins{true};
+                //! Flag to indicate if field background is seen by dumps
+                bool influencesDumps{true};
+                //! Flag for state to indicate if field background is currently applied
+                bool appliedState{false};
             };
 
         } // namespace stage

@@ -150,12 +150,13 @@ namespace picongpu
                 = std::make_shared<simulation::stage::CurrentInterpolationAndAdditionToEMF>();
             currentInterpolationAndAdditionToEMF->registerHelp(desc);
             fieldAbsorber.registerHelp(desc);
-            fieldBackground.registerHelp(desc);
+            fieldBackground = std::make_shared<simulation::stage::FieldBackground>();
+            fieldBackground->registerHelp(desc);
             particleBoundaries.registerHelp(desc);
             runtimeDensityFile.registerHelp(desc);
         }
 
-        virtual void startSimulation() override
+        void startSimulation() override
         {
             if(!skipSimulation)
                 SimulationHelper<simDim>::startSimulation();
@@ -340,7 +341,8 @@ namespace picongpu
 
             // initialize field background stage,
             // this may include allocation of additional fields so has to be done before particles
-            fieldBackground.init(*cellDescription);
+            dc.share(fieldBackground);
+            fieldBackground->init(*cellDescription);
 
             // initialize particle boundaries
             particleBoundaries.init();
@@ -478,10 +480,7 @@ namespace picongpu
                         else
                             this->restartStep = checkpoints.back();
                     }
-                }
 
-                if(this->restartRequested)
-                {
                     initialiserController->restart((uint32_t) this->restartStep, this->restartDirectory);
                     step = this->restartStep;
                 }
@@ -523,7 +522,7 @@ namespace picongpu
         void runOneStep(uint32_t currentStep) override
         {
             using namespace simulation::stage;
-
+            fieldBackground->enable(currentStep);
             IterationStart{}(currentStep);
             MomentumBackup{}(currentStep);
             CurrentReset{}(currentStep);
@@ -533,7 +532,7 @@ namespace picongpu
             (*synchrotronRadiation)(currentStep);
             EventTask commEvent;
             ParticlePush{}(currentStep, commEvent);
-            fieldBackground.subtract(currentStep);
+            fieldBackground->disable(currentStep);
             myFieldSolver->update_beforeCurrent(currentStep);
             eventSystem::setTransactionEvent(commEvent);
             (*currentBackground)(currentStep);
@@ -542,32 +541,23 @@ namespace picongpu
             myFieldSolver->update_afterCurrent(currentStep);
         }
 
+        void dumpOneStep(uint32_t currentStep) override
+        {
+            fieldBackground->toDumpState(currentStep);
+            SimulationHelper<simDim>::dumpOneStep(currentStep);
+        }
+
+        void notifyPlugins(uint32_t currentStep) override
+        {
+            fieldBackground->toPluginState(currentStep);
+            SimulationHelper<simDim>::notifyPlugins(currentStep);
+        }
+
         void movingWindowCheck(uint32_t currentStep) override
         {
             if(MovingWindow::getInstance().slideInCurrentStep(currentStep))
             {
                 slide(currentStep);
-            }
-
-            /* do not double-add background field on restarts
-             * (contained in checkpoint data)
-             */
-            bool addBgFields = true;
-            if(this->restartRequested)
-            {
-                if(this->restartStep == int32_t(currentStep))
-                    addBgFields = false;
-            }
-
-            if(addBgFields)
-            {
-                /* add background field: the movingWindowCheck is just at the start
-                 * of a time step before all the plugins are called (and the step
-                 * itself is performed for this time step).
-                 * Hence the background field is visible for all plugins
-                 * in between the time steps.
-                 */
-                fieldBackground.add(currentStep);
             }
         }
 
@@ -609,6 +599,7 @@ namespace picongpu
 
         std::shared_ptr<fields::Solver> myFieldSolver;
         std::shared_ptr<simulation::stage::CurrentInterpolationAndAdditionToEMF> currentInterpolationAndAdditionToEMF;
+        std::shared_ptr<simulation::stage::FieldBackground> fieldBackground;
         std::shared_ptr<simulation::stage::CurrentBackground> currentBackground;
 
         // extension: Synchrotron Radiation
@@ -619,10 +610,6 @@ namespace picongpu
         // Field absorber stage, has to live always as it is used for registering options like a plugin.
         // Because of it, has a special init() method that has to be called during initialization of the simulation
         simulation::stage::FieldAbsorber fieldAbsorber;
-
-        // Field background stage, has to live always as it is used for registering options like a plugin.
-        // Because of it, has a special init() method that has to be called during initialization of the simulation
-        simulation::stage::FieldBackground fieldBackground;
 
         // Particle boundaries stage, has to live always as it is used for registering options like a plugin.
         // Because of it, has a special init() method that has to be called during initialization of the simulation

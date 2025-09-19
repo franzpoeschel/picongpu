@@ -54,6 +54,7 @@
 #    include "picongpu/plugins/output/IIOBackend.hpp"
 #    include "picongpu/plugins/output/param.hpp"
 #    include "picongpu/simulation/control/MovingWindow.hpp"
+#    include "picongpu/simulation/stage/FieldBackground.hpp"
 #    include "picongpu/traits/IsFieldDomainBound.hpp"
 #    include "picongpu/traits/IsFieldOutputOptional.hpp"
 #    include "picongpu/unitless/checkpoints.unitless"
@@ -1372,6 +1373,9 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 log<picLog::INPUT_OUTPUT>("Setting next free id on current rank: %1%") % idProvState.nextId;
                 idProvider->setState(idProvState);
 
+                auto fieldBackground = dc.get<simulation::stage::FieldBackground>("FieldBackground");
+                ::openPMD::Container<::openPMD::Mesh>& meshes = iteration.meshes;
+                fieldBackground->restart(meshes.getAttribute("BackgroundFieldIncluded").get<bool>());
                 // avoid deadlock between not finished pmacc tasks and mpi calls in
                 // openPMD
                 eventSystem::getTransactionEvent().waitForFinished();
