@@ -21,9 +21,6 @@
 #include <pmacc/boost_workaround.hpp>
 
 #include "picongpu/ArgsParser.hpp"
-#include "picongpu/initialization/InitialiserController.hpp"
-#include "picongpu/plugins/PluginController.hpp"
-#include "picongpu/simulation/control/Simulation.hpp"
 #include "picongpu/simulation/control/SimulationStarter.hpp"
 
 #include <pmacc/Environment.hpp>
@@ -47,10 +44,7 @@ int runSimulation(int argc, char** argv)
     int errorCode = EXIT_FAILURE;
     // control the simulation lifetime
     {
-        auto sim = ::picongpu::SimulationStarter<
-            ::picongpu::InitialiserController,
-            ::picongpu::PluginController,
-            ::picongpu::Simulation>{};
+        auto sim = ::picongpu::SimulationStarter{};
         auto const parserStatus = sim.parseConfigs(argc, argv);
 
         switch(parserStatus)

@@ -26,11 +26,11 @@
 #include "pmacc/dimensions/Definition.hpp"
 
 #include <algorithm>
+#include <list>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 namespace pmacc
 {
@@ -45,18 +45,6 @@ namespace pmacc
     bool DataConnector::hasId(SimulationDataId id)
     {
         return findId(id) != datasets.end();
-    }
-
-    void DataConnector::initialise(AbstractInitialiser& initialiser, uint32_t currentStep)
-    {
-        currentStep = initialiser.setup();
-
-        for(auto& data : datasets)
-        {
-            initialiser.init(*data, currentStep);
-        }
-
-        initialiser.teardown();
     }
 
     void DataConnector::share(std::shared_ptr<ISimulationData> const& data)

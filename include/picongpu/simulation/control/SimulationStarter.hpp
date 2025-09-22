@@ -23,7 +23,9 @@
 #include "picongpu/MetadataAggregator.hpp"
 #include "picongpu/MetadataRegisteredAtCT.hpp"
 #include "picongpu/defines.hpp"
-#include "picongpu/simulation/control/ISimulationStarter.hpp"
+#include "picongpu/initialization/InitialiserController.hpp"
+#include "picongpu/plugins/PluginController.hpp"
+#include "picongpu/simulation/control/Simulation.hpp"
 
 #include <pmacc/dimensions/DataSpace.hpp>
 #include <pmacc/dimensions/GridLayout.hpp>
@@ -50,28 +52,21 @@ namespace picongpu
         pmacc::meta::ForEach<MetadataRegisteredAtCT, AddMetadataOf<boost::mpl::_1>>{}();
     }
 
-    template<class InitClass, class PluginClass, class SimulationClass>
-    class SimulationStarter : public ISimulationStarter
+    class SimulationStarter : public IPlugin
     {
     private:
         using BoostOptionsList = std::list<boost::program_options::options_description>;
-
-        std::unique_ptr<SimulationClass> simulationClass;
-        std::unique_ptr<InitClass> initClass;
-        std::unique_ptr<PluginClass> pluginClass;
-        std::unique_ptr<MetadataAggregator> metadataClass;
-
+        Simulation simulationClass{};
+        InitialiserController initClass{};
+        PluginController pluginClass{};
+        MetadataAggregator metadataClass{};
 
         MappingDesc* mappingDesc{nullptr};
 
     public:
         SimulationStarter()
         {
-            simulationClass = std::make_unique<SimulationClass>();
-            initClass = std::make_unique<InitClass>();
-            simulationClass->setInitController(initClass.get());
-            pluginClass = std::make_unique<PluginClass>();
-            metadataClass = std::make_unique<MetadataAggregator>();
+            simulationClass.setInitController(initClass);
         }
 
         std::string pluginGetName() const override
@@ -79,14 +74,13 @@ namespace picongpu
             return "PIConGPU simulation starter";
         }
 
-        void start() override
+        void start()
         {
             PluginConnector& pluginConnector = Environment<>::get().PluginConnector();
             pluginConnector.loadPlugins();
             log<picLog::SIMULATION_STATE>("Startup");
-            simulationClass->setInitController(initClass.get());
-            metadataClass->dump();
-            simulationClass->startSimulation();
+            metadataClass.dump();
+            simulationClass.startSimulation();
         }
 
         void pluginRegisterHelp(po::options_description&) override
@@ -97,25 +91,25 @@ namespace picongpu
         {
         }
 
-        ArgsParser::Status parseConfigs(int argc, char** argv) override
+        ArgsParser::Status parseConfigs(int argc, char** argv)
         {
             ArgsParser& ap = ArgsParser::getInstance();
             PluginConnector& pluginConnector = Environment<>::get().PluginConnector();
 
-            po::options_description simDesc(simulationClass->pluginGetName());
-            simulationClass->pluginRegisterHelp(simDesc);
+            po::options_description simDesc(simulationClass.pluginGetName());
+            simulationClass.pluginRegisterHelp(simDesc);
             ap.addOptions(simDesc);
 
-            po::options_description initDesc(initClass->pluginGetName());
-            initClass->pluginRegisterHelp(initDesc);
+            po::options_description initDesc(initClass.pluginGetName());
+            initClass.pluginRegisterHelp(initDesc);
             ap.addOptions(initDesc);
 
-            po::options_description pluginDesc(pluginClass->pluginGetName());
-            pluginClass->pluginRegisterHelp(pluginDesc);
+            po::options_description pluginDesc(pluginClass.pluginGetName());
+            pluginClass.pluginRegisterHelp(pluginDesc);
             ap.addOptions(pluginDesc);
 
-            po::options_description metadataDesc(metadataClass->pluginGetName());
-            metadataClass->pluginRegisterHelp(metadataDesc);
+            po::options_description metadataDesc(metadataClass.pluginGetName());
+            metadataClass.pluginRegisterHelp(metadataDesc);
             ap.addOptions(metadataDesc);
 
             // setup all boost::program_options and add to ArgsParser
@@ -130,25 +124,36 @@ namespace picongpu
             return ap.parse(argc, argv);
         }
 
+        void restart(uint32_t, std::string const) override
+        {
+            // nothing to do here
+        }
+
+        void checkpoint(uint32_t, std::string const) override
+        {
+            // nothing to do here
+        }
+
+
     protected:
         void pluginLoad() override
         {
-            simulationClass->load();
-            metadataClass->load();
+            simulationClass.load();
+            metadataClass.load();
             addMetadataRegisteredAtCT();
-            mappingDesc = simulationClass->getMappingDescription();
-            pluginClass->setMappingDescription(mappingDesc);
-            initClass->setMappingDescription(mappingDesc);
+            mappingDesc = simulationClass.getMappingDescription();
+            pluginClass.setMappingDescription(mappingDesc);
+            initClass.setMappingDescription(mappingDesc);
         }
 
         void pluginUnload() override
         {
             PluginConnector& pluginConnector = Environment<>::get().PluginConnector();
             pluginConnector.unloadPlugins();
-            initClass->unload();
-            pluginClass->unload();
-            metadataClass->unload();
-            simulationClass->unload();
+            initClass.unload();
+            pluginClass.unload();
+            metadataClass.unload();
+            simulationClass.unload();
         }
 
     private:

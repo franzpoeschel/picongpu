@@ -30,9 +30,8 @@
 #include "picongpu/fields/incidentField/profiles/profiles.hpp"
 #include "picongpu/fields/incidentField/traits/GetAmplitude.hpp"
 #include "picongpu/fields/incidentField/traits/GetPhaseVelocity.hpp"
-#include "picongpu/initialization/IInitPlugin.hpp"
-#include "picongpu/initialization/SimStartInitialiser.hpp"
 #include "picongpu/particles/traits/GetDensityRatio.hpp"
+#include "picongpu/plugins/ILightweightPlugin.hpp"
 
 #include <pmacc/Environment.hpp>
 #include <pmacc/algorithms/math/defines/pi.hpp>
@@ -46,27 +45,12 @@ namespace picongpu
 
     namespace po = boost::program_options;
 
-    class InitialiserController : public IInitPlugin
+    class InitialiserController : public ILightweightPlugin
     {
     public:
         InitialiserController() = default;
 
         ~InitialiserController() override = default;
-
-        /**
-         * Initialize simulation state at timestep 0
-         */
-        void init() override
-        {
-            // start simulation using default values
-            log<picLog::SIMULATION_STATE>("Starting simulation from timestep 0");
-
-            SimStartInitialiser simStartInitialiser;
-            Environment<>::get().DataConnector().initialise(simStartInitialiser, 0);
-            eventSystem::getTransactionEvent().waitForFinished();
-
-            log<picLog::SIMULATION_STATE>("Loading from default values finished");
-        }
 
         /**
          * Load persistent simulation state from \p restartStep
@@ -123,7 +107,7 @@ namespace picongpu
         /**
          * Print interesting initialization information
          */
-        void printInformation() override
+        void printInformation()
         {
             if(Environment<simDim>::get().GridController().getGlobalRank() == 0)
             {
@@ -186,18 +170,10 @@ namespace picongpu
             this->cellDescription = cellDescription;
         }
 
-        void slide(uint32_t currentStep) override
-        {
-            SimStartInitialiser simStartInitialiser;
-            Environment<>::get().DataConnector().initialise(simStartInitialiser, currentStep);
-            eventSystem::getTransactionEvent().waitForFinished();
-        }
-
     private:
         /*Descripe simulation area*/
         MappingDesc* cellDescription{nullptr};
 
-        bool restartSim;
         std::string restartFile;
 
         /** Functor to print dispersion information for the given incident field profile
