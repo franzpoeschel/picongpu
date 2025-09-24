@@ -41,6 +41,7 @@
 #    include <stdexcept>
 #    include <utility>
 
+#    include <nvtx3/nvToolsExt.h>
 #    include <openPMD/openPMD.hpp>
 
 namespace picongpu
@@ -80,6 +81,8 @@ namespace picongpu
                                 s_mem[inBlockIdx] = dataPtr[idx];
                             }
                         });
+
+                    // This synchronization is not enough
                     worker.sync();
 
                     // write
@@ -324,6 +327,8 @@ namespace picongpu
 
                 void loadPartialMatches(std::deque<size_t> const& partialMatches, ThreadParams* threadParams) const
                 {
+                    nvtxMark("Start partial domains");
+
                     auto [totalNumParticles, maxChunkSize] = numParticlesAndChunkSize(partialMatches);
 
                     SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
@@ -370,13 +375,17 @@ namespace picongpu
                                 typename NewParticleDescription::ValueTypeSeq,
                                 LoadParticleAttributesFromOpenPMD<boost::mpl::_1>>
                                 loadAttributes;
+                            nvtxRangePush("Load from disk");
                             loadAttributes(
                                 threadParams,
                                 mappedFrame,
                                 particleSpecies,
                                 particleLoadOffset,
                                 numParticlesCurrentBatch);
+                            nvtxRangePop();
 
+                            // now filter
+                            nvtxRangePush("Compute filter");
                             constexpr char filterKeep{1}, filterRemove{0};
                             PMACC_LOCKSTEP_KERNEL(KernelFilterParticles{})
                                 .config<DIM1>(pmacc::math::Vector{numParticlesCurrentBatch})(
@@ -388,9 +397,11 @@ namespace picongpu
                                     filterRemove,
                                     alpaka::getPtrNative(filter));
                             eventSystem::getTransactionEvent().waitForFinished();
+                            nvtxRangePop();
 
                             // This part is inherently sequential, keep it on CPU
                             // (maybe run also this on GPU to avoid multiple data copies)
+                            nvtxRangePush("Compute remap indexes");
                             MemIdxType remapCurrent = 0;
                             for(size_t particleIndex = 0; particleIndex < numParticlesCurrentBatch; ++particleIndex)
                             {
@@ -403,7 +414,9 @@ namespace picongpu
                                     remap[particleIndex] = std::numeric_limits<MemIdxType>::max();
                                 }
                             }
+                            nvtxRangePop();
 
+                            nvtxRangePush("Apply remap indexes");
                             meta::ForEach<
                                 typename NewParticleDescription::ValueTypeSeq,
                                 RedistributeFilteredParticles<boost::mpl::_1>>
@@ -414,6 +427,8 @@ namespace picongpu
                                 remap,
                                 numParticlesCurrentBatch,
                                 filterRemove);
+                            eventSystem::getTransactionEvent().waitForFinished();
+                            nvtxRangePop();
 
                             log<picLog::INPUT_OUTPUT>(
                                 "openPMD: Keeping %1% of the current batch's %2% particles after filtering.")
@@ -443,6 +458,7 @@ namespace picongpu
             HINLINE void operator()(ThreadParams* params, uint32_t const currentStep, uint32_t const restartChunkSize)
             {
                 std::string const speciesName = FrameType::getName();
+                nvtxRangePush(("Load Species " + speciesName).c_str());
                 log<picLog::INPUT_OUTPUT>("openPMD: (begin) load species: %1%") % speciesName;
                 DataConnector& dc = Environment<>::get().DataConnector();
 
@@ -483,6 +499,7 @@ namespace picongpu
                 lp.loadFullMatches(fullMatches, params);
                 lp.loadPartialMatches(partialMatches, params);
 
+                nvtxRangePop();
                 log<picLog::INPUT_OUTPUT>("openPMD: ( end ) load species: %1%") % speciesName;
             }
 
