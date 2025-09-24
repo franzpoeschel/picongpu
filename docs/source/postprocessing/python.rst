@@ -20,7 +20,7 @@ https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html
 
 and set up a Micromamba environment with the help of this Micromamba environment file
 
-https://gist.github.com/steindev/d19263d41b0964bcecdfb1f47e18a86e
+https://gist.github.com/steindev/c1d678375fd0f974f4b9cb1480b3da03
 
 (see documentation within the file).
 
