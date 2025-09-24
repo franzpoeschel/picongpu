@@ -3,7 +3,10 @@
 Python
 ======
 
-.. sectionauthor:: Axel Huebl, Klaus Steiniger
+.. sectionauthor:: Axel Huebl, Klaus Steiniger, Richard Pausch
+
+If you are familiar with Python and would like to install the Python libraries that come with PIConGPU, please refer to the install instructions in our :doc:`python utilities section <../usage/python_utils>`.
+
 
 If you are new to python, get your hands on the tutorials of the following important libraries to get started.
 
