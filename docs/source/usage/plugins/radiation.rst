@@ -301,8 +301,8 @@ Command line option                                      Description
                                                          Default: ``{}`` (no JSON/TOML configuration used)
 ``--<species>_radiation.distributedAmplitude``           Activate the optional output of distributed amplitudes per MPI rank.  in the openPMD output.
                                                          Default: ``0`` (deactivated/no additional output)
-					  
-========================================= ==============================================================================================================================
+
+======================================================== ==============================================================================================================================
 
 Memory Complexity
 ^^^^^^^^^^^^^^^^^
