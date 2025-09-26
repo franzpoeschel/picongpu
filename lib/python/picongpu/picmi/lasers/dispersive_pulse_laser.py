@@ -5,7 +5,6 @@ Authors: Julian Lenz, Masoud Afshari
 License: GPLv3+
 """
 
-import typing
 import typeguard
 
 from ...pypicongpu import laser
@@ -48,9 +47,14 @@ class DispersivePulseLaser(GaussianLaser):
         picongpu_ad_si: float = 0.0,
         picongpu_gdd_si: float = 0.0,
         picongpu_tod_si: float = 0.0,
-        picongpu_huygens_surface_positions: typing.List[typing.List[int]] = ([[16, -16], [16, -16], [16, -16]]),
         **kw,  # all standard GaussianLaser arguments
     ):
+        # Forbid Laguerre modes and phases
+        if "picongpu_laguerre_modes" in kw and kw["picongpu_laguerre_modes"] is not None:
+            raise ValueError("DispersivePulseLaser does not support Laguerre modes.")
+        if "picongpu_laguerre_phases" in kw and kw["picongpu_laguerre_phases"] is not None:
+            raise ValueError("DispersivePulseLaser does not support Laguerre phases.")
+
         # Initialize standard Gaussian laser fields
         super().__init__(**kw)
 
@@ -60,4 +64,3 @@ class DispersivePulseLaser(GaussianLaser):
         self.picongpu_ad_si = picongpu_ad_si
         self.picongpu_gdd_si = picongpu_gdd_si
         self.picongpu_tod_si = picongpu_tod_si
-        self.picongpu_huygens_surface_positions = picongpu_huygens_surface_positions
