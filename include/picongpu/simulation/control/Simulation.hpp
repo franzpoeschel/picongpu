@@ -480,7 +480,10 @@ namespace picongpu
                         else
                             this->restartStep = checkpoints.back();
                     }
+                }
 
+                if(this->restartRequested)
+                {
                     initialiserController->restart((uint32_t) this->restartStep, this->restartDirectory);
                     step = this->restartStep;
                 }
