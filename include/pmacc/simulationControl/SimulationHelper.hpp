@@ -27,6 +27,7 @@
 #include "pmacc/Environment.hpp"
 #include "pmacc/mappings/simulation/GridController.hpp"
 #include "pmacc/pluginSystem/IPlugin.hpp"
+#include "pmacc/pluginSystem/Slice.hpp"
 #include "pmacc/types.hpp"
 
 #include <string>
@@ -42,7 +43,7 @@ namespace pmacc
      *
      * @tparam DIM base dimension for the simulation (2-3)
      */
-    template<unsigned DIM>
+    template<unsigned DIM, typename CheckpointingClass>
     class SimulationHelper : public IPlugin
     {
     public:
@@ -148,51 +149,13 @@ namespace pmacc
         /* number of simulation steps to compute */
         uint32_t runSteps{0};
 
-        /** Presentations: loop the whole simulation `softRestarts` times from
-         *                 initial step to runSteps */
-        uint32_t softRestarts;
-
-        /* period for checkpoint creation [interval(s) based on steps]*/
-        std::string checkpointPeriod;
-
-        /* checkpoint intervals */
-        SeqOfTimeSlices seqCheckpointPeriod;
-
-        /* period for checkpoint creation [period in minutes]
-         * Zero is disabling time depended checkpointing.
-         */
-        std::uint64_t checkpointPeriodMinutes = 0u;
-        std::thread checkpointTimeThread;
-
-        // conditional variable to notify all concurrent threads and signal exit of the simulation
-        std::condition_variable exitConcurrentThreads;
-        std::mutex concurrentThreadMutex;
-
-        /* common directory for checkpoints */
-        std::string checkpointDirectory;
-
-        /* number of checkpoints written */
-        uint32_t numCheckpoints{0};
-
-        /* checkpoint step to restart from */
-        int32_t restartStep{-1};
-
-        /* common directory for restarts */
-        std::string restartDirectory;
-
-        /* restart requested */
-        bool restartRequested{false};
-
-        /* filename for checkpoint master file with all checkpoint timesteps */
-        std::string const CHECKPOINT_MASTER_FILE;
-
+        CheckpointingClass checkpointing;
         /* author that runs the simulation */
         std::string author;
 
         //! enable MPI gpu direct
         bool useMpiDirect{false};
 
-        bool tryRestart = false;
 
     private:
         /** Largest time step within the simulation (all MPI ranks) */
@@ -213,23 +176,6 @@ namespace pmacc
          */
         void calcProgress();
 
-
-        /**
-         * Append \p checkpointStep to the master checkpoint file
-         *
-         * @param checkpointStep current checkpoint step
-         */
-        void writeCheckpointStep(uint32_t const checkpointStep);
-
-    protected:
-        /**
-         * Reads the checkpoint master file if any and returns all found checkpoint steps
-         *
-         * @return vector of found checkpoints steps in order they appear in the file
-         */
-        std::vector<uint32_t> readCheckpointMasterFile();
-
-    private:
         bool output = false;
 
         uint16_t progress;
