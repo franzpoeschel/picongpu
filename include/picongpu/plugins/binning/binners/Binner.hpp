@@ -250,7 +250,7 @@ namespace picongpu
                         histWriter(
                             unload_series,
                             OpenPMDWriteParams{
-                                std::string("/binningOpenPMD/"),
+                                std::string("binningOpenPMD/"),
                                 std::string("end_of_run_") + binningData.binnerOutputName,
                                 binningData.openPMDInfix,
                                 binningData.openPMDExtension,
