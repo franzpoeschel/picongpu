@@ -102,7 +102,7 @@ function getNode() {
         return 1
     fi
     echo "Hint: please use 'srun --cpu_bind=sockets <COMMAND>' for launching multiple processes in the interactive mode"
-    salloc --time=1:00:00 --nodes=$numNodes --ntasks-per-node=4 --gres=gpu:4 --mem=115G -A $account -p jureap bash
+    salloc --time=1:00:00 --nodes=$numNodes --ntasks-per-node=4 --gres=gpu:4 --mem=115G -A $account -p booster bash
 }
 
 # allocate an interactive shell for one hour
@@ -119,7 +119,7 @@ function getDevice() {
         fi
     fi
     echo "Hint: please use 'srun --cpu_bind=sockets <COMMAND>' for launching multiple processes in the interactive mode"
-    srun --time=1:00:00 --ntasks-per-node=$(($numDevices)) --gres=gpu:$(($numDevices)) --mem=115G -A $account -p jureap --pty bash
+    srun --time=1:00:00 --ntasks-per-node=$(($numDevices)) --gres=gpu:$(($numDevices)) --mem=115G -A $account -p booster --pty bash
 }
 
 # Load autocompletion for PIConGPU commands

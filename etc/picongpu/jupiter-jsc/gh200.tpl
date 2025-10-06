@@ -19,7 +19,7 @@
 #
 
 
-# PIConGPU batch script for JEDI's SLURM batch system
+# PIConGPU batch script for JUPITER's SLURM batch system
 
 #SBATCH --account=!TBG_nameProject
 #SBATCH --partition=!TBG_queue
@@ -27,7 +27,6 @@
 # Sets batch job's name
 #SBATCH --job-name=!TBG_jobName
 #SBATCH --nodes=!TBG_nodes
-#SBATCH --exclusive
 #SBATCH --gres=gpu:!TBG_devicesPerNode
 #SBATCH --ntasks=!TBG_tasks
 #SBATCH --ntasks-per-node=!TBG_devicesPerNode
@@ -46,7 +45,7 @@
 export UCX_RC_TIMEOUT=3000000.00us # 3s instead of 1s
 
 ## calculations will be performed by tbg ##
-.TBG_queue="jureap"
+.TBG_queue="booster"
 
 # settings that can be controlled by environment variables before submit
 .TBG_mailSettings=${MY_MAILNOTIFY:-"NONE"}
