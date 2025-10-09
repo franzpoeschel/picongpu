@@ -26,6 +26,19 @@ An example build command is
 
    pic-build -c "-DPIC_VERBOSE=127 -DPMACC_VERBOSE=127 -DPMACC_BLOCKING_KERNEL=ON -DPMACC_ASYNC_QUEUES=OFF"
 
+
+If you encounter an error during reading or writing of openPMD files, it can be helpful to run openPMD-api with verbose output.
+This can be done by setting the following environment variable either in your environment (e.g. ``picongpu.profile``) or in your submit script ``./tbg/submit.start`` before executing ``picongpu``.
+
+.. code:: bash
+
+   export OPENPMD_VERBOSE=1
+
+
+Additionally, you can activate IO logging in PIConGPU by adding the login level ``32``.
+This can be done via command flags (see above) when using ``pic-build```or via ``ccmake .`` in the ``.build`` directory.
+To debug the performance of openPMD output in PIConGPU, set the CMake variable ``PIC_OPENPMD_TIMETRACE_NUMBER_OF_FILES`` to ``1`` to obtain detailed time information about the I/O steps.
+
 When reporting a crash, it is helpful if you attached the output ``stdout`` and ``stderr`` of such a build.
 
 For further debugging tips and use of tools please refer to `our Wiki <https://github.com/ComputationalRadiationPhysics/picongpu/wiki/Debugging>`_.
