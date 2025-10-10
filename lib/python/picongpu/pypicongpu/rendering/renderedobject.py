@@ -5,14 +5,15 @@ Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
-import typeguard
-import typing
-import jsonschema
-import referencing
+import json
 import logging
 import pathlib
 import re
-import json
+import typing
+
+import jsonschema
+import referencing
+import typeguard
 
 
 @typeguard.typechecked
@@ -199,9 +200,16 @@ class RenderedObject:
         :raise RuntimeError: on schema not found
         :return: self as rendering context
         """
-        # to be checked against schema
-        # note: load here, s.t. "not implemented error" is raised first
-        serialized = self._get_serialized()
+        # Temporary transitional refactoring:
+        # We plan to move to pydantic for serialisation
+        # but we don't quite have the infrastructure yet.
+        try:
+            serialized = self._get_serialized()
+        except (AttributeError, NotImplementedError) as first_error:
+            try:
+                serialized = self.model_dump(mode="json")
+            except Exception as second_error:
+                raise first_error from second_error
 
         RenderedObject.check_context_for_type(self.__class__, serialized)
         return serialized
