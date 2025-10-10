@@ -8,7 +8,7 @@ License: GPLv3+
 import enum
 from typing import Annotated
 
-from pydantic import BaseModel, Field, PlainSerializer, model_validator
+from pydantic import AfterValidator, BaseModel, Field, PlainSerializer, model_validator
 from typing_extensions import Self
 
 from .rendering import RenderedObject
@@ -59,6 +59,21 @@ def serialise_grid_dist(value):
     )
 
 
+def all_gt(iterable, m):
+    if all(correct := [x > m for x in iterable]):
+        return iterable
+    else:
+        message = f"{iterable=} contains values <= {m=} while all should be greater than m. Valid are the following: {correct=}."
+        raise ValueError(message)
+
+
+def grid_dist_validate(grid_dist):
+    if grid_dist is None:
+        return None
+    if all_gt(sum(grid_dist, []), 0):
+        return grid_dist
+
+
 class Grid3D(BaseModel, RenderedObject):
     """
     PIConGPU 3 dimensional (cartesian) grid
@@ -68,10 +83,10 @@ class Grid3D(BaseModel, RenderedObject):
     The bounding box is implicitly given as TODO.
     """
 
-    cell_size: Vec3_float = Field(alias="cell_size_si")
+    cell_size: Annotated[Vec3_float, AfterValidator(lambda x: all_gt(x, 0))] = Field(alias="cell_size_si")
     """Width of individual cell in each direction"""
 
-    cell_cnt: Vec3_int
+    cell_cnt: Annotated[Vec3_int, AfterValidator(lambda x: all_gt(x, 0))]
     """total number of cells in each direction"""
 
     boundary_condition: Annotated[
@@ -80,10 +95,14 @@ class Grid3D(BaseModel, RenderedObject):
     ]
     """behavior towards particles crossing each boundary"""
 
-    gpu_cnt: Vec3_int = Field((1, 1, 1), alias="n_gpus")
+    gpu_cnt: Annotated[Vec3_int, AfterValidator(lambda x: all_gt(x, 0))] = Field((1, 1, 1), alias="n_gpus")
     """number of GPUs in x y and z direction as 3-integer tuple"""
 
-    grid_dist: Annotated[tuple[list[int], list[int], list[int]] | None, PlainSerializer(serialise_grid_dist)] = None
+    grid_dist: Annotated[
+        tuple[list[int], list[int], list[int]] | None,
+        PlainSerializer(serialise_grid_dist),
+        AfterValidator(grid_dist_validate),
+    ] = None
     """distribution of grid cells to GPUs for each axis"""
 
     super_cell_size: Vec3_int
@@ -92,8 +111,6 @@ class Grid3D(BaseModel, RenderedObject):
     @model_validator(mode="after")
     def check(self) -> Self:
         """serialized representation provided for RenderedObject"""
-        assert all(x > 0 for x in self.cell_cnt), "cell_cnt must be greater than 0"
-        assert all(x > 0 for x in self.gpu_cnt), "all n_gpus entries must be greater than 0"
         if self.grid_dist is not None:
             assert sum(self.grid_dist[0]) == self.cell_cnt[0], "sum of grid_dists in x must be equal to number_of_cells"
             assert sum(self.grid_dist[1]) == self.cell_cnt[1], "sum of grid_dists in y must be equal to number_of_cells"
