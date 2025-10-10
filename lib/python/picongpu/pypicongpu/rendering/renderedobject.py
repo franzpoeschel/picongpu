@@ -239,10 +239,11 @@ class SelfRegistering:
     """
     A parent class the children of which will register their names in a list.
 
-    Any subclass that wants to register has to overwrite _name.
-    Its name will appear in _names afterwards.
+    Any subclass that wants to register has to overwrite `_name`.
+    `pydantic.BaseModel`s should add `_name` as a `pydantic.PrivateAttr`.
+    Its name will appear in `_names` afterwards.
 
-    Only leafs of the inheritance tree should have a _name.
+    Only leafs of the inheritance tree should have a `_name`.
     Everything else is undefined behaviour.
     """
 
@@ -259,16 +260,24 @@ class SelfRegistering:
 
     @classmethod
     def _register(cls):
-        if cls._name not in cls._names:
-            cls._names.append(cls._name)
+        if cls._extract_name() not in cls._names:
+            cls._names.append(cls._extract_name())
         else:
             raise TypeError(
                 f"Attempt to register {cls=} with name {cls._name=} failed because that was registered before."
             )
 
+    @classmethod
+    def _extract_name(cls):
+        try:
+            # tiny hack to interact with `pydantic.BaseModel`
+            # they seem to like dark python voodoo as much as we do...
+            return cls.__private_attributes__["_name"].default
+        except AttributeError:
+            return cls._name
+
     def __init_subclass__(cls):
-        super().__init_subclass__()
-        if cls._name != cls._dummy_name:
+        if cls._extract_name() != cls._dummy_name:
             cls._register()
 
 
@@ -331,7 +340,7 @@ class SelfRegisteringRenderedObject(RenderedObject, SelfRegistering):
         return RenderedObject.check_context_for_type(
             self._registered_class,
             {
-                "typeID": {name: name == self._name for name in self._names},
+                "typeID": {name: name == self._extract_name() for name in self._names},
                 "data": RenderedObject.check_context_for_type(self.__class__, super().get_rendering_context()),
             },
         )
