@@ -1,7 +1,8 @@
 """
 This file is part of PIConGPU.
 Copyright 2021-2024 PIConGPU contributors
-Authors: Hannes Troepgen, Brian Edward Marre, Alexander Debus, Richard Pausch
+Authors: Hannes Troepgen, Brian Edward Marre, Alexander Debus, Richard Pausch,
+         Masoud Afshari
 License: GPLv3+
 """
 
@@ -20,7 +21,55 @@ from .polarization_type import PolarizationType
 @default_converts_to(laser.GaussianLaser)
 @typeguard.typechecked
 class GaussianLaser(picmistandard.PICMI_GaussianLaser, BaseLaser):
-    """PICMI object for Gaussian Laser"""
+    """
+    PICMI object for Gaussian Laser.
+
+    Standard Gaussian laser pulse parameters are:
+
+    - wavelength : float
+        Central wavelength of the laser [m].
+
+    - waist : float
+        Spot size (1/e^2 radius) of the laser at focus [m].
+
+    - duration : float
+        Full-width-half-maximum (FWHM) duration of the pulse [s].
+
+    - propagation_direction : list[float]
+        Normalized vector of propagation direction.
+
+    - polarization_direction : list[float]
+        Normalized vector of polarization direction.
+
+    - focal_position : list[float]
+        3D coordinates of the laser focus [m].
+
+    - centroid_position : list[float]
+        3D coordinates of the laser centroid [m].
+
+    - a0 : float, optional
+        Normalized vector potential (dimensionless).
+
+    - E0 : float, optional
+        Peak electric field amplitude [V/m].
+
+    - picongpu_polarization_type: Polarization type in PIConGPU (LINEAR or CIRCULAR)
+
+    - picongpu_laguerre_modes: Optional magnitudes of Laguerre modes (only relevant for structured beams)
+
+    - picongpu_laguerre_phases: Optional phases of Laguerre modes (only relevant for structured beams)
+
+    - picongpu_huygens_surface_positions : list[list[int]], default=[[16, -16],[16, -16],[16, -16]]
+        Positions of the Huygens surface inside the PML. Each entry is a
+        pair [min, max] indices along x, y, z.
+
+    - phi0 : float, optional
+    Initial phase offset [rad].
+
+    Notes:
+    - Exactly one of ``a0`` or ``E0`` must be provided, the other is
+      calculated automatically.
+    """
 
     def __init__(
         self,
