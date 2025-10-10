@@ -5,14 +5,15 @@ Authors: Hannes Troepgen, Brian Edward Marre, Richard Pausch, Julian Lenz
 License: GPLv3+
 """
 
-from . import util
-import typeguard
-import typing
 import enum
+from typing import Annotated
+
+from pydantic import BaseModel, Field, PlainSerializer, model_validator
+from typing_extensions import Self
+
 from .rendering import RenderedObject
 
 
-@typeguard.typechecked
 class BoundaryCondition(enum.Enum):
     """
     Boundary Condition of PIConGPU
@@ -38,8 +39,27 @@ class BoundaryCondition(enum.Enum):
         return literal_by_boundarycondition[self]
 
 
-@typeguard.typechecked
-class Grid3D(RenderedObject):
+def serialise_vec(value) -> dict:
+    return dict(zip("xyz", value))
+
+
+Vec3_float = Annotated[tuple[float, float, float], PlainSerializer(serialise_vec)]
+Vec3_int = Annotated[tuple[int, int, int], PlainSerializer(serialise_vec)]
+
+
+def serialise_grid_dist(value):
+    return (
+        value
+        if value is None
+        else {
+            "x": [{"device_cells": x} for x in value[0]],
+            "y": [{"device_cells": x} for x in value[1]],
+            "z": [{"device_cells": x} for x in value[2]],
+        }
+    )
+
+
+class Grid3D(BaseModel, RenderedObject):
     """
     PIConGPU 3 dimensional (cartesian) grid
 
@@ -48,47 +68,35 @@ class Grid3D(RenderedObject):
     The bounding box is implicitly given as TODO.
     """
 
-    cell_size_si = util.build_typesafe_property(tuple[float, float, float])
+    cell_size: Vec3_float = Field(alias="cell_size_si")
     """Width of individual cell in each direction"""
 
-    cell_cnt = util.build_typesafe_property(tuple[int, int, int])
+    cell_cnt: Vec3_float
     """total number of cells in each direction"""
 
-    boundary_condition = util.build_typesafe_property(tuple[BoundaryCondition, BoundaryCondition, BoundaryCondition])
+    boundary_condition: Annotated[
+        tuple[BoundaryCondition, BoundaryCondition, BoundaryCondition],
+        PlainSerializer(lambda x: serialise_vec(map(BoundaryCondition.get_cfg_str, x)), return_type=dict),
+    ]
     """behavior towards particles crossing each boundary"""
 
-    n_gpus = util.build_typesafe_property(typing.Tuple[int, int, int])
+    gpu_cnt: Vec3_int = Field((1, 1, 1), alias="n_gpus")
     """number of GPUs in x y and z direction as 3-integer tuple"""
 
-    grid_dist = util.build_typesafe_property(typing.Tuple[list[int], list[int], list[int]] | None)
+    grid_dist: Annotated[tuple[list[int], list[int], list[int]] | None, PlainSerializer(serialise_grid_dist)] = None
     """distribution of grid cells to GPUs for each axis"""
 
-    super_cell_size = util.build_typesafe_property(typing.Tuple[int, int, int])
+    super_cell_size: Vec3_int
     """size of super cell in x y and z direction as 3-integer tuple in cells"""
 
-    def _get_serialized(self) -> dict:
+    @model_validator(mode="after")
+    def check(self) -> Self:
         """serialized representation provided for RenderedObject"""
         assert all(x > 0 for x in self.cell_cnt), "cell_cnt must be greater than 0"
-        assert all(x > 0 for x in self.n_gpus), "all n_gpus entries must be greater than 0"
+        assert all(x > 0 for x in self.gpu_cnt), "all n_gpus entries must be greater than 0"
         if self.grid_dist is not None:
             assert sum(self.grid_dist[0]) == self.cell_cnt[0], "sum of grid_dists in x must be equal to number_of_cells"
             assert sum(self.grid_dist[1]) == self.cell_cnt[1], "sum of grid_dists in y must be equal to number_of_cells"
             assert sum(self.grid_dist[2]) == self.cell_cnt[2], "sum of grid_dists in z must be equal to number_of_cells"
 
-        result_dict = {
-            "cell_size": dict(zip("xyz", self.cell_size_si)),
-            "cell_cnt": dict(zip("xyz", self.cell_cnt)),
-            "boundary_condition": dict(zip("xyz", map(BoundaryCondition.get_cfg_str, self.boundary_condition))),
-            "gpu_cnt": dict(zip("xyz", self.n_gpus)),
-            "super_cell_size": dict(zip("xyz", self.super_cell_size)),
-        }
-        if self.grid_dist is not None:
-            result_dict["grid_dist"] = {
-                "x": [{"device_cells": x} for x in self.grid_dist[0]],
-                "y": [{"device_cells": x} for x in self.grid_dist[1]],
-                "z": [{"device_cells": x} for x in self.grid_dist[2]],
-            }
-        else:
-            result_dict["grid_dist"] = None
-
-        return result_dict
+        return self
