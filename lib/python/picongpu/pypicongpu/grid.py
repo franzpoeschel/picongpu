@@ -71,7 +71,7 @@ class Grid3D(BaseModel, RenderedObject):
     cell_size: Vec3_float = Field(alias="cell_size_si")
     """Width of individual cell in each direction"""
 
-    cell_cnt: Vec3_float
+    cell_cnt: Vec3_int
     """total number of cells in each direction"""
 
     boundary_condition: Annotated[

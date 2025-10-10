@@ -49,6 +49,12 @@ class TestGrid3D(unittest.TestCase):
             Grid3D(
                 **self.kwargs | dict(boundary_condition=(BoundaryCondition.PERIODIC, BoundaryCondition.ABSORBING, {}))
             )
+        with self.assertRaises(ValidationError):
+            Grid3D(**self.kwargs | dict(cell_cnt=(11.1, 7, 8)))
+        with self.assertRaises(ValidationError):
+            Grid3D(**self.kwargs | dict(cell_cnt=(6, 11.412, 8)))
+        with self.assertRaises(ValidationError):
+            Grid3D(**self.kwargs | dict(cell_cnt=(6, 7, 16781123173.12637183)))
 
     def test_gpu_and_cell_cnt_positive(self):
         """test if n_gpus and cell number s are >0"""

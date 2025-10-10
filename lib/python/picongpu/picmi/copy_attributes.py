@@ -105,7 +105,7 @@ def copy_attributes(
         try:
             # First case: `to` is a class and can be constructed with a fully-qualified constructor call (pydantic.BaseModel).
             return to(**assignments)
-        except Exception:
+        except TypeError:
             try:
                 # Second case: `to` is a default-constructible class to which we can copy attributes afterwards.
                 to_instance = to()

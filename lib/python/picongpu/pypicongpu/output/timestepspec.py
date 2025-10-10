@@ -13,9 +13,9 @@ import typeguard
 
 
 class Spec(BaseModel):
-    start: Annotated[int | None, PlainSerializer(lambda x: x or 0)]
-    stop: Annotated[int | None, PlainSerializer(lambda x: x or -1)]
-    step: Annotated[int | None, PlainSerializer(lambda x: x or 1)]
+    start: Annotated[int | None, PlainSerializer(lambda x: x if x is not None else 0)]
+    stop: Annotated[int | None, PlainSerializer(lambda x: x if x is not None else -1)]
+    step: Annotated[int | None, PlainSerializer(lambda x: x if x is not None else 1)]
 
 
 @typeguard.typechecked
