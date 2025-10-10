@@ -29,9 +29,7 @@
     "preChannel3"
   ],
   "properties": {
-    "period": {
-      "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.timestepspec.TimeStepSpec"
-    },
+    "period": {},
     "axis": {
       "type": "string",
       "description": "2D plane for PNG output (e.g., 'yx')."

@@ -15,9 +15,7 @@
     "species": {
       "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.species.species.Species"
     },
-    "period": {
-      "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.timestepspec.TimeStepSpec"
-    },
+    "period": {},
     "spatial_coordinate": {
       "type": "string",
       "enum": [
