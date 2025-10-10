@@ -5,15 +5,12 @@ Authors: Hannes Troepgen, Brian Edward Marre, Richard Pausch, Julian Lenz
 License: GPLv3+
 """
 
+from pydantic import BaseModel, PrivateAttr, computed_field
 from .timestepspec import TimeStepSpec
-from .. import util
 from .plugin import Plugin
 
-import typeguard
 
-
-@typeguard.typechecked
-class Auto(Plugin):
+class Auto(Plugin, BaseModel):
     """
     Class to provide output **without further configuration**.
 
@@ -26,27 +23,13 @@ class Auto(Plugin):
     create a separate class.
     """
 
-    period = util.build_typesafe_property(TimeStepSpec)
+    period: TimeStepSpec
     """period to print data at"""
+    _name: str = PrivateAttr("auto")
 
-    _name = "auto"
-
-    def __init__(self):
-        pass
-
-    def check(self) -> None:
-        """
-        validate attributes
-        """
-        pass
-
-    def _get_serialized(self) -> dict:
-        self.check()
-        return {
-            "period": self.period.get_rendering_context(),
-            # helper to avoid repeating code
-            "png_axis": [
-                {"axis": "yx"},
-                {"axis": "yz"},
-            ],
-        }
+    @computed_field
+    def png_axis(self) -> list[dict[str, str]]:
+        return [
+            {"axis": "yx"},
+            {"axis": "yz"},
+        ]

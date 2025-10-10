@@ -87,8 +87,7 @@ class Simulation(RenderedObject):
         """retrieve all output objects"""
 
         if self.plugins == "auto":
-            auto = output.Auto()
-            auto.period = TimeStepSpec([slice(0, None, max(1, int(self.time_steps / 100)))])
+            auto = output.Auto(period=TimeStepSpec([slice(0, None, max(1, int(self.time_steps / 100)))]))
 
             return [auto.get_rendering_context()]
         else:
