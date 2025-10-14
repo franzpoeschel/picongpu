@@ -39,7 +39,7 @@ namespace picongpu::particles::atomicPhysics::debug
         uint8_t const upperChargeState = T_ConfigNumber::getChargeState(upperAtomicState);
         uint8_t const lowerChargeState = T_ConfigNumber::getChargeState(lowerAtomicState);
 
-        std::cout << "State : " << static_cast<uint16_t>(lowerChargeState) << ", " << lowerAtomicState << ", "
-                  << static_cast<uint16_t>(upperChargeState) << ", " << upperAtomicState << std::endl;
+        std::cout << "Transition: (" << static_cast<uint16_t>(lowerChargeState) << ": " << lowerAtomicState << ") -> ("
+                  << static_cast<uint16_t>(upperChargeState) << ":" << upperAtomicState << ")" << std::endl;
     }
 } // namespace picongpu::particles::atomicPhysics::debug

@@ -764,14 +764,16 @@ namespace picongpu::particles::atomicPhysics::atomicData
                        lastTransitionTuple))
                 {
                     // print debug info
+                    std::cout << "last Transition:" << std::endl;
                     picongpu::particles::atomicPhysics::debug::
                         printTransitionTupleToConsole<T_TransitionTuple, Idx, TypeValue, ConfigNumber>(
                             lastTransitionTuple);
+                    std::cout << "current Transition:" << std::endl;
                     picongpu::particles::atomicPhysics::debug::
                         printTransitionTupleToConsole<T_TransitionTuple, Idx, TypeValue, ConfigNumber>(
                             currentTransitionTuple);
 
-                    throw std::runtime_error("atomicPhysics ERROR: wrong ordering of input data");
+                    throw std::runtime_error("atomicPhysics ERROR: wrong ordering of transition input data");
                 }
 
                 // move to next entry for comparison
