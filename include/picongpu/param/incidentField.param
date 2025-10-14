@@ -24,11 +24,11 @@
  * Available profiles:
  *  - profiles::DispersivePulse<>     : Gaussian pulse allowing to set first-, second-, and third-order dispersion
  * in focus. That is, SD, AD, GDD, and TOD, respectively.
- *  - profiles::ExpRampWithPrepulse<> : exponential ramp with prepulse wavepacket with given parameters
  *  - profiles::Free<>                : custom profile with user-provided functors to calculate incident E and B
  *  - profiles::FromOpenPMDPulse<>    : reads a field chunk defined in space-time domain (= (2+1)-dimensional) from
  * openPMD into the simulation; requires openPMD API dependency
- *  - profiles::GaussianPulse<>       : Pulse with Gaussian profile in all three dimensions with given parameters
+ *  - profiles::GaussianPulse<>       : Pulse with Gaussian profile in all three dimensions with given parameters.
+ * The default gaussian longitudinal (temporal) envelope can be overriden by a user functor f(t).
  *  - profiles::None                  : no incident field
  *  - profiles::PlaneWave<>           : plane wave profile with given parameters
  *  - profiles::Polynom<>             : wavepacket with a polynomial temporal intensity shape profile with given
@@ -40,6 +40,12 @@
  * Their interfaces are defined in the corresponding `.def` files inside directory
  * picongpu/fields/incidentField/profiles/. Note that all these parameter structures inherit common base structures
  * from `BaseParam.def`. Thus, a user-provided structure must also define all members according to the base struct.
+ *
+ * `profiles::FreeEnvelope` can be used together with `profiles::GaussianPulse` to achieve a transversely Gaussian
+ * pulse with an arbitrary temporal envelope. See `include/picongpu/fields/incidentField/profiles/GaussianPulse.def`
+ * and `share/picongpu/examples/FoilLCT/include/picongpu/param/incidentField.param` for reference.
+ * A more complex example using `sympy` and `python` to generate the temporal envelope can be found under
+ * https://gist.github.com/pordyna/3425d2a053bb052833717a8719ac78f3 .
  *
  * In the end, this file needs to define `XMin`, `XMax`, `YMin`, `YMax`, `ZMin`, `ZMax` (the latter two can be skipped
  * in 2d) type aliases in namespace `picongpu::fields::incidentField`. Each of them could be a single profile or a
