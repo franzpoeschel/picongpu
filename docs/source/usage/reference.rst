@@ -1,4 +1,4 @@
-.. _usage-reference:
+.. _usaAAAge-reference:
 
 Reference
 =========
@@ -123,6 +123,7 @@ Field solvers
  - Yee field solver\ :sup:`\*` [Yee1966]_
  - Lehe field solver\ :sup:`\*` [Lehe2013]_
  - High-Order Finite Difference solver\ :sup:`\*` [Ghrist2000]_
+ - CKC solver\ :sub:`\*` [Cowan2013]_
 
 Particle pushers
 """"""""""""""""
@@ -533,6 +534,13 @@ List of other references in chronological order
 	Phys. Rev. ST Accel. Beams 16, 021301 – Published 28 February 2013,
 	https://doi.org/10.1103/PhysRevSTAB.16.021301
 
+.. [Cowan2013]
+        Cowan, B.C., Bruhwiler, D.L., Cary, J.R., Cormier-Michel, E., Geddes, C.G.R.
+	*Generalized algorithm for control of numerical dispersion in explicit time-domain electromagnetic simulations*,
+	Phys. Rev. ST Accel. Beams 16, 041303 – Published 4 April, 2013,
+	https://doi.org/10.1103/PhysRevSTAB.16.041303
+
+   
 .. [Gonoskov2015]
        Gonoskov, A., Bastrakov, S., Efimenko, E., et al.,
        *Extended particle-in-cell schemes for physics in ultrastrong laser fields: Review and developments*,
