@@ -149,39 +149,6 @@ namespace picongpu
             using NewParticleDescription =
                 typename ReplaceValueTypeSeq<ParticleDescription, ParticleNewAttributeList>::type;
 
-            struct ChunkedBuffer
-            {
-                using FrameType = Frame<OperatorCreateVectorBox, NewParticleDescription>;
-                using BufferType = Frame<OperatorCreateAlpakaBuffer, NewParticleDescription>;
-
-                uint64_t totalNumParticles;
-                uint64_t maxChunkSize;
-                BufferType buffers;
-                FrameType mappedFrame;
-
-                ChunkedBuffer(
-                    std::deque<size_t> matches,
-                    uint64_t const* patchNumParticles,
-                    uint32_t restartChunkSize,
-                    std::string const& speciesName)
-                {
-                    totalNumParticles = std::transform_reduce(
-                        matches.begin(),
-                        matches.end(),
-                        0,
-                        /* reduce = */ [](uint64_t left, uint64_t right) { return left + right; },
-                        /* transform = */ [patchNumParticles](size_t patchIdx)
-                        { return patchNumParticles[patchIdx]; });
-                    maxChunkSize = std::min(static_cast<uint64_t>(restartChunkSize), totalNumParticles);
-
-                    log<picLog::INPUT_OUTPUT>("openPMD: malloc mapped memory: %1%") % speciesName;
-                    /*malloc mapped memory*/
-                    meta::ForEach<typename NewParticleDescription::ValueTypeSeq, MallocMappedMemory<boost::mpl::_1>>
-                        mallocMem;
-                    mallocMem(buffers, mappedFrame, maxChunkSize);
-                }
-            };
-
             struct LoadParams
             {
                 using FrameType = Frame<OperatorCreateVectorBox, NewParticleDescription>;
@@ -194,26 +161,6 @@ namespace picongpu
                 uint64_t* patchNumParticlesOffset;
                 DataSpace<simDim> const& cellOffsetToTotalDomain;
                 uint32_t restartChunkSize;
-
-#    if 0
-                LoadParams(
-                    std::string const& speciesName_in,
-                    ::openPMD::ParticleSpecies const& particleSpecies_in,
-                    std::shared_ptr<ThisSpecies> const& speciesTmp_in,
-                    uint64_t* patchNumParticles_in,
-                    uint64_t* patchNumParticlesOffset_in,
-                    DataSpace<simDim> const& cellOffsetToTotalDomain_in,
-                    uint32_t restartChunkSize_in)
-                    : speciesName(speciesName_in)
-                    , particleSpecies(particleSpecies_in)
-                    , speciesTmp(speciesTmp_in)
-                    , patchNumParticles(patchNumParticles_in)
-                    , patchNumParticlesOffset(patchNumParticlesOffset_in)
-                    , cellOffsetToTotalDomain(cellOffsetToTotalDomain_in)
-                    , restartChunkSize(restartChunkSize_in)
-                {
-                }
-#    endif
 
                 auto numParticlesAndChunkSize(std::deque<size_t> const& matches) const -> std::pair<uint64_t, uint64_t>
                 {
