@@ -1024,6 +1024,12 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 {
                     loadRngStatesImpl(&mThreadParams, restartStep);
                 }
+                catch(std::exception const& e)
+                {
+                    log<picLog::INPUT_OUTPUT>("openPMD: loading RNG states failed, they will be re-initialized "
+                                              "instead. Original error:\n\t%1%")
+                        % e.what();
+                }
                 catch(...)
                 {
                     log<picLog::INPUT_OUTPUT>(
