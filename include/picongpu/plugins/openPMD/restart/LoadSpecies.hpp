@@ -112,7 +112,7 @@ namespace picongpu
                                 for(size_t d = 0; d < simDim; ++d)
                                 {
                                     auto positionInD = positionVec[d] + positionOffsetVec[d];
-                                    if(positionInD < patchTotalOffset[d] || positionInD > patchUpperCorner[d])
+                                    if(positionInD < patchTotalOffset[d] || positionInD >= patchUpperCorner[d])
                                     {
                                         filterCurrent = filterRemove;
                                         break;
