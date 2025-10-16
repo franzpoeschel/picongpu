@@ -149,55 +149,24 @@ namespace picongpu
             using NewParticleDescription =
                 typename ReplaceValueTypeSeq<ParticleDescription, ParticleNewAttributeList>::type;
 
-            /** Load species from openPMD checkpoint storage
-             *
-             * @param params thread params
-             * @param restartChunkSize number of particles processed in one kernel
-             * call
-             */
-            HINLINE void operator()(ThreadParams* params, uint32_t const currentStep, uint32_t const restartChunkSize)
+            struct LoadParams
             {
-                std::string const speciesName = FrameType::getName();
-                log<picLog::INPUT_OUTPUT>("openPMD: (begin) load species: %1%") % speciesName;
-                DataConnector& dc = Environment<>::get().DataConnector();
-                GridController<simDim>& gc = Environment<simDim>::get().GridController();
+                std::string const& speciesName;
+                ::openPMD::ParticleSpecies const& particleSpecies;
+                std::shared_ptr<ThisSpecies> const& speciesTmp;
+                uint64_t* patchNumParticles;
+                uint64_t* patchNumParticlesOffset;
+                DataSpace<simDim> const& cellOffsetToTotalDomain;
+                uint32_t restartChunkSize;
 
-                ::openPMD::Series& series = *params->openPMDSeries;
-                ::openPMD::Container<::openPMD::ParticleSpecies>& particles
-                    = series.iterations[currentStep].open().particles;
-                ::openPMD::ParticleSpecies particleSpecies = particles[speciesName];
-
-                SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
-                DataSpace<simDim> cellOffsetToTotalDomain
-                    = subGrid.getLocalDomain().offset + subGrid.getGlobalDomain().offset;
-
-                /* load particle without copying particle data to host */
-                auto speciesTmp = dc.get<ThisSpecies>(FrameType::getName());
-
-                // avoid deadlock between not finished pmacc tasks and mpi calls in
-                // openPMD
-                eventSystem::getTransactionEvent().waitForFinished();
-
-                auto numRanks = gc.getGlobalSize();
-
-                auto [fullMatches, partialMatches] = getPatchIdx(params, particleSpecies);
-
-                std::shared_ptr<uint64_t> numParticlesShared
-                    = particleSpecies.particlePatches["numParticles"].load<uint64_t>();
-                std::shared_ptr<uint64_t> numParticlesOffsetShared
-                    = particleSpecies.particlePatches["numParticlesOffset"].load<uint64_t>();
-                particles.seriesFlush();
-                uint64_t* patchNumParticles = numParticlesShared.get();
-                uint64_t* patchNumParticlesOffset = numParticlesOffsetShared.get();
-
+                void loadFullMatches(std::deque<size_t> const& fullMatches, ThreadParams* threadParams) const
                 {
                     uint64_t totalNumParticles = std::transform_reduce(
                         fullMatches.begin(),
                         fullMatches.end(),
                         0,
                         /* reduce = */ [](uint64_t left, uint64_t right) { return left + right; },
-                        /* transform = */ [patchNumParticles](size_t patchIdx)
-                        { return patchNumParticles[patchIdx]; });
+                        /* transform = */ [this](size_t patchIdx) { return patchNumParticles[patchIdx]; });
 
                     log<picLog::INPUT_OUTPUT>("openPMD: malloc mapped memory: %1%") % speciesName;
 
@@ -242,7 +211,7 @@ namespace picongpu
                                     LoadParticleAttributesFromOpenPMD<boost::mpl::_1>>
                                     loadAttributes;
                                 loadAttributes(
-                                    params,
+                                    threadParams,
                                     mappedFrame,
                                     particleSpecies,
                                     particleLoadOffset,
@@ -254,7 +223,7 @@ namespace picongpu
                                     numParticlesCurrentBatch,
                                     cellOffsetToTotalDomain,
                                     totalCellIdx_,
-                                    *(params->cellDescription),
+                                    *threadParams->cellDescription,
                                     picLog::INPUT_OUTPUT());
                             }
                             log<picLog::INPUT_OUTPUT>("openPMD: ( end ) load species %1% round: %2%/%3%") % speciesName
@@ -263,6 +232,7 @@ namespace picongpu
                     }
                 }
 
+                void loadPartialMatches(std::deque<size_t> const& partialMatches, ThreadParams* threadParams) const
                 {
                     SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
                     pmacc::Selection<simDim> const localDomain = subGrid.getLocalDomain();
@@ -277,8 +247,8 @@ namespace picongpu
                      * the variable into account.
                      */
                     DataSpace<simDim> const patchTotalOffset
-                        = localToTotalDomainOffset + params->localWindowToDomainOffset;
-                    DataSpace<simDim> const patchExtent = params->window.localDimensions.size;
+                        = localToTotalDomainOffset + threadParams->localWindowToDomainOffset;
+                    DataSpace<simDim> const patchExtent = threadParams->window.localDimensions.size;
                     DataSpace<simDim> const patchUpperCorner = patchTotalOffset + patchExtent;
 
                     uint64_t totalNumParticles = std::transform_reduce(
@@ -286,8 +256,7 @@ namespace picongpu
                         partialMatches.end(),
                         0,
                         /* reduce = */ [](uint64_t left, uint64_t right) { return left + right; },
-                        /* transform = */ [patchNumParticles](size_t patchIdx)
-                        { return patchNumParticles[patchIdx]; });
+                        /* transform = */ [this](size_t patchIdx) { return patchNumParticles[patchIdx]; });
 
                     log<picLog::INPUT_OUTPUT>("openPMD: malloc mapped memory for partial patches: %1%") % speciesName;
 
@@ -343,7 +312,7 @@ namespace picongpu
                                     LoadParticleAttributesFromOpenPMD<boost::mpl::_1>>
                                     loadAttributes;
                                 loadAttributes(
-                                    params,
+                                    threadParams,
                                     mappedFrame,
                                     particleSpecies,
                                     particleLoadOffset,
@@ -404,7 +373,7 @@ namespace picongpu
                                     remapCurrent, // !! not numParticlesCurrentBatch, filtered vs. unfiltered number
                                     cellOffsetToTotalDomain,
                                     totalCellIdx_,
-                                    *(params->cellDescription),
+                                    *threadParams->cellDescription,
                                     picLog::INPUT_OUTPUT());
                             }
                             log<picLog::INPUT_OUTPUT>("openPMD: ( end ) load species %1% round: %2%/%3%") % speciesName
@@ -412,6 +381,60 @@ namespace picongpu
                         }
                     }
                 }
+            };
+
+            /** Load species from openPMD checkpoint storage
+             *
+             * @param params thread params
+             * @param restartChunkSize number of particles processed in one kernel
+             * call
+             */
+            HINLINE void operator()(ThreadParams* params, uint32_t const currentStep, uint32_t const restartChunkSize)
+            {
+                std::string const speciesName = FrameType::getName();
+                log<picLog::INPUT_OUTPUT>("openPMD: (begin) load species: %1%") % speciesName;
+                DataConnector& dc = Environment<>::get().DataConnector();
+                GridController<simDim>& gc = Environment<simDim>::get().GridController();
+
+                ::openPMD::Series& series = *params->openPMDSeries;
+                ::openPMD::Container<::openPMD::ParticleSpecies>& particles
+                    = series.iterations[currentStep].open().particles;
+                ::openPMD::ParticleSpecies particleSpecies = particles[speciesName];
+
+                SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
+                DataSpace<simDim> cellOffsetToTotalDomain
+                    = subGrid.getLocalDomain().offset + subGrid.getGlobalDomain().offset;
+
+                /* load particle without copying particle data to host */
+                auto speciesTmp = dc.get<ThisSpecies>(FrameType::getName());
+
+                // avoid deadlock between not finished pmacc tasks and mpi calls in
+                // openPMD
+                eventSystem::getTransactionEvent().waitForFinished();
+
+                auto numRanks = gc.getGlobalSize();
+
+                auto [fullMatches, partialMatches] = getPatchIdx(params, particleSpecies);
+
+                std::shared_ptr<uint64_t> numParticlesShared
+                    = particleSpecies.particlePatches["numParticles"].load<uint64_t>();
+                std::shared_ptr<uint64_t> numParticlesOffsetShared
+                    = particleSpecies.particlePatches["numParticlesOffset"].load<uint64_t>();
+                particles.seriesFlush();
+                uint64_t* patchNumParticles = numParticlesShared.get();
+                uint64_t* patchNumParticlesOffset = numParticlesOffsetShared.get();
+
+                LoadParams lp{
+                    speciesName,
+                    particleSpecies,
+                    speciesTmp,
+                    patchNumParticles,
+                    patchNumParticlesOffset,
+                    cellOffsetToTotalDomain,
+                    restartChunkSize};
+                lp.loadFullMatches(fullMatches, params);
+                lp.loadPartialMatches(partialMatches, params);
+
                 log<picLog::INPUT_OUTPUT>("openPMD: ( end ) load species: %1%") % speciesName;
             }
 
