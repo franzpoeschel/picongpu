@@ -96,7 +96,8 @@ namespace picongpu
                 auto positionOffset = loadedData.getIdentifier(totalCellIdx()).getPointer();
 
                 // grid-strided loop over the chunked data
-                for(int dataBlock = worker.blockDomIdx(); dataBlock < numDataBlocks; dataBlock += worker.gridDomSize())
+                for(uint32_t dataBlock = worker.blockDomIdx(); dataBlock < numDataBlocks;
+                    dataBlock += worker.gridDomSize())
                 {
                     auto dataBlockOffset = dataBlock * blockDomSize;
                     auto forEach = pmacc::lockstep::makeForEach(worker);
