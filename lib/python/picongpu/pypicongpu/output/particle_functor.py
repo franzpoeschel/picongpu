@@ -6,8 +6,9 @@ License: GPLv3+
 """
 
 import numbers
+import numpy as np
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PrivateAttr, model_serializer, model_validator
 
 from ..rendering.pmaccprinter import PMAccPrinter
 from ..rendering.renderedobject import RenderedObject
@@ -68,19 +69,44 @@ def translate_to_cpp_type(return_type):
     raise ValueError(f"Cannot translate {return_type=} to a C++ type.")
 
 
+class UnitDimension(BaseModel):
+    _num_unit_dimensions: int = PrivateAttr(7)
+    unit_vector: list = _num_unit_dimensions.default * [0.0]
+
+    @model_validator(mode="after")
+    def check(self):
+        if len(self.unit_vector) != self._num_unit_dimensions:
+            raise ValueError(
+                f"Unit dimension vector has {len(self.unit_vector)=} but {self._num_unit_dimensions=}. They must match."
+            )
+        return self
+
+    @model_serializer(mode="plain")
+    def translate_to_cpp(self) -> str:
+        return f"std::array<double, {self._num_unit_dimensions}>{{{','.join(map(str, self.unit_vector))}}}"
+
+
 class ParticleFunctor(RenderedObject, BaseModel):
     name: str
     functor_expression: str
     functor_preamble: list[dict[str, str]]
     return_type: str
+    unit_dimension: UnitDimension = UnitDimension()
 
-    def __init__(self, name, functor_expression, attribute_mapping, return_type):
+    def __init__(
+        self, name, functor_expression, attribute_mapping, return_type, unit_dimension: np.ndarray = np.zeros(7)
+    ):
         name = name
         functor_expression = PMAccPrinter().doprint(functor_expression)
         functor_preamble = generate_preamble(attribute_mapping)
         return_type = translate_to_cpp_type(return_type)
+        unit_dimension = UnitDimension(unit_vector=unit_dimension.tolist())
         super().__init__(
-            name=name, functor_expression=functor_expression, functor_preamble=functor_preamble, return_type=return_type
+            name=name,
+            functor_expression=functor_expression,
+            functor_preamble=functor_preamble,
+            return_type=return_type,
+            unit_dimension=unit_dimension,
         )
 
     def _get_serialized(self):

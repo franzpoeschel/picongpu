@@ -13,6 +13,7 @@ from typeguard import typechecked
 from ...pypicongpu.output.binning import (
     BinningFunctor as PyPIConGPUParticleFunctor,
 )
+from .unit_dimension import UnitDimension
 
 _COORDINATE_SYSTEM = {
     (
@@ -97,10 +98,12 @@ class ParticleFunctor:
         name: str,
         functor: Callable[[Particle], Any],
         return_type: type | str = float,
+        unit_dimension: UnitDimension | None = None,
     ):
         self.name = name
         self.functor = functor
         self.return_type = return_type
+        self.unit_dimension = unit_dimension or UnitDimension()
 
     def get_as_pypicongpu(self) -> PyPIConGPUParticleFunctor:
         self.check()
@@ -111,6 +114,7 @@ class ParticleFunctor:
             functor_expression=functor_expression,
             attribute_mapping=particle.get_attribute_map(),
             return_type=self.return_type,
+            unit_dimension=self.unit_dimension.unit_vector,
         )
 
     def __call__(self, particle):
