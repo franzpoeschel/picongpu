@@ -1,4 +1,4 @@
-.. _usaAAAge-reference:
+.. _usage-reference:
 
 Reference
 =========
