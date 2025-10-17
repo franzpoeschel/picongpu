@@ -318,10 +318,6 @@ namespace picongpu
                                 particleLoadOffset,
                                 numParticlesCurrentBatch);
 
-                            // now filter
-                            auto position_ = mappedFrame.getIdentifier(position()).getPointer();
-                            auto positionOffset = mappedFrame.getIdentifier(totalCellIdx()).getPointer();
-
                             constexpr char filterKeep{1}, filterRemove{0};
                             PMACC_LOCKSTEP_KERNEL(KernelFilterParticles{})
                                 .config<DIM1>(pmacc::math::Vector{numParticlesCurrentBatch})(
@@ -385,7 +381,6 @@ namespace picongpu
                 std::string const speciesName = FrameType::getName();
                 log<picLog::INPUT_OUTPUT>("openPMD: (begin) load species: %1%") % speciesName;
                 DataConnector& dc = Environment<>::get().DataConnector();
-                GridController<simDim>& gc = Environment<simDim>::get().GridController();
 
                 ::openPMD::Series& series = *params->openPMDSeries;
                 ::openPMD::Container<::openPMD::ParticleSpecies>& particles
@@ -402,8 +397,6 @@ namespace picongpu
                 // avoid deadlock between not finished pmacc tasks and mpi calls in
                 // openPMD
                 eventSystem::getTransactionEvent().waitForFinished();
-
-                auto numRanks = gc.getGlobalSize();
 
                 auto [fullMatches, partialMatches] = getPatchIdx(params, particleSpecies);
 
