@@ -355,8 +355,9 @@ namespace picongpu
                                 numParticlesCurrentBatch,
                                 filterRemove);
 
-                            std::cout << "Filtered " << remapCurrent << " out of " << numParticlesCurrentBatch
-                                      << " particles" << std::endl;
+                            log<picLog::INPUT_OUTPUT>(
+                                "openPMD: Keeping %1% of the current batch's %2% particles after filtering.")
+                                % remapCurrent % numParticlesCurrentBatch;
 
                             pmacc::particles::operations::splitIntoListOfFrames(
                                 *speciesTmp,
@@ -531,11 +532,10 @@ namespace picongpu
                     }
                 }
 
-                // std::cout << "\n\n"
-                //           << fullMatches.size() << " full matches, " << partialMatches.size() << " partial
-                //           matches,
-                //           "
-                //           << noMatches << " unmatched." << std ::endl;
+                log<picLog::INPUT_OUTPUT>(
+                    "openPMD: Found %1% fully and %2% partially matching particle patch(es). %3% "
+                    "patch was / patches were not matched.")
+                    % fullMatches.size() % partialMatches.size() % noMatches;
 
                 return std::make_pair(std::move(fullMatches), std::move(partialMatches));
             }
