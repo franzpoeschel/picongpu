@@ -45,17 +45,18 @@ class TestSimulation(unittest.TestCase):
         sim.delta_t_si = 1.39e-16
         sim.time_steps = steps
         sim.typical_ppc = 1
-        sim.grid = pypicongpu.grid.Grid3D()
-        sim.grid.cell_size_si = 1.776e-07, 4.43e-08, 1.776e-07
-        sim.grid.cell_cnt = (1, 1, 1)
-        sim.grid.n_gpus = (1, 1, 1)
-        sim.grid.boundary_condition = (
-            BoundaryCondition.PERIODIC,
-            BoundaryCondition.PERIODIC,
-            BoundaryCondition.PERIODIC,
+        sim.grid = pypicongpu.grid.Grid3D(
+            cell_size_si=(1.776e-07, 4.43e-08, 1.776e-07),
+            cell_cnt=(1, 1, 1),
+            n_gpus=(1, 1, 1),
+            boundary_condition=(
+                BoundaryCondition.PERIODIC,
+                BoundaryCondition.PERIODIC,
+                BoundaryCondition.PERIODIC,
+            ),
+            super_cell_size=(8, 8, 4),
+            grid_dist=None,
         )
-        sim.grid.super_cell_size = (8, 8, 4)
-        sim.grid.grid_dist = None
         sim.laser = None
         sim.custom_user_input = None
         sim.moving_window = None

@@ -9,25 +9,21 @@ from picongpu.pypicongpu.output.timestepspec import TimeStepSpec
 from picongpu.pypicongpu.output import Auto
 
 import unittest
-import typeguard
+from pydantic import ValidationError
 
 
 class TestAuto(unittest.TestCase):
     def test_types(self):
         """type safety is ensured"""
-        a = Auto()
 
         invalid_periods = [13.2, [], "2", None, {}, (1)]
         for invalid_period in invalid_periods:
-            with self.assertRaises(typeguard.TypeCheckError):
-                a.period = invalid_periods
-        # ok
-        a.period = TimeStepSpec([slice(0, None, 17)])
+            with self.assertRaises(ValidationError):
+                Auto(period=invalid_period)
 
     def test_rendering(self):
         """data transformed to template-consumable version"""
-        a = Auto()
-        a.period = TimeStepSpec([slice(0, None, 17)])
+        a = Auto(period=TimeStepSpec([slice(0, None, 17)]))
 
         # normal rendering
         context = a.get_rendering_context()

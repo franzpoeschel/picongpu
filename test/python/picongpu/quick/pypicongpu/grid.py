@@ -8,28 +8,31 @@ License: GPLv3+
 from picongpu.pypicongpu.grid import Grid3D, BoundaryCondition
 
 import unittest
-import typeguard
+
+from pydantic import ValidationError
 
 
 class TestGrid3D(unittest.TestCase):
     def setUp(self):
         """setup default grid"""
-        self.g = Grid3D()
-        self.g.cell_size_si = (1.2, 2.3, 4.5)
-        self.g.cell_cnt = (6, 7, 8)
-        self.g.boundary_condition = (
-            BoundaryCondition.PERIODIC,
-            BoundaryCondition.ABSORBING,
-            BoundaryCondition.PERIODIC,
+        self.kwargs = dict(
+            cell_size_si=(1.2, 2.3, 4.5),
+            cell_cnt=(6, 7, 8),
+            boundary_condition=(
+                BoundaryCondition.PERIODIC,
+                BoundaryCondition.ABSORBING,
+                BoundaryCondition.PERIODIC,
+            ),
+            n_gpus=(2, 4, 1),
+            super_cell_size=(8, 8, 4),
+            grid_dist=None,
         )
-        self.g.n_gpus = (2, 4, 1)
-        self.g.super_cell_size = (8, 8, 4)
-        self.g.grid_dist = None
+        self.g = Grid3D(**self.kwargs)
 
     def test_basic(self):
         """test default setup"""
         g = self.g
-        self.assertSequenceEqual((1.2, 2.3, 4.5), g.cell_size_si)
+        self.assertSequenceEqual((1.2, 2.3, 4.5), g.cell_size)
         self.assertSequenceEqual((6, 7, 8), g.cell_cnt)
         self.assertSequenceEqual(
             (BoundaryCondition.PERIODIC, BoundaryCondition.ABSORBING, BoundaryCondition.PERIODIC), g.boundary_condition
@@ -37,67 +40,48 @@ class TestGrid3D(unittest.TestCase):
 
     def test_types(self):
         """test raising errors if types are wrong"""
-        g = self.g
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.cell_size_si = ("54.3", 2.3, 4.5)
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.cell_size_si = (1.2, "2", 4.5)
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.cell_size_si = (1.2, 2.3, "126")
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.cell_cnt = (11.1, 7, 8)
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.cell_cnt = (6, 11.412, 8)
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.cell_cnt = (6, 7, 16781123173.12637183)
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.boundary_condition = ("open", BoundaryCondition.ABSORBING, BoundaryCondition.PERIODIC)
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.boundary_condition = (BoundaryCondition.PERIODIC, 1, BoundaryCondition.PERIODIC)
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.boundary_condition = (BoundaryCondition.PERIODIC, BoundaryCondition.ABSORBING, {})
-        with self.assertRaises(typeguard.TypeCheckError):
-            # list not accepted - tuple needed
-            g.n_gpus = [1, 1, 1]
+        with self.assertRaises(ValidationError):
+            Grid3D(
+                **self.kwargs
+                | dict(boundary_condition=("open", BoundaryCondition.ABSORBING, BoundaryCondition.PERIODIC))
+            )
+        with self.assertRaises(ValidationError):
+            Grid3D(
+                **self.kwargs | dict(boundary_condition=(BoundaryCondition.PERIODIC, BoundaryCondition.ABSORBING, {}))
+            )
+        with self.assertRaises(ValidationError):
+            Grid3D(**self.kwargs | dict(cell_cnt=(11.1, 7, 8)))
+        with self.assertRaises(ValidationError):
+            Grid3D(**self.kwargs | dict(cell_cnt=(6, 11.412, 8)))
+        with self.assertRaises(ValidationError):
+            Grid3D(**self.kwargs | dict(cell_cnt=(6, 7, 16781123173.12637183)))
 
     def test_gpu_and_cell_cnt_positive(self):
         """test if n_gpus and cell number s are >0"""
-        g = self.g
-        with self.assertRaisesRegex(Exception, ".*cell_cnt.*greater than 0.*"):
-            g.cell_cnt = (-1, 7, 8)
-            g.get_rendering_context()
-        # revert changes
-        g.cell_cnt = (6, 7, 8)
+        with self.assertRaisesRegex(ValidationError, ".*cell_cnt.*greater than 0.*"):
+            Grid3D(**self.kwargs | dict(cell_cnt=(-1, 7, 8)))
 
-        with self.assertRaisesRegex(Exception, ".*cell_cnt.*greater than 0.*"):
-            g.cell_cnt = (6, -2, 8)
-            g.get_rendering_context()
-        # revert changes
-        g.cell_cnt = (6, 7, 8)
+        with self.assertRaisesRegex(ValidationError, ".*cell_cnt.*greater than 0.*"):
+            Grid3D(**self.kwargs | dict(cell_cnt=(6, -2, 8)))
 
-        with self.assertRaisesRegex(Exception, ".*cell_cnt.*greater than 0.*"):
-            g.cell_cnt = (6, 7, 0)
-            g.get_rendering_context()
-        # revert changes
-        g.cell_cnt = (6, 7, 8)
+        with self.assertRaisesRegex(ValidationError, ".*cell_cnt.*greater than 0.*"):
+            Grid3D(**self.kwargs | dict(cell_cnt=(6, 7, 0)))
 
         for wrong_n_gpus in [tuple([-1, 1, 1]), tuple([1, 1, 0])]:
-            with self.assertRaisesRegex(Exception, ".*greater than 0.*"):
-                g.n_gpus = wrong_n_gpus
-                g.get_rendering_context()
+            with self.assertRaisesRegex(ValidationError, ".*greater than 0.*"):
+                Grid3D(**self.kwargs | dict(n_gpus=wrong_n_gpus))
 
     def test_mandatory(self):
         """test if None as content fails"""
         # check that mandatory arguments can't be none
-        g = self.g
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.cell_size_si = None
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.cell_cnt = None
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.boundary_condition = None
-        with self.assertRaises(typeguard.TypeCheckError):
-            g.n_gpus = None
+        with self.assertRaises(ValidationError):
+            Grid3D(**self.kwargs | dict(cell_size_si=None))
+        with self.assertRaises(ValidationError):
+            Grid3D(**self.kwargs | dict(cell_cnt=None))
+        with self.assertRaises(ValidationError):
+            Grid3D(**self.kwargs | dict(boundary_condition=None))
+        with self.assertRaises(ValidationError):
+            Grid3D(**self.kwargs | dict(n_gpus=None))
 
     def test_get_rendering_context(self):
         """object is correctly serialized"""

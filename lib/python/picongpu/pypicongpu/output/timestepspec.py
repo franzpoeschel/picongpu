@@ -5,28 +5,33 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
+from typing import Annotated
+from pydantic import BaseModel, PlainSerializer, field_validator
 from ..rendering.renderedobject import RenderedObject
-from ..util import build_typesafe_property
 
 import typeguard
 
 
-def _serialize(spec):
-    if isinstance(spec, slice):
-        return {
-            "start": spec.start if spec.start is not None else 0,
-            "stop": spec.stop if spec.stop is not None else -1,
-            "step": spec.step if spec.step is not None else 1,
-        }
-    raise ValueError(f"Unknown serialization for {spec=} as a time step specifier (--period argument).")
+class Spec(BaseModel):
+    start: Annotated[int | None, PlainSerializer(lambda x: x if x is not None else 0)]
+    stop: Annotated[int | None, PlainSerializer(lambda x: x if x is not None else -1)]
+    step: Annotated[int | None, PlainSerializer(lambda x: x if x is not None else 1)]
 
 
 @typeguard.typechecked
-class TimeStepSpec(RenderedObject):
-    specs = build_typesafe_property(list[slice])
+class TimeStepSpec(RenderedObject, BaseModel):
+    specs: list[Spec]
 
-    def __init__(self, specs: list[slice]):
-        self.specs = specs
+    def __init__(self, *args, **kwargs):
+        # allow to give specs as positional argument
+        if len(args) > 0 and "specs" not in kwargs:
+            kwargs |= {"specs": args[0]}
+        super(TimeStepSpec, self).__init__(*args[1:], **kwargs)
 
-    def _get_serialized(self):
-        return {"specs": list(map(_serialize, self.specs))}
+    @field_validator("specs", mode="before")
+    @classmethod
+    def validate_specs(cls, value) -> list[Spec]:
+        try:
+            return [Spec(start=s.start, stop=s.stop, step=s.step) for s in value]
+        except AttributeError:
+            return value

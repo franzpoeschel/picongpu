@@ -8,8 +8,13 @@ License: GPLv3+
 import inspect
 from typing import Callable
 
+from pydantic import BaseModel, ValidationError
+
 
 def has_attribute(instance, name):
+    if isinstance(instance, type) and issubclass(instance, BaseModel):
+        return name in instance.model_fields or name in map(lambda x: x.alias, instance.model_fields.values())
+
     # It should be this:
     #
     #     return hasattr(instance, name)
@@ -58,8 +63,8 @@ def copy_attributes(
     """
     Copy attributes from one object to another.
 
-    This function copies attributes from the `from_instance` to `to` if `to` is an class instance.
-    If `to` is a class, an instance will be created via `to()`, filled and returned.
+    This function copies attributes from the `from_instance` to `to` if `to` is a class instance.
+    If `to` is a class, it will try to construct and return an instance filled with values from `from_instance`.
 
     This function only copies attributes under the following circumstances:
         - The attribute exists in `to`.
@@ -73,26 +78,15 @@ def copy_attributes(
         - Otherwise, `value` must be a Callable that takes `from_instance` as first and only argument
           and returns the value that `key` is supposed to have in `to`, i.e.
           `to.key = value(from_instance)`.
-    """
-    if isinstance(to, type):
-        try:
-            to_instance = to()
-        except TypeError as e:
-            message = (
-                "Instantiation failed. The receiving class must be default constructible. "
-                f"You gave {to} which expects {len(inspect.signature(to.__init__).parameters) - 1} argument in its constructor. "
-                "You can work with an instance instead of a class in this case."
-            )
-            raise ValueError(message) from e
-        return copy_attributes(
-            from_instance,
-            to_instance,
-            conversions=conversions,
-            remove_prefix=remove_prefix,
-            ignore=ignore,
-            default_converter=default_converter,
-        )
 
+    Further useful features:
+        - `remove_prefix` allows to remove a prefix from `from_instance` member names
+          before looking them up and inserting them into `to`.
+        - `ignore` allows to ignore some attributes in `from_instance` and not copy them.
+          A custom conversion takes precedence and overrides this behaviour.
+        - `default_converter` is applied to all values retrieved from `from_instance`
+          before they are put into `to`.
+    """
     assignments = {
         to_name: _value_generator(from_name)
         for from_name, _ in inspect.getmembers(from_instance)
@@ -101,9 +95,41 @@ def copy_attributes(
         and has_attribute(to, to_name := from_name.removeprefix(remove_prefix))
     } | _sanitize_conversions(conversions, from_instance, to)
 
-    for key, value_generator in assignments.items():
-        setattr(to, key, default_converter(value_generator(from_instance)))
-    return to
+    # This is a two-pass process because after generating the defaults
+    # we had to apply the custom conversions on top.
+    assignments = {
+        key: default_converter(value_generator(from_instance)) for key, value_generator in assignments.items()
+    }
+
+    if isinstance(to, type):
+        try:
+            # First case: `to` is a class and can be constructed with a fully-qualified constructor call (pydantic.BaseModel).
+            return to(**assignments)
+        except TypeError:
+            try:
+                # Second case: `to` is a default-constructible class to which we can copy attributes afterwards.
+                to_instance = to()
+            except (ValidationError, TypeError) as e:
+                message = (
+                    "Instantiation failed. The receiving class must be default constructible. "
+                    f"You gave {to} which expects {len(inspect.signature(to.__init__).parameters) - 1} argument in its constructor. "
+                    "You can work with an instance instead of a class in this case."
+                )
+                raise ValueError(message) from e
+            # We've got an instance now, proceed via the path for instances.
+            return copy_attributes(
+                from_instance,
+                to_instance,
+                conversions=conversions,
+                remove_prefix=remove_prefix,
+                ignore=ignore,
+                default_converter=default_converter,
+            )
+    else:
+        # Third case: We've been given an instance directly. Copy over attributes.
+        for key, value in assignments.items():
+            setattr(to, key, value)
+        return to
 
 
 def converts_to(

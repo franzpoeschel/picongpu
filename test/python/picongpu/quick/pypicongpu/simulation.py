@@ -32,17 +32,18 @@ class TestSimulation(unittest.TestCase):
         self.s.delta_t_si = 13.37
         self.s.time_steps = 42
         self.s.typical_ppc = 1
-        self.s.grid = grid.Grid3D()
-        self.s.grid.cell_size_si = (1, 2, 3)
-        self.s.grid.cell_cnt = (4, 5, 6)
-        self.s.grid.n_gpus = (1, 1, 1)
-        self.s.grid.boundary_condition = (
-            grid.BoundaryCondition.PERIODIC,
-            grid.BoundaryCondition.PERIODIC,
-            grid.BoundaryCondition.PERIODIC,
+        self.s.grid = grid.Grid3D(
+            cell_size_si=(1, 2, 3),
+            cell_cnt=(4, 5, 6),
+            n_gpus=(1, 1, 1),
+            boundary_condition=(
+                grid.BoundaryCondition.PERIODIC,
+                grid.BoundaryCondition.PERIODIC,
+                grid.BoundaryCondition.PERIODIC,
+            ),
+            super_cell_size=(8, 8, 4),
+            grid_dist=None,
         )
-        self.s.grid.super_cell_size = (8, 8, 4)
-        self.s.grid.grid_dist = None
         self.s.solver = YeeSolver()
         self.s.laser = None
         self.s.custom_user_input = None
