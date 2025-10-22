@@ -165,7 +165,12 @@ class RenderedObject:
         try:
             schema = RenderedObject._registry.contents(uri)
         except referencing.exceptions.NoSuchResource:
-            raise referencing.exceptions.NoSuchResource("schema not found for FQN {}: URI {}".format(fqn, uri))
+            try:
+                schema = class_type.model_json_schema(mode="serialization", by_alias=False) | {"$id": uri}
+            except Exception as second_error:
+                raise referencing.exceptions.NoSuchResource(
+                    "schema not found for FQN {}: URI {}".format(fqn, uri)
+                ) from second_error
 
         # validate schema
         validator = jsonschema.Draft202012Validator(schema=schema)

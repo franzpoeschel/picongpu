@@ -14,9 +14,7 @@
     "species": {
       "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.species.species.Species"
     },
-    "period": {
-      "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.timestepspec.TimeStepSpec"
-    },
+    "period": {},
     "bin_count": {
       "type": "integer",
       "minimum": 1,

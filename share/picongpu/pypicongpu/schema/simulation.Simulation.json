@@ -31,9 +31,7 @@
         }
       ]
     },
-    "grid": {
-      "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.grid.Grid3D"
-    },
+    "grid": {},
     "laser": {
       "anyOf": [
         {

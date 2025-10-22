@@ -58,17 +58,17 @@ class TestGrid3D(unittest.TestCase):
 
     def test_gpu_and_cell_cnt_positive(self):
         """test if n_gpus and cell number s are >0"""
-        with self.assertRaisesRegex(ValidationError, ".*cell_cnt.*greater than 0.*"):
+        with self.assertRaisesRegex(ValidationError, ".*contains values <= m=0.*"):
             Grid3D(**self.kwargs | dict(cell_cnt=(-1, 7, 8)))
 
-        with self.assertRaisesRegex(ValidationError, ".*cell_cnt.*greater than 0.*"):
+        with self.assertRaisesRegex(ValidationError, ".*contains values <= m=0.*"):
             Grid3D(**self.kwargs | dict(cell_cnt=(6, -2, 8)))
 
-        with self.assertRaisesRegex(ValidationError, ".*cell_cnt.*greater than 0.*"):
+        with self.assertRaisesRegex(ValidationError, ".*contains values <= m=0.*"):
             Grid3D(**self.kwargs | dict(cell_cnt=(6, 7, 0)))
 
         for wrong_n_gpus in [tuple([-1, 1, 1]), tuple([1, 1, 0])]:
-            with self.assertRaisesRegex(ValidationError, ".*greater than 0.*"):
+            with self.assertRaisesRegex(ValidationError, ".*contains values <= m=0.*"):
                 Grid3D(**self.kwargs | dict(n_gpus=wrong_n_gpus))
 
     def test_mandatory(self):
