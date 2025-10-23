@@ -6,11 +6,11 @@ License: GPLv3+
 """
 
 from functools import reduce
+from hashlib import sha256
 from os import PathLike
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Annotated, Iterable, Literal
-from hashlib import sha256
 
 import tomli_w
 from pydantic import AfterValidator, BaseModel
@@ -65,12 +65,16 @@ class OpenPMDPlugin(Plugin):
     _setup_dir_is_not_temporary: bool | None = None
 
     def config_filename(self, content, context: Literal["runtime", "setup"]):
-        filename = f"openPMD_config_{sha256(tomli_w.dumps(content).encode()).hexdigest()}.toml"
+        filename = (
+            f"openPMD_config_{sha256(tomli_w.dumps(content).encode()).hexdigest()}.toml"
+        )
         if not self._setup_dir_is_not_temporary or context == "setup":
             return self.setup_dir / "etc" / filename
         if context == "runtime":
             return Path("..") / "input" / "etc" / filename
-        raise ValueError(f"Unknown {context=} upon requesting the openPMD config filename.")
+        raise ValueError(
+            f"Unknown {context=} upon requesting the openPMD config filename."
+        )
 
     @property
     def setup_dir(self):
@@ -97,9 +101,9 @@ class OpenPMDPlugin(Plugin):
         # As a workaround, we're computing this on the fly.
         # Shouldn't be performance critical but it would be more elegant to normalise early on.
         sources = reduce(
-            lambda dictionary, key_val: dictionary.setdefault(to_string(key_val[0]), []).append(
-                key_val[1].get_rendering_context()["name"]
-            )
+            lambda dictionary, key_val: dictionary.setdefault(
+                to_string(key_val[0]), []
+            ).append(key_val[1].get_rendering_context()["name"])
             or dictionary,
             self.sources,
             {},
@@ -113,7 +117,9 @@ class OpenPMDPlugin(Plugin):
 
     def _get_serialized(self) -> dict | None:
         content = self._generate_config_file()
-        return {"config_filename": str(self.config_filename(content, context="runtime"))}
+        return {
+            "config_filename": str(self.config_filename(content, context="runtime"))
+        }
 
     class Config:
         arbitrary_types_allowed = True
