@@ -5,6 +5,7 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
+import logging
 import unittest
 from pathlib import Path
 
@@ -26,6 +27,8 @@ from .compare_particles import (
     read_position_check,
 )
 from .distributions import DISTRIBUTIONS
+
+logging.basicConfig(level=logging.INFO)
 
 LAYOUT = picmi.GriddedLayout(n_macroparticles_per_cell=2)
 
