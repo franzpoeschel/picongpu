@@ -1,30 +1,36 @@
 """
 This file is part of the PIConGPU.
-Copyright 2024-2024 PIConGPU contributors
-Authors: Brian Edward Marre, Richard Pausch
+Copyright 2024-2025 PIConGPU contributors
+Authors: Brian Edward Marre, Richard Pausch, Julian Lenz
 License: GPLv3+
 """
 
-import pydantic
-import datetime
+from datetime import timedelta
+from typing import Annotated
+
+from pydantic import BaseModel, PlainSerializer, field_validator
 
 from .rendering import RenderedObject
 
 
-class Walltime(RenderedObject, pydantic.BaseModel):
-    walltime: datetime.timedelta
+def serialise_timedelta(value):
+    HOUR = timedelta(hours=1.0)
+    MINUTE = timedelta(minutes=1.0)
+    SECOND = timedelta(seconds=1.0)
+
+    hours, rest = divmod(value, HOUR)
+    minutes, rest = divmod(rest, MINUTE)
+    seconds, _ = divmod(rest, SECOND)
+    return "{:d}:{:02d}:{:02d}".format(hours, minutes, seconds)
+
+
+class Walltime(RenderedObject, BaseModel):
+    walltime: Annotated[timedelta, PlainSerializer(serialise_timedelta)]
     """time after which the cluster scheduler will stop the simulation"""
 
-    def check(self) -> None:
-        if self.walltime.total_seconds() <= 0.0:
+    @field_validator("walltime", mode="after")
+    @classmethod
+    def check(cls, value) -> None:
+        if value.total_seconds() <= 0.0:
             raise ValueError("walltime must be > 0.")
-
-    def _get_serialized(self) -> dict:
-        HOUR = datetime.timedelta(hours=1.0)
-        MINUTE = datetime.timedelta(minutes=1.0)
-        SECOND = datetime.timedelta(seconds=1.0)
-
-        hours, rest = divmod(self.walltime, HOUR)
-        minutes, rest = divmod(rest, MINUTE)
-        seconds, _ = divmod(rest, SECOND)
-        return {"walltime": "{:d}:{:02d}:{:02d}".format(hours, minutes, seconds)}  # @todo: might be cluster specific
+        return value

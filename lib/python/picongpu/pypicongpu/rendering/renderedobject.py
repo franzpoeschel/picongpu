@@ -213,7 +213,7 @@ class RenderedObject:
         except (AttributeError, NotImplementedError) as first_error:
             try:
                 serialized = self.model_dump(mode="json")
-            except Exception as second_error:
+            except AttributeError as second_error:
                 raise first_error from second_error
 
         RenderedObject.check_context_for_type(self.__class__, serialized)

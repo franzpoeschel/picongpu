@@ -153,15 +153,10 @@ class Simulation(RenderedObject):
         else:
             serialized["laser"] = None
 
-        if self.moving_window is not None:
-            serialized["moving_window"] = self.moving_window.get_rendering_context()
-        else:
-            serialized["moving_window"] = None
-
-        if self.walltime is not None:
-            serialized["walltime"] = self.walltime.get_rendering_context()
-        else:
-            serialized["walltime"] = Walltime(walltime=datetime.timedelta(hours=1)).get_rendering_context()
+        serialized["moving_window"] = None if self.moving_window is None else self.moving_window.get_rendering_context()
+        serialized["walltime"] = (
+            self.walltime or Walltime(walltime=datetime.timedelta(hours=1))
+        ).get_rendering_context()
 
         serialized["binomial_current_interpolation"] = self.binomial_current_interpolation
 
