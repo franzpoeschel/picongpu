@@ -52,6 +52,7 @@ dependencies = [
   # Included from: picongpu/extra/utils/FLYonPICRateCalculationReference/requirements.txt
   "scipy>=1.12",
   "sympy>=1.14",
+  "tomli-w>=1.2",
   "typeguard>=4.2.1",
 ]
 
