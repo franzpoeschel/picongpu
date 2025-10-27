@@ -6,7 +6,6 @@ License: GPLv3+
 """
 
 from ...rendering import RenderedObject
-import typing
 
 
 class Constant(RenderedObject):
@@ -58,20 +57,20 @@ class Constant(RenderedObject):
 
         Must be overwritten in child implementation.
         """
-        raise NotImplementedError()
+        pass
 
     # note: forward declaration requires "Species" to be defined, which is not
     # always the case -> no type declaration
-    def get_species_dependencies(self) -> typing.List:
+    def get_species_dependencies(self) -> list:
         """
         get dependencies for definition
 
         Returns a list of species which this flags requires being present.
         Mainly intended for ionization flags, i.e. should typically return [].
         """
-        raise NotImplementedError()
+        return []
 
-    def get_attribute_dependencies(self) -> typing.List[type]:
+    def get_attribute_dependencies(self) -> list[type]:
         """
         get required attributes (during execution)
 
@@ -81,9 +80,9 @@ class Constant(RenderedObject):
         This method returns a list of attribute types which it requires on its
         species.
         """
-        raise NotImplementedError()
+        return []
 
-    def get_constant_dependencies(self) -> typing.List[type]:
+    def get_constant_dependencies(self) -> list[type]:
         """
         get required constants (during execution)
 
@@ -105,4 +104,4 @@ class Constant(RenderedObject):
 
         This has no influence on the order of code generation.
         """
-        raise NotImplementedError()
+        return []

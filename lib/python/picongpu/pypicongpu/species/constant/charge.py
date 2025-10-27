@@ -8,7 +8,6 @@ License: GPLv3+
 from .constant import Constant
 from ... import util
 import typeguard
-import typing
 
 
 @typeguard.typechecked
@@ -24,23 +23,8 @@ class Charge(Constant):
         # overwrite from parent
         pass
 
-    def check(self) -> None:
-        pass
-
     def _get_serialized(self) -> dict:
         # (please resist the temptation of removing the check b/c "its not
         # needed here": checks should *always* be run before serialization,
         # so make it a habit of expecting it everywhere)
-        self.check()
-        return {
-            "charge_si": self.charge_si,
-        }
-
-    def get_species_dependencies(self):
-        return []
-
-    def get_attribute_dependencies(self) -> typing.List[type]:
-        return []
-
-    def get_constant_dependencies(self) -> typing.List[type]:
-        return []
+        return {"charge_si": self.charge_si}

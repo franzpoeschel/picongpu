@@ -747,8 +747,7 @@ class TestInitManager(unittest.TestCase):
 
     def test_constant_constant_dependencies_ok(self):
         """constants requires other constant and it is present"""
-        mass = Mass()
-        mass.mass_si = 1
+        mass = Mass(mass_si=1)
         charge = Charge()
         charge.charge_si = 1
 

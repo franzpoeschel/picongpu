@@ -26,8 +26,7 @@ class Test_IonizationModel(unittest.TestCase):
     def setUp(self):
         electron = Species()
         electron.name = "e"
-        mass_constant = Mass()
-        mass_constant.mass_si = constants.m_e
+        mass_constant = Mass(mass_si=constants.m_e)
         charge_constant = Charge()
         charge_constant.charge_si = constants.m_e
         electron.constants = [
@@ -93,8 +92,7 @@ class Test_IonizationModel(unittest.TestCase):
         """electron species must not be ionizable itself"""
         other_electron = Species()
         other_electron.name = "e"
-        mass_constant = Mass()
-        mass_constant.mass_si = constants.m_e
+        mass_constant = Mass(mass_si=constants.m_e)
         charge_constant = Charge()
         charge_constant.charge_si = constants.m_e
         other_electron.constants = [

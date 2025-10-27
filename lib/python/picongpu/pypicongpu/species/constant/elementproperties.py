@@ -10,7 +10,6 @@ from ... import util
 from ..util import Element
 
 import typeguard
-import typing
 
 
 @typeguard.typechecked
@@ -35,16 +34,5 @@ class ElementProperties(Constant):
         # note: typecheck handled by property itself
         assert self.element is not None
 
-    def get_species_dependencies(self):
-        return []
-
-    def get_attribute_dependencies(self) -> typing.List[type]:
-        return []
-
-    def get_constant_dependencies(self) -> typing.List[type]:
-        return []
-
     def _get_serialized(self) -> dict:
-        return {
-            "element": self.element.get_rendering_context(),
-        }
+        return {"element": self.element.get_rendering_context()}

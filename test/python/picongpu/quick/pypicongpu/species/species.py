@@ -44,8 +44,7 @@ class TestSpecies(unittest.TestCase):
         self.const = Constant()
         self.const_charge = Charge()
         self.const_charge.charge_si = 1
-        self.const_mass = Mass()
-        self.const_mass.mass_si = 2
+        self.const_mass = Mass(mass_si=2)
         self.const_density_ratio = DensityRatio()
         self.const_density_ratio.ratio = 4.2
         self.const_ground_state_ionization = GroundStateIonization(
@@ -138,8 +137,7 @@ class TestSpecies(unittest.TestCase):
         const1.charge_si = 17
         const2 = Charge()
         const2.charge_si = 18
-        other_const = Mass()
-        other_const.mass_si = 19
+        other_const = Mass(mass_si=19)
 
         species.constants = [const1, const2, other_const]
 

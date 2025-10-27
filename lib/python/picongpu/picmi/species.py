@@ -253,8 +253,7 @@ class Species(picmistandard.PICMI_Species):
             # if 0==mass rather omit mass entirely
             assert self.mass > 0
 
-            mass_constant = pypicongpu.species.constant.Mass()
-            mass_constant.mass_si = self.mass
+            mass_constant = pypicongpu.species.constant.Mass(mass_si=self.mass)
             s.constants.append(mass_constant)
 
         if self.density_scale is not None:

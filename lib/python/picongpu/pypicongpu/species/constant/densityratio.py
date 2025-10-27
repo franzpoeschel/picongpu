@@ -9,7 +9,6 @@ from .constant import Constant
 from ... import util
 
 import typeguard
-import typing
 
 
 @typeguard.typechecked
@@ -33,12 +32,3 @@ class DensityRatio(Constant):
         return {
             "ratio": self.ratio,
         }
-
-    def get_species_dependencies(self):
-        return []
-
-    def get_attribute_dependencies(self) -> typing.List[type]:
-        return []
-
-    def get_constant_dependencies(self) -> typing.List[type]:
-        return []
