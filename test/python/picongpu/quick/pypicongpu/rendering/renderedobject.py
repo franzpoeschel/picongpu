@@ -141,25 +141,6 @@ class TestRenderedObject(unittest.TestCase):
         with self.assertRaisesRegex(Exception, ".*[Ss]chema.*"):
             h.get_rendering_context()
 
-    def test_schema_should_forbid_unevaluated_properties(self):
-        """warn if schema allows unevaluated properties"""
-        self.schema_store_init()
-
-        class HasPermissiveSchema(RenderedObject):
-            def _get_serialized(self):
-                return {"any": "thing"}
-
-        uri = self.get_uri(HasPermissiveSchema)
-
-        # schema "{}" is considered too permissive
-        self.add_schema_to_schema_store(uri, {})
-
-        permissive = HasPermissiveSchema()
-        with self.assertLogs(level="WARNING") as caught_logs:
-            # valid, but warns
-            self.assertNotEqual({}, permissive.get_rendering_context())
-        self.assertEqual(1, len(caught_logs.output))
-
     def test_fully_qualified_classname(self):
         """fully qualified classname is correctly generated"""
         # concept: define two classes of same name
@@ -286,33 +267,6 @@ class TestRenderedObject(unittest.TestCase):
 
         with self.assertRaisesRegex(referencing.exceptions.NoSuchResource, ".*[Ss]chema.*"):
             RenderedObject.check_context_for_type(HasNoValidation, {})
-
-    def test_irregular_schema(self):
-        """non-object (but valid) schemas are accepted"""
-        self.schema_store_init()
-
-        class SimpleObject(RenderedObject):
-            def _get_serialized(self):
-                return {}
-
-        uri = self.get_uri(SimpleObject)
-        # the schema "false" is a valid schema; it rejects all inputs
-        self.add_schema_to_schema_store(uri, False)
-
-        # there must be an error during validation & a warning issued
-        with self.assertLogs(level="WARNING") as caught_logs_rejected:
-            with self.assertRaises(jsonschema.exceptions.ValidationError):
-                SimpleObject().get_rendering_context()
-            self.assertEqual(1, len(caught_logs_rejected.output))
-
-        # reverse: now must be accepted -- but warning still issued!
-        self.schema_store_reset()
-        self.schema_store_init()
-        self.add_schema_to_schema_store(uri, True)
-
-        with self.assertLogs(level="WARNING") as caught_logs_accepted:
-            SimpleObject().get_rendering_context()
-        self.assertEqual(1, len(caught_logs_accepted.output))
 
 
 class TestSelfRegisteringRenderedObject(unittest.TestCase):

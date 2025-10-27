@@ -175,17 +175,6 @@ class RenderedObject:
         # validate schema
         validator = jsonschema.Draft202012Validator(schema=schema)
         validator.check_schema(schema)
-
-        # there are schemas that are valid but not an object -> skip checks
-        if type(schema) is dict:
-            if "unevaluatedProperties" not in schema:
-                logging.warning("schema does not explicitly forbid unevaluated properties: {}".format(fqn))
-            # special exemption for custom user input which is never evaluated
-            elif schema["unevaluatedProperties"] and fqn != "picongpu.pypicongpu.customuserinput.CustomUserInput":
-                logging.warning("schema supports unevaluated properties: {}".format(fqn))
-        else:
-            logging.warning("schema is not dict: {}".format(fqn))
-
         return schema
 
     def _get_serialized(self) -> dict | None:
