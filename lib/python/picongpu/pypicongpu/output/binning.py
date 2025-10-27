@@ -9,6 +9,7 @@ import json
 from typing import Optional
 
 import typeguard
+from pydantic import BaseModel
 
 from .. import util
 from ..rendering.renderedobject import RenderedObject
@@ -18,20 +19,11 @@ from .plugin import Plugin
 from .timestepspec import TimeStepSpec
 
 
-class BinSpec(RenderedObject):
-    def __init__(self, kind, start, stop, nsteps):
-        self.kind = kind
-        self.start = start
-        self.stop = stop
-        self.nsteps = nsteps
-
-    def _get_serialized(self):
-        return {
-            "kind": self.kind,
-            "start": self.start,
-            "stop": self.stop,
-            "nsteps": self.nsteps,
-        }
+class BinSpec(RenderedObject, BaseModel):
+    kind: str
+    start: float | int
+    stop: float | int
+    nsteps: float | int
 
 
 class BinningAxis(RenderedObject):
