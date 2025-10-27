@@ -54,7 +54,7 @@ class TestRenderedObject(unittest.TestCase):
         self.assertTrue(isinstance(yee, RenderedObject))
         self.assertNotEqual({}, RenderedObject._get_schema_from_class(type(yee)))
         # no throw -> schema found
-        self.assertEqual(yee.get_rendering_context(), yee._get_serialized())
+        self.assertEqual(yee.get_rendering_context(), yee.model_dump(mode="json"))
 
         # manually check that schema has been loaded
         uri = self.get_uri(type(yee))

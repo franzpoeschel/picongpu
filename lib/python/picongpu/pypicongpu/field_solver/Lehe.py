@@ -1,26 +1,22 @@
 """
 This file is part of PIConGPU.
-Copyright 2021-2024 PIConGPU contributors
-Authors: Hannes Troepgen, Brian Edward Marre
+Copyright 2021-2025 PIConGPU contributors
+Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
+from pydantic import BaseModel, computed_field
 from ..rendering import RenderedObject
 from .DefaultSolver import Solver
 
-import typeguard
 
-
-@typeguard.typechecked
-class LeheSolver(Solver, RenderedObject):
+class LeheSolver(Solver, RenderedObject, BaseModel):
     """
     Lehe solver as defined by PIConGPU
 
     note: has no parameters
     """
 
-    def _get_serialized(self) -> dict:
-        # @todo + "<>" needs to be fixed later
-        return {
-            "name": "Lehe" + "<>",
-        }
+    @computed_field
+    def name(self) -> str:
+        return "Lehe<>"
