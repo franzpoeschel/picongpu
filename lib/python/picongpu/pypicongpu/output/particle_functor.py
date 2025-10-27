@@ -6,9 +6,9 @@ License: GPLv3+
 """
 
 import numbers
-import numpy as np
+from typing import Annotated
 
-from pydantic import BaseModel, PrivateAttr, model_serializer, model_validator
+from pydantic import BaseModel, PrivateAttr, model_serializer, model_validator, BeforeValidator, Field
 
 from ..rendering.pmaccprinter import PMAccPrinter
 from ..rendering.renderedobject import RenderedObject
@@ -85,29 +85,15 @@ class UnitDimension(BaseModel):
     def translate_to_cpp(self) -> str:
         return f"std::array<double, {self._num_unit_dimensions}>{{{','.join(map(str, self.unit_vector))}}}"
 
+class _PreambleStatement(BaseModel):
+    statement: str
+
 
 class ParticleFunctor(RenderedObject, BaseModel):
     name: str
-    functor_expression: str
-    functor_preamble: list[dict[str, str]]
-    return_type: str
+    functor_expression: Annotated[str, BeforeValidator(lambda x: PMAccPrinter().doprint(x))]
+    functor_preamble: Annotated[list[_PreambleStatement], BeforeValidator(lambda x: generate_preamble(x))] = Field(
+        alias="attribute_mapping"
+    )
+    return_type: Annotated[str, BeforeValidator(lambda x: translate_to_cpp_type(x))]
     unit_dimension: UnitDimension = UnitDimension()
-
-    def __init__(
-        self, name, functor_expression, attribute_mapping, return_type, unit_dimension: np.ndarray = np.zeros(7)
-    ):
-        name = name
-        functor_expression = PMAccPrinter().doprint(functor_expression)
-        functor_preamble = generate_preamble(attribute_mapping)
-        return_type = translate_to_cpp_type(return_type)
-        unit_dimension = UnitDimension(unit_vector=unit_dimension.tolist())
-        super().__init__(
-            name=name,
-            functor_expression=functor_expression,
-            functor_preamble=functor_preamble,
-            return_type=return_type,
-            unit_dimension=unit_dimension,
-        )
-
-    def _get_serialized(self):
-        return self.model_dump(mode="json")

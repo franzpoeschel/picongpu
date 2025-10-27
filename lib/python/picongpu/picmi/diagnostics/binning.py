@@ -6,6 +6,7 @@ License: GPLv3+
 """
 
 from pathlib import Path
+from ..copy_attributes import default_converts_to
 
 import typeguard
 
@@ -20,16 +21,13 @@ from .particle_functor import ParticleFunctor as BinningFunctor
 from .timestepspec import TimeStepSpec
 
 
-@typeguard.typechecked
+@default_converts_to(PyPIConGPUBinSpec, conversions={"kind": lambda self, *_, **__: self.kind.lower().capitalize()})
 class BinSpec:
     def __init__(self, kind, start, stop, nsteps):
         self.kind = kind
         self.start = start
         self.stop = stop
         self.nsteps = nsteps
-
-    def get_as_pypicongpu(self):
-        return PyPIConGPUBinSpec(self.kind.lower().capitalize(), self.start, self.stop, self.nsteps)
 
 
 @typeguard.typechecked
