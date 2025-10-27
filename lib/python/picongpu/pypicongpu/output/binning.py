@@ -26,24 +26,11 @@ class BinSpec(RenderedObject, BaseModel):
     nsteps: float | int
 
 
-class BinningAxis(RenderedObject):
-    name: str
+class BinningAxis(RenderedObject, BaseModel):
+    axis_name: str = Field(alias="name")
     bin_spec: BinSpec
-    functor: BinningFunctor
-
-    def __init__(self, name, bin_spec, functor, use_overflow_bins):
-        self.name = name
-        self.bin_spec = bin_spec
-        self.functor = functor
-        self.use_overflow_bins = use_overflow_bins
-
-    def _get_serialized(self):
-        return {
-            "axis_name": self.name,
-            "bin_spec": self.bin_spec.get_rendering_context(),
-            "axis_functor": self.functor.get_rendering_context(),
-            "use_overflow_bins": self.use_overflow_bins,
-        }
+    axis_functor: BinningFunctor = Field(alias="functor")
+    use_overflow_bins: bool
 
 
 @typeguard.typechecked
