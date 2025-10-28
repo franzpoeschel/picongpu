@@ -7,7 +7,7 @@ License: GPLv3+
 
 from ...rendering import RenderedObject
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 import typeguard
 import scipy
 import periodictable
@@ -123,8 +123,10 @@ class Element(RenderedObject, BaseModel):
         """get symbol"""
         return self._store.symbol
 
-    def _get_serialized(self) -> dict:
-        return {
-            "symbol": self.get_symbol(),
-            "picongpu_name": self.get_picongpu_name(),
-        }
+    @computed_field
+    def symbol(self) -> str:
+        return self.get_symbol()
+
+    @computed_field
+    def picongpu_name(self) -> str:
+        return self.get_picongpu_name()

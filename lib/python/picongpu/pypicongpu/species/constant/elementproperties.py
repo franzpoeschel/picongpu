@@ -5,15 +5,12 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from pydantic import BaseModel
 from .constant import Constant
-from ... import util
 from ..util import Element
 
-import typeguard
 
-
-@typeguard.typechecked
-class ElementProperties(Constant):
+class ElementProperties(Constant, BaseModel):
     """
     represents constants associated to a chemical element
 
@@ -24,15 +21,5 @@ class ElementProperties(Constant):
     is a core concept of PIConGPU).
     """
 
-    element = util.build_typesafe_property(Element)
+    element: Element
     """represented chemical element"""
-
-    def __init__(self):
-        pass
-
-    def check(self):
-        # note: typecheck handled by property itself
-        assert self.element is not None
-
-    def _get_serialized(self) -> dict:
-        return {"element": self.element.get_rendering_context()}

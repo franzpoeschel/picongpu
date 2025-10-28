@@ -748,8 +748,7 @@ class TestInitManager(unittest.TestCase):
     def test_constant_constant_dependencies_ok(self):
         """constants requires other constant and it is present"""
         mass = Mass(mass_si=1)
-        charge = Charge()
-        charge.charge_si = 1
+        charge = Charge(charge_si=1)
 
         const_dep = self.ConstantWithDependencies()
         const_dep.constant_dependencies = [Mass, Charge]
@@ -773,8 +772,7 @@ class TestInitManager(unittest.TestCase):
 
     def test_constant_constant_dependencies_missing(self):
         """constants requires other constant and it is missing"""
-        charge = Charge()
-        charge.charge_si = 1
+        charge = Charge(charge_si=1)
 
         const_dep = self.ConstantWithDependencies()
         const_dep.constant_dependencies = [Mass, Charge]
@@ -882,8 +880,7 @@ class TestInitManager(unittest.TestCase):
             ionization_model_list=[species.constant.ionizationmodel.ThomasFermi()]
         )
         ionizers_const.ionization_model_list[0].ionization_electron_species = electron
-        element_const = species.constant.ElementProperties()
-        element_const.element = species.util.Element("N")
+        element_const = species.constant.ElementProperties(element=species.util.Element("N"))
         ion.constants = [ionizers_const, element_const]
 
         ion_op = species.operation.SetChargeState()

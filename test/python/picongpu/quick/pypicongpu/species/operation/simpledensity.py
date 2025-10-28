@@ -21,20 +21,17 @@ class TestSimpleDensity(unittest.TestCase):
     def setUp(self):
         self.species1 = Species()
         self.species1.name = "species1"
-        self.species1_density_ratio = DensityRatio()
-        self.species1_density_ratio.ratio = 0.8
+        self.species1_density_ratio = DensityRatio(ratio=0.8)
         self.species1.constants = [self.species1_density_ratio]
 
         self.species2 = Species()
         self.species2.name = "species2"
-        self.species2_density_ratio = DensityRatio()
-        self.species2_density_ratio.ratio = 1
+        self.species2_density_ratio = DensityRatio(ratio=1)
         self.species2.constants = [self.species2_density_ratio]
 
         self.species3 = Species()
         self.species3.name = "species3"
-        self.species3_density_ratio = DensityRatio()
-        self.species3_density_ratio.ratio = 5
+        self.species3_density_ratio = DensityRatio(ratio=5)
         self.species3.constants = [self.species3_density_ratio]
 
         self.species4 = Species()
@@ -91,11 +88,6 @@ class TestSimpleDensity(unittest.TestCase):
         density_ratio_const = self.species3.constants[0]
 
         self.assertTrue(isinstance(density_ratio_const, DensityRatio))
-
-        # update ratio s.t. it now violates checks
-        density_ratio_const.ratio = -1
-        with self.assertRaises(ValueError):
-            self.sd.check_preconditions()
 
     def test_typesafety(self):
         """typesafety enforced"""

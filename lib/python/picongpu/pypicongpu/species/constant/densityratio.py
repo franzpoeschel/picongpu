@@ -5,30 +5,14 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from pydantic import BaseModel, Field
 from .constant import Constant
-from ... import util
-
-import typeguard
 
 
-@typeguard.typechecked
-class DensityRatio(Constant):
+class DensityRatio(Constant, BaseModel):
     """
     factor for weighting when using profiles/deriving
     """
 
-    ratio = util.build_typesafe_property(float)
+    ratio: float = Field(gt=0.0)
     """factor for weighting calculation"""
-
-    def __init__(self):
-        pass
-
-    def check(self) -> None:
-        if self.ratio <= 0:
-            raise ValueError("density ratio must be >0")
-
-    def _get_serialized(self) -> dict:
-        self.check()
-        return {
-            "ratio": self.ratio,
-        }
