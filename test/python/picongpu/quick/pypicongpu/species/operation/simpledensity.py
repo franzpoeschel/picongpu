@@ -39,8 +39,7 @@ class TestSimpleDensity(unittest.TestCase):
         # note: no explicit density ratio (should be assumed 1)
         self.species4.constants = []
 
-        self.profile = densityprofile.Uniform()
-        self.profile.density_si = 42
+        self.profile = densityprofile.Uniform(density_si=42)
 
         self.sd = SimpleDensity()
         self.sd.ppc = 2
@@ -66,22 +65,6 @@ class TestSimpleDensity(unittest.TestCase):
 
     def test_check_passthru(self):
         """passes check through to profile & density ratios"""
-        # break profile -> check fails
-        self.sd.profile.density_si = -2
-
-        # direct check fails
-        with self.assertRaises(ValueError):
-            self.sd.profile.check()
-
-        # ... as well as check of entire object
-        with self.assertRaises(ValueError):
-            self.sd.check_preconditions()
-
-        # but now ok:
-        self.sd.profile.density_si = 1
-        self.sd.check_preconditions()
-
-        # ratios are checked too:
         self.assertTrue(self.species3 in self.sd.species)
         self.assertNotEqual([], self.species3.constants)
         density_ratio_const = self.species3.constants[0]

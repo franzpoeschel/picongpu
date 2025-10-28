@@ -47,8 +47,7 @@ class UniformDistribution(picmistandard.PICMI_UniformDistribution):
         util.unsupported("lower bound", self.lower_bound, [None, None, None])
         util.unsupported("upper bound", self.upper_bound, [None, None, None])
 
-        profile = species.operation.densityprofile.Uniform()
-        profile.density_si = self.density
+        profile = species.operation.densityprofile.Uniform(density_si=self.density)
 
         # @todo respect bounding box, Brian Marre, 2023
         # profile.lower_bound = tuple(map(

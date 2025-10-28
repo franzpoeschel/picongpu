@@ -163,8 +163,7 @@ class TestSimulation(unittest.TestCase):
         species_dummy = species.Species()
         species_dummy.name = "myname"
         species_dummy.constants = []
-        uniform_dist = species.operation.densityprofile.Uniform()
-        uniform_dist.density_si = 123
+        uniform_dist = species.operation.densityprofile.Uniform(density_si=123)
 
         op_density = species.operation.SimpleDensity()
         op_density.ppc = 1

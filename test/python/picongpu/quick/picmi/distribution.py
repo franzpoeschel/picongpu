@@ -90,11 +90,10 @@ class TestPicmiUniformDistribution(unittest.TestCase, HelperTestPicmiBoundaries)
         # self.assertEqual((444, 555, 666), pypic.upper_bound)
 
     def test_density_zero(self):
-        """density set to zero is accepted"""
+        """density set to zero is not accepted"""
         uniform = picmi.UniformDistribution(density=0)
-        pypic = uniform.get_as_pypicongpu(ARBITRARY_GRID)
-        # no error:
-        self.assertEqual(0, pypic.density_si)
+        with self.assertRaises(ValidationError):
+            uniform.get_as_pypicongpu(ARBITRARY_GRID)
 
     def test_mandatory(self):
         """check that mandatory must be given"""

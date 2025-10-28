@@ -502,8 +502,7 @@ class TestInitManager(unittest.TestCase):
 
         simple_density = SimpleDensity()
         simple_density.ppc = 927
-        simple_density.profile = densityprofile.Uniform()
-        simple_density.profile.density_si = 1337
+        simple_density.profile = densityprofile.Uniform(density_si=1337)
         simple_density.species = {
             self.species1,
             self.species2,
@@ -540,8 +539,7 @@ class TestInitManager(unittest.TestCase):
 
         simple_density = SimpleDensity()
         simple_density.ppc = 927
-        simple_density.profile = densityprofile.Uniform()
-        simple_density.profile.density_si = 1337
+        simple_density.profile = densityprofile.Uniform(density_si=1337)
         simple_density.species = {
             self.species1,
         }
