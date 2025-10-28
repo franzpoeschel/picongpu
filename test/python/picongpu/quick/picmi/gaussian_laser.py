@@ -32,21 +32,21 @@ class TestPicmiGaussianLaser(unittest.TestCase):
 
         pypic_laser = picmi_laser.get_as_pypicongpu()
         # translated
-        self.assertEqual(1, pypic_laser.wavelength)
-        self.assertEqual(2, pypic_laser.waist)
-        self.assertEqual(3, pypic_laser.duration)
-        self.assertEqual([0, 1, 0], pypic_laser.propagation_direction)
-        self.assertEqual([0, 0, 1], pypic_laser.polarization_direction)
-        self.assertEqual([5, 4, 5], pypic_laser.focal_position)
+        self.assertEqual(1, pypic_laser.wave_length_si)
+        self.assertEqual(2, pypic_laser.waist_si)
+        self.assertEqual(3, pypic_laser.pulse_duration_si)
+        self.assertEqual((0, 1, 0), pypic_laser.propagation_direction)
+        self.assertEqual((0, 0, 1), pypic_laser.polarization_direction)
+        self.assertEqual((5, 4, 5), pypic_laser.focus_pos_si)
         # centroid is not a picongpu input
-        self.assertEqual(5, pypic_laser.E0)
+        self.assertEqual(5, pypic_laser.E0_si)
         self.assertEqual(
             picmi.lasers.PolarizationType.LINEAR.get_as_pypicongpu(),
             pypic_laser.polarization_type,
         )
         self.assertEqual([2.0, 3.0], pypic_laser.laguerre_modes)
         self.assertEqual([4.0, 5.0], pypic_laser.laguerre_phases)
-        self.assertEqual(-2, pypic_laser.phi0)
+        self.assertEqual(-2, pypic_laser.phase)
         self.assertEqual([[1, -1], [1, -1], [1, -1]], pypic_laser.huygens_surface_positions)
 
         # computed values
@@ -84,9 +84,9 @@ class TestPicmiGaussianLaser(unittest.TestCase):
             polarization_direction=[1, 0, 0],
             E0=1,
         )
-        self.assertEqual(1, picmi_laser.get_as_pypicongpu().focal_position[0])
-        self.assertEqual(2, picmi_laser.get_as_pypicongpu().focal_position[1])
-        self.assertEqual(-5, picmi_laser.get_as_pypicongpu().focal_position[2])
+        self.assertEqual(1, picmi_laser.get_as_pypicongpu().focus_pos_si[0])
+        self.assertEqual(2, picmi_laser.get_as_pypicongpu().focus_pos_si[1])
+        self.assertEqual(-5, picmi_laser.get_as_pypicongpu().focus_pos_si[2])
 
     def test_values_propagation_direction(self):
         """only propagation in y+ permitted"""
@@ -148,7 +148,7 @@ class TestPicmiGaussianLaser(unittest.TestCase):
                 )
 
         # valid examples:
-        valid_polarization_vectors = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        valid_polarization_vectors = [(1, 0, 0), (0, 1, 0), (0, 0, 1)]
 
         for valid_polarization_vector in valid_polarization_vectors:
             picmi_laser = picmi.GaussianLaser(

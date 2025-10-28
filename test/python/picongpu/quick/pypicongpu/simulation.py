@@ -54,22 +54,22 @@ class TestSimulation(unittest.TestCase):
         self.s.init_manager = species.InitManager()
         self.s.base_density = 1.0e25
 
-        laser = GaussianLaser()
-        laser.wavelength = 1.2
-        laser.waist = 3.4
-        laser.duration = 5.6
-        laser.focal_position = [0, 7.8, 0]
-        laser.centroid_position = [0, 0, 0]
-        laser.phi0 = 2.9
-        laser.E0 = 9.0
-        laser.pulse_init = 1.3
-        laser.propagation_direction = [0, 1, 0]
-        laser.polarization_type = PolarizationType.LINEAR
-        laser.polarization_direction = [0, 0, 1]
-        laser.laguerre_modes = [1.2, 2.4]
-        laser.laguerre_phases = [2.4, 3.4]
-        laser.huygens_surface_positions = [[1, -1], [1, -1], [1, -1]]
-        self.laser = [laser]
+        self.laser = [GaussianLaser(
+            wavelength=1.2,
+            waist=3.4,
+            duration=5.6,
+            focal_position=[0, 7.8, 0],
+            centroid_position=[0, 0, 0],
+            phi0=2.9,
+            E0=9.0,
+            pulse_init=1.3,
+            propagation_direction=[0, 1, 0],
+            polarization_type=PolarizationType.LINEAR,
+            polarization_direction=[0, 0, 1],
+            laguerre_modes=[1.2, 2.4],
+            laguerre_phases=[2.4, 3.4],
+            huygens_surface_positions=[[1, -1], [1, -1], [1, -1]],
+        )]
 
         self.customData_1 = [{"test_data_1": 1}, "tag_1"]
         self.customData_2 = [{"test_data_2": 2}, "tag_2"]
