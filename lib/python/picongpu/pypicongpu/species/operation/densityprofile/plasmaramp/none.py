@@ -5,19 +5,15 @@ Authors: Kristin Tippey, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
-import typeguard
-
+from pydantic import BaseModel, PrivateAttr, model_serializer
 from .plasmaramp import PlasmaRamp
 
 
-@typeguard.typechecked
-class None_(PlasmaRamp):
+class None_(PlasmaRamp, BaseModel):
     """no plasma ramp, either up or down"""
 
-    _name = "none"
+    _name: str = PrivateAttr("none")
 
-    def check(self):
-        pass
-
-    def _get_serialized(self) -> dict | None:
+    @model_serializer()
+    def serialize(self):
         return None

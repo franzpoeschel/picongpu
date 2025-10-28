@@ -61,8 +61,8 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
 
         if prePlasma:
             foilProfile.pre_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.Exponential(
-                self.exponential_pre_plasma_length,
-                self.exponential_pre_plasma_cutoff,
+                PlasmaLength=self.exponential_pre_plasma_length,
+                PlasmaCutoff=self.exponential_pre_plasma_cutoff,
             )
         elif explicitlyNoPrePlasma:
             foilProfile.pre_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.None_()
@@ -83,8 +83,8 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
 
         if postPlasma:
             foilProfile.post_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.Exponential(
-                self.exponential_post_plasma_length,
-                self.exponential_post_plasma_cutoff,
+                PlasmaLength=self.exponential_post_plasma_length,
+                PlasmaCutoff=self.exponential_post_plasma_cutoff,
             )
         elif explicitlyNoPostPlasma:
             foilProfile.post_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.None_()

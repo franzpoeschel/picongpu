@@ -5,27 +5,13 @@ Authors: Kristin Tippey, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
-import typeguard
-
+from pydantic import BaseModel, PrivateAttr, Field
 from .plasmaramp import PlasmaRamp
 
 
-@typeguard.typechecked
-class Exponential(PlasmaRamp):
+class Exponential(PlasmaRamp, BaseModel):
     """exponential plasma ramp, either up or down"""
 
-    _name = "exponential"
-
-    def __init__(self, PlasmaLength: float, PlasmaCutoff: float):
-        self.PlasmaLength = PlasmaLength
-        self.PlasmaCutoff = PlasmaCutoff
-
-    def check(self) -> None:
-        if self.PlasmaLength <= 0:
-            raise ValueError("PlasmaLength must be >0")
-        if self.PlasmaCutoff < 0:
-            raise ValueError("PlasmaCutoff must be >=0")
-
-    def _get_serialized(self) -> dict:
-        self.check()
-        return {"PlasmaLength": self.PlasmaLength, "PlasmaCutoff": self.PlasmaCutoff}
+    _name: str = PrivateAttr("exponential")
+    PlasmaLength: float = Field(gt=0.0)
+    PlasmaCutoff: float = Field(ge=0.0)

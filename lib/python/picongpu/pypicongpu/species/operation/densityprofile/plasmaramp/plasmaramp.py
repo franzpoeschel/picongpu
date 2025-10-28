@@ -5,12 +5,11 @@ Authors: Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
+from pydantic import BaseModel
 from .....rendering import SelfRegisteringRenderedObject
-import typeguard
 
 
-@typeguard.typechecked
-class PlasmaRamp(SelfRegisteringRenderedObject):
+class PlasmaRamp(SelfRegisteringRenderedObject, BaseModel):
     """
     abstract parent class for all plasma ramps
 

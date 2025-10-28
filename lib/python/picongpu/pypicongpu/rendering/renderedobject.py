@@ -269,6 +269,8 @@ class SelfRegistering:
             return cls.__private_attributes__["_name"].default
         except AttributeError:
             return cls._name
+        except KeyError:
+            return cls._dummy_name
 
     def __init_subclass__(cls):
         if cls._extract_name() != cls._dummy_name:

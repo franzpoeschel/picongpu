@@ -43,8 +43,6 @@ class Foil(DensityProfile):
             raise ValueError("y_value_front must be >= 0")
         if self.thickness_foil_si < 0:
             raise ValueError("thickness must be >= 0")
-        self.pre_foil_plasmaRamp.check()
-        self.post_foil_plasmaRamp.check()
 
     def _get_serialized(self) -> dict:
         self.check()

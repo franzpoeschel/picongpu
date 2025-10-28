@@ -59,8 +59,6 @@ class CylindricalDistribution(Distribution):
         self.cell_size = grid.get_cell_size()
         util.unsupported("fill in not active", self.fill_in, True)
 
-        profile = species.operation.densityprofile.Cylinder()
-
         if self.density <= 0.0:
             raise ValueError("density must be > 0")
 
@@ -83,12 +81,12 @@ class CylindricalDistribution(Distribution):
         )
 
         if prePlasma:
-            profile.pre_plasma_ramp = species.operation.densityprofile.plasmaramp.Exponential(
-                self.exponential_pre_plasma_length,  # type: ignore
-                self.exponential_pre_plasma_cutoff,  # type: ignore
+            pre_plasma_ramp = species.operation.densityprofile.plasmaramp.Exponential(
+                PlasmaLength=self.exponential_pre_plasma_length,  # type: ignore
+                PlasmaCutoff=self.exponential_pre_plasma_cutoff,  # type: ignore
             )
         elif explicitlyNoPrePlasma:
-            profile.pre_plasma_ramp = species.operation.densityprofile.plasmaramp.None_()
+            pre_plasma_ramp = species.operation.densityprofile.plasmaramp.None_()
         else:
             raise ValueError(
                 "either both exponential_pre_plasma_length and"
@@ -97,12 +95,13 @@ class CylindricalDistribution(Distribution):
             )
 
         # @todo change to constructor call once we switched PyPIConGPU to use pydantic, Brian Marre, 2024
-        profile.density_si = self.density
-        profile.center_position_si = self.center_position
-        profile.radius_si = self.radius
-        profile.cylinder_axis = self.cylinder_axis
-
-        return profile
+        return species.operation.densityprofile.Cylinder(
+            density_si=self.density,
+            center_position_si=self.center_position,
+            radius_si=self.radius,
+            cylinder_axis=self.cylinder_axis,
+            pre_plasma_ramp=pre_plasma_ramp,
+        )
 
     def __call__(
         self,
