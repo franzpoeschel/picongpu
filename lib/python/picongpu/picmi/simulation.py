@@ -286,7 +286,6 @@ class Simulation(picmistandard.PICMI_Simulation):
                 op.ppc = layout.n_macroparticles_per_cell
                 op.profile = profile.get_as_pypicongpu(self.solver.grid)
                 op.layout = layout.get_as_pypicongpu()
-                op.layout.ppc = layout.n_macroparticles_per_cell
 
                 op.species = set(
                     map(

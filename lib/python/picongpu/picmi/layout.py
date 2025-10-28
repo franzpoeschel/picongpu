@@ -28,7 +28,7 @@ class PseudoRandomLayout(picmistandard.PICMI_PseudoRandomLayout):
         # Note: Call PICMI check interface once available upstream
 
     def get_as_pypicongpu(self):
-        return Random()
+        return Random(ppc=self.n_macroparticles_per_cell)
 
 
 @typeguard.typechecked
@@ -63,4 +63,4 @@ class GriddedLayout(picmistandard.PICMI_GriddedLayout):
         # Note: Call PICMI check interface once available upstream
 
     def get_as_pypicongpu(self):
-        return OnePosition()
+        return OnePosition(ppc=self.n_macroparticles_per_cell)

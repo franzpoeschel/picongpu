@@ -7,10 +7,7 @@ License: GPLv3+
 
 from ....rendering import SelfRegisteringRenderedObject
 
-import typeguard
 
-
-@typeguard.typechecked
 class Layout(SelfRegisteringRenderedObject):
     """
     (abstract) parent class of all layouts

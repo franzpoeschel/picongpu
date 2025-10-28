@@ -52,8 +52,7 @@ class TestSimpleDensity(unittest.TestCase):
             self.species4,
         }
 
-        self.sd.layout = Random()
-        self.sd.layout.ppc = 1
+        self.sd.layout = Random(ppc=1)
 
     def test_basic(self):
         """simple scenario"""
@@ -207,8 +206,7 @@ class TestSimpleDensity(unittest.TestCase):
         sd.ppc = 1
         sd.species = {species}
 
-        sd.layout = Random()
-        sd.layout.ppc = 1
+        sd.layout = Random(ppc=1)
 
         # would normally be performed by init manager:
         species.attributes = [Momentum()]

@@ -172,8 +172,7 @@ class TestSimulation(unittest.TestCase):
         op_density.species = {
             species_dummy,
         }
-        op_density.layout = Random()
-        op_density.layout.ppc = 1
+        op_density.layout = Random(ppc=1)
 
         op_momentum = species.operation.SimpleMomentum()
         op_momentum.species = species_dummy
