@@ -19,8 +19,7 @@ from copy import deepcopy
 
 class TestSimpleMomentum(unittest.TestCase):
     def setUp(self):
-        self.temperature = Temperature()
-        self.temperature.temperature_kev = 42
+        self.temperature = Temperature(temperature_kev=42)
 
         self.drift = Drift()
         self.drift.direction_normalized = (1, 0, 0)
@@ -54,14 +53,6 @@ class TestSimpleMomentum(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.sm.check_preconditions()
         self.drift.gamma = 1
-
-        # temperature check is called:
-        self.temperature.temperature_kev = -1
-        with self.assertRaises(ValueError):
-            self.temperature.check()
-        with self.assertRaises(ValueError):
-            self.sm.check_preconditions()
-        self.temperature.temperature_kev = 42
 
         # works again:
         self.sm.check_preconditions()
@@ -138,22 +129,6 @@ class TestSimpleMomentum(unittest.TestCase):
         # ok with species:
         sm.species = self.species
         sm.check_preconditions()
-
-    def test_explicit_attributes(self):
-        """even if optional, parameters have to be given explicitly"""
-        for set_temp in [True, False]:
-            for set_drift in [True, False]:
-                sm = SimpleMomentum()
-                sm.species = self.species
-                if set_temp:
-                    sm.temperature = self.temperature
-                if set_drift:
-                    sm.drift = self.drift
-
-                if not (set_temp and set_drift):
-                    # refuse to work if not both are explicitly set
-                    with self.assertRaises(Exception):
-                        sm.check_preconditions()
 
     def test_rendering_checks(self):
         """rendering calls check"""

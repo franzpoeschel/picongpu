@@ -313,8 +313,7 @@ class Species(picmistandard.PICMI_Species):
             )
 
         if 0 != temperature_kev:
-            momentum_op.temperature = pypicongpu.species.operation.momentum.Temperature()
-            momentum_op.temperature.temperature_kev = temperature_kev
+            momentum_op.temperature = pypicongpu.species.operation.momentum.Temperature(temperature_kev=temperature_kev)
         else:
             momentum_op.temperature = None
 

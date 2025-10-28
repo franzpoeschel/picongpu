@@ -5,8 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-import typeguard
-from .... import util
+from pydantic import BaseModel, Field
 from ....rendering import RenderedObject
 
 # Note to the future maintainer:
@@ -16,26 +15,10 @@ from ....rendering import RenderedObject
 # supported, so such a structure would be overkill.)
 
 
-@typeguard.typechecked
-class Temperature(RenderedObject):
+class Temperature(RenderedObject, BaseModel):
     """
     Initialize momentum from temperature
     """
 
-    temperature_kev = util.build_typesafe_property(float)
+    temperature_kev: float = Field(gt=0.0)
     """temperature to use in keV"""
-
-    def check(self) -> None:
-        """
-        check validity of self
-
-        pass silently if okay, raise on error
-        """
-        if self.temperature_kev <= 0:
-            raise ValueError("temperature must be >0")
-
-    def _get_serialized(self) -> dict:
-        self.check()
-        return {
-            "temperature_kev": self.temperature_kev,
-        }
