@@ -5,52 +5,33 @@ Authors: Kristin Tippey, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
+from typing import Annotated
+
+from pydantic import BaseModel, Field, PrivateAttr, PlainSerializer
+
 from .densityprofile import DensityProfile
-from .plasmaramp import PlasmaRamp
-from .... import util
-
-import typeguard
+from .plasmaramp import AllPlasmaRamps, None_
 
 
-@typeguard.typechecked
-class Foil(DensityProfile):
+class Foil(DensityProfile, BaseModel):
     """
     Directional density profile with thickness and pre- and
     post-plasma lengths and cutoffs
     """
 
-    _name = "foil"
+    _name: str = PrivateAttr("foil")
 
-    density_si = util.build_typesafe_property(float)
+    density_si: float = Field(gt=0.0)
     """particle number density at at the foil plateau (m^-3)"""
 
-    y_value_front_foil_si = util.build_typesafe_property(float)
+    y_value_front_foil_si: float = Field(ge=0.0)
     """position of the front of the foil plateau (m)"""
 
-    thickness_foil_si = util.build_typesafe_property(float)
+    thickness_foil_si: float = Field(ge=0.0)
     """thickness of the foil plateau (m)"""
 
-    pre_foil_plasmaRamp = util.build_typesafe_property(PlasmaRamp)
+    pre_foil_plasmaRamp: Annotated[AllPlasmaRamps, PlainSerializer(lambda x: x.get_rendering_context())] = None_()
     """pre(lower y) foil-plateau ramp of density"""
 
-    post_foil_plasmaRamp = util.build_typesafe_property(PlasmaRamp)
+    post_foil_plasmaRamp: Annotated[AllPlasmaRamps, PlainSerializer(lambda x: x.get_rendering_context())] = None_()
     """post(higher y) foil-plateau ramp of density"""
-
-    def check(self) -> None:
-        if self.density_si <= 0:
-            raise ValueError("density must be > 0")
-        if self.y_value_front_foil_si < 0:
-            raise ValueError("y_value_front must be >= 0")
-        if self.thickness_foil_si < 0:
-            raise ValueError("thickness must be >= 0")
-
-    def _get_serialized(self) -> dict:
-        self.check()
-
-        return {
-            "density_si": self.density_si,
-            "y_value_front_foil_si": self.y_value_front_foil_si,
-            "thickness_foil_si": self.thickness_foil_si,
-            "pre_foil_plasmaRamp": self.pre_foil_plasmaRamp.get_rendering_context(),
-            "post_foil_plasmaRamp": self.post_foil_plasmaRamp.get_rendering_context(),
-        }

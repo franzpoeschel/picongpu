@@ -230,8 +230,8 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
     def test_density_zero(self):
         """density set to zero is not accepted"""
         foil = picmi.FoilDistribution(density=0, thickness=1.0, front=2.0)
-        with self.assertRaisesRegex(ValueError, ".*density must be > 0.*"):
-            foil.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
+        with self.assertRaises(ValidationError):
+            foil.get_as_pypicongpu(ARBITRARY_GRID)
 
     def test_front_zero(self):
         """front set to zero is accepted"""
@@ -332,7 +332,7 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
                 "length and exponential_(pre|post)_plasma_cutoff must be"
                 " set to none or neither!",
             ):
-                entry.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
+                entry.get_as_pypicongpu(ARBITRARY_GRID)
 
         testCases = self._get_test_foils(1.0, None)
         for entry in testCases:
@@ -342,13 +342,13 @@ class TestPicmiFoilDistribution(unittest.TestCase, HelperTestPicmiBoundaries):
                 "length and exponential_(pre|post)_plasma_cutoff must be"
                 " set to none or neither!",
             ):
-                entry.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
+                entry.get_as_pypicongpu(ARBITRARY_GRID)
 
     def test_mandatory(self):
         """check that mandatory must be given"""
         # type of exception is not checked
         with self.assertRaises(Exception):
-            picmi.FoilDistribution().get_as_pypicongpu(ARBITRARY_GRID)
+            picmi.FoilDistribution()
 
         # density, thickness and front are only required param
         picmi.FoilDistribution(density=3.14, thickness=1.0, front=3.0).get_as_pypicongpu(ARBITRARY_GRID)

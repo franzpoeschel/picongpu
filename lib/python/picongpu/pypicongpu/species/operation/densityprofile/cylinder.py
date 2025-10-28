@@ -8,7 +8,7 @@ License: GPLv3+
 from typing import Annotated
 from pydantic import BeforeValidator, Field, PlainSerializer, PrivateAttr, BaseModel, model_validator
 from .densityprofile import DensityProfile
-from .plasmaramp import PlasmaRamp, None_
+from .plasmaramp import AllPlasmaRamps, None_
 
 import math
 
@@ -58,7 +58,7 @@ class Cylinder(DensityProfile, BaseModel):
 
     # This still relies on some magic to insert the typeID.
     # We'll handle it another time:
-    pre_plasma_ramp: Annotated[PlasmaRamp, PlainSerializer(lambda x: x.get_rendering_context())]
+    pre_plasma_ramp: Annotated[AllPlasmaRamps, PlainSerializer(lambda x: x.get_rendering_context())] = None_()
     """pre plasma ramp"""
 
     @model_validator(mode="after")
