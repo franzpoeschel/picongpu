@@ -5,14 +5,14 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-from picongpu.picmi.grid import Cartesian3DGrid
-from picongpu import picmi
-
+import math
 import unittest
 
-from picongpu.pypicongpu import species
-import math
 import typeguard
+from picongpu import picmi
+from picongpu.picmi.grid import Cartesian3DGrid
+from picongpu.pypicongpu import species
+from pydantic import ValidationError
 
 ARBITRARY_GRID = Cartesian3DGrid(
     lower_bound=[0, 0, 0],
@@ -411,12 +411,12 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
         self.assertTrue(isinstance(pypic, species.operation.densityprofile.Gaussian))
 
         self.assertEqual(self.values["density"], pypic.density)
-        self.assertEqual(self.values["center_front"], pypic.center_front)
-        self.assertEqual(self.values["center_rear"], pypic.center_rear)
-        self.assertEqual(self.values["sigma_front"], pypic.sigma_front)
-        self.assertEqual(self.values["sigma_rear"], pypic.sigma_rear)
-        self.assertEqual(self.values["power"], pypic.power)
-        self.assertEqual(self.values["factor"], pypic.factor)
+        self.assertEqual(self.values["center_front"], pypic.gas_center_front)
+        self.assertEqual(self.values["center_rear"], pypic.gas_center_rear)
+        self.assertEqual(self.values["sigma_front"], pypic.gas_sigma_front)
+        self.assertEqual(self.values["sigma_rear"], pypic.gas_sigma_rear)
+        self.assertEqual(self.values["power"], pypic.gas_power)
+        self.assertEqual(self.values["factor"], pypic.gas_factor)
         self.assertEqual(self.values["vacuum_front"], pypic.vacuum_cells_front)
 
         # @todo repect bounding boxes, Brian Marre, 2024
@@ -440,12 +440,12 @@ class TestPicmiGaussianDistribution(unittest.TestCase, HelperTestPicmiBoundaries
         """sigma == 0 is not accepted"""
         gaussian = self._get_distribution()
         gaussian.sigma_front = 0.0
-        with self.assertRaisesRegex(ValueError, ".*sigma_front must be != 0.*"):
+        with self.assertRaises(ValidationError):
             gaussian.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
         gaussian = self._get_distribution()
         gaussian.sigma_rear = 0.0
-        with self.assertRaisesRegex(ValueError, ".*sigma_rear must be != 0.*"):
+        with self.assertRaises(ValidationError):
             gaussian.get_as_pypicongpu(ARBITRARY_GRID).get_rendering_context()
 
     def test_drift(self):
