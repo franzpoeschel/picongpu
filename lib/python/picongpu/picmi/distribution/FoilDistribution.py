@@ -105,10 +105,7 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
         """
         if [0, 0, 0] == self.directed_velocity:
             return None
-
-        drift = species.operation.momentum.Drift()
-        drift.fill_from_velocity(tuple(self.directed_velocity))
-        return drift
+        return species.operation.momentum.Drift.from_velocity(tuple(self.directed_velocity))
 
     def __call__(self, x, y, z):
         # We do this to get the correct shape after broadcasting:

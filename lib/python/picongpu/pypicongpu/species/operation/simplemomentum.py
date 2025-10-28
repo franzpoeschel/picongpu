@@ -45,9 +45,6 @@ class SimpleMomentum(Operation):
         # acces species to make sure it is set -> no required constants
         assert self.species is not None
 
-        if self.drift is not None:
-            self.drift.check()
-
     def prebook_species_attributes(self) -> None:
         # always provides attribute -- might not be set (i.e. left at 0) though
         self.attributes_by_species = {self.species: [Momentum()]}

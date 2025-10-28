@@ -21,9 +21,7 @@ class TestSimpleMomentum(unittest.TestCase):
     def setUp(self):
         self.temperature = Temperature(temperature_kev=42)
 
-        self.drift = Drift()
-        self.drift.direction_normalized = (1, 0, 0)
-        self.drift.gamma = 1
+        self.drift = Drift(direction_normalized=(1, 0, 0), gamma=1)
 
         self.species = Species()
         self.species.name = "mockname"
@@ -43,19 +41,6 @@ class TestSimpleMomentum(unittest.TestCase):
         self.assertEqual(context["species"], self.species.get_rendering_context())
         self.assertEqual(context["temperature"], self.temperature.get_rendering_context())
         self.assertEqual(context["drift"], self.drift.get_rendering_context())
-
-    def test_check_passthru(self):
-        """calls check of children"""
-        # drift check called:
-        self.drift.gamma = -1
-        with self.assertRaises(ValueError):
-            self.drift.check()
-        with self.assertRaises(ValueError):
-            self.sm.check_preconditions()
-        self.drift.gamma = 1
-
-        # works again:
-        self.sm.check_preconditions()
 
     def test_attribute(self):
         """actually provides an attribute"""
@@ -129,19 +114,3 @@ class TestSimpleMomentum(unittest.TestCase):
         # ok with species:
         sm.species = self.species
         sm.check_preconditions()
-
-    def test_rendering_checks(self):
-        """rendering calls check"""
-        sm = SimpleMomentum()
-        sm.species = self.species
-        sm.temperature = None
-        sm.drift = self.drift
-        sm.drift.gamma = -1
-
-        # raises...
-        with self.assertRaises(ValueError):
-            sm.check_preconditions()
-
-        # ...hence context also raises
-        with self.assertRaises(ValueError):
-            sm.get_rendering_context()

@@ -5,13 +5,14 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-from ....rendering import RenderedObject
-from .... import util
-
-import typeguard
-import typing
 import math
+from typing import Annotated
+
+import numpy as np
+from pydantic import AfterValidator, BaseModel, Field, PlainSerializer
 from scipy import constants
+
+from ....rendering import RenderedObject
 
 # Note to the future maintainer:
 # If you want to add another way to specify the drift, please turn
@@ -19,8 +20,25 @@ from scipy import constants
 # method.
 
 
-@typeguard.typechecked
-class Drift(RenderedObject):
+def serialise_vec(value) -> dict:
+    return dict(zip("xyz", value))
+
+
+EPSILON = 1.0e-5
+
+
+def validate_unit_vec(value):
+    if any(np.isinf(value)) or any(np.isnan(value)):
+        raise ValueError(f"{value=} must not contain infs or nans.")
+    if np.abs((vector_length := np.sqrt(sum(map(lambda n: n**2, value)))) - 1.0) > EPSILON:
+        raise ValueError(f"Expected unit vector but {value=} has {vector_length=}.")
+    return value
+
+
+Vec3_float = Annotated[tuple[float, float, float], PlainSerializer(serialise_vec), AfterValidator(validate_unit_vec)]
+
+
+class Drift(RenderedObject, BaseModel):
     """
     Add drift to a species (momentum)
 
@@ -29,48 +47,14 @@ class Drift(RenderedObject):
     from PICMI) are provided.
     """
 
-    direction_normalized = util.build_typesafe_property(typing.Tuple[float, float, float])
+    direction_normalized: Vec3_float
     """direction of drift, length of one"""
 
-    gamma = util.build_typesafe_property(float)
+    gamma: float = Field(ge=1.0, allow_inf_nan=False)
     """gamma, the physicists know"""
 
-    def __check_vector_real(self, vector: typing.Tuple[float, float, float]) -> None:
-        """
-        check that a vector only contains real components
-
-        passes silently if OK, throws otherwise
-
-        :param vector: three-tuple to check
-        """
-        for invalid in [math.inf, -math.inf, math.nan]:
-            if invalid in vector:
-                raise ValueError(
-                    "vector may only contain real components, offending axis: {}".format(
-                        ["x", "y", "z"][vector.index(invalid)]
-                    )
-                )
-
-    def check(self) -> None:
-        """
-        check attributes for correctness
-
-        pass silently if everything is OK,
-        throw error otherwise
-        """
-        invalids = [math.inf, -math.inf, math.nan]
-        if self.gamma in invalids:
-            raise ValueError("gamma must be real")
-        if self.gamma < 1:
-            raise ValueError("gamma must be >=1")
-
-        self.__check_vector_real(self.direction_normalized)
-
-        vector_length = sum(map(lambda n: n**2, self.direction_normalized))
-        if 1 != round(vector_length, 6):
-            raise ValueError("direction must be normalized (current length: {})".format(vector_length))
-
-    def fill_from_velocity(self, velocity: typing.Tuple[float, float, float]) -> None:
+    @classmethod
+    def from_velocity(cls, velocity: tuple[float, float, float]):
         """
         set attributes to represent given velocity vector
 
@@ -78,7 +62,6 @@ class Drift(RenderedObject):
 
         :param velocity: velocity given as vector
         """
-        self.__check_vector_real(velocity)
         if (0, 0, 0) == velocity:
             raise ValueError("velocity must not be zero")
 
@@ -88,12 +71,13 @@ class Drift(RenderedObject):
                 "linear velocity must be less than the speed of light (currently: {})".format(velocity_linear)
             )
 
-        gamma = math.sqrt(1 / (1 - (velocity_linear**2 / constants.speed_of_light**2)))
+        return cls(
+            gamma=math.sqrt(1 / (1 - (velocity_linear**2 / constants.speed_of_light**2))),
+            direction_normalized=tuple(map(lambda x: x / velocity_linear, velocity)),
+        )
 
-        self.direction_normalized = tuple(map(lambda x: x / velocity_linear, velocity))
-        self.gamma = gamma
-
-    def fill_from_gamma_velocity(self, gamma_velocity: typing.Tuple[float, float, float]) -> None:
+    @classmethod
+    def from_gamma_velocity(cls, gamma_velocity: tuple[float, float, float]):
         """
         set attributes to represent given velocity vector multiplied with gamma
 
@@ -101,22 +85,10 @@ class Drift(RenderedObject):
 
         :param velocity: velocity given as vector multiplied with gamma
         """
-        self.__check_vector_real(gamma_velocity)
         if (0, 0, 0) == gamma_velocity:
             raise ValueError("velocity must not be zero")
 
         gamma_velocity_linear = math.sqrt(sum(map(lambda x: x**2, gamma_velocity)))
         gamma = math.sqrt(1 + ((gamma_velocity_linear) ** 2 / constants.speed_of_light**2))
 
-        self.direction_normalized = tuple(map(lambda x: x / gamma_velocity_linear, gamma_velocity))
-        self.gamma = gamma
-
-    def _get_serialized(self) -> dict:
-        return {
-            "gamma": self.gamma,
-            "direction_normalized": {
-                "x": self.direction_normalized[0],
-                "y": self.direction_normalized[1],
-                "z": self.direction_normalized[2],
-            },
-        }
+        return cls(direction_normalized=tuple(map(lambda x: x / gamma_velocity_linear, gamma_velocity)), gamma=gamma)
