@@ -29,7 +29,7 @@ def validate_component_vector(value):
 
 class Cylinder(DensityProfile, BaseModel):
     """
-     Describes a cylindrical density distribution of particles with gaussian up-ramp
+    Describes a cylindrical density distribution of particles with gaussian up-ramp
     with a constant density region in between. It can have an arbitrary orientation
     and position in space.
 
