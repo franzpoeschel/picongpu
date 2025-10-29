@@ -48,7 +48,7 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
     {
     private:
         //! input required for calling rate formula
-        template<typename T_ChargeStateDataBox, typename T_AtomicStateDataBox, typename T_BoundFreeTransitionDataBox>
+        template<typename T_AtomicStateDataBox, typename T_BoundFreeTransitionDataBox>
         struct RateFormulaVariables
         {
             // unitless
@@ -68,13 +68,11 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             HDINLINE RateFormulaVariables(
                 float_X const ionizationEnergy,
                 uint32_t const transitionCollectionIndex,
-                T_ChargeStateDataBox const chargeStateDataBox,
                 T_AtomicStateDataBox const atomicStateDataBox,
                 T_BoundFreeTransitionDataBox const boundFreeTransitionDataBox)
             {
                 Z = BoundFreeFieldTransitionRates::screenedCharge(
                     transitionCollectionIndex,
-                    chargeStateDataBox,
                     atomicStateDataBox,
                     boundFreeTransitionDataBox);
 
@@ -103,21 +101,15 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
          *
          * @return unit: e
          */
-        template<typename T_ChargeStateDataBox, typename T_AtomicStateDataBox, typename T_BoundFreeTransitionDataBox>
+        template<typename T_AtomicStateDataBox, typename T_BoundFreeTransitionDataBox>
         HDINLINE static float_X screenedCharge(
             uint32_t const transitionCollectionIndex,
-            T_ChargeStateDataBox const chargeStateDataBox,
             T_AtomicStateDataBox const atomicStateDataBox,
             T_BoundFreeTransitionDataBox const boundFreeTransitionDataBox)
         {
             uint32_t const lowerStateClctIdx
                 = boundFreeTransitionDataBox.lowerStateCollectionIndex(transitionCollectionIndex);
-            auto const lowerStateConfigNumber = atomicStateDataBox.configNumber(lowerStateClctIdx);
-
-            using S_ConfigNumber = typename T_AtomicStateDataBox::ConfigNumber;
-            uint8_t const lowerStateChargeState = S_ConfigNumber::getChargeState(lowerStateConfigNumber);
-
-            return chargeStateDataBox.screenedCharge(lowerStateChargeState);
+            return atomicStateDataBox.screenedCharge(lowerStateClctIdx);
         }
 
         /** actual rate rateFormula
@@ -218,13 +210,11 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             if((ionizationEnergy <= 0) || !enoughFieldEnergy)
                 return static_cast<T_ReturnType>(0.);
 
-            auto const v
-                = RateFormulaVariables<T_ChargeStateDataBox, T_AtomicStateDataBox, T_BoundFreeTransitionDataBox>(
-                    ionizationEnergy,
-                    transitionCollectionIndex,
-                    chargeStateDataBox,
-                    atomicStateDataBox,
-                    boundFreeTransitionDataBox);
+            auto const v = RateFormulaVariables<T_AtomicStateDataBox, T_BoundFreeTransitionDataBox>(
+                ionizationEnergy,
+                transitionCollectionIndex,
+                atomicStateDataBox,
+                boundFreeTransitionDataBox);
 
             // unit: atomicUnit_eField
             float_X const eFieldNorm_AU = sim.pic.conv().eField2auEField(eFieldNorm);
@@ -279,13 +269,11 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             if((ionizationEnergy <= 0) || !enoughFieldEnergy)
                 return static_cast<T_ReturnType>(0.);
 
-            auto const v
-                = RateFormulaVariables<T_ChargeStateDataBox, T_AtomicStateDataBox, T_BoundFreeTransitionDataBox>(
-                    ionizationEnergy,
-                    transitionCollectionIndex,
-                    chargeStateDataBox,
-                    atomicStateDataBox,
-                    boundFreeTransitionDataBox);
+            auto const v = RateFormulaVariables<T_AtomicStateDataBox, T_BoundFreeTransitionDataBox>(
+                ionizationEnergy,
+                transitionCollectionIndex,
+                atomicStateDataBox,
+                boundFreeTransitionDataBox);
 
             float_X const nEffCubed = pmacc::math::cPow(v.nEff, u32(3u));
             float_X const ZCubed = pmacc::math::cPow(v.Z, u32(3u));

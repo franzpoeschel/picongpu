@@ -124,12 +124,12 @@ namespace picongpu::particles::atomicPhysics::debug
         {
             // charge states
             S_ChargeStateBox chargeStateHostBox = chargeStateBuffer->getHostDataBox();
-            //      ionizationEnergy = 100 eV, screened charge = 5 e
-            auto tupleChargeState_1 = std::make_tuple(u8(0u), 100._X, 5._X);
-            //      ionizationEnergy = 5 eV, screened charge = 5 e
-            auto tupleChargeState_2 = std::make_tuple(u8(1u), 5._X, 5._X);
-            //      ionizationEnergy = 100 eV, screened charge = 5 e
-            auto tupleChargeState_3 = std::make_tuple(u8(2u), 100._X, 5._X);
+            //      ionizationEnergy = 100 eV
+            auto tupleChargeState_1 = std::make_tuple(u8(0u), 100._X);
+            //      ionizationEnergy = 5 eV
+            auto tupleChargeState_2 = std::make_tuple(u8(1u), 5._X);
+            //      ionizationEnergy = 100 eV
+            auto tupleChargeState_3 = std::make_tuple(u8(2u), 100._X);
 
             chargeStateHostBox.store(u8(0u), tupleChargeState_1);
             chargeStateHostBox.store(u8(1u), tupleChargeState_2);
@@ -140,12 +140,12 @@ namespace picongpu::particles::atomicPhysics::debug
             /// atomic states, @attention caution all atomic state must differ in configNumber
             S_AtomicStateBox atomicStateHostBox = atomicStateBuffer->getHostDataBox();
 
-            // 1:(1,1,0,0,0,0,1,0,1,0) lowerStateBoundFree, exictationEnergy = 0 eV(ground state)
-            auto tupleAtomicState_bf_1 = std::make_tuple(static_cast<uint64_t>(243754u), 0._X);
-            // 2:(1,1,0,0,0,0,1,0,0,0) upperStateBoundFree, excitationEnergy = 5 eV
-            auto tupleAtomicState_bf_2 = std::make_tuple(static_cast<uint64_t>(9379u), 5._X);
-            // 3:(1,1,0,0,0,0,0,0,0,0) upperStateBoundFree, excitationEnergyDifference = 5 eV
-            auto tupleAtomicState_bf_3 = std::make_tuple(static_cast<uint64_t>(4u), 5._X);
+            // 1:(1,1,0,0,0,0,1,0,1,0) lowerStateBoundFree, exictationEnergy = 0 eV(ground state), screenedCharge 5
+            auto tupleAtomicState_bf_1 = std::make_tuple(static_cast<uint64_t>(243754u), 0._X, 5._X);
+            // 2:(1,1,0,0,0,0,1,0,0,0) upperStateBoundFree, excitationEnergy = 5 eV, screenedCharge 5
+            auto tupleAtomicState_bf_2 = std::make_tuple(static_cast<uint64_t>(9379u), 5._X, 5._X);
+            // 3:(1,1,0,0,0,0,0,0,0,0) upperStateBoundFree, excitationEnergyDifference = 5 eV, screenedCharge 5
+            auto tupleAtomicState_bf_3 = std::make_tuple(static_cast<uint64_t>(4u), 5._X, 5._X);
 
             /// @note states must be sorted primarily ascending by charge state, secondarily ascending by configNumber
             atomicStateHostBox.store(u8(1u), tupleAtomicState_bf_1);
@@ -153,9 +153,9 @@ namespace picongpu::particles::atomicPhysics::debug
             atomicStateHostBox.store(u8(4u), tupleAtomicState_bf_3);
 
             // 1:(1,0,2,0,0,0,1,0,0,0) lowerStateBoundBound
-            auto tupleAtomicState_bb_1 = std::make_tuple(static_cast<uint64_t>(9406u), 0._X);
+            auto tupleAtomicState_bb_1 = std::make_tuple(static_cast<uint64_t>(9406u), 0._X, 5._X);
             // 1:(1,0,1,0,0,0,1,0,1,0) upperStateBoundBound, energyDiffLowerUpper = 5 eV
-            auto tupleAtomicState_bb_2 = std::make_tuple(static_cast<uint64_t>(243766u), 5._X);
+            auto tupleAtomicState_bb_2 = std::make_tuple(static_cast<uint64_t>(243766u), 5._X, 5._X);
 
             /// @note states must be sorted primarily ascending by charge state, secondarily ascending by configNumber
             atomicStateHostBox.store(u8(0u), tupleAtomicState_bb_1);

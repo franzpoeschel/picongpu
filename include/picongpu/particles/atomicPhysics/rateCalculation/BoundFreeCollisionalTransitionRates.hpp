@@ -131,8 +131,6 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             float_64 const combinatorialFactor
                 = static_cast<float_64>(boundFreeTransitionDataBox.multiplicity(transitionCollectionIndex));
 
-            auto const lowerStateConfigNumber = atomicStateDataBox.configNumber(lowerStateClctIdx);
-
             // eV
             float_X const energyDifference = picongpu::particles::atomicPhysics::DeltaEnergyTransition::get(
                 transitionCollectionIndex,
@@ -145,7 +143,10 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             {
                 uint32_t const upperStateClctIdx
                     = boundFreeTransitionDataBox.upperStateCollectionIndex(transitionCollectionIndex);
+
                 auto const upperStateConfigNumber = atomicStateDataBox.configNumber(upperStateClctIdx);
+                auto const lowerStateConfigNumber = atomicStateDataBox.configNumber(lowerStateClctIdx);
+
                 if(S_ConfigNumber::getChargeState(upperStateConfigNumber)
                    < S_ConfigNumber::getChargeState(lowerStateConfigNumber))
                 {
@@ -177,10 +178,8 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
                 constexpr float_64 scalingConstant
                     = C * picongpu::PI * pmacc::math::cPow(a0, 2u) / 1e-22 * pmacc::math::cPow(E_R, 2u);
 
-                uint8_t const lowerStateChargeState = S_ConfigNumber::getChargeState(lowerStateConfigNumber);
-
                 // e
-                float_X const screenedCharge = chargeStateDataBox.screenedCharge(lowerStateChargeState) - 1._X;
+                float_X const screenedCharge = atomicStateDataBox.screenedCharge(lowerStateClctIdx) - 1._X;
 
                 // unitless
                 float_X const U = energyElectron / energyDifference;

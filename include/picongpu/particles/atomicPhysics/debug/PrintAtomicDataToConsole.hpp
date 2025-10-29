@@ -67,7 +67,7 @@ namespace picongpu::particles::atomicPhysics::debug
     ALPAKA_FN_HOST inline void printChargeStateDataHeader()
     {
         std::cout << "ChargeState Data" << std::endl;
-        std::cout << "index : (E_ionization[eV], Z_screened[e]) [#AtomicStates, startIndexBlock], "
+        std::cout << "index : E_ionization[eV] [#AtomicStates, startIndexBlock], "
                   << "b:[#TransitionsUp / #TransitionsDown], "
                   << "f:[#TransitionsUp / #TransitionsDown], "
                   << "a:[#TransitionsDown]" << std::endl;
@@ -82,9 +82,10 @@ namespace picongpu::particles::atomicPhysics::debug
     {
         if(chargeState == T_AtomicData::ConfigNumber::atomicNumber)
         {
-            std::cout << "\t" << static_cast<uint16_t>(T_AtomicData::ConfigNumber::atomicNumber) << ":( "
-                      << "na" << ", " << static_cast<uint16_t>(T_AtomicData::ConfigNumber::atomicNumber) << " ) [ "
-                      << chargeStateOrgaBox.numberAtomicStates(T_AtomicData::ConfigNumber::atomicNumber) << ", "
+            std::cout << "\t" << static_cast<uint16_t>(T_AtomicData::ConfigNumber::atomicNumber) << ": "
+                      << "na"
+                      << " [ " << chargeStateOrgaBox.numberAtomicStates(T_AtomicData::ConfigNumber::atomicNumber)
+                      << ", "
                       << chargeStateOrgaBox.startIndexBlockAtomicStates(T_AtomicData::ConfigNumber::atomicNumber)
                       << " ], ";
         }
@@ -92,7 +93,6 @@ namespace picongpu::particles::atomicPhysics::debug
         {
             std::cout << "\t" << static_cast<uint16_t>(chargeState) << ":( "
                       << chargeStateDataBox.ionizationEnergy(chargeState) << ", "
-                      << chargeStateDataBox.screenedCharge(chargeState) << " ) [ "
                       << chargeStateOrgaBox.numberAtomicStates(chargeState) << ", "
                       << chargeStateOrgaBox.startIndexBlockAtomicStates(chargeState) << " ], ";
         }
@@ -102,7 +102,7 @@ namespace picongpu::particles::atomicPhysics::debug
     ALPAKA_FN_HOST inline void printAtomicStateDataHeader()
     {
         std::cout << "AtomicState Data" << std::endl;
-        std::cout << "index : [ConfigNumber, chargeState, levelVector]: E_overGround, multiplicity, "
+        std::cout << "index : [ConfigNumber, chargeState, levelVector]: E_overGround, screenedCharge, multiplicity, "
                      "IPDIonizationState[index, chargeState, configNumber]"
                   << std::endl;
         std::cout << "\t b/f/a: [#TransitionsUp/]#TransitionsDown, [startIndexUp/]startIndexDown" << std::endl;
@@ -250,7 +250,8 @@ namespace picongpu::particles::atomicPhysics::debug
             std::cout << "\t" << stateCollectionIndex << " : [" << stateConfigNumber << ", "
                       << static_cast<uint16_t>(S_ConfigNumber::getChargeState(stateConfigNumber)) << ", "
                       << precisionCast<uint16_t>(stateLevelVector).toString(",", "()")
-                      << "]: " << atomicStateDataBox.energy(stateCollectionIndex) << ", " << multiplicity << ",\t"
+                      << "]: " << atomicStateDataBox.energy(stateCollectionIndex) << ", "
+                      << atomicStateDataBox.screenedCharge(stateCollectionIndex) << ", " << multiplicity << ",\t"
                       << "[" << ipdIonizationStateCollectionIndex << ", "
                       << static_cast<uint16_t>(chargeStateIPDIonizationVector) << ", "
                       << precisionCast<uint16_t>(levelVectorIPDIonizationState).toString(",", "()") << "]"
