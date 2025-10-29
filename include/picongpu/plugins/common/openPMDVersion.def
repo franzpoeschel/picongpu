@@ -20,16 +20,7 @@
 
 #if (ENABLE_OPENPMD == 1)
 
-#    include "openPMD/openPMD.hpp"
-
-#    include <pmacc/eventSystem/waitForAllTasks.hpp>
-
-#    include <cstdlib> // std::getenv
-#    include <memory>
-#    include <string> // std::stoull
-#    include <utility> // std::declval
-
-#    include <openPMD/RecordComponent.hpp>
+#    include <compare>
 
 namespace picongpu
 {
@@ -44,7 +35,7 @@ namespace picongpu
          *
          * @attention If the version is changed please update openPMDWriter::checkIOFileVersionRestartCompatibility().
          */
-        static constexpr int picongpuIOVersionMajor = 3;
+        static constexpr int picongpuIOVersionMajor = 4;
 
         /** PIConGPU's IO minor file version.
          *
@@ -55,6 +46,16 @@ namespace picongpu
          * if needed.
          */
         static constexpr int picongpuIOVersionMinor = 0;
+
+        /**
+         * The oldest PIConGPU IO implementation major version readable by PIConGPU
+         */
+        static constexpr int minReadableIOVersionMajor{3};
+
+        static_assert(
+            !(picongpuIOVersionMajor < minReadableIOVersionMajor),
+            "Writer version must not be older than the minimum readable version");
+
     } // namespace openPMD
 } // namespace picongpu
 
