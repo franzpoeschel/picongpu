@@ -51,7 +51,7 @@ class Simulation(RenderedObject):
     """Used grid Object"""
 
     laser = util.build_typesafe_property(typing.Optional[list[AnyLaser]])
-    """Used (gaussian) Laser"""
+    """List of laser objects to use in the simulation, or None to disable lasers"""
 
     solver = util.build_typesafe_property(Solver)
     """Used Solver"""
