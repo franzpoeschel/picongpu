@@ -68,6 +68,7 @@
 #include <type_traits>
 
 // debug only
+#include "picongpu/particles/atomicPhysics/debug/TestIonizationPotentialDepression.hpp"
 #include "picongpu/particles/atomicPhysics/debug/TestRateCalculation.hpp"
 
 #include <iostream>
@@ -805,6 +806,13 @@ namespace picongpu::simulation::stage
         {
             auto test = particles::atomicPhysics::debug::TestRateCalculation<10u>();
             std::cout << "TestRateCalculation:" << std::endl;
+            test.testAll();
+        }
+
+        if constexpr(picongpu::atomicPhysics::debug::ionizationPotentialDepression::RUN_UNIT_TESTS)
+        {
+            auto test = particles::atomicPhysics::debug::TestIonizationPotentialDepression();
+            std::cout << "TestIonizationPotentialDepression:" << std::endl;
             test.testAll();
         }
     }

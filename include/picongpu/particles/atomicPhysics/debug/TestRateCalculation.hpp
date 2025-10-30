@@ -33,6 +33,7 @@
 
 #include "picongpu/particles/atomicPhysics/ConvertEnum.hpp"
 #include "picongpu/particles/atomicPhysics/atomicData/AtomicTuples.def"
+#include "picongpu/particles/atomicPhysics/debug/TestRelativeError.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ADKLaserPolarization.hpp"
 #include "picongpu/particles/atomicPhysics/enums/TransitionOrdering.hpp"
 #include "picongpu/particles/atomicPhysics/rateCalculation/BoundBoundTransitionRates.hpp"
@@ -211,60 +212,6 @@ namespace picongpu::particles::atomicPhysics::debug
             boundFreeBuffer->hostToDevice();
         }
 
-        /** test for relative error limit
-         *
-         * @tparam T_Type data type of quantity
-         * @tparam T_consoleOutput true =^= write output also to console, false =^= no console output
-         *
-         * @param correctValue expected value
-         * @param testValue actual value
-         * @param descriptionQuantity short description of quantity tested
-         * @param errorLimit maximm accepted relative error
-         *
-         * @attention may only be executed serially on cpu
-         *
-         * @return true =^= SUCCESS, false =^= FAIL
-         */
-        template<typename T_Type>
-        static bool testRelativeError(
-            T_Type const correctValue,
-            T_Type const testValue,
-            std::string const descriptionQuantity = "",
-            T_Type const errorLimit = static_cast<T_Type>(1e-9))
-        {
-            T_Type const relativeError = math::abs(testValue / correctValue - static_cast<T_Type>(1.f));
-
-            if constexpr(T_consoleOutput)
-            {
-                std::cout << "[relative error] " << descriptionQuantity << ":\t" << relativeError << std::endl;
-                std::cout << "\t is:        " << testValue << std::endl;
-                std::cout << "\t should be: " << correctValue << std::endl;
-            }
-
-            if(std::isnan(relativeError))
-            {
-                // FAIL
-                if constexpr(T_consoleOutput)
-                    std::cout << "\t x FAIL, is NaN" << std::endl;
-                return false;
-            }
-
-            if(relativeError > errorLimit)
-            {
-                // FAIL
-                if constexpr(T_consoleOutput)
-                    std::cout << "\t x FAIL, > errorLimit" << std::endl;
-                return false;
-            }
-            else
-            {
-                // SUCCESS
-                if constexpr(T_consoleOutput)
-                    std::cout << "\t * SUCCESS" << std::endl;
-                return true;
-            }
-        }
-
     public:
         //! @return true =^= test passed
         bool testCollisionalExcitationCrossSection() const
@@ -277,7 +224,7 @@ namespace picongpu::particles::atomicPhysics::debug
                     atomicStateBuffer->getHostDataBox(),
                     boundBoundBuffer->getHostDataBox()); // 1e6b
 
-            return testRelativeError(
+            return testRelativeError<T_consoleOutput>(
                 correctCrossSection,
                 crossSection,
                 "collisional excitation cross section",
@@ -296,7 +243,7 @@ namespace picongpu::particles::atomicPhysics::debug
                     atomicStateBuffer->getHostDataBox(),
                     boundBoundBuffer->getHostDataBox()); // 1e6
 
-            return testRelativeError(
+            return testRelativeError<T_consoleOutput>(
                 correctCrossSection,
                 crossSection,
                 "collisional deexcitation cross section",
@@ -318,7 +265,7 @@ namespace picongpu::particles::atomicPhysics::debug
                     atomicStateBuffer->getHostDataBox(),
                     boundFreeBuffer->getHostDataBox()); // 1e6b
 
-            return testRelativeError(
+            return testRelativeError<T_consoleOutput>(
                 correctCrossSection,
                 crossSection,
                 "collisional ionization cross section",
@@ -344,7 +291,7 @@ namespace picongpu::particles::atomicPhysics::debug
                               boundBoundBuffer->getHostDataBox()))
                   * 1. / sim.unit.time(); // 1/s
 
-            return testRelativeError(correctRate, rate, "collisional excitation rate", 1e-5);
+            return testRelativeError<T_consoleOutput>(correctRate, rate, "collisional excitation rate", 1e-5);
         }
 
         //! @return true =^= test passed
@@ -364,7 +311,7 @@ namespace picongpu::particles::atomicPhysics::debug
                               boundBoundBuffer->getHostDataBox()))
                   * 1. / sim.unit.time(); // 1/s
 
-            return testRelativeError(correctRate, rate, "collisional deexcitation rate", 1e-5);
+            return testRelativeError<T_consoleOutput>(correctRate, rate, "collisional deexcitation rate", 1e-5);
         }
 
         //! @return true =^= test passed
@@ -379,7 +326,11 @@ namespace picongpu::particles::atomicPhysics::debug
                           boundBoundBuffer->getHostDataBox()))
                   * 1. / sim.unit.time(); // 1/s
 
-            return testRelativeError(correctRate, rate, "spontaneous radiative deexcitation rate", 1e-5);
+            return testRelativeError<T_consoleOutput>(
+                correctRate,
+                rate,
+                "spontaneous radiative deexcitation rate",
+                1e-5);
         }
 
         //! @return true =^= test passed, pass silently if correct
@@ -403,7 +354,7 @@ namespace picongpu::particles::atomicPhysics::debug
                   * 1. / sim.unit.time(); // 1/s
 
             //! @note larger error limit required due to numerics of rate formula
-            return testRelativeError(correctRate, rate, "collisional ionization rate", 1e-3);
+            return testRelativeError<T_consoleOutput>(correctRate, rate, "collisional ionization rate", 1e-3);
         }
 
         //! @return true =^= test passed
@@ -434,7 +385,7 @@ namespace picongpu::particles::atomicPhysics::debug
                   * 1. / sim.unit.time();
 
             /// @note larger error limit required due to numerics of ADK rate formula
-            return testRelativeError(correctRate, rate, "ADK field ionization", 1e-5);
+            return testRelativeError<T_consoleOutput>(correctRate, rate, "ADK field ionization", 1e-5);
         }
 
         //! @return true =^= all tests passed
@@ -451,22 +402,22 @@ namespace picongpu::particles::atomicPhysics::debug
             pass[6] = testCollisionalIonizationRate();
             pass[7] = testADKIonizationRate();
 
-            bool pass_total = true;
+            bool passTotal = true;
             for(uint8_t i = 0u; i < numberTests; ++i)
             {
-                pass_total = pass_total && pass[i];
+                passTotal = passTotal && pass[i];
             }
 
             if constexpr(T_consoleOutput)
             {
                 std::cout << "Result:";
-                if(pass_total)
+                if(passTotal)
                     std::cout << " * Success" << std::endl;
                 else
                     std::cout << " x Fail" << std::endl;
             }
             std::cout << std::endl;
-            return pass_total;
+            return passTotal;
         }
     };
 } // namespace picongpu::particles::atomicPhysics::debug

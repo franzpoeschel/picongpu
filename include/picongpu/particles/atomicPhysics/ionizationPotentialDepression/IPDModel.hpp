@@ -74,7 +74,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
         template<typename T_AtomicPhysicsIonSpeciesList>
         HINLINE static void applyIPDIonization(picongpu::MappingDesc const mappingDesc, uint32_t const currentStep);
 
-        /** calculate ionization potential depression
+        /** get ionization potential depression for a super cell
          *
          * @param superCellFieldIdx index of superCell in superCellField(without guards)
          * @param ipdInput data boxes giving access to super cell constant IPD input

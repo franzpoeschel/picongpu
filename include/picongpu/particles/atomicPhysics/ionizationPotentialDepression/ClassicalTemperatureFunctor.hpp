@@ -54,7 +54,6 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
                 = pmacc::math::l2norm2(momentumVectorNormalized)
                   / pmacc::math::cPow(picongpu::sim.unit.typicalNumParticlesPerMacroParticle(), 2u);
 
-            // get classical momentum
             // sim.unit.mass(), not weighted
             float_64 const mass
                 = static_cast<float_64>(picongpu::traits::frame::getMass<typename T_Particle::FrameType>());
