@@ -1282,7 +1282,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                         + " is newer and incompatible to the current supported file format version "
                         + picongpuIoVersion + ".");
                 }
-                else if(picongpuIOVersionMajor > ioVersionUsedFileMajor)
+
+                if(minReadableIOVersionMajor > ioVersionUsedFileMajor)
                 {
                     throw std::runtime_error(
                         std::string("openPMD: Restart file IO version ") + seriesIoVersion
@@ -1373,9 +1374,19 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 log<picLog::INPUT_OUTPUT>("Setting next free id on current rank: %1%") % idProvState.nextId;
                 idProvider->setState(idProvState);
 
+                log<picLog::INPUT_OUTPUT>("Initializing field background state");
                 auto fieldBackground = dc.get<simulation::stage::FieldBackground>("FieldBackground");
                 ::openPMD::Container<::openPMD::Mesh>& meshes = iteration.meshes;
-                fieldBackground->restart(meshes.getAttribute("BackgroundFieldIncluded").get<bool>());
+                // fieldBg was always included in outputs before it was made configurable
+                bool fileFieldBgState = true;
+                // From IO Verion [4,0] the mesh attribute BackgroundFieldIncluded was written to openPMD to signify
+                // state
+                if(meshes.containsAttribute("BackgroundFieldIncluded"))
+                {
+                    fileFieldBgState = meshes.getAttribute("BackgroundFieldIncluded").get<bool>();
+                }
+                fieldBackground->restart(fileFieldBgState);
+
                 // avoid deadlock between not finished pmacc tasks and mpi calls in
                 // openPMD
                 eventSystem::getTransactionEvent().waitForFinished();

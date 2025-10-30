@@ -204,9 +204,8 @@ namespace picongpu
         struct LoadFields
         {
         public:
-            HDINLINE void operator()(ThreadParams* params, uint32_t const restartStep)
+            HINLINE void operator()(ThreadParams* params, uint32_t const restartStep)
             {
-#    ifndef __CUDA_ARCH__
                 DataConnector& dc = Environment<>::get().DataConnector();
                 ThreadParams* tp = params;
 
@@ -226,7 +225,6 @@ namespace picongpu
                     tp,
                     restartStep,
                     isDomainBound);
-#    endif
             }
         };
 
