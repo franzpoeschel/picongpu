@@ -24,7 +24,9 @@
 #include "picongpu/particles/atomicPhysics/KernelIndexation.hpp"
 #include "picongpu/particles/atomicPhysics/enums/IsProcess.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ProcessClassGroup.hpp"
+#include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/GetIPD.hpp"
 
+#include <pmacc/memory/shared/Allocate.hpp>
 #include <pmacc/particles/algorithm/ForEach.hpp>
 
 #include <cstdint>
@@ -88,10 +90,14 @@ namespace picongpu::particles::atomicPhysics::kernel
 
             auto& fieldEnergyUseCache = fieldEnergyUseCacheBox(superCellFieldIdx);
 
-            float_X const ionizationPotentialDepression
-                = T_IPDModel::template calculateIPD<T_ChargeStateDataDataBox::atomicNumber>(
-                    superCellFieldIdx,
-                    ipdInput...);
+            PMACC_SMEM(worker, superCellConstantIPDInput, typename T_IPDModel::SuperCellConstantInput);
+            auto onlyMaster = lockstep::makeMaster(worker);
+            onlyMaster(
+                [&superCellConstantIPDInput, &superCellFieldIdx, &ipdInput...]()
+                {
+                    superCellConstantIPDInput = T_IPDModel::getSuperCellConstantInput(superCellFieldIdx, ipdInput...);
+                });
+            worker.sync();
 
             forEachLocalIonBoxEntry(
                 [&](T_Worker const& worker, auto& ion)
@@ -102,6 +108,13 @@ namespace picongpu::particles::atomicPhysics::kernel
                     auto const weight = ion[weighting_];
                     uint32_t const linearCellIdx = ion[localCellIdx_];
                     uint32_t const transitionCollectionIndex = ion[transitionIndex_];
+
+                    // eV
+                    float_X const ionizationPotentialDepression
+                        = ionizationPotentialDepression::template getIPD<T_IPDModel>(
+                            atomicStateBox,
+                            ion[atomicStateCollectionIndex_],
+                            superCellConstantIPDInput);
 
                     // eV, weighted
                     float_X const energyUsed = DeltaEnergyTransition::get(

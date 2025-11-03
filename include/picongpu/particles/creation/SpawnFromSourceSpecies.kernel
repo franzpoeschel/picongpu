@@ -155,7 +155,10 @@ namespace picongpu::particles::creation
             PMACC_SMEM(worker, productSpeciesFrameArray, FrameArray);
 
             // create shared memory variable for kernel state
-            PMACC_SMEM(worker, sharedKernelState, typename Modules::KernelStateType);
+            PMACC_SMEM(
+                worker,
+                sharedKernelState,
+                typename Modules::template KernelStateType<T_KernelConfigOptions...>);
 
             // create cache
             auto cache = Modules::template InitCacheFunctor<__COUNTER__, T_KernelConfigOptions...>::getCache(

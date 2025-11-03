@@ -30,6 +30,7 @@
 #include "picongpu/particles/atomicPhysics/enums/ADKLaserPolarization.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ProcessClassGroup.hpp"
 #include "picongpu/particles/atomicPhysics/enums/TransitionOrdering.hpp"
+#include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/GetIPD.hpp"
 #include "picongpu/particles/atomicPhysics/rateCalculation/BoundFreeCollisionalTransitionRates.hpp"
 #include "picongpu/particles/atomicPhysics/rateCalculation/BoundFreeFieldTransitionRates.hpp"
 
@@ -100,7 +101,7 @@ namespace picongpu::particles::atomicPhysics::kernel
             T_AtomicStateStartIndexBox const startIndexDataBox,
             T_AtomicStateNumberTransitionsBox const numberTransitionsDataBox,
             T_BoundFreeTransitionDataBox const boundFreeTransitionDataBox,
-            float_X const ionizationPotentialDepression)
+            typename T_IPDModel::SuperCellConstantInput const& superCellConstantIPDInput)
         {
             auto forEachAtomicStateAndBin
                 = pmacc::lockstep::makeForEach<T_numberAtomicStates * T_numberBins, T_Worker>(worker);
@@ -124,7 +125,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                  &startIndexDataBox,
                  &numberTransitionsDataBox,
                  &boundFreeTransitionDataBox,
-                 &ionizationPotentialDepression](uint32_t const linearIdx)
+                 &superCellConstantIPDInput](uint32_t const linearIdx)
                 {
                     uint32_t const binIndex = linearIdx / T_numberAtomicStates;
                     uint32_t const atomicStateCollectionIndex = linearIdx % T_numberAtomicStates;
@@ -140,6 +141,13 @@ namespace picongpu::particles::atomicPhysics::kernel
                     float_X const energy = cachedHistogram.energy[binIndex];
                     float_X const binWidth = cachedHistogram.binWidth[binIndex];
                     float_X const density = cachedHistogram.density[binIndex];
+
+                    // eV
+                    float_X const ionizationPotentialDepression
+                        = ionizationPotentialDepression::template getIPD<T_IPDModel>(
+                            atomicStateDataDataBox,
+                            atomicStateCollectionIndex,
+                            superCellConstantIPDInput);
 
                     // 1/picongpu::sim.unit.time()
                     float_X sumRateTransitions = 0._X;
@@ -190,7 +198,7 @@ namespace picongpu::particles::atomicPhysics::kernel
             T_AtomicStateStartIndexBox const startIndexDataBox,
             T_AtomicStateNumberTransitionsBox const numberTransitionsDataBox,
             T_BoundFreeTransitionDataBox const boundFreeTransitionDataBox,
-            float_X const ionizationPotentialDepression)
+            typename T_IPDModel::SuperCellConstantInput const& superCellConstantIPDInput)
         {
             // unit: unit_eField
             PMACC_SMEM(worker, minEFieldNormSuperCell, typename T_EFieldDataBox::ValueType::type);
@@ -208,7 +216,7 @@ namespace picongpu::particles::atomicPhysics::kernel
             // calculate maximum ADK field ionization rate for each atomic state
             auto forEachAtomicState = pmacc::lockstep::makeForEach<T_numberAtomicStates, T_Worker>(worker);
             forEachAtomicState(
-                [&ionizationPotentialDepression,
+                [&superCellConstantIPDInput,
                  &minEFieldNormSuperCell,
                  &maxEFieldNormSuperCell,
                  &rateCache,
@@ -225,6 +233,13 @@ namespace picongpu::particles::atomicPhysics::kernel
                     uint32_t const numberTransitionsUp
                         = numberTransitionsDataBox.numberOfTransitionsUp(atomicStateCollectionIndex);
                     uint32_t const offset = startIndexDataBox.startIndexBlockTransitionsUp(atomicStateCollectionIndex);
+
+                    // eV
+                    float_X const ionizationPotentialDepression
+                        = ionizationPotentialDepression::template getIPD<T_IPDModel>(
+                            atomicStateDataDataBox,
+                            atomicStateCollectionIndex,
+                            superCellConstantIPDInput);
 
                     // unit: 1/unit_time
                     float_X sumRateTransitions = 0._X;
@@ -344,10 +359,14 @@ namespace picongpu::particles::atomicPhysics::kernel
             if(timeRemaining <= 0._X)
                 return;
 
-            float_X const ionizationPotentialDepression
-                = T_IPDModel::template calculateIPD<T_ChargeStateDataDataBox::atomicNumber>(
-                    superCellFieldIdx,
-                    ipdInput...);
+            PMACC_SMEM(worker, superCellConstantIPDInput, typename T_IPDModel::SuperCellConstantInput);
+            auto onlyMaster = lockstep::makeMaster(worker);
+            onlyMaster(
+                [&superCellConstantIPDInput, &superCellFieldIdx, &ipdInput...]()
+                {
+                    superCellConstantIPDInput = T_IPDModel::getSuperCellConstantInput(superCellFieldIdx, ipdInput...);
+                });
+            worker.sync();
 
             auto& rateCache = rateCacheBox(superCellFieldIdx);
 
@@ -362,7 +381,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                     startIndexDataBox,
                     numberTransitionsDataBox,
                     boundFreeTransitionDataBox,
-                    ionizationPotentialDepression);
+                    superCellConstantIPDInput);
 
             if constexpr(T_fieldIonization)
                 fillWithFieldIonization(
@@ -375,7 +394,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                     startIndexDataBox,
                     numberTransitionsDataBox,
                     boundFreeTransitionDataBox,
-                    ionizationPotentialDepression);
+                    superCellConstantIPDInput);
         }
     };
 } // namespace picongpu::particles::atomicPhysics::kernel

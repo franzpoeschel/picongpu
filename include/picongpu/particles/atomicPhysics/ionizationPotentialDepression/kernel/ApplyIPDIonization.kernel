@@ -1,4 +1,4 @@
-/* Copyright 2024-2024 Brian Marre
+/* Copyright 2024-2025 Brian Marre
  *
  * This file is part of PIConGPU.
  *
@@ -89,10 +89,10 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
         }
     };
 
+    template<typename T_IPDModel, typename T_fieldIonizationActive>
     struct KernelState
     {
-        // eV
-        float_X superCellConstantIPD;
+        typename T_IPDModel::SuperCellConstantInput superCellConstantIPDInput;
         uint32_t foundUnbound;
     };
 
@@ -120,10 +120,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
             T_EFieldDataBox const,
             T_IPDInputBoxes const... ipdInputBoxes)
         {
-            // eV
-            kernelState.superCellConstantIPD = T_IPDModel::template calculateIPD<T_ChargeStateDataBox::atomicNumber>(
-                superCellFieldIndex,
-                ipdInputBoxes...);
+            kernelState.superCellConstantIPDInput
+                = T_IPDModel::getSuperCellConstantInput(superCellFieldIndex, ipdInputBoxes...);
             kernelState.foundUnbound = u32(false);
         }
     };
@@ -137,6 +135,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
             typename T_Worker,
             typename T_EFieldCache,
             typename T_Ion,
+            typename T_KernelState,
             typename T_LocalTimeRemainingBox,
             typename T_FoundUnboundIonBox,
             typename T_AtomicStateDataBox,
@@ -147,7 +146,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
         HDINLINE static T_Number getNumberNewParticles(
             T_Worker const& worker,
             T_Ion& ion,
-            KernelState& kernelState,
+            T_KernelState& kernelState,
             T_EFieldCache const& eFieldCache,
             pmacc::DataSpace<picongpu::simDim> const superCellFieldIndex,
             T_LocalTimeRemainingBox const,
@@ -179,7 +178,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                                              - atomicStateBox.energy(currentAtomicStateClctIdx);
 
             // eV
-            float_X ipd = kernelState.superCellConstantIPD;
+            float_X ipd = T_IPDModel::ipd(kernelState.superCellConstantIPDInput, currentChargeState);
 
             if constexpr(T_fieldIonizationActive::value)
             {

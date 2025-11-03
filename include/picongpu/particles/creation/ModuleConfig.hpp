@@ -59,7 +59,7 @@ namespace picongpu::particles::creation
         template<typename... T_KernelConfigOptions> typename T_SuperCellFilterFunctor,
         template<typename T_Number, typename... T_KernelConfigOptions> typename T_PredictorFunctor,
         template<typename... T_KernelConfigOptions> typename T_ParticlePairUpdateFunctor,
-        typename T_KernelStateType,
+        template<typename... T_KernelConfigOptions> typename T_KernelStateType,
         template<typename... T_KernelConfigOptions> typename T_InitKernelStateFunctor,
         template<uint32_t T_id, typename... T_KernelConfigOptions> typename T_InitCacheFunctor,
         template<typename... T_KernelConfigOptions> typename T_AdditionalDataIndexFunctor,
@@ -84,7 +84,8 @@ namespace picongpu::particles::creation
         template<typename... T_KernelConfigOptions>
         using ParticlePairUpdateFunctor = T_ParticlePairUpdateFunctor<T_KernelConfigOptions...>;
 
-        using KernelStateType = T_KernelStateType;
+        template<typename... T_KernelConfigOptions>
+        using KernelStateType = T_KernelStateType<T_KernelConfigOptions...>;
 
         template<typename... T_KernelConfigOptions>
         using AdditionalDataIndexFunctor = T_AdditionalDataIndexFunctor<T_KernelConfigOptions...>;

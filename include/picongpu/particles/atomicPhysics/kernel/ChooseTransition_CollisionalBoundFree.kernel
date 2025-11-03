@@ -28,6 +28,7 @@
 #include "picongpu/particles/atomicPhysics/enums/ProcessClassGroup.hpp"
 #include "picongpu/particles/atomicPhysics/enums/TransitionDirection.hpp"
 #include "picongpu/particles/atomicPhysics/enums/TransitionOrderingFor.hpp"
+#include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/GetIPD.hpp"
 #include "picongpu/particles/atomicPhysics/rateCalculation/BoundFreeCollisionalTransitionRates.hpp"
 
 #include <pmacc/memory/shared/Allocate.hpp>
@@ -161,10 +162,15 @@ namespace picongpu::particles::atomicPhysics::kernel
             PMACC_SMEM(worker, cachedHistogram, CachedHistogram<T_Histogram::numberBins>);
             cachedHistogram.fill(worker, electronHistogram, volumeScalingFactor);
 
-            float_X const ionizationPotentialDepression
-                = T_IPDModel::template calculateIPD<T_ChargeStateDataDataBox::atomicNumber>(
-                    superCellFieldIdx,
-                    ipdInput...);
+            PMACC_SMEM(worker, superCellConstantIPDInput, typename T_IPDModel::SuperCellConstantInput);
+
+            auto onlyMaster = lockstep::makeMaster(worker);
+            onlyMaster(
+                [&superCellConstantIPDInput, &superCellFieldIdx, &ipdInput...]()
+                {
+                    superCellConstantIPDInput = T_IPDModel::getSuperCellConstantInput(superCellFieldIdx, ipdInput...);
+                });
+            worker.sync();
 
             // check whether collisional bound-free transition and if yes, roll specific transition and bin
             forEachLocalIonBoxEntry(
@@ -176,7 +182,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                  &transitionDataBox,
                  &cachedHistogram,
                  &rateCache,
-                 &ionizationPotentialDepression](T_Worker const& worker, auto& ion)
+                 &superCellConstantIPDInput](T_Worker const& worker, auto& ion)
                 {
                     // debug
                     checkForInvalidChooseTransitionGroup(ion);
@@ -211,6 +217,13 @@ namespace picongpu::particles::atomicPhysics::kernel
                         setNoChangeTransition(ion);
                         return;
                     }
+
+                    // eV
+                    float_X const ionizationPotentialDepression
+                        = ionizationPotentialDepression::template getIPD<T_IPDModel>(
+                            atomicStateDataDataBox,
+                            atomicStateCollectionIndex,
+                            superCellConstantIPDInput);
 
                     float_X cumSum = 0._X;
                     for(uint32_t transitionID = 0u; transitionID < numberTransitions; ++transitionID)

@@ -30,6 +30,8 @@ namespace picongpu::particles::atomicPhysics
 
         /** get field energy for the specified e Field strength
          *
+         * @attention requires the **square** of the e-field strength as input!
+         *
          * @param eFieldStrengthSquared, in ((unit_mass * unit_length)/(unit_time^2 * unit_charge))^2
          * @return unit: unit_energy
          */

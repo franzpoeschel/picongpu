@@ -24,6 +24,7 @@
 #include "picongpu/particles/creation/moduleInterfaces/AdditionalDataIndexFunctor.hpp"
 #include "picongpu/particles/creation/moduleInterfaces/InitCacheFunctor.hpp"
 #include "picongpu/particles/creation/moduleInterfaces/InitKernelStateFunctor.hpp"
+#include "picongpu/particles/creation/moduleInterfaces/KernelStateType.hpp"
 #include "picongpu/particles/creation/moduleInterfaces/ParticlePairUpdateFunctor.hpp"
 #include "picongpu/particles/creation/moduleInterfaces/PredictorFunctor.hpp"
 #include "picongpu/particles/creation/moduleInterfaces/SanityCheckInputs.hpp"

@@ -30,14 +30,27 @@
 
 namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
 {
+    namespace detail
+    {
+        // the NoIPD model has no input, therefore the struct has no members
+        struct NoIPDSuperCellConstantInput
+        {
+        };
+    } // namespace detail
+
     struct NoIPD : IPDModel
     {
+        using SuperCellConstantInput = detail::NoIPDSuperCellConstantInput;
+
         //! create all HelperFields required by the IPD model
         HINLINE static void createHelperFields()
         {
         }
 
-        template<uint32_t T_numberAtomicPhysicsIonSpecies>
+        template<
+            uint32_t T_numberAtomicPhysicsIonSpecies,
+            typename T_IPDIonSpeciesList,
+            typename T_IPDElectronSpeciesList>
         HINLINE static void calculateIPDInput(picongpu::MappingDesc const mappingDesc)
         {
         }
@@ -48,8 +61,13 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
         {
         }
 
+        HDINLINE static SuperCellConstantInput getSuperCellConstantInput(pmacc::DataSpace<simDim> const)
+        {
+            return SuperCellConstantInput();
+        }
+
         //! @returns 0._X eV
-        HDINLINE static float_X calculateIPD()
+        HDINLINE static float_X ipd(SuperCellConstantInput const, uint8_t const)
         {
             return 0._X;
         }

@@ -27,8 +27,21 @@
 
 namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
 {
+    namespace detail
+    {
+        /** struct storing all input parameters for the ipd-model that are the same for every macro ion in the same
+         *  super cell
+         */
+        struct SuperCellConstantInput
+        {
+        };
+    } // namespace detail
+
     struct IPDModel
     {
+        //! a type storing all input for the ipd calculation that is the same for all macro ions of one super cell
+        using SuperCellConstantInput = detail::SuperCellConstantInput;
+
         //! create all HelperFields required by the IPD model
         HINLINE static void createHelperFields();
 
@@ -64,12 +77,21 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
         /** calculate ionization potential depression
          *
          * @param superCellFieldIdx index of superCell in superCellField(without guards)
-         * @param input to ipd calculation
+         * @param ipdInput data boxes giving access to super cell constant IPD input
+         */
+        template<typename... T_IPDInput>
+        HDINLINE static SuperCellConstantInput getSuperCellConstantInput(
+            pmacc::DataSpace<simDim> const superCellFieldIdx,
+            T_IPDInput... ipdInput);
+
+        /** calculate ionization potential depression
+         *
+         * @param superCellConstantInput struct storing the values of all super cell constant IPD input parameters
+         * @param chargeState charge state of the ion before ionization
          *
          * @return unit: eV, not weighted
          */
-        template<typename... T_Input>
-        HDINLINE static float_X calculateIPD(pmacc::DataSpace<simDim> const superCellFieldIdx, T_Input const... input);
+        HDINLINE static float_X ipd(SuperCellConstantInput const superCellConstantInput, uint8_t const chargeState);
 
         /** append ipd input to kernelInput and do a PMACC_LOCKSTEP_KERNEL call for T_kernel
          *
