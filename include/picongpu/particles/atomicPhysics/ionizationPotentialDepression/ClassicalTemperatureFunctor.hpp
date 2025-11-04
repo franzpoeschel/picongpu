@@ -45,38 +45,26 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
         template<typename T_Particle>
         HDINLINE static float_X term(T_Particle& particle, float_64 const weightNormalized)
         {
-            // sim.unit.mass() * sim.unit.length() / sim.unit.time() * weight /
-            // sim.unit.typicalNumParticlesPerMacroParticle()
-            float3_64 const momentumVectorNormalized = precisionCast<float3_64>(
-                particle[momentum_] / picongpu::sim.unit.typicalNumParticlesPerMacroParticle());
+            // sim.unit.mass() * sim.unit.length() / sim.unit.time() * weight
+            float3_64 const momentumVectorNormalized = static_cast<float3_64>(particle[momentum_]);
 
             // sim.unit.mass()^2 * sim.unit.length()^2 / sim.unit.time()^2 * weight^2 /
             // sim.unit.typicalNumParticlesPerMacroParticle()^2
-            float_64 momentumSquared = pmacc::math::l2norm2(momentumVectorNormalized);
+            float_64 momentumSquared
+                = pmacc::math::l2norm2(momentumVectorNormalized)
+                  / pmacc::math::cPow(picongpu::sim.unit.typicalNumParticlesPerMacroParticle(), 2u);
 
             // get classical momentum
             // sim.unit.mass(), not weighted
-            float_64 const mass = static_cast<float_64>(picongpu::traits::frame::getMass<T_Particle::FrameType>());
-            // sim.unit.length()^2 / sim.unit.time()^2, not weighted
-            constexpr float_64 c2 = picongpu::sim.pic.getSpeedOfLight() * picongpu::sim.pic.getSpeedOfLight();
-            // sim.unit.mass()^2 * sim.unit.length()^2 / sim.unit.time()^2, not weighted
-            float_64 const m2_c2_reciproc = 1.0 / (mass * mass * c2);
+            float_64 const mass
+                = static_cast<float_64>(picongpu::traits::frame::getMass<typename T_Particle::FrameType>());
 
-            // unitless + (sim.unit.mass()^2 * sim.unit.length()^2 / sim.unit.time()^2 * weight^2
-            //  / sim.unit.typicalNumParticlesPerMacroParticle()^2)
-            //  / (sim.unit.mass()^2 * sim.unit.length()^2 / sim.unit.time()^2 * weight^2 /
-            //  sim.unit.typicalNumParticlesPerMacroParticle()^2) =
-            // unitless
-            float_64 const gamma
-                = math::sqrt(1.0 + momentumSquared / (m2_c2_reciproc * weightNormalized * weightNormalized));
-
-            momentumSquared *= 1. / (gamma * gamma);
-
-            // (sim.unit.mass()^2 * sim.unit.time()^2 / sim.unit.length()^2 * weight^2 /
+            // (sim.unit.mass()^2 * sim.unit.length()^2 / sim.unit.time()^2 * weight^2 /
             // sim.unit.typicalNumParticlesPerMacroParticle()^2)
             //  / (sim.unit.mass() * weight / sim.unit.typicalNumParticlesPerMacroParticle())
-            // sim.unit.mass() * sim.unit.time()^2 / sim.unit.length()^2 * weight /
+            // sim.unit.mass() * sim.unit.length()^2 / sim.unit.time()^2 * weight /
             // sim.unit.typicalNumParticlesPerMacroParticle()
+            // unit_energy * weight / sim.unit.typicalNumParticlesPerMacroParticle()
             return (2._X / 3._X) * static_cast<float_X>(momentumSquared / (2.0 * mass * weightNormalized));
         }
     };
