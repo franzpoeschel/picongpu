@@ -45,8 +45,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
         template<typename T_Particle>
         HDINLINE static float_X term(T_Particle& particle, float_64 const weightNormalized)
         {
-            // sim.unit.mass() * sim.unit.length() / sim.unit.time() * weight /
-            // sim.unit.typicalNumParticlesPerMacroParticle()
+            // sim.unit.mass() * sim.unit.length() / sim.unit.time() * weight
             float3_64 const momentumVector = static_cast<float3_64>(particle[momentum_]);
 
             // sim.unit.mass()^2 * sim.unit.length()^2 / sim.unit.time()^2 * weight^2 /
