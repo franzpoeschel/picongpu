@@ -29,6 +29,9 @@ from .rendering import RenderedObject
 from .walltime import Walltime
 
 
+AnyLaser = DispersivePulseLaser | FromOpenPMDPulseLaser | GaussianLaser | PlaneWaveLaser
+
+
 @typeguard.typechecked
 class Simulation(RenderedObject):
     """
@@ -52,10 +55,8 @@ class Simulation(RenderedObject):
     grid = util.build_typesafe_property(typing.Union[Grid3D])
     """Used grid Object"""
 
-    laser = util.build_typesafe_property(
-        typing.Union[DispersivePulseLaser, FromOpenPMDPulseLaser, GaussianLaser, PlaneWaveLaser, None]
-    )
-    """Used (gaussian) Laser"""
+    laser = util.build_typesafe_property(typing.Optional[list[AnyLaser]])
+    """List of laser objects to use in the simulation, or None to disable lasers"""
 
     solver = util.build_typesafe_property(Solver)
     """Used Solver"""
@@ -148,7 +149,7 @@ class Simulation(RenderedObject):
             serialized["output"] = None
 
         if self.laser is not None:
-            serialized["laser"] = self.laser.get_rendering_context()
+            serialized["laser"] = [ll.get_rendering_context() for ll in self.laser]
         else:
             serialized["laser"] = None
 
