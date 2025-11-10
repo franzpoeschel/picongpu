@@ -12,7 +12,7 @@ from picongpu.pypicongpu.species.operation.densityprofile.plasmaramp import None
 from pydantic import ValidationError
 
 KWARGS = dict(
-    density_si=10e-27,
+    density_si=1e27,
     y_value_front_foil_si=0.0,
     thickness_foil_si=1.0e-5,
     pre_foil_plasmaRamp=None_(),

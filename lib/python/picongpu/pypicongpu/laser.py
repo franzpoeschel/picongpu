@@ -64,7 +64,9 @@ class _Component(BaseModel):
     component: float
 
     def __eq__(self, other):
-        return self.component == other
+        if isinstance(other, float):
+            return self.component == other
+        return super().__eq__(other)
 
 
 def validate_component_vector(value):

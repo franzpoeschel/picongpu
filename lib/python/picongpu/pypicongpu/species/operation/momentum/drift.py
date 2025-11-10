@@ -24,13 +24,11 @@ def serialise_vec(value) -> dict:
     return dict(zip("xyz", value))
 
 
-EPSILON = 1.0e-5
-
-
 def validate_unit_vec(value):
+    epsilon = 1.0e-5
     if any(np.isinf(value)) or any(np.isnan(value)):
         raise ValueError(f"{value=} must not contain infs or nans.")
-    if np.abs((vector_length := np.sqrt(sum(map(lambda n: n**2, value)))) - 1.0) > EPSILON:
+    if np.abs((vector_length := np.sqrt(sum(map(lambda n: n**2, value)))) - 1.0) > epsilon:
         raise ValueError(f"Expected unit vector but {value=} has {vector_length=}.")
     return value
 

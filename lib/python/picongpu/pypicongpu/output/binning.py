@@ -9,7 +9,7 @@ import json
 from typing import Optional
 
 import typeguard
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .. import util
 from ..rendering.renderedobject import RenderedObject

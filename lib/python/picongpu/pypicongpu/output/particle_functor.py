@@ -85,6 +85,7 @@ class UnitDimension(BaseModel):
     def translate_to_cpp(self) -> str:
         return f"std::array<double, {self._num_unit_dimensions}>{{{','.join(map(str, self.unit_vector))}}}"
 
+
 class _PreambleStatement(BaseModel):
     statement: str
 
