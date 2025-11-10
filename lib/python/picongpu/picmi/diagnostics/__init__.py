@@ -6,7 +6,7 @@ License: GPLv3+
 """
 
 from .auto import Auto
-from .binning import Binning
+from .binning import Binning, BinningAxis, BinSpec
 from .phase_space import PhaseSpace
 from .energy_histogram import EnergyHistogram
 from .macro_particle_count import MacroParticleCount
@@ -22,6 +22,8 @@ __all__ = [
     "BackendConfig",
     "OpenPMDConfig",
     "Binning",
+    "BinningAxis",
+    "BinSpec",
     "PhaseSpace",
     "EnergyHistogram",
     "MacroParticleCount",

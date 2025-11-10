@@ -6,11 +6,11 @@ License: GPLv3+
 """
 
 from functools import reduce
+from hashlib import sha256
 from os import PathLike
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Annotated, Iterable, Literal
-from hashlib import sha256
 
 import tomli_w
 from pydantic import AfterValidator, BaseModel

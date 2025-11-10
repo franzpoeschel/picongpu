@@ -5,13 +5,11 @@ Authors: Hannes Troepgen, Brian Edward Marre, Richard Pausch, Julian Lenz
 License: GPLv3+
 """
 
-from ..pypicongpu import grid
-from ..pypicongpu import util
-
-from .copy_attributes import converts_to
-
 import picmistandard
 import typeguard
+
+from ..pypicongpu import grid, util
+from .copy_attributes import converts_to
 
 
 def _normalise_type(kw, key, t):
