@@ -607,7 +607,7 @@ namespace picongpu
                     auto omega = meshOmega[::openPMD::RecordComponent::SCALAR];
                     omega.resetDataset(datasetOmega);
 
-                    omega.setUnitSI(1.0);
+                    omega.setUnitSI(1.0 / sim.unit.time());
 
                     auto spanOmega = omega.storeChunk<float_X>(offsetOmega, extentOmega);
                     auto spanBufferOmega = spanOmega.currentBuffer();
