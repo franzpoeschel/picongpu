@@ -59,22 +59,39 @@ class BoundFreeCollisionalTransitions:
             lowerStateLevelVector, upperStateLevelVector
         )
 
-        rate = 0
-        # m^2 * (eV/(eV))^2 * 1/(eV/eV) * unitless * unitless / (m^2/1e6b) = 1e6b
-        if U > 1:
-            rate = (
+        if isinstance(U, np.ndarray) and U.ndim > 0:
+            crossSection = np.empty(len(U))
+            # m^2 * (eV/(eV))^2 * 1/(eV/eV) * unitless * unitless / (m^2/1e6b) = 1e6b
+
+            crossSection[U > 1.0] = (
                 np.pi
                 * const.value("Bohr radius") ** 2
                 * 2.3
                 * combinatorialFactor
                 * (const.value("Rydberg constant times hc in eV") / energyDifference) ** 2
                 * 1.0
-                / U
-                * np.log(U)
-                * BoundFreeCollisionalTransitions._wFactor(U, screenedCharge)
+                / U[U > 1.0]
+                * np.log(U[U > 1.0])
+                * BoundFreeCollisionalTransitions._wFactor(U[U > 1.0], screenedCharge)
             ) / 1e-22  # 1e6b, 1e-22 m^2
+            crossSection[U <= 1.0] = 0.0
+        else:
+            crossSection = 0.0
 
-        return rate
+            if U > 1:
+                crossSection = (
+                    np.pi
+                    * const.value("Bohr radius") ** 2
+                    * 2.3
+                    * combinatorialFactor
+                    * (const.value("Rydberg constant times hc in eV") / energyDifference) ** 2
+                    * 1.0
+                    / U
+                    * np.log(U)
+                    * BoundFreeCollisionalTransitions._wFactor(U, screenedCharge)
+                ) / 1e-22  # 1e6b, 1e-22 m^2
+
+        return crossSection
 
     @staticmethod
     def rateCollisionalIonization(
