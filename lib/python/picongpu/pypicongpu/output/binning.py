@@ -13,9 +13,9 @@ import typeguard
 from .. import util
 from ..rendering.renderedobject import RenderedObject
 from ..species import Species
+from .particle_functor import ParticleFunctor as BinningFunctor
 from .plugin import Plugin
 from .timestepspec import TimeStepSpec
-from .particle_functor import ParticleFunctor as BinningFunctor
 
 
 class BinSpec(RenderedObject):
