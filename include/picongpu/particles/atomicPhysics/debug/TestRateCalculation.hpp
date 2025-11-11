@@ -236,7 +236,9 @@ namespace picongpu::particles::atomicPhysics::debug
 
             if constexpr(T_consoleOutput)
             {
-                std::cout << "[relative error]" << descriptionQuantity << ":\t" << relativeError << std::endl;
+                std::cout << "[relative error] " << descriptionQuantity << ":\t" << relativeError << std::endl;
+                std::cout << "\t is:        " << testValue << std::endl;
+                std::cout << "\t should be: " << correctValue << std::endl;
             }
 
             if(std::isnan(relativeError))
