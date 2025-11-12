@@ -92,8 +92,6 @@ namespace pmacc
 
         /** pointer to parent frame where this particle is from
          *
-         * ATTENTION: The pointer must be the last member to avoid local memory usage
-         *            https://github.com/ComputationalRadiationPhysics/picongpu/pull/762
          */
         PMACC_ALIGN(frame, FrameType*) = nullptr;
 

@@ -25,7 +25,7 @@ namespace pmacc
 {
     /**
      * Property struct that exposes policies for handling data in the guard region
-     * Each police must handle both sides of the (possible) exchange:
+     * Each policy must handle both sides of the (possible) exchange:
      *      - Outgoing side: E.g. particles going out of the local volume
      *      - Incoming side: E.g. particles coming into the local volume
      *
