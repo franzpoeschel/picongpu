@@ -72,9 +72,11 @@ Laser plasma electron acceleration
  - PhD thesis on theoretical ascpects of self-focusing during LWFA with STII [Pausch2019]_
  - Hybrid laser-driven/beam-driven plasms acceleration [Kurz2021]_
  - Acceleration in carbon nanotubes [Perera2020]_
+ - Bachelor thesis on PWFA driver dynamics and peak energy loss [Wrobel2023]_
  - TeV/m catapult acceleration in graphene layers [Bontoiu2023]_
  - Refractive plasma optics for relativistic laser beams [Seeman2023]_
  - Direct visualization of shock front induced nonlinear laser wakefield dynamics [Levine2025]_
+ - Master thesis on radiation based diagnostic methods in PWFA [Wrobel2025]_
 
 Laser plasma ion acceleration
 """""""""""""""""""""""""""""
@@ -196,7 +198,8 @@ Theses
  - PhD thesis: Laser ion acceleration (mainly experiment) [Obst-Huebl2019]_
  - PhD thesis: Exascale simulations with PIConGPU, laser ion acceleration  [Huebl2019]_
  - Bachelor thesis: Synthetic coherent transistion radiation [Carstens2019]_
-
+ - Bachelor thesis: PWFA driver dynamics and peak energy loss [Wrobel2023]_
+ - Master thesis: Radiation based diagnostic methods in PWFA [Wrobel2025]_
 
 List of PIConGPU references in chronological order
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -411,6 +414,12 @@ List of PIConGPU references in chronological order
         Phys. Rev. Accel. Beams 24, 091302 – 20 September 2021,
 	https://doi.org/10.1103/PhysRevAccelBeams.24.091302
 
+.. [Wrobel2023]
+		Wrobel, N.,
+		*Studying the impact of electron bunch characteristics on plasma wakefield performance using particle-in-cell simulations*,
+		Bachelor Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2023),
+		https://doi.org/10.14278/rodare.2127
+
 .. [Bontoiu2023]
         Bontoiu, C., et al.,
 	*TeV/m catapult acceleration of electrons in graphene layers*,
@@ -434,6 +443,13 @@ List of PIConGPU references in chronological order
         *Direct visualization of shock front induced nonlinear laser wakefield dynamics*,
         Phys. Rev. Research 7, L012041 – 25 February, 2025,
         https://doi.org/10.1103/PhysRevResearch.7.L012041
+
+.. [Wrobel2025]
+		Wrobel, N.,
+		*Investigation of possible diagnostic methods for plasma wakefield accelerator (PWFA) driver degradation using synthetic diagnostics in PIConGPU*,
+		Master Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2025),
+		https://doi.org/10.5281/zenodo.17550751
+
 
 List of other references in chronological order
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
