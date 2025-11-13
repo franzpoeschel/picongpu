@@ -5,13 +5,22 @@ Authors: Hannes Troepgen, Brian Edward Marre, Alexander Debus, Julian Lenz
 License: GPLv3+
 """
 
-from .rendering import SelfRegisteringRenderedObject
-from . import util
-
 import enum
-import typing
-import typeguard
 import logging
+from typing import Annotated
+
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    BeforeValidator,
+    Field,
+    PlainSerializer,
+    PrivateAttr,
+    computed_field,
+    model_validator,
+)
+
+from .rendering import SelfRegisteringRenderedObject
 
 
 class PolarizationType(enum.Enum):
@@ -51,51 +60,71 @@ class Laser(SelfRegisteringRenderedObject):
     pass
 
 
-class _BaseLaser(Laser):
+class _Component(BaseModel):
+    component: float
+
+    def __eq__(self, other):
+        if isinstance(other, float) or isinstance(other, int):
+            return self.component == other
+        return super().__eq__(other)
+
+
+def validate_component_vector(value):
+    try:
+        return [_Component(component=c) for c in value]
+    except Exception:
+        return value
+
+
+class _BaseLaser(Laser, BaseModel):
     """Base class for all laser types with common properties and serialization logic"""
 
     # Common properties for all lasers
-    propagation_direction = util.build_typesafe_property(typing.List[float])
+    propagation_direction: Annotated[
+        tuple[_Component, _Component, _Component], BeforeValidator(validate_component_vector)
+    ]
     """propagation direction (normalized vector)"""
-    polarization_direction = util.build_typesafe_property(typing.List[float])
+    polarization_direction: Annotated[
+        tuple[_Component, _Component, _Component], BeforeValidator(validate_component_vector)
+    ]
     """direction of polarization (normalized vector)"""
-    polarization_type = util.build_typesafe_property(PolarizationType)
+    polarization_type: Annotated[PolarizationType, PlainSerializer(lambda x: x.get_cpp_str())]
     """laser polarization"""
-    wavelength = util.build_typesafe_property(float)
+    wave_length_si: float = Field(alias="wavelength")
     """wave length in m"""
-    duration = util.build_typesafe_property(float)
+    pulse_duration_si: float = Field(alias="duration")
     """duration in s (1 sigma)"""
-    focal_position = util.build_typesafe_property(typing.List[float])
+    focus_pos_si: Annotated[tuple[_Component, _Component, _Component], BeforeValidator(validate_component_vector)] = (
+        Field(alias="focal_position")
+    )
     """focus position vector in m"""
-    phi0 = util.build_typesafe_property(float)
+    phase: float = Field(alias="phi0")
     """phi0 in rad, periodic in 2*pi"""
-    E0 = util.build_typesafe_property(float)
+    E0_si: float = Field(alias="E0")
     """E0 in V/m"""
-    pulse_init = util.build_typesafe_property(float)
+    pulse_init: float
     """laser will be initialized pulse_init times of duration (unitless)"""
 
     # Huygens surface position (common to all lasers)
-    huygens_surface_positions = util.build_typesafe_property(typing.List[typing.List[int]])
+    huygens_surface_positions: Annotated[list[list[int]], PlainSerializer(_get_huygens_surface_serialized)]
     """Position in cells of the Huygens surface relative to start/
        edge(negative numbers) of the total domain"""
 
     def _get_common_serialized_fields(self) -> dict:
         """Get all common serialized fields for lasers"""
-        return {
-            "wave_length_si": self.wavelength,
-            "pulse_duration_si": self.duration,
-            "focus_pos_si": list(map(lambda x: {"component": x}, self.focal_position)),
-            "phase": self.phi0,
-            "E0_si": self.E0,
-            "pulse_init": self.pulse_init,
-            "propagation_direction": list(map(lambda x: {"component": x}, self.propagation_direction)),
-            "polarization_type": self.polarization_type.get_cpp_str(),
-            "polarization_direction": list(map(lambda x: {"component": x}, self.polarization_direction)),
-            "huygens_surface_positions": _get_huygens_surface_serialized(self.huygens_surface_positions),
-        }
+        return self.model_dump(mode="json")
 
 
-@typeguard.typechecked
+def all_ge(values, than_value):
+    if any(wrong := [x < than_value for x in values]):
+        logging.warning(f"All {values=} should be greater or equal {than_value=}. The following are {wrong=}.")
+    return values
+
+
+def serialise_laguerre(values, suffix):
+    return [{f"single_laguerre_{suffix}": x} for x in values]
+
+
 class GaussianLaser(_BaseLaser):
     """
     PIConGPU Gaussian Laser
@@ -103,35 +132,30 @@ class GaussianLaser(_BaseLaser):
     Holds Parameters to specify a gaussian laser
     """
 
-    _name = "gaussian"
+    _name: str = PrivateAttr("gaussian")
 
-    waist = util.build_typesafe_property(float)
+    waist_si: float = Field(alias="waist")
     """beam waist in m"""
-    laguerre_modes = util.build_typesafe_property(typing.List[float])
+    laguerre_modes: Annotated[
+        list[float], AfterValidator(lambda x: all_ge(x, 0)), PlainSerializer(lambda x: serialise_laguerre(x, "mode"))
+    ] = Field(min_length=1)
     """array containing the magnitudes of radial Laguerre-modes"""
-    laguerre_phases = util.build_typesafe_property(typing.List[float])
+    laguerre_phases: Annotated[list[float], PlainSerializer(lambda x: serialise_laguerre(x, "phase"))] = Field(
+        min_length=1
+    )
     """array containing the phases of radial Laguerre-modes"""
 
-    def _get_serialized(self) -> dict:
-        if [] == self.laguerre_modes:
-            raise ValueError("Laguerre modes MUST NOT be empty.")
-        if [] == self.laguerre_phases:
-            raise ValueError("Laguerre phases MUST NOT be empty.")
+    @computed_field
+    def modenumber(self) -> int:
+        return len(self.laguerre_modes) - 1
+
+    @model_validator(mode="after")
+    def check(self):
         if len(self.laguerre_phases) != len(self.laguerre_modes):
             raise ValueError("Laguerre modes and Laguerre phases MUST BE arrays of equal length.")
-        if len(list(filter(lambda x: x < 0, self.laguerre_modes))) > 0:
-            logging.warning("Laguerre mode magnitudes SHOULD BE positive definite.")
-
-        # Build on the common fields
-        return self._get_common_serialized_fields() | {
-            "waist_si": self.waist,
-            "laguerre_modes": list(map(lambda x: {"single_laguerre_mode": x}, self.laguerre_modes)),
-            "laguerre_phases": list(map(lambda x: {"single_laguerre_phase": x}, self.laguerre_phases)),
-            "modenumber": len(self.laguerre_modes) - 1,
-        }
+        return self
 
 
-@typeguard.typechecked
 class PlaneWaveLaser(_BaseLaser):
     """
     PIConGPU Plane Wave Laser
@@ -139,18 +163,11 @@ class PlaneWaveLaser(_BaseLaser):
     Holds Parameters to specify a plane wave laser
     """
 
-    _name = "planewave"
-
-    laser_nofocus_constant_si = util.build_typesafe_property(float)
+    _name: str = PrivateAttr("planewave")
+    laser_nofocus_constant_si: float
     """constant for plane wave laser without focus (unitless)"""
 
-    def _get_serialized(self) -> dict:
-        return self._get_common_serialized_fields() | {
-            "laser_nofocus_constant_si": self.laser_nofocus_constant_si,
-        }
 
-
-@typeguard.typechecked
 class DispersivePulseLaser(_BaseLaser):
     """
     PIConGPU Dispersive Pulse Laser
@@ -158,74 +175,53 @@ class DispersivePulseLaser(_BaseLaser):
     Holds Parameters to specify a dispersive Gaussian laser pulse with dispersion parameters
     """
 
-    _name = "dispersive"
+    _name: str = PrivateAttr("dispersive")
 
-    waist = util.build_typesafe_property(float)
+    waist: float
     """beam waist in m"""
-    spectral_support = util.build_typesafe_property(float)
+    spectral_support: float
     """width of the spectral support for the discrete Fourier transform [none]"""
-    sd_si = util.build_typesafe_property(float)
+    sd_si: float
     """spatial dispersion in focus [m*s]"""
-    ad_si = util.build_typesafe_property(float)
+    ad_si: float
     """angular dispersion in focus [rad*s]"""
-    gdd_si = util.build_typesafe_property(float)
+    gdd_si: float
     """group velocity dispersion in focus [s^2]"""
-    tod_si = util.build_typesafe_property(float)
+    tod_si: float
     """third order dispersion in focus [s^3]"""
 
-    def _get_serialized(self) -> dict:
-        return self._get_common_serialized_fields() | {
-            "waist_si": self.waist,
-            "spectral_support": self.spectral_support,
-            "sd_si": self.sd_si,
-            "ad_si": self.ad_si,
-            "gdd_si": self.gdd_si,
-            "tod_si": self.tod_si,
-        }
 
-
-@typeguard.typechecked
-class FromOpenPMDPulseLaser(Laser):
+class FromOpenPMDPulseLaser(Laser, BaseModel):
     """
     PIConGPU FromOpenPMDPulseLaser
 
     Holds Parameters to specify a laser pulse from an OpenPMD file
     """
 
-    _name = "fromOpenPMDPulse"
+    _name: str = PrivateAttr("fromOpenPMDPulse")
 
-    propagation_direction = util.build_typesafe_property(typing.List[float])
+    propagation_direction: Annotated[
+        tuple[_Component, _Component, _Component], BeforeValidator(validate_component_vector)
+    ]
     """propagation direction (normalized vector)"""
-    polarization_direction = util.build_typesafe_property(typing.List[float])
+    polarization_direction: Annotated[
+        tuple[_Component, _Component, _Component], BeforeValidator(validate_component_vector)
+    ]
     """direction of polarization (normalized vector)"""
-    file_path = util.build_typesafe_property(str)
+    file_path: str
     """File path to the OpenPMD file containing the pulse data"""
-    iteration = util.build_typesafe_property(int)
+    iteration: int
     """Iteration in the OpenPMD file to use"""
-    dataset_name = util.build_typesafe_property(str)
+    dataset_name: str
     """Name of the dataset in the OpenPMD file containing the pulse data"""
-    datatype = util.build_typesafe_property(str)
+    datatype: str
     """Data type of the pulse data"""
-    time_offset_si = util.build_typesafe_property(float)
+    time_offset_si: float
     """Time offset in seconds to apply to the pulse data [s]"""
-    polarisationAxisOpenPMD = util.build_typesafe_property(str)
+    polarisationAxisOpenPMD: str
     """Polarization axis name in the OpenPMD file"""
-    propagationAxisOpenPMD = util.build_typesafe_property(str)
+    propagationAxisOpenPMD: str
     """Propagation axis name in the OpenPMD file"""
-    huygens_surface_positions = util.build_typesafe_property(typing.List[typing.List[int]])
+    huygens_surface_positions: Annotated[list[list[int]], PlainSerializer(_get_huygens_surface_serialized)]
     """Position in cells of the Huygens surface relative to start/
        edge(negative numbers) of the total domain"""
-
-    def _get_serialized(self) -> dict:
-        return {
-            "propagation_direction": list(map(lambda x: {"component": x}, self.propagation_direction)),
-            "polarization_direction": list(map(lambda x: {"component": x}, self.polarization_direction)),
-            "file_path": self.file_path,
-            "iteration": self.iteration,
-            "dataset_name": self.dataset_name,
-            "datatype": self.datatype,
-            "time_offset_si": self.time_offset_si,
-            "polarisationAxisOpenPMD": self.polarisationAxisOpenPMD,
-            "propagationAxisOpenPMD": self.propagationAxisOpenPMD,
-            "huygens_surface_positions": _get_huygens_surface_serialized(self.huygens_surface_positions),
-        }

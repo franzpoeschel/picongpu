@@ -9,6 +9,7 @@ import json
 from typing import Optional
 
 import typeguard
+from pydantic import BaseModel, Field
 
 from .. import util
 from ..rendering.renderedobject import RenderedObject
@@ -18,40 +19,18 @@ from .plugin import Plugin
 from .timestepspec import TimeStepSpec
 
 
-class BinSpec(RenderedObject):
-    def __init__(self, kind, start, stop, nsteps):
-        self.kind = kind
-        self.start = start
-        self.stop = stop
-        self.nsteps = nsteps
-
-    def _get_serialized(self):
-        return {
-            "kind": self.kind,
-            "start": self.start,
-            "stop": self.stop,
-            "nsteps": self.nsteps,
-        }
+class BinSpec(RenderedObject, BaseModel):
+    kind: str
+    start: float | int
+    stop: float | int
+    nsteps: float | int
 
 
-class BinningAxis(RenderedObject):
-    name: str
+class BinningAxis(RenderedObject, BaseModel):
+    axis_name: str = Field(alias="name")
     bin_spec: BinSpec
-    functor: BinningFunctor
-
-    def __init__(self, name, bin_spec, functor, use_overflow_bins):
-        self.name = name
-        self.bin_spec = bin_spec
-        self.functor = functor
-        self.use_overflow_bins = use_overflow_bins
-
-    def _get_serialized(self):
-        return {
-            "axis_name": self.name,
-            "bin_spec": self.bin_spec.get_rendering_context(),
-            "axis_functor": self.functor.get_rendering_context(),
-            "use_overflow_bins": self.use_overflow_bins,
-        }
+    axis_functor: BinningFunctor = Field(alias="functor")
+    use_overflow_bins: bool
 
 
 @typeguard.typechecked

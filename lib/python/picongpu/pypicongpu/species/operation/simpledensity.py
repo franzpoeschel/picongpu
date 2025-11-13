@@ -61,8 +61,8 @@ class SimpleDensity(DensityOperation):
             if species.has_constant_of_type(DensityRatio):
                 species.get_constant_by_type(DensityRatio).check()
 
-        # delegate profile check
-        self.profile.check()
+        if hasattr(self.profile, "check"):
+            self.profile.check()
 
     def prebook_species_attributes(self) -> None:
         self.attributes_by_species = {}

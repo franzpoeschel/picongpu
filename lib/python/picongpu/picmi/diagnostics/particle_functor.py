@@ -10,8 +10,9 @@ from typing import Any, Callable, Iterable
 from sympy import Expr, Symbol, symbols
 from typeguard import typechecked
 
-from ...pypicongpu.output.binning import (
-    BinningFunctor as PyPIConGPUParticleFunctor,
+from ...pypicongpu.output.particle_functor import (
+    ParticleFunctor as PyPIConGPUParticleFunctor,
+    UnitDimension as PyPIConGPUUnitDimension,
 )
 from .unit_dimension import UnitDimension
 
@@ -114,7 +115,7 @@ class ParticleFunctor:
             functor_expression=functor_expression,
             attribute_mapping=particle.get_attribute_map(),
             return_type=self.return_type,
-            unit_dimension=self.unit_dimension.unit_vector,
+            unit_dimension=PyPIConGPUUnitDimension(unit_dimension=self.unit_dimension.unit_vector.tolist()),
         )
 
     def __call__(self, particle):

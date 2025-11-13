@@ -21,6 +21,7 @@ class GroundStateIonizationModel(IonizationModel):
         Z = self.ion_species.picongpu_element.get_atomic_number()
         assert self.ion_species.charge_state <= Z, f"charge_state must be <= atomic number ({Z})"
 
-        element_properties_const = pypicongpu.species.constant.ElementProperties()
-        element_properties_const.element = self.ion_species.picongpu_element
+        element_properties_const = pypicongpu.species.constant.ElementProperties(
+            element=self.ion_species.picongpu_element
+        )
         return [element_properties_const]

@@ -5,14 +5,11 @@ Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
+from pydantic import BaseModel, Field, PrivateAttr
 from .densityprofile import DensityProfile
-from .... import util
-
-import typeguard
 
 
-@typeguard.typechecked
-class Uniform(DensityProfile):
+class Uniform(DensityProfile, BaseModel):
     """
     globally constant density
 
@@ -20,18 +17,7 @@ class Uniform(DensityProfile):
     ambiguities the PICMI name uniform is followed here.
     """
 
-    _name = "uniform"
+    _name: str = PrivateAttr("uniform")
 
-    density_si = util.build_typesafe_property(float)
+    density_si: float = Field(gt=0.0)
     """density at every point in space (kg * m^-3)"""
-
-    def check(self) -> None:
-        if self.density_si <= 0:
-            raise ValueError("density must be >0")
-
-    def _get_serialized(self) -> dict:
-        self.check()
-
-        return {
-            "density_si": self.density_si,
-        }

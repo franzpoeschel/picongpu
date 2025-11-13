@@ -175,17 +175,6 @@ class RenderedObject:
         # validate schema
         validator = jsonschema.Draft202012Validator(schema=schema)
         validator.check_schema(schema)
-
-        # there are schemas that are valid but not an object -> skip checks
-        if type(schema) is dict:
-            if "unevaluatedProperties" not in schema:
-                logging.warning("schema does not explicitly forbid unevaluated properties: {}".format(fqn))
-            # special exemption for custom user input which is never evaluated
-            elif schema["unevaluatedProperties"] and fqn != "picongpu.pypicongpu.customuserinput.CustomUserInput":
-                logging.warning("schema supports unevaluated properties: {}".format(fqn))
-        else:
-            logging.warning("schema is not dict: {}".format(fqn))
-
         return schema
 
     def _get_serialized(self) -> dict | None:
@@ -213,7 +202,7 @@ class RenderedObject:
         except (AttributeError, NotImplementedError) as first_error:
             try:
                 serialized = self.model_dump(mode="json")
-            except Exception as second_error:
+            except AttributeError as second_error:
                 raise first_error from second_error
 
         RenderedObject.check_context_for_type(self.__class__, serialized)
@@ -280,6 +269,8 @@ class SelfRegistering:
             return cls.__private_attributes__["_name"].default
         except AttributeError:
             return cls._name
+        except KeyError:
+            return cls._dummy_name
 
     def __init_subclass__(cls):
         if cls._extract_name() != cls._dummy_name:

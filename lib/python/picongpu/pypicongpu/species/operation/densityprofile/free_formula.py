@@ -5,24 +5,14 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
-from .densityprofile import DensityProfile
-import typeguard
+from typing import Annotated
+
+from pydantic import BaseModel, BeforeValidator, Field, PrivateAttr
+
 from ....rendering.pmaccprinter import PMAccPrinter
-from sympy import Expr, lambdify
+from .densityprofile import DensityProfile
 
 
-@typeguard.typechecked
-class FreeFormula(DensityProfile):
-    _name = "freeformula"
-
-    def __init__(self, density_expression: Expr) -> None:
-        self.density_expression = density_expression
-
-    def check(self):
-        pass
-
-    def _get_serialized(self) -> dict | None:
-        return {"function_body": PMAccPrinter().doprint(self.density_expression)}
-
-    def __call__(self, x, y, z):
-        return lambdify("x,y,z", self.density_expression, "numpy")(x, y, z)
+class FreeFormula(DensityProfile, BaseModel):
+    _name: str = PrivateAttr("freeformula")
+    function_body: Annotated[str, BeforeValidator(PMAccPrinter().doprint)] = Field(alias="density_expression")

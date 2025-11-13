@@ -42,18 +42,19 @@ class TestSpecies(unittest.TestCase):
         self.electron.constants = []
 
         self.const = Constant()
-        self.const_charge = Charge()
-        self.const_charge.charge_si = 1
-        self.const_mass = Mass()
-        self.const_mass.mass_si = 2
-        self.const_density_ratio = DensityRatio()
-        self.const_density_ratio.ratio = 4.2
+        self.const_charge = Charge(charge_si=1)
+        self.const_mass = Mass(mass_si=2)
+        self.const_density_ratio = DensityRatio(ratio=4.2)
         self.const_ground_state_ionization = GroundStateIonization(
-            ionization_model_list=[BSI(ionization_electron_species=self.electron, ionization_current=None_())]
+            ionization_model_list=[
+                BSI(
+                    ionization_electron_species=self.electron,
+                    ionization_current=None_(),
+                )
+            ]
         )
 
-        self.const_element_properties = ElementProperties()
-        self.const_element_properties.element = Element("H")
+        self.const_element_properties = ElementProperties(element=Element("H"))
 
     def test_basic(self):
         """setup provides working species"""
@@ -134,12 +135,9 @@ class TestSpecies(unittest.TestCase):
     def test_constants_unique(self):
         """all defined PIConGPU particle flags must be uniquely named"""
         species = self.species
-        const1 = Charge()
-        const1.charge_si = 17
-        const2 = Charge()
-        const2.charge_si = 18
-        other_const = Mass()
-        other_const.mass_si = 19
+        const1 = Charge(charge_si=17)
+        const2 = Charge(charge_si=18)
+        other_const = Mass(mass_si=19)
 
         species.constants = [const1, const2, other_const]
 

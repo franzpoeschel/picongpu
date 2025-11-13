@@ -36,8 +36,7 @@ class TestDensityProfile(unittest.TestCase):
     def test_rendering_with_type(self):
         """object with added type information is returned & validated"""
         # note: use valid objects here b/c the schema enforces non-dummy types
-        uniform = Uniform()
-        uniform.density_si = 1
+        uniform = Uniform(density_si=1)
 
         # schemas must be loaded by context request
         RenderedObject._schemas_loaded = False
@@ -48,7 +47,7 @@ class TestDensityProfile(unittest.TestCase):
         # schemas now loaded
         self.assertTrue(RenderedObject._schemas_loaded)
 
-        self.assertEqual(context["data"], uniform._get_serialized())
+        self.assertEqual(context["data"], uniform.model_dump(mode="json"))
 
         # contains information on all types
         self.assertEqual(

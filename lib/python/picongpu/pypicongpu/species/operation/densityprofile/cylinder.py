@@ -5,18 +5,33 @@ Authors: Kristin Tippey, Brian Edward Marre
 License: GPLv3+
 """
 
+from typing import Annotated
+from pydantic import BeforeValidator, Field, PlainSerializer, PrivateAttr, BaseModel, model_validator
 from .densityprofile import DensityProfile
-from .plasmaramp import PlasmaRamp, None_
-from .... import util
+from .plasmaramp import AllPlasmaRamps, None_
 
-import typeguard
 import math
 
 
-@typeguard.typechecked
-class Cylinder(DensityProfile):
+class _Component(BaseModel):
+    component: float
+
+    def __eq__(self, other):
+        if isinstance(other, float) or isinstance(other, int):
+            return self.component == other
+        return super().__eq__(other)
+
+
+def validate_component_vector(value):
+    try:
+        return [_Component(component=c) for c in value]
+    except Exception:
+        return value
+
+
+class Cylinder(DensityProfile, BaseModel):
     """
-     Describes a cylindrical density distribution of particles with gaussian up-ramp
+    Describes a cylindrical density distribution of particles with gaussian up-ramp
     with a constant density region in between. It can have an arbitrary orientation
     and position in space.
 
@@ -29,30 +44,27 @@ class Cylinder(DensityProfile):
       the reduced radius ensures mass conservation
     """
 
-    _name = "cylinder"
+    _name: str = PrivateAttr("cylinder")
 
-    density_si = util.build_typesafe_property(float)
+    density_si: float = Field(gt=0.0)
     """particle number density at at the foil plateau (m^-3)"""
 
-    center_position_si = util.build_typesafe_property(tuple[float, float, float])
+    center_position_si: Annotated[tuple[_Component, _Component, _Component], BeforeValidator(validate_component_vector)]
     """center of the cylinder [x, y, z], [m]"""
 
-    radius_si = util.build_typesafe_property(float)
+    radius_si: float
     """cylinder radius, [m]"""
 
-    cylinder_axis = util.build_typesafe_property(tuple[float, float, float])
+    cylinder_axis: Annotated[tuple[_Component, _Component, _Component], BeforeValidator(validate_component_vector)]
     """cylinder axis [x, y, z], [unitless]"""
 
-    pre_plasma_ramp = util.build_typesafe_property(PlasmaRamp)
+    # This still relies on some magic to insert the typeID.
+    # We'll handle it another time:
+    pre_plasma_ramp: Annotated[AllPlasmaRamps, PlainSerializer(lambda x: x.get_rendering_context())] = None_()
     """pre plasma ramp"""
 
-    def __init__(self):
-        # (nothing to do, overwrite from abstract parent)
-        pass
-
-    def check(self) -> None:
-        if self.density_si <= 0.0:
-            raise ValueError("density must be > 0")
+    @model_validator(mode="after")
+    def check(self):
         min_radius = (
             math.sqrt(2.0) * self.pre_plasma_ramp.PlasmaLength if type(self.pre_plasma_ramp) is not None_ else 0.0
         )
@@ -60,15 +72,4 @@ class Cylinder(DensityProfile):
             raise ValueError(
                 f"radius must be > sqrt(2)*pre_plasma_length = {min_radius}, so that the reduced radius stays non negative. In case of no preplasma radius must be >= 0.0."
             )
-        self.pre_plasma_ramp.check()
-
-    def _get_serialized(self) -> dict:
-        self.check()
-
-        return {
-            "density_si": self.density_si,
-            "center_position_si": [{"component": x} for x in self.center_position_si],
-            "radius_si": self.radius_si,
-            "cylinder_axis": [{"component": x} for x in self.cylinder_axis],
-            "pre_plasma_ramp": self.pre_plasma_ramp.get_rendering_context(),
-        }
+        return self

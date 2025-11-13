@@ -253,15 +253,13 @@ class Species(picmistandard.PICMI_Species):
             # if 0==mass rather omit mass entirely
             assert self.mass > 0
 
-            mass_constant = pypicongpu.species.constant.Mass()
-            mass_constant.mass_si = self.mass
+            mass_constant = pypicongpu.species.constant.Mass(mass_si=self.mass)
             s.constants.append(mass_constant)
 
         if self.density_scale is not None:
             assert self.density_scale > 0
 
-            density_scale_constant = pypicongpu.species.constant.DensityRatio()
-            density_scale_constant.ratio = self.density_scale
+            density_scale_constant = pypicongpu.species.constant.DensityRatio(ratio=self.density_scale)
             s.constants.append(density_scale_constant)
 
         # default case species with no charge and/or no bound electrons or with ionization
@@ -274,8 +272,7 @@ class Species(picmistandard.PICMI_Species):
             charge_constant_value = self.charge_state * consts.elementary_charge
 
         if charge_constant_value is not None:
-            charge_constant = pypicongpu.species.constant.Charge()
-            charge_constant.charge_si = charge_constant_value
+            charge_constant = pypicongpu.species.constant.Charge(charge_si=charge_constant_value)
             s.constants.append(charge_constant)
 
         if interaction is not None:
@@ -316,8 +313,7 @@ class Species(picmistandard.PICMI_Species):
             )
 
         if 0 != temperature_kev:
-            momentum_op.temperature = pypicongpu.species.operation.momentum.Temperature()
-            momentum_op.temperature.temperature_kev = temperature_kev
+            momentum_op.temperature = pypicongpu.species.operation.momentum.Temperature(temperature_kev=temperature_kev)
         else:
             momentum_op.temperature = None
 

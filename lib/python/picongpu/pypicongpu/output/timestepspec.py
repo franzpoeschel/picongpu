@@ -9,8 +9,6 @@ from typing import Annotated
 from pydantic import BaseModel, PlainSerializer, field_validator
 from ..rendering.renderedobject import RenderedObject
 
-import typeguard
-
 
 class Spec(BaseModel):
     start: Annotated[int | None, PlainSerializer(lambda x: x if x is not None else 0)]
@@ -18,7 +16,6 @@ class Spec(BaseModel):
     step: Annotated[int | None, PlainSerializer(lambda x: x if x is not None else 1)]
 
 
-@typeguard.typechecked
 class TimeStepSpec(RenderedObject, BaseModel):
     specs: list[Spec]
 

@@ -5,13 +5,18 @@ Authors: Brian Edward Marre, Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
+from typing import Annotated
 from .densityprofile import DensityProfile
-from .... import util
-from typeguard import typechecked
+from pydantic import AfterValidator, BaseModel, Field, PrivateAttr, model_validator
 
 
-@typechecked
-class Gaussian(DensityProfile):
+def neq_0(value):
+    if value == 0:
+        raise ValueError("value is not allowed to be 0.")
+    return value
+
+
+class Gaussian(DensityProfile, BaseModel):
     """
     gaussian density profile
 
@@ -21,66 +26,34 @@ class Gaussian(DensityProfile):
     - for gasCenterRear < y;    density * exp(gasFactor * (abs( (y - gasCenterRear) / gasSigmaRear))^gasPower)
     """
 
-    _name = "gaussian"
+    _name: str = PrivateAttr("gaussian")
 
-    center_front = util.build_typesafe_property(float)
+    gas_center_front: float = Field(ge=0.0, alias="center_front")
     """position of the front edge of the constant middle of the density profile, [m]"""
 
-    center_rear = util.build_typesafe_property(float)
+    gas_center_rear: float = Field(ge=0.0, alias="center_rear")
     """position of the rear edge of the constant middle of the density profile, [m]"""
 
-    sigma_front = util.build_typesafe_property(float)
+    gas_sigma_front: Annotated[float, AfterValidator(neq_0)] = Field(alias="sigma_front")
     """distance from gasCenterFront until the gas density decreases to its 1/e-th part, [m]"""
 
-    sigma_rear = util.build_typesafe_property(float)
+    gas_sigma_rear: Annotated[float, AfterValidator(neq_0)] = Field(alias="sigma_rear")
     """distance from gasCenterRear until the gas density decreases to its 1/e-th part, [m]"""
 
-    factor = util.build_typesafe_property(float)
+    gas_factor: float = Field(lt=0.0, alias="factor")
     """exponential scaling factor, see formula above"""
 
-    power = util.build_typesafe_property(float)
+    gas_power: Annotated[float, AfterValidator(neq_0)] = Field(alias="power")
     """power-exponent in exponent of density function"""
 
-    vacuum_cells_front = util.build_typesafe_property(int)
+    vacuum_cells_front: int = Field(ge=0)
     """number of vacuum cells in front of foil for laser init"""
 
-    density = util.build_typesafe_property(float)
+    density: float = Field(gt=0.0)
     """particle number density in m^-3"""
 
-    def check(self) -> None:
-        if self.density <= 0:
-            raise ValueError("density must be > 0")
-
-        if self.center_front < 0:
-            raise ValueError("gas_center_front must be >= 0")
-        if self.center_rear < 0:
-            raise ValueError("gas_center_rear must be >= 0")
-        if self.center_rear < self.center_front:
+    @model_validator(mode="after")
+    def check(self):
+        if self.gas_center_rear < self.gas_center_front:
             raise ValueError("gas_center_rear must be >= gas_center_front")
-
-        if self.sigma_front == 0:
-            raise ValueError("gas_sigma_front must be != 0")
-        if self.sigma_rear == 0:
-            raise ValueError("gas_sigma_rear must be != 0")
-
-        if self.factor >= 0:
-            raise ValueError("gas_factor must be < 0")
-        if self.power == 0:
-            raise ValueError("gas_power must be != 0")
-
-        if self.vacuum_cells_front < 0:
-            raise ValueError("vacuum_cells_front must be >= 0")
-
-    def _get_serialized(self) -> dict:
-        self.check()
-
-        return {
-            "gas_center_front": self.center_front,
-            "gas_center_rear": self.center_rear,
-            "gas_sigma_front": self.sigma_front,
-            "gas_sigma_rear": self.sigma_rear,
-            "gas_factor": self.factor,
-            "gas_power": self.power,
-            "vacuum_cells_front": self.vacuum_cells_front,
-            "density": self.density,
-        }
+        return self

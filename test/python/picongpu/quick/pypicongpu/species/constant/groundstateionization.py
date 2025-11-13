@@ -23,10 +23,8 @@ class TestGroundStateIonization(unittest.TestCase):
     def setUp(self):
         electron = Species()
         electron.name = "e"
-        mass_constant = Mass()
-        mass_constant.mass_si = constants.m_e
-        charge_constant = Charge()
-        charge_constant.charge_si = constants.m_e
+        mass_constant = Mass(mass_si=constants.m_e)
+        charge_constant = Charge(charge_si=constants.q_e)
         electron.constants = [
             charge_constant,
             mass_constant,
@@ -128,7 +126,7 @@ class TestGroundStateIonization(unittest.TestCase):
                         ],
                         "constants": {
                             "mass": {"mass_si": constants.m_e},
-                            "charge": {"charge_si": constants.m_e},
+                            "charge": {"charge_si": constants.q_e},
                             "density_ratio": None,
                             "element_properties": None,
                             "ground_state_ionization": None,

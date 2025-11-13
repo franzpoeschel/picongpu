@@ -5,16 +5,12 @@ Authors: Julian Lenz
 License: GPLv3+
 """
 
+from pydantic import BaseModel, Field, PrivateAttr
+
 from .layout import Layout
 
-from .... import util
 
-
-class OnePosition(Layout):
-    _name = "one_position"
-
-    ppc = util.build_typesafe_property(int)
-    """particles per cell (random layout), >0"""
-
-    def _get_serialized(self) -> dict | None:
-        return {"ppc": self.ppc}
+class OnePosition(Layout, BaseModel):
+    _name: str = PrivateAttr("one_position")
+    ppc: int = Field(gt=0)
+    """particles per cell, >0"""

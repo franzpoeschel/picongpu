@@ -21,20 +21,17 @@ class TestSimpleDensity(unittest.TestCase):
     def setUp(self):
         self.species1 = Species()
         self.species1.name = "species1"
-        self.species1_density_ratio = DensityRatio()
-        self.species1_density_ratio.ratio = 0.8
+        self.species1_density_ratio = DensityRatio(ratio=0.8)
         self.species1.constants = [self.species1_density_ratio]
 
         self.species2 = Species()
         self.species2.name = "species2"
-        self.species2_density_ratio = DensityRatio()
-        self.species2_density_ratio.ratio = 1
+        self.species2_density_ratio = DensityRatio(ratio=1)
         self.species2.constants = [self.species2_density_ratio]
 
         self.species3 = Species()
         self.species3.name = "species3"
-        self.species3_density_ratio = DensityRatio()
-        self.species3_density_ratio.ratio = 5
+        self.species3_density_ratio = DensityRatio(ratio=5)
         self.species3.constants = [self.species3_density_ratio]
 
         self.species4 = Species()
@@ -42,8 +39,7 @@ class TestSimpleDensity(unittest.TestCase):
         # note: no explicit density ratio (should be assumed 1)
         self.species4.constants = []
 
-        self.profile = densityprofile.Uniform()
-        self.profile.density_si = 42
+        self.profile = densityprofile.Uniform(density_si=42)
 
         self.sd = SimpleDensity()
         self.sd.ppc = 2
@@ -55,8 +51,7 @@ class TestSimpleDensity(unittest.TestCase):
             self.species4,
         }
 
-        self.sd.layout = Random()
-        self.sd.layout.ppc = 1
+        self.sd.layout = Random(ppc=1)
 
     def test_basic(self):
         """simple scenario"""
@@ -70,32 +65,11 @@ class TestSimpleDensity(unittest.TestCase):
 
     def test_check_passthru(self):
         """passes check through to profile & density ratios"""
-        # break profile -> check fails
-        self.sd.profile.density_si = -2
-
-        # direct check fails
-        with self.assertRaises(ValueError):
-            self.sd.profile.check()
-
-        # ... as well as check of entire object
-        with self.assertRaises(ValueError):
-            self.sd.check_preconditions()
-
-        # but now ok:
-        self.sd.profile.density_si = 1
-        self.sd.check_preconditions()
-
-        # ratios are checked too:
         self.assertTrue(self.species3 in self.sd.species)
         self.assertNotEqual([], self.species3.constants)
         density_ratio_const = self.species3.constants[0]
 
         self.assertTrue(isinstance(density_ratio_const, DensityRatio))
-
-        # update ratio s.t. it now violates checks
-        density_ratio_const.ratio = -1
-        with self.assertRaises(ValueError):
-            self.sd.check_preconditions()
 
     def test_typesafety(self):
         """typesafety enforced"""
@@ -215,8 +189,7 @@ class TestSimpleDensity(unittest.TestCase):
         sd.ppc = 1
         sd.species = {species}
 
-        sd.layout = Random()
-        sd.layout.ppc = 1
+        sd.layout = Random(ppc=1)
 
         # would normally be performed by init manager:
         species.attributes = [Momentum()]

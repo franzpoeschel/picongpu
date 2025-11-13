@@ -7,16 +7,15 @@ License: GPLv3+
 
 from ...rendering import RenderedObject
 
-import pydantic
+from pydantic import BaseModel, computed_field
 import typeguard
-import typing
 import scipy
 import periodictable
 import re
 
 
 @typeguard.typechecked
-class Element(RenderedObject, pydantic.BaseModel):
+class Element(RenderedObject, BaseModel):
     """
     Denotes an element from the periodic table of elements
 
@@ -31,7 +30,7 @@ class Element(RenderedObject, pydantic.BaseModel):
     To describe atoms/ions you also need to initialize the charge_state of the species.
     """
 
-    _store: typing.Optional[periodictable.core.Element] = None
+    _store: periodictable.core.Element | None = None
 
     @staticmethod
     def parse_openpmd_isotopes(openpmd_name: str) -> tuple[int | None, str]:
@@ -69,7 +68,7 @@ class Element(RenderedObject, pydantic.BaseModel):
 
         :return: object representing the given species
         """
-        pydantic.BaseModel.__init__(self)
+        BaseModel.__init__(self)
 
         mass_number, openpmd_name = Element.parse_openpmd_isotopes(openpmd_name)
 
@@ -124,8 +123,10 @@ class Element(RenderedObject, pydantic.BaseModel):
         """get symbol"""
         return self._store.symbol
 
-    def _get_serialized(self) -> dict:
-        return {
-            "symbol": self.get_symbol(),
-            "picongpu_name": self.get_picongpu_name(),
-        }
+    @computed_field
+    def symbol(self) -> str:
+        return self.get_symbol()
+
+    @computed_field
+    def picongpu_name(self) -> str:
+        return self.get_picongpu_name()

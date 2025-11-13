@@ -17,7 +17,6 @@ class UnitDimension:
 
     # number of unit dimension
     N_unit_dim = 7
-    unit_vector = np.zeros(N_unit_dim)
 
     """
     The unit index map associates names with array indices.
@@ -44,6 +43,7 @@ class UnitDimension:
 
     def __init__(self, other=None, **kwargs):
         """set unit vector either empty or by name"""
+        self.unit_vector = np.zeros(self.N_unit_dim)
         if other is not None:
             if len(kwargs) > 0:
                 raise ValueError(

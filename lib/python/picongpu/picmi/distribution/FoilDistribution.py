@@ -46,11 +46,6 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
         util.unsupported("lower bound", self.lower_bound, (None, None, None))
         util.unsupported("upper bound", self.upper_bound, (None, None, None))
 
-        foilProfile = species.operation.densityprofile.Foil()
-        foilProfile.density_si = self.density
-        foilProfile.y_value_front_foil_si = self.front
-        foilProfile.thickness_foil_si = self.thickness
-
         # create prePlasma ramp if indicated by settings
         prePlasma: bool = (self.exponential_pre_plasma_cutoff is not None) and (
             self.exponential_pre_plasma_length is not None
@@ -60,12 +55,12 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
         )
 
         if prePlasma:
-            foilProfile.pre_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.Exponential(
-                self.exponential_pre_plasma_length,
-                self.exponential_pre_plasma_cutoff,
+            pre_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.Exponential(
+                PlasmaLength=self.exponential_pre_plasma_length,
+                PlasmaCutoff=self.exponential_pre_plasma_cutoff,
             )
         elif explicitlyNoPrePlasma:
-            foilProfile.pre_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.None_()
+            pre_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.None_()
         else:
             raise ValueError(
                 "either both exponential_pre_plasma_length and"
@@ -82,12 +77,12 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
         )
 
         if postPlasma:
-            foilProfile.post_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.Exponential(
-                self.exponential_post_plasma_length,
-                self.exponential_post_plasma_cutoff,
+            post_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.Exponential(
+                PlasmaLength=self.exponential_post_plasma_length,
+                PlasmaCutoff=self.exponential_post_plasma_cutoff,
             )
         elif explicitlyNoPostPlasma:
-            foilProfile.post_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.None_()
+            post_foil_plasmaRamp = species.operation.densityprofile.plasmaramp.None_()
         else:
             raise ValueError(
                 "either both exponential_post_plasma_length and"
@@ -95,7 +90,13 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
                 " none or neither!"
             )
 
-        return foilProfile
+        return species.operation.densityprofile.Foil(
+            density_si=self.density,
+            y_value_front_foil_si=self.front,
+            thickness_foil_si=self.thickness,
+            pre_foil_plasmaRamp=pre_foil_plasmaRamp,
+            post_foil_plasmaRamp=post_foil_plasmaRamp,
+        )
 
     def get_picongpu_drift(self) -> typing.Optional[species.operation.momentum.Drift]:
         """
@@ -104,10 +105,7 @@ class FoilDistribution(picmistandard.PICMI_FoilDistribution):
         """
         if [0, 0, 0] == self.directed_velocity:
             return None
-
-        drift = species.operation.momentum.Drift()
-        drift.fill_from_velocity(tuple(self.directed_velocity))
-        return drift
+        return species.operation.momentum.Drift.from_velocity(tuple(self.directed_velocity))
 
     def __call__(self, x, y, z):
         # We do this to get the correct shape after broadcasting:

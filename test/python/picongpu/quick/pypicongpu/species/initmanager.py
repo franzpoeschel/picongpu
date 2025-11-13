@@ -502,14 +502,12 @@ class TestInitManager(unittest.TestCase):
 
         simple_density = SimpleDensity()
         simple_density.ppc = 927
-        simple_density.profile = densityprofile.Uniform()
-        simple_density.profile.density_si = 1337
+        simple_density.profile = densityprofile.Uniform(density_si=1337)
         simple_density.species = {
             self.species1,
             self.species2,
         }
-        simple_density.layout = Random()
-        simple_density.layout.ppc = 1
+        simple_density.layout = Random(ppc=1)
         momentum_ops = []
         for single_species in initmgr.all_species:
             simple_momentum = SimpleMomentum()
@@ -541,13 +539,11 @@ class TestInitManager(unittest.TestCase):
 
         simple_density = SimpleDensity()
         simple_density.ppc = 927
-        simple_density.profile = densityprofile.Uniform()
-        simple_density.profile.density_si = 1337
+        simple_density.profile = densityprofile.Uniform(density_si=1337)
         simple_density.species = {
             self.species1,
         }
-        simple_density.layout = Random()
-        simple_density.layout.ppc = 1
+        simple_density.layout = Random(ppc=1)
         initmgr.all_operations.append(simple_density)
 
         # store momentum ops separately for assertion later
@@ -747,10 +743,8 @@ class TestInitManager(unittest.TestCase):
 
     def test_constant_constant_dependencies_ok(self):
         """constants requires other constant and it is present"""
-        mass = Mass()
-        mass.mass_si = 1
-        charge = Charge()
-        charge.charge_si = 1
+        mass = Mass(mass_si=1)
+        charge = Charge(charge_si=1)
 
         const_dep = self.ConstantWithDependencies()
         const_dep.constant_dependencies = [Mass, Charge]
@@ -774,8 +768,7 @@ class TestInitManager(unittest.TestCase):
 
     def test_constant_constant_dependencies_missing(self):
         """constants requires other constant and it is missing"""
-        charge = Charge()
-        charge.charge_si = 1
+        charge = Charge(charge_si=1)
 
         const_dep = self.ConstantWithDependencies()
         const_dep.constant_dependencies = [Mass, Charge]
@@ -883,8 +876,7 @@ class TestInitManager(unittest.TestCase):
             ionization_model_list=[species.constant.ionizationmodel.ThomasFermi()]
         )
         ionizers_const.ionization_model_list[0].ionization_electron_species = electron
-        element_const = species.constant.ElementProperties()
-        element_const.element = species.util.Element("N")
+        element_const = species.constant.ElementProperties(element=species.util.Element("N"))
         ion.constants = [ionizers_const, element_const]
 
         ion_op = species.operation.SetChargeState()

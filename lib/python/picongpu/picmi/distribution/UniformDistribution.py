@@ -47,8 +47,7 @@ class UniformDistribution(picmistandard.PICMI_UniformDistribution):
         util.unsupported("lower bound", self.lower_bound, [None, None, None])
         util.unsupported("upper bound", self.upper_bound, [None, None, None])
 
-        profile = species.operation.densityprofile.Uniform()
-        profile.density_si = self.density
+        profile = species.operation.densityprofile.Uniform(density_si=self.density)
 
         # @todo respect bounding box, Brian Marre, 2023
         # profile.lower_bound = tuple(map(
@@ -65,10 +64,7 @@ class UniformDistribution(picmistandard.PICMI_UniformDistribution):
         """
         if [0, 0, 0] == self.directed_velocity:
             return None
-
-        drift = species.operation.momentum.Drift()
-        drift.fill_from_velocity(tuple(self.directed_velocity))
-        return drift
+        return species.operation.momentum.Drift.from_velocity(tuple(self.directed_velocity))
 
     def __call__(self, x, y, z):
         return 0.0 * (x + y + z) + self.density
