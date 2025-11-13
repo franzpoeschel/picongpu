@@ -75,6 +75,7 @@ Laser plasma electron acceleration
  - Bachelor thesis on PWFA driver dynamics and peak energy loss [Wrobel2023]_
  - TeV/m catapult acceleration in graphene layers [Bontoiu2023]_
  - Refractive plasma optics for relativistic laser beams [Seeman2023]_
+ - Master thesis on sensitivity of LWFA using STII [Tiebel2024]_
  - Direct visualization of shock front induced nonlinear laser wakefield dynamics [Levine2025]_
  - Master thesis on radiation based diagnostic methods in PWFA [Wrobel2025]_
 
@@ -199,6 +200,7 @@ Theses
  - PhD thesis: Exascale simulations with PIConGPU, laser ion acceleration  [Huebl2019]_
  - Bachelor thesis: Synthetic coherent transistion radiation [Carstens2019]_
  - Bachelor thesis: PWFA driver dynamics and peak energy loss [Wrobel2023]_
+ - Master thesis: Sensitivity analysis of LWFA using STII [Tiebel2024]_
  - Master thesis: Radiation based diagnostic methods in PWFA [Wrobel2025]_
 
 List of PIConGPU references in chronological order
@@ -437,6 +439,12 @@ List of PIConGPU references in chronological order
         *Visualizing plasmons and ultrafast kinetic instabilities in laser-driven solids using X-ray scattering*,
         Commun Phys 7, 296 (2024),
         https://doi.org/10.1038/s42005-024-01776-6
+
+.. [Tiebel2024]
+        Tiebel, J.,
+	*A sensitivity analysis of electron injection and acceleration in LWFA using PIConGPU*,
+	Master Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2024),
+	https://doi.org/10.5281/zenodo.14605063
 
 .. [Levine2025]
         Levine, E. Y., et al.,
