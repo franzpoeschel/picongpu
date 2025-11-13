@@ -69,7 +69,9 @@ namespace picongpu::particles::atomicPhysics::atomicData
         //! configNumber of atomic state, sorted block wise by ionization state
         BoxConfigNumber m_boxConfigNumber;
         //! energy respective to ground state of ionization state[eV], sorted block wise by ionization state
-        typename S_DataBox::BoxValue m_boxStateEnergy; // eV
+        typename S_DataBox::BoxValue m_boxStateEnergy;
+        //! screened charge[e], sorted block wise by ionization state
+        typename S_DataBox::BoxValue m_boxStateScreenedCharge;
         //! number of physical configurations associated with state, sorted block wise by ionization state
         BoxMultiplicity m_boxMultiplicity;
         //! number of atomic states
@@ -89,10 +91,12 @@ namespace picongpu::particles::atomicPhysics::atomicData
         AtomicStateDataBox(
             BoxConfigNumber boxConfigNumber,
             typename S_DataBox::BoxValue boxStateEnergy,
+            typename S_DataBox::BoxValue boxStateScreenedCharge,
             BoxMultiplicity boxMultiplicity,
             uint32_t numberAtomicStates)
             : m_boxConfigNumber(boxConfigNumber)
             , m_boxStateEnergy(boxStateEnergy)
+            , m_boxStateScreenedCharge(boxStateScreenedCharge)
             , m_boxMultiplicity(boxMultiplicity)
             , m_numberAtomicStates(numberAtomicStates)
         {
@@ -121,6 +125,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
             auto const configNumber = std::get<0>(tuple);
             m_boxConfigNumber[collectionIndex] = configNumber;
             m_boxStateEnergy[collectionIndex] = std::get<1>(tuple);
+            m_boxStateScreenedCharge[collectionIndex] = std::get<2>(tuple);
 
             // calculate multiplicity and store result
             m_boxMultiplicity[collectionIndex]
@@ -248,6 +253,24 @@ namespace picongpu::particles::atomicPhysics::atomicData
             return this->m_boxConfigNumber(collectionIndex);
         }
 
+        /** returns screenedCharge of state corresponding to given index
+         *
+         * @attention no range check outside debug compile, invalid memory access if collectionIndex >=
+         * numberAtomicStates
+         * @param collectionIndex index of data box entry to query
+         */
+        HDINLINE typename S_DataBox::TypeValue screenedCharge(uint32_t const collectionIndex) const
+        {
+            if constexpr(picongpu::atomicPhysics::debug::atomicData::RANGE_CHECKS_IN_DATA_QUERIES)
+                if(collectionIndex >= m_numberAtomicStates)
+                {
+                    printf("atomicPhysics ERROR: out of bounds atomic state configNumber call\n");
+                    return static_cast<typename S_DataBox::TypeValue>(0._X);
+                }
+
+            return this->m_boxStateScreenedCharge(collectionIndex);
+        }
+
         /** directly query energy dataBox entry, use getEnergy() unless you know what you are doing!
          *
          * @attention no range check outside debug compile, invalid memory access if collectionIndex >=
@@ -317,6 +340,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
     private:
         std::unique_ptr<BufferConfigNumber> bufferConfigNumber;
         std::unique_ptr<typename S_DataBuffer::BufferValue> bufferStateEnergy;
+        std::unique_ptr<typename S_DataBuffer::BufferValue> bufferStateScreenedCharge;
         std::unique_ptr<BufferMultiplicity> bufferMultiplicity;
 
         uint32_t m_numberAtomicStates;
@@ -329,6 +353,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
 
             bufferConfigNumber.reset(new BufferConfigNumber(layoutAtomicStates, false));
             bufferStateEnergy.reset(new typename S_DataBuffer::BufferValue(layoutAtomicStates, false));
+            bufferStateScreenedCharge.reset(new typename S_DataBuffer::BufferValue(layoutAtomicStates, false));
             bufferMultiplicity.reset(new BufferMultiplicity(layoutAtomicStates, false));
         }
 
@@ -337,6 +362,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
             return AtomicStateDataBox<T_Number, T_Value, T_ConfigNumber, T_Multiplicity>(
                 bufferConfigNumber->getHostBuffer().getDataBox(),
                 bufferStateEnergy->getHostBuffer().getDataBox(),
+                bufferStateScreenedCharge->getHostBuffer().getDataBox(),
                 bufferMultiplicity->getHostBuffer().getDataBox(),
                 m_numberAtomicStates);
         }
@@ -346,6 +372,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
             return AtomicStateDataBox<T_Number, T_Value, T_ConfigNumber, T_Multiplicity>(
                 bufferConfigNumber->getDeviceBuffer().getDataBox(),
                 bufferStateEnergy->getDeviceBuffer().getDataBox(),
+                bufferStateScreenedCharge->getDeviceBuffer().getDataBox(),
                 bufferMultiplicity->getDeviceBuffer().getDataBox(),
                 m_numberAtomicStates);
         }
@@ -360,6 +387,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
         {
             bufferConfigNumber->hostToDevice();
             bufferStateEnergy->hostToDevice();
+            bufferStateScreenedCharge->hostToDevice();
             bufferMultiplicity->hostToDevice();
         }
 
@@ -367,6 +395,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
         {
             bufferConfigNumber->deviceToHost();
             bufferStateEnergy->deviceToHost();
+            bufferStateScreenedCharge->deviceToHost();
             bufferMultiplicity->deviceToHost();
         }
     };

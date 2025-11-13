@@ -8,9 +8,10 @@ Atomic Physics/FLYonPIC
 Introduction
 ------------
 
-FLYonPIC is an advanced atomic physics model integrated with the PIConGPU PIC-simulation.
+FLYonPIC is an advanced atomic physics model integrated in PIConGPU.
 
-In contrast to the standard ionization models, FLYonPIC tracks excited states explicitly, allowing for a more detailed modelling of atomic physics process.
+In contrast to the standard ionization models, FLYonPIC tracks excited states explicitly.
+That is, FLYonPIC tracks not just the charge state of the ions but their actual atomic state, including bound electron excitation.
 
 FLYonPIC is based on averaged states and models the evolution of the atomic state distribution time and space resolved,
 
@@ -29,7 +30,7 @@ FLYonPIC is based on the [FlyCHK]_ atomic model and currently implements the fol
 - pressure ionization (according to Stewart-Pyatt ionization potential depression)
 - field ionization [BSI + ADK] (with Stewart-Pyatt ionization potential depression)
 
-FLYonPIC is energy and charge conserving and in the thermal average momentum conserving and solves the atomic rate equation time dependent and explicit with adaptive sub-stepping of the PIC-cycle.
+FLYonPIC solves the atomic rate equation time dependent and explicit with adaptive sub-stepping of the PIC-cycle and is energy and charge conserving and in the thermal average momentum conserving.
 
 In addition FLYonPIC will be extended in the near future to include:
 
@@ -40,74 +41,68 @@ Momentum conservation and photonic processes are also planned in the future.
 Model Overview
 --------------
 
-FLYonPIC is based on tracking the atomic state of ions as a particle attribute of ion macro particles, with each "macro-ion" representing a phase space sample of exactly one atomic state.
+FLYonPIC is based on tracking the atomic state of ions as a particle attribute of ion macro particles, with each "macro-ion" representing a phase space density sample of exactly one atomic state.
 
 .. note::
-   FLYonPIC tracks only FlyCHK super configurations, i.e., FLYonPIC distinguishes only between states differing in the number of electron contained in atomic shells.
+   FLYonPIC tracks only FlyCHK super configurations, i.e., FLYonPIC distinguishes only between states differing in the number of electron in the atomic shells.
 
-   Example: (1s^2)(2s^1 2p^2) and (1s^2)(2p^3) would be considered the same state (2,3,0, ...) by FLYonPIC.
+   Example: (1s^2)(2s^1 2p^2) and (1s^2)(2p^3) would be considered the same atomic state (2,3,0, ...) by FLYonPIC.
 
-The atomic state dynamics are modelled as some average rate of change to another atomic state, dependent current state, transition and local plasma conditions.
+Atomic state dynamics are modeled using an average rate of change between atomic states, dependent on current state, transition and local plasma conditions.
 
-Over the set of all transitions, atomic state dynamics may be represented as a matrix of rates describing the change of the entire atomic state population with time.
+Over the set of all transitions, atomic state dynamics are represented as a matrix of rates describing the change of the entire atomic state population with time.
 
 This rate equation is solved in FLYonPIC by a Monte Carlo solver for every macro-ion individually and time dependent.
 
 For this FLYonPIC,
 
 - bins all macro-electrons in a super cell by energy
-- calculates the energy dependent cross-section using approximation formulas for each transition
+- calculates the energy dependent cross-section using approximation formulas for each transition and process
 - calculates an energy dependent electron collision frequency depending on the local electron histogram.
 
 .. note::
 
    A super cell is a patch of cells, usually 8x8x4, with the size being user configurable
 
-The resulting energy dependent rates are then used by a monte-carlo solver to update the atomic states of all macro-ions independently in this super cell according to the rate equation.
+The resulting energy dependent rates are then used in a Monte-Carlo solver to update the atomic states of all macro-ions independently in this super cell according to the rate equation.
 
-This time dependent and explicit update is done at least once ever PIC-time step with adaptive sub stepping to assure numerical stability despite large changes in local rates.
+This time dependent and explicit update is performed at least once ever PIC-time step, with an adaptive sub stepping to maintain numerical stability despite large changes in local rates.
 
 Changes of the PIC-simulation state by the atomic physics/FLYonPIC step are propagated back to the PIC-simulation through ionization of macro-ions and macro-electron energy change.
 
-Which transitions and states are included in this update is user configurable, with the user providing all transition coefficients and state energies via an input file.
+Which transitions and states are included in this update is user configurable, with the user providing all transition coefficients and state energies in input files.
 
 Getting Started With FLYonPIC
 -----------------------------
 
 To use FLYonPIC in a simulation setup, you need to provide a set of atomic input data files, see :ref:`Input Data For FLYonPIC <atomicPhysicsInputData>`, and mark at least one species as an atomic physics ion species and one species as an atomic physics electron species.
 
-See the `compile time test of atomic physics <https://github.com/ComputationalRadiationPhysics/picongpu/tree/dev/share/picongpu/examples/AtomicPhysics>`_ for examples using atomic physics.
-
-.. warning::
-
-  These setups are **tests** of FLYonPIC components and therefore activate a lot of debug options negatively impacting runtime.
-
-  **Do not base production simulations directly on them!**
-
-  To disable all atomic physics debug options simple remove the ``atomicPhysics_Debug.param`` from the setup.
+See the `atomic physics example of PIConGPU <https://github.com/ComputationalRadiationPhysics/picongpu/tree/dev/share/picongpu/examples/AtomicPhysics>`_ for an example setup for a PIConGPU simulation with FLYonPIC.
 
 Input Data for FLYonPIC
 -----------------------
 
 .. _atomicPhysicsInputData:
 
-FLYonPIC requires user provided input data describing the properties of charge- and atomic-states as well the cross section coefficients of all transitions to be modelled for all atomic Physics ions species.
+FLYonPIC requires user provided input data describing the properties of charge-, atomic-states, and transitions for each atomic physics ions species.
 
-These data files may be generated from existing ScFLY input files using `flylite <https://github.com/BrianMarre/flylite/tree/dev>`_, simply
+These data files may be generated from existing FLYCHK input files using `picongpuAtomicPhysicsTools <https://github.com/ComputationalRadiationPhysics/picongpuAtomicPhysicsTools>`_.
 
-- add the ScFLY input file to the data folder as described in the flylite install description.
-- set the Z of the wanted element in :code:`ExtractionAtomicData.py`
-- execute the python script :code:`ExtractionAtomicData.py`
+To do this,
+
+- copy the FLYCHK input file to the data folder :code:`src/flyCHKAtomicDataExtraction/data`
+- add the Z of the wanted element to :code:`Zs` in :code:`create_FLYonPIC_input_files.py` in the repository root
+- execute the python script :code:`create_FLYonPIC_input_files.py`
 
 .. code-block::
 
-   python ExtractionAtomicData.py
+   python create_FLYonPIC_input_files.py
 
 Alternatively users may create their own atomic data input files following the input file description below.
 
 .. note::
 
-   Atomic states must be specified by configNumber in all input files, see `AtomicConfigNumberConversion <https://github.com/ComputationalRadiationPhysics/SCFlyTools/blob/main/AtomicConfigNumberConversion.py>`_ for a conversion between occupation number level vector and atomic config number.
+   Atomic states must be specified by configNumber in all input files, see `AtomicConfigNumberConversion <https://github.com/ComputationalRadiationPhysics/SCFlyTools/blob/main/AtomicConfigNumberConversion.py>`_ for a conversion between occupation number level vector and configNumber.
 
 Charge State Input Data:
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -116,7 +111,7 @@ one line for every charge stat, format of a line:
 
 .. code-block::
 
-   (charge state : uint) <space> (ionization Energy[eV] : float) <space> (Z_effective : uint)\n
+   (charge state : uint) <space> (ionization Energy[eV] : float)\n
 
 Requirements:
 ~~~~~~~~~~~~~
@@ -132,7 +127,7 @@ one line per atomic state, format of a line in the input file:
 
 .. code-block::
 
-   (configNumber : uint) <space> (exciation energy[eV] : float)\n
+   (configNumber : uint) <space> (excitation energy[eV] : float) <space> (screened charge[e] : float)\n
 
 Requirements:
 ~~~~~~~~~~~~~
@@ -147,14 +142,14 @@ One line per atomic state, format of a line in the input file:
 
 .. code-block::
 
-   (state configNumber : uint) <space> (pressure ioniaztion state configNumber : uint)\n
+   (state configNumber : uint) <space> (pressure ionization state configNumber : uint)\n
 
 .. note::
 
-   To disable pressure ionization for a state set it's pressure ionization states configNumber equal to its own configNumber
+   To disable pressure ionization for a state set it's pressure ionization states configNumber equal to its own configNumber.
 
 .. note::
-   The pressure ionization state input is optional, set fileName in species definition to ``""`` to not specify it
+   The pressure ionization state input is optional, set fileName in species definition to ``""`` use the default.
    If no pressure ionization state input file is provided, FLYonPIC will try to find a good pressure ionization state for each atomic state in the atomic state input.
 
 Requirements:

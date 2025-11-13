@@ -173,8 +173,6 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
             // fully ionized state has no pressure ionization state --> currentChargeState < T_atomicNumber
             uint8_t const currentChargeState
                 = T_AtomicStateDataBox::ConfigNumber::getChargeState(currentAtomicStateConfigNumber);
-            uint8_t const ipdIonizationStateChargeState = T_AtomicStateDataBox::ConfigNumber::getChargeState(
-                atomicStateBox.configNumber(ipdIonizationStateClctIdx));
 
             // eV
             float_X const ionizationEnergy = chargeStateBox.ionizationEnergy(currentChargeState)
@@ -195,7 +193,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                 float_X const eFieldNormCell = pmacc::math::l2norm(eFieldCache(localCellIndex));
 
                 float_X const eFieldNormAU = sim.pic.conv().eField2auEField(eFieldNormCell);
-                float_X const screenedCharge = chargeStateBox.screenedCharge(currentChargeState);
+                float_X const screenedCharge = atomicStateBox.screenedCharge(currentAtomicStateClctIdx);
 
                 // eV
                 ipd += BarrierSupressionIonization::getIPD(screenedCharge, eFieldNormAU);
@@ -219,6 +217,9 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
             {
                 /* we only update the atomic state since IPD-Ionization is not a regular transition and does not use
                  *   shared resources */
+
+                uint8_t const ipdIonizationStateChargeState = T_AtomicStateDataBox::ConfigNumber::getChargeState(
+                    atomicStateBox.configNumber(ipdIonizationStateClctIdx));
 
                 // update ion atomic state
                 SetAtomicState::hard(

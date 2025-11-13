@@ -63,8 +63,6 @@ namespace picongpu::particles::atomicPhysics::atomicData
     private:
         //! unit: eV
         typename S_DataBox::BoxValue m_boxIonizationEnergy;
-        //! unit: elementary charge
-        typename S_DataBox::BoxValue m_boxScreenedCharge;
 
     public:
         /** constructor
@@ -75,9 +73,7 @@ namespace picongpu::particles::atomicPhysics::atomicData
          * @param ionizationEnergy ionization energy[eV] of charge states
          * @param screenedCharge screenedCharge[e] of charge states
          */
-        ChargeStateDataBox(typename S_DataBox::BoxValue ionizationEnergy, typename S_DataBox::BoxValue screenedCharge)
-            : m_boxIonizationEnergy(ionizationEnergy)
-            , m_boxScreenedCharge(screenedCharge)
+        ChargeStateDataBox(typename S_DataBox::BoxValue ionizationEnergy) : m_boxIonizationEnergy(ionizationEnergy)
         {
         }
 
@@ -122,7 +118,6 @@ namespace picongpu::particles::atomicPhysics::atomicData
             }
 
             m_boxIonizationEnergy[collectionIndex] = std::get<1>(tuple);
-            m_boxScreenedCharge[collectionIndex] = std::get<2>(tuple);
         }
 
         /** get ionization energy of the ground state of the charge state
@@ -142,19 +137,6 @@ namespace picongpu::particles::atomicPhysics::atomicData
 
             return m_boxIonizationEnergy[chargeState];
         }
-
-        //! @attention NEVER call with chargeState >= T_atomicNumber, otherwise invalid memory access
-        HDINLINE T_Value screenedCharge(uint8_t const chargeState) const
-        {
-            if constexpr(picongpu::atomicPhysics::debug::atomicData::RANGE_CHECKS_IN_DATA_QUERIES)
-                if(chargeState >= u32(T_atomicNumber))
-                {
-                    printf("atomicPhysics ERROR: out of range ionizationEnergy() call\n");
-                    return static_cast<T_Value>(0.);
-                }
-
-            return m_boxScreenedCharge[chargeState];
-        }
     };
 
     /** complementing buffer class
@@ -172,7 +154,6 @@ namespace picongpu::particles::atomicPhysics::atomicData
 
     private:
         std::unique_ptr<typename S_DataBuffer::BufferValue> bufferIonizationEnergy;
-        std::unique_ptr<typename S_DataBuffer::BufferValue> bufferScreenedCharge;
 
     public:
         HINLINE ChargeStateDataBuffer()
@@ -181,33 +162,28 @@ namespace picongpu::particles::atomicPhysics::atomicData
             auto const layoutChargeStates = pmacc::GridLayout<1>(T_atomicNumber, guardSize).sizeWithoutGuardND();
 
             bufferIonizationEnergy.reset(new typename S_DataBuffer::BufferValue(layoutChargeStates, false));
-            bufferScreenedCharge.reset(new typename S_DataBuffer::BufferValue(layoutChargeStates, false));
         }
 
         HINLINE S_ChargeStateDataBox getHostDataBox()
         {
             return ChargeStateDataBox<T_Number, T_Value, T_atomicNumber>(
-                bufferIonizationEnergy->getHostBuffer().getDataBox(),
-                bufferScreenedCharge->getHostBuffer().getDataBox());
+                bufferIonizationEnergy->getHostBuffer().getDataBox());
         }
 
         HINLINE S_ChargeStateDataBox getDeviceDataBox()
         {
             return ChargeStateDataBox<T_Number, T_Value, T_atomicNumber>(
-                bufferIonizationEnergy->getDeviceBuffer().getDataBox(),
-                bufferScreenedCharge->getDeviceBuffer().getDataBox());
+                bufferIonizationEnergy->getDeviceBuffer().getDataBox());
         }
 
         HINLINE void hostToDevice()
         {
             bufferIonizationEnergy->hostToDevice();
-            bufferScreenedCharge->hostToDevice();
         }
 
         HINLINE void deviceToHost()
         {
             bufferIonizationEnergy->deviceToHost();
-            bufferScreenedCharge->deviceToHost();
         }
     };
 } // namespace picongpu::particles::atomicPhysics::atomicData
