@@ -125,8 +125,8 @@ class TestGroundStateIonization(unittest.TestCase):
                             {"picongpu_name": "momentum"},
                         ],
                         "constants": {
-                            "mass": {"mass_si": constants.m_e},
-                            "charge": {"charge_si": constants.m_e},
+                            "mass": {"mass_si": constants.q_e},
+                            "charge": {"charge_si": constants.q_e},
                             "density_ratio": None,
                             "element_properties": None,
                             "ground_state_ionization": None,
