@@ -40,6 +40,7 @@ namespace picongpu::particles::atomicPhysics::debug
         {
             std::cout << "ID: " << ion[particleId_] << std::endl;
             std::cout << "\t - weighting: " << ion[weighting_] << std::endl;
+            std::cout << "\t - mask: " << ((ion[multiMask_]) ? "true" : "false") << std::endl;
 
             std::cout << "\t - momentum: (" << ion[momentum_].toString(",", "") << ")" << std::endl;
             std::cout << "\t - position: (" << ion[position_].toString(",", "") << ")" << std::endl;
