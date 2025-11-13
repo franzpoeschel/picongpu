@@ -27,7 +27,7 @@ class Test_IonizationModel(unittest.TestCase):
         electron = Species()
         electron.name = "e"
         mass_constant = Mass(mass_si=constants.m_e)
-        charge_constant = Charge(charge_si=constants.elementary_charge)
+        charge_constant = Charge(charge_si=constants.q_e)
         electron.constants = [
             charge_constant,
             mass_constant,
@@ -92,7 +92,7 @@ class Test_IonizationModel(unittest.TestCase):
         other_electron = Species()
         other_electron.name = "e"
         mass_constant = Mass(mass_si=constants.m_e)
-        charge_constant = Charge(charge_si=constants.elementary_charge)
+        charge_constant = Charge(charge_si=constants.q_e)
         other_electron.constants = [
             charge_constant,
             mass_constant,
