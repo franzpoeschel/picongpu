@@ -1,4 +1,4 @@
-/* Copyright 2024-2024 Brian Marre
+/* Copyright 2024-2025 Brian Marre
  *
  * This file is part of PIConGPU.
  *
@@ -26,6 +26,8 @@
 #include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/stage/ApplyIPDIonization.def"
 #include "picongpu/particles/atomicPhysics/localHelperFields/FoundUnboundIonField.hpp"
 #include "picongpu/particles/atomicPhysics/localHelperFields/TimeRemainingField.hpp"
+#include "picongpu/particles/atomicPhysics/spawnFromSourceSpeciesModules/NeverSkipSuperCells.hpp"
+#include "picongpu/particles/atomicPhysics/spawnFromSourceSpeciesModules/SkipFinishedSuperCellsAtomicPhysics.hpp"
 #include "picongpu/particles/param.hpp"
 #include "picongpu/particles/traits/GetAtomicDataType.hpp"
 #include "picongpu/particles/traits/GetIonizationElectronSpecies.hpp"
@@ -39,8 +41,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::sta
     //! short hand for IPD namespace
     namespace s_IPD = picongpu::particles::atomicPhysics::ionizationPotentialDepression;
 
-    template<typename T_IonSpecies, typename T_IPDModel>
-    HINLINE void ApplyIPDIonization<T_IonSpecies, T_IPDModel>::operator()(
+    template<typename T_IonSpecies, typename T_IPDModel, typename T_SkipFinishedSuperCell>
+    HINLINE void ApplyIPDIonization<T_IonSpecies, T_IPDModel, T_SkipFinishedSuperCell>::operator()(
         picongpu::MappingDesc const mappingDesc) const
     {
         // might be alias, from here on out no more
@@ -80,25 +82,52 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::sta
 
         auto& fieldE = *dc.get<FieldE>(FieldE::getName());
 
-        // macro for call of kernel on every superCell, see pull request #4321
-        PMACC_LOCKSTEP_KERNEL(
-            s_IPD::kernel::ApplyIPDIonizationKernel<
-                T_IPDModel,
-                std::integral_constant<bool, AtomicDataType::switchFieldIonization>>())
-            .config(mapper.getGridDim(), ions)(
-                mapper,
-                idProvider->getDeviceGenerator(),
-                ions.getDeviceParticlesBox(),
-                electrons.getDeviceParticlesBox(),
-                timeRemainingField.getDeviceDataBox(),
-                foundUnboundIonField.getDeviceDataBox(),
-                atomicData.template getChargeStateDataDataBox</*on device*/ false>(),
-                atomicData.template getAtomicStateDataDataBox</*on device*/ false>(),
-                atomicData.template getIPDIonizationStateDataBox</*on device*/ false>(),
-                fieldE.getDeviceDataBox(),
-                debyeLengthField.getDeviceDataBox(),
-                temperatureEnergyField.getDeviceDataBox(),
-                zStarField.getDeviceDataBox());
+        /** @details must use if-constexpr since "apply" in PMACC_LOCKSTEP_KERNEL macro is only able to handle
+         *      typenames, not typename aliases, ... for some reason. */
+        if constexpr(T_SkipFinishedSuperCell::value)
+        {
+            PMACC_LOCKSTEP_KERNEL(
+                s_IPD::kernel::ApplyIPDIonizationKernel<
+                    particles::atomicPhysics::spawnFromSourceSpeciesModules::SkipFinishedSuperCellsAtomicPhysics,
+                    T_IPDModel,
+                    std::integral_constant<bool, AtomicDataType::switchFieldIonization>>())
+                .config(mapper.getGridDim(), ions)(
+                    mapper,
+                    idProvider->getDeviceGenerator(),
+                    ions.getDeviceParticlesBox(),
+                    electrons.getDeviceParticlesBox(),
+                    timeRemainingField.getDeviceDataBox(),
+                    foundUnboundIonField.getDeviceDataBox(),
+                    atomicData.template getChargeStateDataDataBox</*on device*/ false>(),
+                    atomicData.template getAtomicStateDataDataBox</*on device*/ false>(),
+                    atomicData.template getIPDIonizationStateDataBox</*on device*/ false>(),
+                    fieldE.getDeviceDataBox(),
+                    debyeLengthField.getDeviceDataBox(),
+                    temperatureEnergyField.getDeviceDataBox(),
+                    zStarField.getDeviceDataBox());
+        }
+        else
+        {
+            PMACC_LOCKSTEP_KERNEL(
+                s_IPD::kernel::ApplyIPDIonizationKernel<
+                    particles::atomicPhysics::spawnFromSourceSpeciesModules::NeverSkipSuperCells,
+                    T_IPDModel,
+                    std::integral_constant<bool, AtomicDataType::switchFieldIonization>>())
+                .config(mapper.getGridDim(), ions)(
+                    mapper,
+                    idProvider->getDeviceGenerator(),
+                    ions.getDeviceParticlesBox(),
+                    electrons.getDeviceParticlesBox(),
+                    timeRemainingField.getDeviceDataBox(),
+                    foundUnboundIonField.getDeviceDataBox(),
+                    atomicData.template getChargeStateDataDataBox</*on device*/ false>(),
+                    atomicData.template getAtomicStateDataDataBox</*on device*/ false>(),
+                    atomicData.template getIPDIonizationStateDataBox</*on device*/ false>(),
+                    fieldE.getDeviceDataBox(),
+                    debyeLengthField.getDeviceDataBox(),
+                    temperatureEnergyField.getDeviceDataBox(),
+                    zStarField.getDeviceDataBox());
+        }
 
         // no need to call fillAllGaps, since we do not leave any gaps
 
