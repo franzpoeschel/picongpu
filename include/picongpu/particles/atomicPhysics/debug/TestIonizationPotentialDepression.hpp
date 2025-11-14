@@ -66,12 +66,14 @@ namespace picongpu::particles::atomicPhysics::debug
             float_64 const correctIPDValue = 6.306390823271927;
 
             using StewartPyattIPD = particles::atomicPhysics::ionizationPotentialDepression::template StewartPyattIPD<
-                particles::atomicPhysics::ionizationPotentialDepression::RelativisticTemperatureFunctor>;
+                particles::atomicPhysics::ionizationPotentialDepression::RelativisticTemperatureFunctor,
+                false>;
 
             auto const superCellConstantInput = StewartPyattIPD::SuperCellConstantInput{
                 static_cast<float_X>(temperatureTimesk_Boltzman),
                 static_cast<float_X>(debyeLength),
-                static_cast<float_X>(zStar)};
+                static_cast<float_X>(zStar),
+                static_cast<float_X>(electronDensity / (sim.unit.length() * sim.unit.length() * sim.unit.length()))};
 
             // eV
             float_64 const ipd = static_cast<float_X>(StewartPyattIPD::ipd(superCellConstantInput, chargeState));

@@ -48,14 +48,18 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
             float_X debyeLength;
             // unitless
             float_X zStar;
+            // 1/unit_length^3
+            float_X freeElectronDensity;
 
             constexpr StewartPyattSuperCellConstantInput(
-                float_X temperatureTimesk_Boltzman_i,
-                float_X debyeLength_i,
-                float_X zStar_i)
+                float_X const temperatureTimesk_Boltzman_i,
+                float_X const debyeLength_i,
+                float_X const zStar_i,
+                float_X const freeElectronDensity_i)
                 : temperatureTimesk_Boltzman(temperatureTimesk_Boltzman_i)
                 , debyeLength(debyeLength_i)
                 , zStar(zStar_i)
+                , freeElectronDensity(freeElectronDensity_i)
             {
             }
         };
@@ -69,7 +73,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
      * @tparam T_TemperatureFunctor term A to average over for all macro particles according to equi-partition theorem,
      * average(A) = k_B * T, must follow
      */
-    template<typename T_TemperatureFunctor>
+    template<typename T_TemperatureFunctor, bool T_useSCFLYextendedStewartPyattIPD>
     struct StewartPyattIPD : IPDModel
     {
         using SuperCellConstantInput = detail::StewartPyattSuperCellConstantInput;
@@ -143,17 +147,23 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
                 = std::make_unique<s_IPD::localHelperFields::DebyeLengthField<picongpu::MappingDesc>>(mappingDesc);
             dataConnector.consume(std::move(debyeLengthField));
 
+            // local k_Boltzman * Temperature field, in eV
+            auto temperatureEnergyField
+                = std::make_unique<s_IPD::localHelperFields::TemperatureEnergyField<picongpu::MappingDesc>>(
+                    mappingDesc);
+            dataConnector.consume(std::move(temperatureEnergyField));
+
             // z^star IPD input field, z^star = = average(q^2) / average(q) ;for q charge number of ion, unitless,
             //  not weighted
             auto zStarField
                 = std::make_unique<s_IPD::localHelperFields::ZStarField<picongpu::MappingDesc>>(mappingDesc);
             dataConnector.consume(std::move(zStarField));
 
-            // local k_Boltzman * Temperature field, in eV
-            auto temperatureEnergyField
-                = std::make_unique<s_IPD::localHelperFields::TemperatureEnergyField<picongpu::MappingDesc>>(
+            // unit: 1/unit_length^3
+            auto freeElectronDensityField
+                = std::make_unique<s_IPD::localHelperFields::FreeElectronDensityField<picongpu::MappingDesc>>(
                     mappingDesc);
-            dataConnector.consume(std::move(temperatureEnergyField));
+            dataConnector.consume(std::move(freeElectronDensityField));
             //@}
         }
 
@@ -205,7 +215,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
                 T_AtomicPhysicsIonSpeciesList,
                 s_IPD::stage::ApplyIPDIonization<
                     boost::mpl::_1,
-                    StewartPyattIPD<T_TemperatureFunctor>,
+                    StewartPyattIPD<T_TemperatureFunctor, T_useSCFLYextendedStewartPyattIPD>,
                     std::integral_constant<bool, T_SkipFinishedSuperCell>>>;
             ForEachIonSpeciesApplyIPDIonization{}(mappingDesc);
         };
@@ -220,12 +230,17 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
          * @param zStarBox deviceDataBox giving access to the local z^Star value, = average(q^2) / average(q),
          *  for all local superCells, unitless, not weighted
          */
-        template<typename T_DebyeLengthBox, typename T_TemperatureEnergyBox, typename T_ZStarBox>
+        template<
+            typename T_DebyeLengthBox,
+            typename T_TemperatureEnergyBox,
+            typename T_ZStarBox,
+            typename T_FreeElectronDensityBox>
         HDINLINE static SuperCellConstantInput getSuperCellConstantInput(
             pmacc::DataSpace<simDim> const superCellFieldIdx,
             T_DebyeLengthBox const debyeLengthBox,
             T_TemperatureEnergyBox const temperatureEnergyBox,
-            T_ZStarBox const zStarBox)
+            T_ZStarBox const zStarBox,
+            T_FreeElectronDensityBox const freeElectronDensityBox)
         {
             // eV, not weighted
             float_X temperatureTimesk_Boltzman = temperatureEnergyBox(superCellFieldIdx);
@@ -233,8 +248,10 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
             float_X debyeLength = debyeLengthBox(superCellFieldIdx);
             // unitless, not weighted
             float_X zStar = zStarBox(superCellFieldIdx);
+            // 1/unit_length^3
+            float_X freeElectronDensity = freeElectronDensityBox(superCellFieldIdx);
 
-            return SuperCellConstantInput(temperatureTimesk_Boltzman, debyeLength, zStar);
+            return SuperCellConstantInput(temperatureTimesk_Boltzman, debyeLength, zStar, freeElectronDensity);
         }
 
         /** calculate ionization potential depression
@@ -255,20 +272,57 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
             // UNIT_ENERGY/eV
             constexpr float_X eV = sim.pic.get_eV();
 
+            float_X const chargeState_X = static_cast<float_X>(chargeState);
+
             // UNIT_MASS * UNIT_LENGTH^3 / UNIT_TIME^2 * 1/(eV * UNIT_ENERGY/eV * UNIT_LENGTH)
             // = unitless, not weighted
             float_X const K
                 = (pmacc::math::isApproxZero(
                       superCellConstantInput.temperatureTimesk_Boltzman * superCellConstantInput.debyeLength))
                       ? 0._X
-                      : constFactor * (chargeState + 1)
+                      : constFactor * (chargeState_X + 1._X)
                             / (superCellConstantInput.temperatureTimesk_Boltzman * eV
                                * superCellConstantInput.debyeLength);
 
             // eV, not weighted
-            return superCellConstantInput.temperatureTimesk_Boltzman
-                   * (math::pow((3 * (superCellConstantInput.zStar + 1) * K + 1), 2._X / 3._X) - 1._X)
-                   / (2._X * (superCellConstantInput.zStar + 1._X));
+            float_X const stewartPyattIPD
+                = superCellConstantInput.temperatureTimesk_Boltzman
+                  * (math::pow((3._X * (superCellConstantInput.zStar + 1._X) * K + 1._X), 2._X / 3._X) - 1._X)
+                  / (2._X * (superCellConstantInput.zStar + 1._X));
+
+            float_X result = 0._X;
+
+            // additional ipd contribution as implemented in scfly
+            if constexpr(T_useSCFLYextendedStewartPyattIPD)
+            {
+                /** @details taken directly from the scfly source code,
+                 *  https://github.com/ComputationalRadiationPhysics/scfly/blob/5d9b0a997bb6688b04e1a34a7fa8db0f2657106a/code/src/scdrv.f#L3519-L3547
+                 *
+                 * no source known, Brian Marre, 2025
+                 */
+                // (1/(1/unit_length^3))^(1/3) = unit_length
+                float_X const ionSphereRadius = math::pow(
+                    0.75_X * (chargeState_X + 1._X) / (picongpu::PI * superCellConstantInput.freeElectronDensity),
+                    1. / 3.);
+
+                // (eV * cm) * m/cm * unit_length/m = eV * unit_length
+                constexpr float_X constFactorSCFLY = 1.45e-7_X / sim.unit.length() * 1.e-2_X;
+
+                // 1 * eV * unit_length / sqrt(unit_length^2 + unit_length^2) = eV, not weighted
+                float_X const scfly_secondBranch
+                    = (chargeState_X + 1._X) * constFactorSCFLY
+                      / math::sqrt(
+                          (ionSphereRadius / 1.5_X) * (ionSphereRadius / 1.5_X)
+                          + (superCellConstantInput.debyeLength) * (superCellConstantInput.debyeLength));
+
+                result = math::min(scfly_secondBranch, stewartPyattIPD);
+            }
+            else
+            {
+                result = stewartPyattIPD;
+            }
+
+            return result;
         }
 
         /** call a kernel, appending the IPD-input to the kernel's input
@@ -290,6 +344,9 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
                 = *dc.get<s_IPD::localHelperFields::TemperatureEnergyField<picongpu::MappingDesc>>(
                     "TemperatureEnergyField");
             auto& zStarField = *dc.get<s_IPD::localHelperFields::ZStarField<picongpu::MappingDesc>>("ZStarField");
+            auto& freeElectronDensityField
+                = *dc.get<s_IPD::localHelperFields::FreeElectronDensityField<picongpu::MappingDesc>>(
+                    "FreeElectronDensityField");
 
             PMACC_LOCKSTEP_KERNEL(T_Kernel())
                 .template config<T_chunkSize>(mapper.getGridDim())(
@@ -297,7 +354,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
                     kernelInput...,
                     debyeLengthField.getDeviceDataBox(),
                     temperatureEnergyField.getDeviceDataBox(),
-                    zStarField.getDeviceDataBox());
+                    zStarField.getDeviceDataBox(),
+                    freeElectronDensityField.getDeviceDataBox());
         }
     };
 } // namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression

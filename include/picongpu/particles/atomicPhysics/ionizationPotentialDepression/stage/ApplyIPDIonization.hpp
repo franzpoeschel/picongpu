@@ -78,6 +78,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::sta
             = *dc.get<s_IPD::localHelperFields::TemperatureEnergyField<picongpu::MappingDesc>>(
                 "TemperatureEnergyField");
         auto& zStarField = *dc.get<s_IPD::localHelperFields::ZStarField<picongpu::MappingDesc>>("ZStarField");
+        auto& freeElectronDensityField
+            = *dc.get<s_IPD::localHelperFields::ZStarField<picongpu::MappingDesc>>("FreeElectronDensityField");
         auto idProvider = dc.get<IdProvider>("globalId");
 
         auto& fieldE = *dc.get<FieldE>(FieldE::getName());
@@ -104,7 +106,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::sta
                     fieldE.getDeviceDataBox(),
                     debyeLengthField.getDeviceDataBox(),
                     temperatureEnergyField.getDeviceDataBox(),
-                    zStarField.getDeviceDataBox());
+                    zStarField.getDeviceDataBox(),
+                    freeElectronDensityField.getDeviceDataBox());
         }
         else
         {
@@ -126,7 +129,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::sta
                     fieldE.getDeviceDataBox(),
                     debyeLengthField.getDeviceDataBox(),
                     temperatureEnergyField.getDeviceDataBox(),
-                    zStarField.getDeviceDataBox());
+                    zStarField.getDeviceDataBox(),
+                    freeElectronDensityField.getDeviceDataBox());
         }
 
         // no need to call fillAllGaps, since we do not leave any gaps
