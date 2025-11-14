@@ -78,7 +78,10 @@ namespace picongpu::particles::atomicPhysics
     public:
         /** ionizationEnergy from lowerState- to upperState- chargeState
          *
+         * @param lowerStateChargeState
+         * @param upperStateChargeState
          * @param ionizationPotentialDepression, in eV
+         * @param chargeStateDataBox
          *
          * @return unit: eV
          */

@@ -219,7 +219,7 @@ namespace picongpu::particles::atomicPhysics::rateCalculation
             // check whether electron has enough kinetic energy
             if constexpr(T_excitation)
             {
-                // transition physical impossible, insufficient electron energy
+                // transition physically impossible, insufficient electron energy
                 if(energyDifference > energyElectron)
                 {
                     return 0._X;
