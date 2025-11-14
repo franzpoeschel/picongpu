@@ -38,6 +38,29 @@
 
 namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
 {
+    namespace detail
+    {
+        struct StewartPyattSuperCellConstantInput
+        {
+            // eV
+            float_X temperatureTimesk_Boltzman;
+            // UNIT_LENGTH
+            float_X debyeLength;
+            // unitless
+            float_X zStar;
+
+            constexpr StewartPyattSuperCellConstantInput(
+                float_X temperatureTimesk_Boltzman_i,
+                float_X debyeLength_i,
+                float_X zStar_i)
+                : temperatureTimesk_Boltzman(temperatureTimesk_Boltzman_i)
+                , debyeLength(debyeLength_i)
+                , zStar(zStar_i)
+            {
+            }
+        };
+    } // namespace detail
+
     //! short hand for IPD namespace
     namespace s_IPD = picongpu::particles::atomicPhysics::ionizationPotentialDepression;
 
@@ -49,6 +72,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
     template<typename T_TemperatureFunctor>
     struct StewartPyattIPD : IPDModel
     {
+        using SuperCellConstantInput = detail::StewartPyattSuperCellConstantInput;
+
     private:
         //! reset IPD support infrastructure before we accumulate over particles to calculate new IPD Inputs
         HINLINE static void resetSumFields()
@@ -160,7 +185,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
             s_IPD::stage::CalculateIPDInput<T_numberAtomicPhysicsIonSpecies>()(mappingDesc);
         }
 
-        /** check for and apply single step of pressure ionization cascade
+        /** check for and apply a single step of the IPD-ionization cascade
          *
          * @attention assumes that ipd-input fields are up to date
          * @attention invalidates ipd-input fields if at least one ionization electron has been spawned
@@ -183,62 +208,74 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
             ForEachIonSpeciesApplyIPDIonization{}(mappingDesc);
         };
 
-        /** calculate ionization potential depression
+        /** get the super cell constant input
          *
+         * @param superCellFieldIdx index of superCell in superCellField(without guards)
+         * @param debyeLengthBox deviceDataBox giving access to the local debye length for all local superCells,
+         *  sim.unit.length(), not weighted
          * @param temperatureEnergyBox deviceDataBox giving access to the local temperature * k_Boltzman for all
          *  local superCells, in sim.unit.mass() * sim.unit.length()^2 / sim.unit.time()^2, not weighted
          * @param zStarBox deviceDataBox giving access to the local z^Star value, = average(q^2) / average(q),
          *  for all local superCells, unitless, not weighted
-         * @param debyeLengthBox deviceDataBox giving access to the local debye length for all local superCells,
-         *  sim.unit.length(), not weighted
-         * @param superCellFieldIdx index of superCell in superCellField(without guards)
-         *
-         * @return unit: eV, not weighted
          */
-        template<
-            uint8_t T_atomicNumber,
-            typename T_DebyeLengthBox,
-            typename T_TemperatureEnergyBox,
-            typename T_ZStarBox>
-        HDINLINE static float_X calculateIPD(
+        template<typename T_DebyeLengthBox, typename T_TemperatureEnergyBox, typename T_ZStarBox>
+        HDINLINE static SuperCellConstantInput getSuperCellConstantInput(
             pmacc::DataSpace<simDim> const superCellFieldIdx,
             T_DebyeLengthBox const debyeLengthBox,
             T_TemperatureEnergyBox const temperatureEnergyBox,
             T_ZStarBox const zStarBox)
         {
-            // eV/(sim.unit.energy())
-            constexpr float_X eV = sim.pic.get_eV();
-
-            // eV/(sim.unit.mass() * sim.unit.length()^2 / sim.unit.time()^2) * unitless * sim.unit.charge()^2
-            //  / ( unitless * sim.unit.charge()^2 * sim.unit.time()^2 / (sim.unit.length()^3 * sim.unit.mass()))
-            // = eV * sim.unit.time()^2 * sim.unit.mass()^(-1) * sim.unit.length()^(-2) * sim.unit.charge()^2 *
-            // sim.unit.charge()^(-2)
-            //  * sim.unit.time()^(-2) * sim.unit.length()^3 * sim.unit.mass()^1 = eV * sim.unit.length()
-            // eV * sim.unit.length()
-            constexpr float_X constFactor
-                = eV * static_cast<float_X>(T_atomicNumber)
-                  * pmacc::math::cPow(picongpu::sim.pic.getElectronCharge(), 2u)
-                  / (4._X * static_cast<float_X>(picongpu::PI) * picongpu::sim.pic.getEps0());
-
             // eV, not weighted
-            float_X const temperatureTimesk_Boltzman = temperatureEnergyBox(superCellFieldIdx);
-            // sim.unit.length(), not weighted
-            float_X const debyeLength = debyeLengthBox(superCellFieldIdx);
-
-            // (eV * sim.unit.length()) / (eV * sim.unit.length()), not weighted
+            float_X temperatureTimesk_Boltzman = temperatureEnergyBox(superCellFieldIdx);
+            // UNIT_LENGTH, not weighted
+            float_X debyeLength = debyeLengthBox(superCellFieldIdx);
             // unitless, not weighted
-            float_X const K = (pmacc::math::isApproxZero(temperatureTimesk_Boltzman * debyeLength))
-                                  ? 0._X
-                                  : constFactor / (temperatureTimesk_Boltzman * debyeLength);
+            float_X zStar = zStarBox(superCellFieldIdx);
 
-            // unitless, not weighted
-            float_X const zStar = zStarBox(superCellFieldIdx);
-
-            // eV, not weighted
-            return temperatureTimesk_Boltzman * (math::pow(((3 * zStar + 1) * K + 1), 2._X / 3._X) - 1._X)
-                   / (2._X * (zStar + 1._X));
+            return SuperCellConstantInput(temperatureTimesk_Boltzman, debyeLength, zStar);
         }
 
+        /** calculate ionization potential depression
+         *
+         * @param superCellConstantInput struct storing the values of all super cell constant IPD input parameters
+         * @param chargeState charge state of the ion before ionization
+         *
+         * @return unit: eV, not weighted
+         */
+        HDINLINE static float_X ipd(SuperCellConstantInput const superCellConstantInput, uint8_t const chargeState)
+        {
+            // UNIT_CHARGE^2 / ( unitless * UNIT_CHARGE^2 * UNIT_TIME^2 / (UNIT_LENGTH^3 * UNIT_MASS))
+            // = UNIT_MASS * UNIT_LENGTH^3 * UNIT_TIME^(-2)
+            constexpr float_X constFactor
+                = pmacc::math::cPow(picongpu::sim.pic.getElectronCharge(), 2u)
+                  / (4._X * static_cast<float_X>(picongpu::PI) * picongpu::sim.pic.getEps0());
+
+            // UNIT_ENERGY/eV
+            constexpr float_X eV = sim.pic.get_eV();
+
+            // UNIT_MASS * UNIT_LENGTH^3 / UNIT_TIME^2 * 1/(eV * UNIT_ENERGY/eV * UNIT_LENGTH)
+            // = unitless, not weighted
+            float_X const K
+                = (pmacc::math::isApproxZero(
+                      superCellConstantInput.temperatureTimesk_Boltzman * superCellConstantInput.debyeLength))
+                      ? 0._X
+                      : constFactor * (chargeState + 1)
+                            / (superCellConstantInput.temperatureTimesk_Boltzman * eV
+                               * superCellConstantInput.debyeLength);
+
+            // eV, not weighted
+            return superCellConstantInput.temperatureTimesk_Boltzman
+                   * (math::pow((3 * (superCellConstantInput.zStar + 1) * K + 1), 2._X / 3._X) - 1._X)
+                   / (2._X * (superCellConstantInput.zStar + 1._X));
+        }
+
+        /** call a kernel, appending the IPD-input to the kernel's input
+         *
+         * @tparam T_Kernel kernel to call
+         * @tparam T_chunkSize chunk size to use in call
+         * @param dc picongpu data connector
+         * @param kernelInput input to pass to kernel in addition to IPD-input
+         */
         template<typename T_Kernel, uint32_t T_chunkSize, typename... T_KernelInput>
         HINLINE static void callKernelWithIPDInput(
             pmacc::DataConnector& dc,

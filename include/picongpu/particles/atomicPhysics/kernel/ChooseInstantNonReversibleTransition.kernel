@@ -31,6 +31,7 @@
 #include "picongpu/particles/atomicPhysics/enums/ADKLaserPolarization.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ProcessClass.hpp"
 #include "picongpu/particles/atomicPhysics/enums/TransitionDirection.hpp"
+#include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/GetIPD.hpp"
 #include "picongpu/particles/atomicPhysics/kernel/UpdateIon.hpp"
 #include "picongpu/particles/atomicPhysics/rateCalculation/BoundFreeFieldTransitionRates.hpp"
 
@@ -129,6 +130,7 @@ namespace picongpu::particles::atomicPhysics::kernel
             PMACC_SMEM(worker, minEFieldNormSuperCell, typename T_EFieldDataBox::ValueType::type);
             // unit: unit_eField
             PMACC_SMEM(worker, maxEFieldNormSuperCell, typename T_EFieldDataBox::ValueType::type);
+            PMACC_SMEM(worker, superCellConstantIPDInput, typename T_IPDModel::SuperCellConstantInput);
 
             // init shared memory
             //!@{
@@ -143,6 +145,13 @@ namespace picongpu::particles::atomicPhysics::kernel
             auto forEachAtomicState = pmacc::lockstep::makeForEach<T_numberAtomicStates>(worker);
             forEachAtomicState([&stateHasInstantNonReversibleTransition](uint32_t const stateCollectionIndex)
                                { stateHasInstantNonReversibleTransition[stateCollectionIndex] = false; });
+
+            auto onlyMaster = lockstep::makeMaster(worker);
+            onlyMaster(
+                [&superCellConstantIPDInput, &superCellFieldIdx, &ipdInput...]()
+                {
+                    superCellConstantIPDInput = T_IPDModel::getSuperCellConstantInput(superCellFieldIdx, ipdInput...);
+                });
             worker.sync();
             //!@}
 
@@ -155,14 +164,9 @@ namespace picongpu::particles::atomicPhysics::kernel
                 });
             worker.sync();
 
-            float_X const ionizationPotentialDepression
-                = T_IPDModel::template calculateIPD<T_ChargeStateDataDataBox::atomicNumber>(
-                    superCellFieldIdx,
-                    ipdInput...);
-
             // mask states with maximum total loss rate below rate limit
             forEachAtomicState(
-                [&ionizationPotentialDepression,
+                [&superCellConstantIPDInput,
                  &minEFieldNormSuperCell,
                  &maxEFieldNormSuperCell,
                  &stateHasInstantNonReversibleTransition,
@@ -179,6 +183,13 @@ namespace picongpu::particles::atomicPhysics::kernel
                     uint32_t const numberTransitionsUp
                         = numberTransitionsBox.numberOfTransitionsUp(stateCollectionIndex);
                     uint32_t const offset = startIndexBox.startIndexBlockTransitionsUp(stateCollectionIndex);
+
+                    // eV
+                    float_X const ionizationPotentialDepression
+                        = ionizationPotentialDepression::template getIPD<T_IPDModel>(
+                            atomicStateBox,
+                            stateCollectionIndex,
+                            superCellConstantIPDInput);
 
                     // unit: 1/unit_time
                     float_64 sumRateTransitions = 0.0;
@@ -212,12 +223,12 @@ namespace picongpu::particles::atomicPhysics::kernel
 
             auto rngGeneratorFloat = rngFactoryFloat(worker, superCellFieldIdx);
 
-            bool foundInstantTransitionIon = false;
             // choose instant transition for each particle in state with total transition rate above limit
+            bool foundInstantTransitionIon = false;
             forEachLocalIonBoxEntry(
                 [&stateHasInstantNonReversibleTransition,
                  &foundInstantTransitionIon,
-                 &ionizationPotentialDepression,
+                 &superCellConstantIPDInput,
                  &eFieldCache,
                  &rngGeneratorFloat,
                  &numberTransitionsBox,
@@ -238,6 +249,13 @@ namespace picongpu::particles::atomicPhysics::kernel
 
                     // unit: unit_eField
                     float_X const eFieldNormCell = pmacc::math::l2norm(eFieldCache(localCellIndex));
+
+                    // eV
+                    float_X const ionizationPotentialDepression
+                        = ionizationPotentialDepression::template getIPD<T_IPDModel>(
+                            atomicStateBox,
+                            stateCollectionIndex,
+                            superCellConstantIPDInput);
 
                     uint32_t const numberTransitions
                         = numberTransitionsBox.numberOfTransitionsUp(stateCollectionIndex);
@@ -266,7 +284,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                             chargeStateBox);
 
                         // 1/ unit_time
-                        auto transitionRate = 0.;
+                        float_64 transitionRate = 0.;
 
                         bool const enoughEnergyForTransition
                             = (weight * picongpu::sim.pic.conv().eV2Joule(ionizationEnergy) <= eFieldEnergy);
@@ -285,7 +303,7 @@ namespace picongpu::particles::atomicPhysics::kernel
 
                         if constexpr(picongpu::atomicPhysics::debug::kernel::chooseInstantTransition::
                                          CHECK_FOR_INFINITE_FIELD_IONIZATION_RATES)
-                            if(transitionRate < 0._X)
+                            if(transitionRate < 0.)
                                 printf(
                                     "atomicPhysics ERROR: encountered infinite transition rate in "
                                     "ChooseInstantTransition kernel");

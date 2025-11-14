@@ -28,8 +28,10 @@
 #include "picongpu/particles/atomicPhysics/enums/IsProcess.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ProcessClass.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ProcessClassGroup.hpp"
+#include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/GetIPD.hpp"
 #include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/PassIPDInputs.hpp"
 
+#include <pmacc/memory/shared/Allocate.hpp>
 #include <pmacc/particles/algorithm/ForEach.hpp>
 #include <pmacc/static_assert.hpp>
 
@@ -112,22 +114,28 @@ namespace picongpu::particles::atomicPhysics::kernel
 
             // get histogram for current superCell
             [[maybe_unused]] Histogram& electronHistogram = electronHistogramDataBox(superCellFieldIdx);
-            // eV
-            [[maybe_unused]] float_X ionizationPotentialDepression = 0._X;
 
-            /* field energy use is directly deposited to the field energy cache -> no need to calculate energy used
-             *  -> no need to calculate IPD for non collisional processClasses*/
-            if constexpr(isIonizing && isCollisional)
-                ionizationPotentialDepression
-                    = ionizationPotentialDepression::PassIPDInputs::template calculateIPD<T_IPDModel>(
-                        superCellFieldIdx,
-                        chargeStateBoxAndIPDInput...);
+            // eV
+            PMACC_SMEM(worker, superCellConstantIPDInput, typename T_IPDModel::SuperCellConstantInput);
+
+            auto onlyMaster = lockstep::makeMaster(worker);
+            onlyMaster(
+                [&superCellConstantIPDInput, &superCellFieldIdx, &chargeStateBoxAndIPDInput...]()
+                {
+                    if constexpr(isIonizing && isCollisional)
+                    {
+                        superCellConstantIPDInput
+                            = ionizationPotentialDepression::PassIPDInputs::template getSuperCellConstantInput<
+                                T_IPDModel>(superCellFieldIdx, chargeStateBoxAndIPDInput...);
+                    }
+                });
+            worker.sync();
 
             forEachLocalIonBoxEntry(
-                [&ionizationPotentialDepression,
-                 &electronHistogram,
+                [&electronHistogram,
                  &atomicStateBox,
                  &transitionBox,
+                 &superCellConstantIPDInput,
                  &chargeStateBoxAndIPDInput...](T_Worker const& worker, auto& ion)
                 {
                     if constexpr(picongpu::atomicPhysics::debug::kernel::recordChanges::CHECK_FOR_ACCEPTANCE)
@@ -146,6 +154,13 @@ namespace picongpu::particles::atomicPhysics::kernel
                     [[maybe_unused]] float_X deltaEnergy = 0._X;
                     if constexpr(isCollisional && isIonizing)
                     {
+                        // eV
+                        float_X const ionizationPotentialDepression
+                            = ionizationPotentialDepression::template getIPD<T_IPDModel>(
+                                atomicStateBox,
+                                ion[atomicStateCollectionIndex_],
+                                superCellConstantIPDInput);
+
                         deltaEnergy = picongpu::particles::atomicPhysics::DeltaEnergyTransition::get(
                             transitionIndex,
                             atomicStateBox,

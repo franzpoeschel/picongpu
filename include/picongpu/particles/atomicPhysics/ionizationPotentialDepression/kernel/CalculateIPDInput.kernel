@@ -140,7 +140,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                                                       ? sumChargeNumberSquared / sumChargeNumber
                                                       : 0._X;
 
-                    // eV / unit_energy
+                    // unit_energy / eV
                     constexpr float_X eV = sim.pic.get_eV();
 
                     /* unit: unit_energy * weight / typicalNumParticlesPerMacroParticle
@@ -151,8 +151,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                                                               ? sumTemperatureTerm / sumWeightAllNormalized
                                                               : 0._X;
 
-                    // (eV / unit_energy) * unit_energy = eV
-                    temperatureEnergyBox(superCellFieldIdx) = eV * temperatureEnergy_PIC;
+                    // unit_energy / (unit_energy/eV) = eV
+                    temperatureEnergyBox(superCellFieldIdx) = temperatureEnergy_PIC / eV;
 
                     /** @note in case simDim = DIM2, we assumes sim.pic.getCellSize().productOfComponents() =
                      * sim.pic.getCellSize().x() * sim.pic.getCellSize().z() * (system size)

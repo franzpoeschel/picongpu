@@ -21,11 +21,13 @@
 
 #include "picongpu/defines.hpp"
 #include "picongpu/particles/atomicPhysics/ConvertEnum.hpp"
+#include "picongpu/particles/atomicPhysics/KernelIndexation.hpp"
 #include "picongpu/particles/atomicPhysics/debug/param.hpp"
 #include "picongpu/particles/atomicPhysics/enums/IsProcess.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ProcessClass.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ProcessClassGroup.hpp"
 #include "picongpu/particles/atomicPhysics/initElectrons/InitIonizationElectrons.hpp"
+#include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/GetIPD.hpp"
 #include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/PassIPDInputs.hpp"
 
 #include <pmacc/lockstep/ForEach.hpp>
@@ -125,11 +127,9 @@ namespace picongpu::particles::atomicPhysics::kernel
             constexpr uint32_t frameSize = T_IonBox::frameSize;
 
             pmacc::DataSpace<picongpu::simDim> const superCellIdx
-                = areaMapping.getSuperCellIndex(worker.blockDomIdxND());
-            // atomicPhysics superCellFields have no guard, but areMapping includes a guard
-            //  -> must subtract guard to get correct superCellFieldIdx
+                = KernelIndexation::getSuperCellIndex(worker, areaMapping);
             pmacc::DataSpace<picongpu::simDim> const superCellFieldIdx
-                = superCellIdx - areaMapping.getGuardingSuperCells();
+                = KernelIndexation::getSuperCellFieldIndexFromSuperCellIndex(areaMapping, superCellIdx);
 
             auto forEachFrameSlot = pmacc::lockstep::makeForEach<frameSize, T_Worker>(worker);
             auto forEachFrameMaster = pmacc::lockstep::makeForEach<2u, T_Worker>(worker);
@@ -151,21 +151,19 @@ namespace picongpu::particles::atomicPhysics::kernel
 
             auto numberIonizationElectronsCtxArr = lockstep::makeVar<uint8_t>(forEachFrameSlot, u8(0u));
 
-            [[maybe_unused]] float_X ionizationPotentialDepression = 0._X;
-            if constexpr(T_ProcessClassGroup == s_enums::ProcessClassGroup::autonomousBased)
-                ionizationPotentialDepression
-                    = ionizationPotentialDepression::PassIPDInputs::template calculateIPD_RngFactory<T_IPDModel>(
-                        superCellFieldIdx,
-                        rngFactoryAndChargeStateBoxAndIPDInput...);
+            PMACC_SMEM(worker, superCellConstantIPDInput, typename T_IPDModel::SuperCellConstantInput);
 
             // init shared memory
             onlyMaster(
                 [&superCellIdx,
+                 &superCellFieldIdx,
                  &ionizationElectronBox,
                  &offsetLowFrame,
                  &spawnCounter,
                  &totalNumberMacroElectronsToSpawn,
-                 &electronFrameArray]()
+                 &electronFrameArray,
+                 &superCellConstantIPDInput,
+                 &rngFactoryAndChargeStateBoxAndIPDInput...]()
                 {
                     offsetLowFrame
                         = static_cast<int32_t>(ionizationElectronBox.getSuperCell(superCellIdx).getSizeLastFrame());
@@ -176,6 +174,15 @@ namespace picongpu::particles::atomicPhysics::kernel
                     // might be nullptr if no electrons in superCell
                     electronFrameArray[u32(detail::Access::low)] = ionizationElectronBox.getLastFrame(superCellIdx);
                     electronFrameArray[u32(detail::Access::high)] = nullptr;
+
+                    if constexpr(T_ProcessClassGroup == s_enums::ProcessClassGroup::autonomousBased)
+                    {
+                        // get not state dependent input for IPD
+                        superCellConstantIPDInput = ionizationPotentialDepression::PassIPDInputs::
+                            template getSuperCellConstantInput_RNGFactory<T_IPDModel>(
+                                superCellFieldIdx,
+                                rngFactoryAndChargeStateBoxAndIPDInput...);
+                    }
                 });
             worker.sync();
 
@@ -296,7 +303,7 @@ namespace picongpu::particles::atomicPhysics::kernel
                     // try to init one electron for each logical worker
                     forEachFrameSlot(
                         [&worker,
-                         &ionizationPotentialDepression,
+                         &superCellConstantIPDInput,
                          &ionFrame,
                          &electronFrameArray,
                          &idGen,
@@ -357,6 +364,13 @@ namespace picongpu::particles::atomicPhysics::kernel
                             else if constexpr(T_ProcessClassGroup == s_enums::ProcessClassGroup::autonomousBased)
                             {
                                 auto const superCellLocalOffset = superCellIdx - areaMapping.getGuardingSuperCells();
+
+                                // eV
+                                float_X const ionizationPotentialDepression
+                                    = ionizationPotentialDepression::template getIPD<T_IPDModel>(
+                                        atomicStateBox,
+                                        ion[atomicStateCollectionIndex_],
+                                        superCellConstantIPDInput);
 
                                 initElectrons::InitIonizationElectron<s_enums::ProcessClass::autonomousIonization>{}(
                                     worker,
