@@ -23,7 +23,7 @@ from picongpu.pypicongpu.species.species import Species
 class OpenPMDConfig(BaseModel):
     file: PathLike | str
     infix: str = "_%06T"
-    ext: Annotated[str, AfterValidator(lambda s: s.strip("."))] = "h5"
+    ext: Annotated[str, AfterValidator(lambda s: s.strip("."))] = "bp5"
     backend_config: PathLike | None = None
     data_preparation_strategy: Literal["mappedMemory", "doubleBuffer"] = "mappedMemory"
     range: None = None
