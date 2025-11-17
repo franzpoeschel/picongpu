@@ -46,16 +46,7 @@ class Binning(Plugin):
     _name = "binning"
 
     def __init__(
-        self,
-        name,
-        deposition_functor,
-        axes,
-        species,
-        period,
-        openPMD,
-        openPMDExt,
-        openPMDInfix,
-        dumpPeriod,
+        self, name, deposition_functor, axes, species, period, openPMD, openPMDInfix, dumpPeriod, openPMDExt="bp5"
     ):
         self.name = name
         self.deposition_functor = deposition_functor
@@ -63,9 +54,9 @@ class Binning(Plugin):
         self.species = species
         self.period = period
         self.openPMD = openPMD
-        self.openPMDExt = openPMDExt
         self.openPMDInfix = openPMDInfix
         self.dumpPeriod = dumpPeriod
+        self.openPMDExt = openPMDExt
 
     def _get_serialized(self) -> dict:
         return {
