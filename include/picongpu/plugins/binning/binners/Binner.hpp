@@ -271,7 +271,8 @@ namespace picongpu
                 this->histBuffer->deviceToHost();
                 auto bufferExtent = this->histBuffer->getHostBuffer().capacityND();
 
-                // allocate this only once?
+                // Reduces memory footprint compared to allocating this only once and keeping it around
+                // ms range cost on every dump
                 // using a unique_ptr here since HostBuffer does not implement move semantics
                 auto hReducedBuffer = std::make_unique<HostBuffer<TDepositedQuantity, 1>>(bufferExtent);
 
