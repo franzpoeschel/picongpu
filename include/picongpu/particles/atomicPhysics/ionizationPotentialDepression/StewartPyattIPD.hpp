@@ -214,7 +214,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
          * @param debyeLengthBox deviceDataBox giving access to the local debye length for all local superCells,
          *  sim.unit.length(), not weighted
          * @param temperatureEnergyBox deviceDataBox giving access to the local temperature * k_Boltzman for all
-         *  local superCells, in sim.unit.mass() * sim.unit.length()^2 / sim.unit.time()^2, not weighted
+         *  local superCells, in UNIT_ENERGY, not weighted
          * @param zStarBox deviceDataBox giving access to the local z^Star value, = average(q^2) / average(q),
          *  for all local superCells, unitless, not weighted
          */

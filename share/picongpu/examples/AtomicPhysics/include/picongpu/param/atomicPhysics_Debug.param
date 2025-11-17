@@ -57,6 +57,11 @@ namespace picongpu::atomicPhysics::debug
         constexpr bool RUN_UNIT_TESTS = false;
     } // namespace rateCalculation
 
+    namespace ionizationPotentialDepression
+    {
+        constexpr bool RUN_UNIT_TESTS = false;
+    } // namespace ionizationPotentialDepression
+
     namespace deltaEnergyTransition
     {
         //! @attention performance relevant
