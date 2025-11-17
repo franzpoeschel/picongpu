@@ -177,7 +177,7 @@ class DispersivePulseLaser(_BaseLaser):
 
     _name: str = PrivateAttr("dispersive")
 
-    waist: float
+    waist_si: float = Field(alias="waist")
     """beam waist in m"""
     spectral_support: float
     """width of the spectral support for the discrete Fourier transform [none]"""
