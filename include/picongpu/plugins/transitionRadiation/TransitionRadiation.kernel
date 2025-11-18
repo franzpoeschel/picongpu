@@ -1,6 +1,6 @@
 /* Copyright 2013-2024 Axel Huebl, Heiko Burau, Rene Widera, Richard Pausch,
  *                     Klaus Steiniger, Felix Schmitt, Benjamin Worpitz,
- *                     Finn-Ole Carstens
+ *                     Finn-Ole Carstens, Nico Wrobel
  *
  * This file is part of PIConGPU.
  *
@@ -67,7 +67,7 @@ namespace picongpu
                  * @param mapper MappingDesction object
                  * @param freqFkt frequency functor
                  * @param simBoxSize size of simulation box
-                 * @param foilPositionY position of the virtual foil to calculate the TR for in PIC units
+                 * @param foilPositionY position of the virtual foil to calculate the TR in PIC units
                  */
                 template<
                     typename T_ParBox,
@@ -138,9 +138,6 @@ namespace picongpu
 
                     // get absolute number of relevant super cells
                     int const numSuperCells = superCellsCount.productOfComponents();
-
-                    // propagation distance for the particle bunch
-                    float_X const propagationDistance = foilPositionY - globalOffset[1];
 
 
                     /* go over all super cells on GPU
@@ -242,11 +239,13 @@ namespace picongpu
                                                 float3_X particleLocation;
                                                 // set z component to zero in case of simDim==DIM2
                                                 particleLocation[2] = 0.0;
-                                                // run over all components and compute gobal position
+                                                // run over all components and compute global position
                                                 for(uint32_t i = 0; i < simDim; ++i)
                                                     particleLocation[i]
                                                         = (float_X(globalPos[i]) + pos[i]) * sim.pic.getCellSize()[i];
 
+                                                // reposition particle to set distance from foil
+                                                particleLocation[1] -= foilPositionY;
                                                 /* get macro-particle weighting
                                                  *
                                                  * Info:
@@ -265,11 +264,6 @@ namespace picongpu
                                                     particleLocation,
                                                     particleMomentum,
                                                     particleMass);
-
-                                                // only propagate particles if it is set up in
-                                                // transitionRadiation.param
-                                                if(foilPositionY != 0.0)
-                                                    particle.propagate(propagationDistance);
 
                                                 // create calculator for TR calculations
                                                 transitionRadiation::Calculator const calculator
