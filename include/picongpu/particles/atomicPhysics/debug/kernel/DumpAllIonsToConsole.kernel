@@ -29,7 +29,7 @@
 
 #include <cstdint>
 
-namespace picongpu::particles::atomicPhysics::kernel
+namespace picongpu::particles::atomicPhysics::debug::kernel
 {
     /** debug kernel
      *
@@ -37,6 +37,7 @@ namespace picongpu::particles::atomicPhysics::kernel
      *
      * @attention only useful in serial and cpu-build!
      */
+    template<typename T_ParticleFilter>
     struct DumpAllIonsToConsoleKernel
     {
         /** call operator
@@ -63,8 +64,23 @@ namespace picongpu::particles::atomicPhysics::kernel
             forEachLocalIonBoxEntry(
                 [](T_Worker const& worker, auto& ion)
                 {
-                    picongpu::particles::atomicPhysics::debug::PrintAtomicPhysicsIonToConsole{}(worker.getAcc(), ion);
+                    if(T_ParticleFilter::check(ion))
+                        picongpu::particles::atomicPhysics::debug::PrintAtomicPhysicsIonToConsole{}(
+                            worker.getAcc(),
+                            ion);
                 });
         }
     };
-} // namespace picongpu::particles::atomicPhysics::kernel
+
+    template<uint32_t T_atomicStateCollectionIndex>
+    struct WithAtomicState
+    {
+        template<typename T_Ion>
+        HDINLINE static bool check(T_Ion ion)
+        {
+            if(ion[atomicStateCollectionIndex_] == T_atomicStateCollectionIndex)
+                return true;
+            return false;
+        }
+    };
+} // namespace picongpu::particles::atomicPhysics::debug::kernel

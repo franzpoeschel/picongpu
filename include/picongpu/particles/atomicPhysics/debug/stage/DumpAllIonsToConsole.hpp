@@ -33,7 +33,7 @@
 
 #include <cstdint>
 
-namespace picongpu::particles::atomicPhysics::stage
+namespace picongpu::particles::atomicPhysics::debug::stage
 {
     /** @class atomicPhysics sub-stage dumping all macro ion atomicPhysics data for a species to console
      * calls the corresponding kernel per superCell
@@ -43,7 +43,7 @@ namespace picongpu::particles::atomicPhysics::stage
      *
      * @tparam T_ElectronSpecies species for which to call the functor
      */
-    template<typename T_Species>
+    template<typename T_Species, typename T_ParticleFilter>
     struct DumpAllIonsToConsole
     {
         // might be alias, from here on out no more
@@ -61,11 +61,12 @@ namespace picongpu::particles::atomicPhysics::stage
             // init pointer to macro particles
             auto& particles = *dc.get<Species>(Species::FrameType::getName());
 
-            using DumpToConsole = picongpu::particles::atomicPhysics::kernel::DumpAllIonsToConsoleKernel;
+            using DumpToConsole
+                = picongpu::particles::atomicPhysics::debug::kernel::DumpAllIonsToConsoleKernel<T_ParticleFilter>;
 
             // macro for call of kernel on every superCell, see pull request #4321
             PMACC_LOCKSTEP_KERNEL(DumpToConsole())
                 .config(mapper.getGridDim(), particles)(mapper, particles.getDeviceParticlesBox());
         }
     };
-} // namespace picongpu::particles::atomicPhysics::stage
+} // namespace picongpu::particles::atomicPhysics::debug::stage
