@@ -43,7 +43,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
         using SuperCellConstantInput = detail::NoIPDSuperCellConstantInput;
 
         //! create all HelperFields required by the IPD model
-        HINLINE static void createHelperFields()
+        HINLINE static void createHelperFields(picongpu::DataConnector&, picongpu::MappingDesc const)
         {
         }
 
@@ -51,12 +51,12 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
             uint32_t T_numberAtomicPhysicsIonSpecies,
             typename T_IPDIonSpeciesList,
             typename T_IPDElectronSpeciesList>
-        HINLINE static void calculateIPDInput(picongpu::MappingDesc const mappingDesc)
+        HINLINE static void calculateIPDInput(picongpu::MappingDesc const mappingDesc, uint32_t const)
         {
         }
 
         //! no IPD, means no pressure ionization
-        template<typename T_AtomicPhysicsIonSpeciesList>
+        template<typename T_AtomicPhysicsIonSpeciesList, bool T_SkipFinishedSuperCell>
         HINLINE static void applyIPDIonization(picongpu::MappingDesc const, uint32_t const)
         {
         }

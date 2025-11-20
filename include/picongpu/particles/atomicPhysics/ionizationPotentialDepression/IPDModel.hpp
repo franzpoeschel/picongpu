@@ -43,7 +43,9 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
         using SuperCellConstantInput = detail::SuperCellConstantInput;
 
         //! create all HelperFields required by the IPD model
-        HINLINE static void createHelperFields();
+        HINLINE static void createHelperFields(
+            picongpu::DataConnector& dataConnector,
+            picongpu::MappingDesc const mappingDesc);
 
         /** calculate all inputs for the ionization potential depression
          *
@@ -67,11 +69,12 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
          *
          * @attention must be called once for each step in a pressure ionization cascade
          *
-         * @tparam list of all species partaking as ion in atomicPhysics
+         * @tparam T_AtomicPhysicsIonSpeciesList of all species partaking as ion in atomicPhysics
+         * @tparam T_SkipFinishedSuperCell whether to skip super cells with a time remaining <= 0
          *
          * @attention collective over all ion species
          */
-        template<typename T_AtomicPhysicsIonSpeciesList>
+        template<typename T_AtomicPhysicsIonSpeciesList, bool T_SkipFinishedSuperCell>
         HINLINE static void applyIPDIonization(picongpu::MappingDesc const mappingDesc, uint32_t const currentStep);
 
         /** get ionization potential depression for a super cell
