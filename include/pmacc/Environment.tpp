@@ -275,12 +275,15 @@ namespace pmacc
 
 #if (BOOST_LANG_CUDA || BOOST_LANG_HIP)
 #    if (BOOST_LANG_CUDA)
-                cudaDeviceProp devProp;
+                int computeMode = 0;
+                cudaError_t err = cudaDeviceGetAttribute(&computeMode, cudaDevAttrComputeMode, tryDeviceId);
 #    elif (BOOST_LANG_HIP)
                 hipDeviceProp_t devProp;
+                hipError_t err = hipGetDeviceProperties(&devProp, tryDeviceId);
+                auto computeMode = devProp.computeMode;
+
 #    endif
 
-                auto err = ALPAKA_API_PREFIX(GetDeviceProperties)(&devProp, tryDeviceId);
                 if(err != ALPAKA_API_PREFIX(Success))
                     throw std::runtime_error("Error reading device properties.");
 
@@ -290,7 +293,7 @@ namespace pmacc
                  * The index used to select a device is based on the local MPI rank so
                  * that each rank tries a different device.
                  */
-                if(devProp.computeMode == ALPAKA_API_PREFIX(ComputeModeDefault))
+                if(computeMode == ALPAKA_API_PREFIX(ComputeModeDefault))
                 {
                     maxTries = 1;
                     log<ggLog::CUDA_RT>("Device %1% is running in default mode.") % tryDeviceId;
