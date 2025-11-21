@@ -53,7 +53,7 @@ namespace pmacc
     template<unsigned DIM, typename CheckpointingClass>
     SimulationHelper<DIM, CheckpointingClass>::~SimulationHelper()
     {
-        checkpointing.endTimeBasedCheckpointing();
+        checkpointing.finishTimeBasedCheckpointing();
         tSimulation.toggleEnd();
         if(output)
         {
@@ -123,7 +123,7 @@ namespace pmacc
         // Install a signal handler
         signal::activate();
 
-        checkpointing.doTimeBasedCheckpointing();
+        checkpointing.startTimeBasedCheckpointing();
 
         uint64_t maxRanks = Environment<DIM>::get().GridController().getGpuNodes().productOfComponents();
         uint64_t rank = Environment<DIM>::get().GridController().getScalarPosition();
@@ -134,7 +134,7 @@ namespace pmacc
 
         init();
 
-        while(checkpointing.doSoftRestart())
+        while(checkpointing.tryConsumeRestartAttempt())
         {
             /* Global offset is updated during the simulation. In case we perform a soft restart we need to reset
              * the offset here to be valid for the next simulation run.
