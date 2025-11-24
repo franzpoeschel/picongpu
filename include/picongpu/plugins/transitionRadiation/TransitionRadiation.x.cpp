@@ -1,6 +1,6 @@
 /* Copyright 2013-2024 Axel Huebl, Heiko Burau, Rene Widera, Richard Pausch,
  *                     Klaus Steiniger, Felix Schmitt, Benjamin Worpitz
- *                     Finn-Ole Carstens
+ *                     Finn-Ole Carstens, Nico Wrobel
  *
  * This file is part of PIConGPU.
  *
@@ -42,6 +42,7 @@
 #    include "picongpu/plugins/transitionRadiation/frequencies/ListFrequencies.hpp"
 #    include "picongpu/plugins/transitionRadiation/frequencies/LogFrequencies.hpp"
 #    include "picongpu/plugins/transitionRadiation/param.hpp"
+#    include "picongpu/simulation/control/MovingWindow.hpp"
 
 #    include <pmacc/dataManagement/DataConnector.hpp>
 #    include <pmacc/lockstep/lockstep.hpp>
@@ -126,8 +127,13 @@ namespace picongpu
                            0};
                     plugins::multi::Option<float_X> foilPositionYSI
                         = {"foilPositionY",
-                           "optional parameter: absolute position (in y-direction) of the virtual foil to calculate "
-                           "the transition radiation for [in meter]. 0==disabled",
+                           "position (in y-direction) of the virtual foil to calculate the transition radiation "
+                           "[in meter]. Is a relative offset to the moving window if comovingFoil is enabled",
+                           0};
+                    plugins::multi::Option<bool> comovingFoil
+                        = {"comovingFoil",
+                           "optional parameter: If enabled, the virtual foil moves together with the moving window "
+                           "0==disabled",
                            0};
 
                     ///! method used by plugin controller to get --help description
@@ -140,6 +146,7 @@ namespace picongpu
                         optionFileExtention.registerHelp(desc, masterPrefix + prefix);
                         optionTextOutput.registerHelp(desc, masterPrefix + prefix);
                         foilPositionYSI.registerHelp(desc, masterPrefix + prefix);
+                        comovingFoil.registerHelp(desc, masterPrefix + prefix);
                     }
 
                     void expandHelp(
@@ -217,6 +224,7 @@ namespace picongpu
 
                 bool textOutput;
                 float_X foilPositionYSI;
+                bool comovingFoil;
 
             public:
                 //! Constructor
@@ -233,6 +241,7 @@ namespace picongpu
 
                     foilPositionYSI = m_help->foilPositionYSI.get(m_id);
                     textOutput = m_help->optionTextOutput.get(m_id);
+                    comovingFoil = m_help->comovingFoil.get(m_id);
 
                     init();
                 }
@@ -552,7 +561,8 @@ namespace picongpu
                     mesh.setGridUnitSI(1);
                     mesh.setGridSpacing(std::vector<double>{1, 1, 1});
                     mesh.setGeometry(::openPMD::Mesh::Geometry::cartesian); // set be default
-                    mesh.setAttribute<float_X>("foilPositionY", foilPositionYSI);
+                    float_X currentFoilPositionYSI = currentFoilPositionY(currentStep) * sim.unit.length();
+                    mesh.setAttribute<float_X>("foilPositionY", currentFoilPositionYSI);
 
                     mesh.setUnitDimension(
                         std::map<::openPMD::UnitDimension, double>{
@@ -738,6 +748,8 @@ namespace picongpu
                     DataSpace<simDim> globalOffset(subGrid.getLocalDomain().offset);
                     globalOffset.y() += (localSize.y() * numSlides);
 
+                    float_X currentFoilPositionYpic = currentFoilPositionY(currentStep);
+
                     // PIC-like kernel call of the radiation kernel
                     PMACC_LOCKSTEP_KERNEL(KernelTransRadParticles{})
                         .config(gridDim_rad, *particles)(
@@ -753,7 +765,26 @@ namespace picongpu
                             *m_cellDescription,
                             freqFkt,
                             subGrid.getGlobalDomain().size,
-                            foilPositionYSI / sim.unit.length());
+                            currentFoilPositionYpic);
+                }
+
+                /** Returns current foil position in PIC-units.
+                 *
+                 * @param currentStep current simulation iteration step
+                 */
+                float_X currentFoilPositionY(uint32_t currentStep)
+                {
+                    float_X foilPositionYpic = foilPositionYSI / sim.unit.length();
+                    // position of foil changes every timestep, if comovingFoil is set to true
+                    if(comovingFoil)
+                    {
+                        // Determining the position of the moving window as an approximation of
+                        // the position of the entire bunch
+                        auto& movingWindow = MovingWindow::getInstance();
+                        float_X movingCellsY = movingWindow.getMovingWindowOriginPositionCells(currentStep)[1];
+                        foilPositionYpic += movingCellsY * sim.pic.getCellSize()[1];
+                    }
+                    return foilPositionYpic;
                 }
             };
 
