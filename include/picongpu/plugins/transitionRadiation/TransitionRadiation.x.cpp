@@ -127,12 +127,12 @@ namespace picongpu
                            0};
                     plugins::multi::Option<float_X> foilPositionYSI
                         = {"foilPositionY",
-                           "position (in y-direction) of the virtual foil to calculate the transition radiation"
-                           "for [in meter]. Is a relative offset to moving window if comovingFoil is enabled",
+                           "position (in y-direction) of the virtual foil to calculate the transition radiation "
+                           "[in meter]. Is a relative offset to the moving window if comovingFoil is enabled",
                            0};
                     plugins::multi::Option<bool> comovingFoil
                         = {"comovingFoil",
-                           "optional parameter: If enabled, the virtual foil moves together with moving window "
+                           "optional parameter: If enabled, the virtual foil moves together with the moving window "
                            "0==disabled",
                            0};
 
