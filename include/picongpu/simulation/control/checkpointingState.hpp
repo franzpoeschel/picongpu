@@ -19,12 +19,15 @@
 
 #pragma once
 
+#include <pmacc/simulationControl/Checkpointing.hpp>
+
 namespace picongpu
 {
-    static constexpr bool checkpointingEnabled =
+
+    static constexpr pmacc::simulationControl::CheckpointingAvailability checkpointingEnabled =
 #if (ENABLE_OPENPMD == 1)
-        true;
+        pmacc::simulationControl::CheckpointingAvailability::ENABLED;
 #else
-        false;
+        pmacc::simulationControl::CheckpointingAvailability::DISABLED;
 #endif
 } // namespace picongpu

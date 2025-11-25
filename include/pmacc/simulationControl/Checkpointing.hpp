@@ -61,63 +61,40 @@ namespace pmacc::simulationControl
         FAILED
     };
 
-    // enum-to-string mapping
-    constexpr std::array<std::pair<RestartState, std::string_view>, 5> restartStateMappings{
-        {{RestartState::DISABLED, "disabled"},
-         {RestartState::TRY, "try"},
-         {RestartState::FORCE, "force"},
-         {RestartState::SUCCESS, "success"},
-         {RestartState::FAILED, "failed"}}};
-
-    /**
-     * @brief Stream insertion operator for RestartState, converting enum to string.
-     * @param out The output stream.
-     * @param state The RestartState value to write.
-     * @return The output stream.
-     */
-    inline std::ostream& operator<<(std::ostream& out, RestartState const& state)
+    inline void validate(
+        boost::any& v,
+        std::vector<std::string> const& values,
+        pmacc::simulationControl::RestartState* target_type,
+        int)
     {
-        auto const it
-            = std::ranges::find_if(restartStateMappings, [&](auto const& pair) { return pair.first == state; });
+        using namespace boost::program_options;
+        // Make sure no previous assignment happened
+        validators::check_first_occurrence(v);
 
-        if(it != restartStateMappings.end())
+        // Extract the first string from 'values'. If there is more than
+        // one string, it's an error, and exception will be thrown.
+        std::string const& s = validators::get_single_string(values);
+
+        if(s == "TRY")
         {
-            out << it->second;
+            v = pmacc::simulationControl::RestartState::TRY;
+        }
+        else if(s == "FORCE")
+        {
+            v = pmacc::simulationControl::RestartState::FORCE;
         }
         else
         {
-            // Handle unknown enum values gracefully.
-            out << "UNKNOWN_RESTART_STATE(" << static_cast<int>(state) << ")";
+            throw validation_error(validation_error::invalid_option_value);
         }
-        return out;
     }
 
-    /**
-     * @brief Stream extraction operator for RestartState, converting string to enum.
-     * @param in The input stream.
-     * @param state The RestartState variable to populate.
-     * @return The input stream.
-     */
-    inline std::istream& operator>>(std::istream& in, RestartState& state)
+    // Used to control the behaviour of the Checkpointing class
+    enum class CheckpointingAvailability
     {
-        std::string token;
-        in >> token;
-
-        auto const it
-            = std::ranges::find_if(restartStateMappings, [&](auto const& pair) { return pair.second == token; });
-
-        if(it != restartStateMappings.end())
-        {
-            state = it->first;
-        }
-        else
-        {
-            // If the token is not a valid state, set the stream's failbit.
-            // boost::program_options will catch this and report an error to the user.
-            in.setstate(std::ios_base::failbit);
-        }
-        return in;
-    }
+        DISABLED,
+        ENABLED
+    };
 
     /**
      * @brief Manages simulation checkpointing and restarting.
@@ -128,10 +105,13 @@ namespace pmacc::simulationControl
      * The entire functionality can be enabled or disabled at compile time via the
      * `checkpointingEnabled` template parameter.
      *
-     * @tparam checkpointingEnabled A boolean to enable/disable checkpointing features.
+     * @tparam checkpointingEnabled Flag to enable/disable checkpointing features.
      */
-    template<bool checkpointingEnabled>
-    struct Checkpointing
+    template<CheckpointingAvailability checkpointingEnabled>
+    struct Checkpointing;
+
+    template<>
+    struct Checkpointing<CheckpointingAvailability::ENABLED>
     {
         using SeqOfTimeSlices = std::vector<pluginSystem::Slice>;
 
@@ -142,9 +122,9 @@ namespace pmacc::simulationControl
                 ("checkpoint.restart.loop", po::value<uint32_t>(&softRestarts)->default_value(0),
                 "Number of times to restart the simulation after simulation has finished (for presentations). "
                 "Note: does not yet work with all plugins, see issue #1305")
-                ("checkpoint.restart", po::value<RestartState>(&restartState)->zero_tokens()->implicit_value(RestartState::FORCE),
+                ("checkpoint.restart", po::value<RestartState>(&restartState)->zero_tokens()->implicit_value(RestartState::FORCE, "FORCE"),
                     "Restart simulation from a checkpoint. Requires a valid checkpoint.")
-                ("checkpoint.tryRestart", po::value<RestartState>(&restartState)->zero_tokens()->implicit_value(RestartState::TRY),
+                ("checkpoint.tryRestart", po::value<RestartState>(&restartState)->zero_tokens()->implicit_value(RestartState::TRY, "TRY"),
                     "Try to restart if a checkpoint is available else start the simulation from scratch.")
                 ("checkpoint.restart.directory", po::value<std::string>(&restartDirectory)->default_value(restartDirectory),
                     "Directory containing checkpoints for a restart")
@@ -212,7 +192,7 @@ namespace pmacc::simulationControl
             }
         }
 
-        bool tryConsumeRestartAttempt()
+        bool hasSoftRestartAttemptsLeft()
         {
             static uint32_t nthSoftRestart = 0;
             if(nthSoftRestart <= softRestarts)
@@ -278,10 +258,8 @@ namespace pmacc::simulationControl
                 restartStep = checkpoints.back();
             }
 
-            // Checkpoints are expected to be sorted chronologically.
-            bool const stepFound = std::binary_search(checkpoints.cbegin(), checkpoints.cend(), restartStep);
-
-            if(!stepFound)
+            auto const stepRIt = std::find(checkpoints.crbegin(), checkpoints.crend(), restartStep);
+            if(stepRIt == checkpoints.crend())
             {
                 if(restartState == RestartState::FORCE)
                 {
@@ -418,7 +396,7 @@ namespace pmacc::simulationControl
     };
 
     template<>
-    struct Checkpointing<false>
+    struct Checkpointing<CheckpointingAvailability::DISABLED>
     {
         using SeqOfTimeSlices = std::vector<pluginSystem::Slice>;
 
@@ -441,7 +419,7 @@ namespace pmacc::simulationControl
         {
         }
 
-        bool tryConsumeRestartAttempt()
+        bool hasSoftRestartAttemptsLeft()
         {
             static uint32_t nthSoftRestart = 0;
             if(nthSoftRestart <= softRestarts)

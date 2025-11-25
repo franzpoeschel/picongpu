@@ -134,7 +134,7 @@ namespace pmacc
 
         init();
 
-        while(checkpointing.tryConsumeRestartAttempt())
+        while(checkpointing.hasSoftRestartAttemptsLeft())
         {
             /* Global offset is updated during the simulation. In case we perform a soft restart we need to reset
              * the offset here to be valid for the next simulation run.
@@ -352,9 +352,16 @@ namespace pmacc
 
 
     // Explicit template instantiation to provide symbols for usage together with PMacc
-    template class SimulationHelper<DIM2, simulationControl::Checkpointing<true>>;
-    template class SimulationHelper<DIM3, simulationControl::Checkpointing<true>>;
-    template class SimulationHelper<DIM2, simulationControl::Checkpointing<false>>;
-    template class SimulationHelper<DIM3, simulationControl::Checkpointing<false>>;
-
+    template class SimulationHelper<
+        DIM2,
+        simulationControl::Checkpointing<simulationControl::CheckpointingAvailability::ENABLED>>;
+    template class SimulationHelper<
+        DIM3,
+        simulationControl::Checkpointing<simulationControl::CheckpointingAvailability::ENABLED>>;
+    template class SimulationHelper<
+        DIM2,
+        simulationControl::Checkpointing<simulationControl::CheckpointingAvailability::DISABLED>>;
+    template class SimulationHelper<
+        DIM3,
+        simulationControl::Checkpointing<simulationControl::CheckpointingAvailability::DISABLED>>;
 } // namespace pmacc
