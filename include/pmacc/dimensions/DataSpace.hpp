@@ -43,7 +43,7 @@ namespace pmacc
      *
      * The object is used to describe indices of threads in the kernel.
      * @attention Currently this object is also used to describe memory extents. This should be avoided and is a
-     * technical dept from the past and limits the index space to 2 giga elements.
+     * technical debt from the past and limits the index space to 2 giga elements.
      *
      * DataSpace describes a T_dim-dimensional data space with a specific size for each dimension.
      * It only describes the space and does not hold any actual data.

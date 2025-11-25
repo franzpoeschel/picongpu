@@ -37,7 +37,8 @@ namespace pmacc
      *
      * @tparam T_Name name of described particle (e.g. electron, ion)
      *                type must be a PMACC_CSTRING
-     * @tparam T_NumSlots compile time size of a super cell
+     * @tparam T_NumSlots compile time size of a fram
+     * @tparam T_SuperCellSize compile time size of a super cell
      * @tparam T_ValueTypeSeq sequence or single type with value_identifier, must not have duplicates
      * @tparam T_Flags sequence or single type with identifier to add flags on a frame, must not have duplicates
      * @tparam T_MethodsList sequence or single class with particle methods
