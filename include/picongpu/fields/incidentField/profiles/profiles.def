@@ -28,5 +28,6 @@
 #include "picongpu/fields/incidentField/profiles/None.def"
 #include "picongpu/fields/incidentField/profiles/PlaneWave.def"
 #include "picongpu/fields/incidentField/profiles/Polynom.def"
+#include "picongpu/fields/incidentField/profiles/TWTSPulse.def"
 #include "picongpu/fields/incidentField/profiles/Traits.hpp"
 #include "picongpu/fields/incidentField/profiles/Wavepacket.def"

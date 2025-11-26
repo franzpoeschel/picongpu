@@ -225,3 +225,36 @@ class FromOpenPMDPulseLaser(Laser, BaseModel):
     huygens_surface_positions: Annotated[list[list[int]], PlainSerializer(_get_huygens_surface_serialized)]
     """Position in cells of the Huygens surface relative to start/
        edge(negative numbers) of the total domain"""
+
+
+class TWTSLaser(_BaseLaser):
+    """
+    PIConGPU TWTSLaser
+
+    Holds Parameters to specify a TWTS laser pulse
+    """
+
+    _name: str = PrivateAttr("twts")
+
+    waist_si: float = Field(alias="waist")
+    """beam waist in m"""
+    phi: float
+    """Laser incident angle [rad] denoting the mean laser phase
+       propagation direction with respect to the y-axis"""
+    phiPos: bool
+    """Is phi positive?"""
+    polarizationAngle: float
+    """Linear laser polarization direction
+       parameterized as a rotation angle [rad]
+       of the x-direction around the mean
+       laser phase propagation direction"""
+    beta0: float
+    """speed of focal region normalized to the vacuum speed of light [dimensionless]"""
+    time_offset_si: float
+    """time offset to apply to the pulse [s]"""
+    focus_z_offset_si: float
+    """Offset from the middle of the simulation domain
+       to the laser focus in z-direction [m]."""
+    huygens_surface_positions: Annotated[list[list[int]], PlainSerializer(_get_huygens_surface_serialized)]
+    """Position in cells of the Huygens surface relative to start/
+       edge(negative numbers) of the total domain"""

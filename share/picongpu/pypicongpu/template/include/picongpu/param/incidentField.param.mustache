@@ -1,4 +1,4 @@
-/* Copyright 2020-2025 Sergei Bastrakov, Rene Widera, Brian Marre, Julian Lenz
+/* Copyright 2020-2025 Sergei Bastrakov, Rene Widera, Brian Marre, Julian Lenz, Alexander Debus
  *
  * This file is part of PIConGPU.
  *
@@ -147,6 +147,25 @@ namespace picongpu::fields::incidentField
     };
     {{/typeID.fromOpenPMDPulse}}
 
+    {{#typeID.twts}}
+    struct PyPIConGPUTWTSParam_{{{_idx}}} : public PyPIConGPULaserBaseParam_{{{_idx}}}
+    {
+        {{#data}}
+        static constexpr float_64 W0_SI = {{{waist_si}}};
+        static constexpr float_64 FOCUS_Y_SI = focus_position[1];//56.0e-6;
+        static constexpr float_64 FOCUS_Z_OFFSET_SI = {{{focus_z_offset_si}}};//8.0e-6;
+        static constexpr float_64 PHI = {{{phi}}};//5.0 * (PI / 180.);
+        static constexpr float_64 BETA_0 = 1.0;//{{{beta0}}};
+        static constexpr float_64 TDELAY = {{{time_offset_si}}};//124.535e-6 / sim.si.getSpeedOfLight();
+        static constexpr bool AUTO_TDELAY = false;
+        static constexpr float_X Polarization = {{{polarizationAngle}}};//45.10716816968629 * (PI / 180.);
+        static constexpr float_X windowStart = 0.0;
+        static constexpr float_X windowEnd = 10.0e+20;
+        static constexpr float_X windowLength = 10000.0;//10000.0;
+        {{/data}}
+    };
+    {{/typeID.twts}}
+
     {{#typeID.gaussian}}
     using LaserProfile_{{{_idx}}} = profiles::GaussianPulse<PyPIConGPUGaussianPulseParam_{{{_idx}}}>;
     {{/typeID.gaussian}}
@@ -159,6 +178,12 @@ namespace picongpu::fields::incidentField
     {{#typeID.fromOpenPMDPulse}}
     using LaserProfile_{{{_idx}}} = profiles::FromOpenPMDPulse<PyPIConGPUFromOpenPMDPulseParam_{{{_idx}}}>;
     {{/typeID.fromOpenPMDPulse}}
+    {{#typeID.twts}}
+    using LaserProfile_{{{_idx}}} = profiles::Free<
+            profiles::TWTSFunctorIncidentE<PyPIConGPUTWTSParam_{{{_idx}}}>,
+            profiles::TWTSFunctorIncidentB<PyPIConGPUTWTSParam_{{{_idx}}}>
+            >;
+    {{/typeID.twts}}
 
     // TODO: find a better solution and move it into simulation class, or add a check that all lasers use the same positions
     {{/laser}}
@@ -222,7 +247,29 @@ namespace picongpu::fields::incidentField
     using XMin = profiles::None;
     using XMax = profiles::None;
     using YMax = profiles::None;
-    using ZMin = profiles::None;
-    using ZMax = profiles::None;
+    using ZMin = MakeSeq_t<
+    {{#laser}}
+    {{#typeID.twts}}
+    {{#data}}
+    {{#phiPos}}
+        LaserProfile_{{{_idx}}},
+    {{/phiPos}}
+    {{/data}}
+    {{/typeID.twts}}
+    {{/laser}}
+    profiles::None
+    >;
+    using ZMax = MakeSeq_t<
+    {{#laser}}
+    {{#typeID.twts}}
+    {{#data}}
+    {{^phiPos}}
+        LaserProfile_{{{_idx}}},
+    {{/phiPos}}
+    {{/data}}
+    {{/typeID.twts}}
+    {{/laser}}
+    profiles::None
+    >;
     /**@}*/
 } // namespace picongpu::fields::incidentField

@@ -5,7 +5,7 @@ PICMI for PIConGPU
 from .simulation import Simulation
 from .grid import Cartesian3DGrid
 from .solver import ElectromagneticSolver
-from .lasers import DispersivePulseLaser, GaussianLaser, PlaneWaveLaser, FromOpenPMDPulseLaser
+from .lasers import DispersivePulseLaser, GaussianLaser, PlaneWaveLaser, FromOpenPMDPulseLaser, TWTSLaser
 from .species import Species
 from .layout import PseudoRandomLayout, GriddedLayout
 from . import constants
@@ -43,6 +43,7 @@ __all__ = [
     "DispersivePulseLaser",
     "FromOpenPMDPulseLaser",
     "GaussianLaser",
+    "TWTSLaser",
     "PlaneWaveLaser",
     "Species",
     "PseudoRandomLayout",
