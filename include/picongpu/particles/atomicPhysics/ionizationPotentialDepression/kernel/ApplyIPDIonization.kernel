@@ -198,21 +198,21 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                 ipd += BarrierSupressionIonization::getIPD(screenedCharge, eFieldNormAU);
             }
 
-            bool const stateIsUnbound = ((ionizationEnergy - ipd) <= 0._X);
-            bool const stateIsGenerallyUnbound = (ionizationEnergy <= 0._X);
 
-            /** @details states that are unbound without an IPD contribution must relax via auto-ionization, electronic
-             *  collisional ionization or deexcitation channels in the regular rate solver since IPD lacks the energy
-             *  for ionization.
+            bool const stateIsUnbound = ((ionizationEnergy - ipd) <= 0._X);
+
+            /** @details states that are unbound without an IPD contribution should have option to relax via
+             *  auto-ionization, electronic collisional ionization or deexcitation channels in the regular rate solver
+             *  since IPD lacks the energy for ionization.
              *
-             *  These states are typically low shell hole states, IPD-Ionization will not relax these states until
-             *  very high charge states, causing:
+             *  This is currently not possible since IPD-ionization is instantaneous, this can create problems for low
+             *  shell hole states, IPD-Ionization will not relax these states until very high charge states, causing:
              *  - numerical energy creation as the IPD actually lacks the energy required for ionization
              *  - instant ionization cascades, which are not consistent with the IPD equilibrium description
              *
              * @todo improve by developing a non equlibirium IPD description, Brian Marre, 2025
              */
-            if(!stateIsGenerallyUnbound && stateIsUnbound)
+            if(stateIsUnbound)
             {
                 /* we only update the atomic state since IPD-Ionization is not a regular transition and does not use
                  *   shared resources */
@@ -271,10 +271,14 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
         }
     };
 
+    ///@todo switch to 2 body collision for IPD ionization to ensure energy conservation,
+    ///     even from highly excited states, Brian Marre, 2025
+
     //! moduleConfig of the ApplyIPDIonizationKernel
+    template<template<typename... T_KernelOptions> typename T_SkipSuperCellFunctor>
     using ApplyIPDIonizationModulConfig = particles::creation::ModuleConfig<
         ApplyIPDIonizationSanityCheckInputs,
-        spawnFromSourceSpeciesModules::SkipFinishedSuperCellsAtomicPhysics,
+        T_SkipSuperCellFunctor,
         IPDIonizationPredictor,
         spawnFromSourceSpeciesModules::InitAsCoMoving,
         KernelState,
@@ -284,11 +288,14 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
         WriteFoundUnboundToSuperCellField>;
 
     //! actual definition of ApplyIPDIonizationKernel
-    template<typename T_IPDModel, typename T_fieldIonizationActive>
+    template<
+        template<typename... T_KernelOptions> typename T_SkipSuperCellFunctor,
+        typename T_IPDModel,
+        typename T_fieldIonizationActive>
     using ApplyIPDIonizationKernel = picongpu::particles::creation::SpawnFromSourceSpeciesKernelFramework<
         // T_TypeNumber
         uint8_t,
-        ApplyIPDIonizationModulConfig,
+        ApplyIPDIonizationModulConfig<T_SkipSuperCellFunctor>,
         T_IPDModel,
         T_fieldIonizationActive>;
 } // namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::kernel

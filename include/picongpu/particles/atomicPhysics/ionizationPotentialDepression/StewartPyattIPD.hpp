@@ -1,4 +1,4 @@
-/* Copyright 2024-2024 Brian Marre
+/* Copyright 2024-2025 Brian Marre
  *
  * This file is part of PIConGPU.
  *
@@ -198,13 +198,15 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
          *
          * @attention collective over all ion species
          */
-        template<typename T_AtomicPhysicsIonSpeciesList>
+        template<typename T_AtomicPhysicsIonSpeciesList, bool T_SkipFinishedSuperCell>
         HINLINE static void applyIPDIonization(picongpu::MappingDesc const mappingDesc, uint32_t const)
         {
             using ForEachIonSpeciesApplyIPDIonization = pmacc::meta::ForEach<
                 T_AtomicPhysicsIonSpeciesList,
-                s_IPD::stage::ApplyIPDIonization<boost::mpl::_1, StewartPyattIPD<T_TemperatureFunctor>>>;
-
+                s_IPD::stage::ApplyIPDIonization<
+                    boost::mpl::_1,
+                    StewartPyattIPD<T_TemperatureFunctor>,
+                    std::integral_constant<bool, T_SkipFinishedSuperCell>>>;
             ForEachIonSpeciesApplyIPDIonization{}(mappingDesc);
         };
 

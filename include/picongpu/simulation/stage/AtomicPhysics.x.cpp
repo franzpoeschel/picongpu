@@ -550,7 +550,7 @@ namespace picongpu::simulation::stage
                     mappingDesc);
             }
 
-            template<typename T_DeviceReduce>
+            template<bool T_SkipFinishedSuperCell, typename T_DeviceReduce>
             HINLINE static void applyIPDIonization(
                 picongpu::MappingDesc const& mappingDesc,
                 uint32_t const currentStep,
@@ -562,15 +562,15 @@ namespace picongpu::simulation::stage
                 DataSpace<picongpu::simDim> const fieldGridLayoutFoundUnbound
                     = foundUnboundIonField.getGridLayout().sizeWithoutGuardND();
 
-                // pressure ionization loop, ends when no ion in unbound state anymore
+                // ipd ionization loop, ends when no ion is in unbound state anymore
                 bool foundUnbound = true;
                 while(foundUnbound)
                 {
                     resetFoundUnboundIon(foundUnboundIonField);
                     calculateIPDInput(mappingDesc, currentStep);
-                    picongpu::atomicPhysics::IPDModel::template applyIPDIonization<AtomicPhysicsIonSpecies>(
-                        mappingDesc,
-                        currentStep);
+                    picongpu::atomicPhysics::IPDModel::template applyIPDIonization<
+                        AtomicPhysicsIonSpecies,
+                        T_SkipFinishedSuperCell>(mappingDesc, currentStep);
 
                     auto linearizedFoundUnboundIonBox = LinearizedBox<FoundUnboundField>(
                         foundUnboundIonField.getDeviceDataBox(),
@@ -700,9 +700,14 @@ namespace picongpu::simulation::stage
                 while(!isSubSteppingComplete)
                 {
                     debugForceConstantElectronTemperature(currentStep);
-                    applyIPDIonization(mappingDesc, currentStep, deviceLocalReduce);
+                    applyIPDIonization</*skip finished super cells*/ true>(
+                        mappingDesc,
+                        currentStep,
+                        deviceLocalReduce);
+
                     resetAcceptedStatus(mappingDesc);
                     applyInstantTransitions(mappingDesc, currentStep, deviceLocalReduce);
+
                     resetElectronEnergyHistogram();
                     binElectronsToEnergyHistogram(mappingDesc);
                     resetTimeStep(mappingDesc);
@@ -752,7 +757,7 @@ namespace picongpu::simulation::stage
                 } // end atomicPhysics sub-stepping loop
 
                 // ensure no unbound states are visible to the rest of the loop
-                applyIPDIonization(mappingDesc, currentStep, deviceLocalReduce);
+                applyIPDIonization</*skip finished super cells*/ false>(mappingDesc, currentStep, deviceLocalReduce);
             }
         };
 

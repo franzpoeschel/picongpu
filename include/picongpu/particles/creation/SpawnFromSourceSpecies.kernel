@@ -113,7 +113,6 @@ namespace picongpu::particles::creation
             using SourceSpeciesFramePtr = typename T_SourceParticleBox::FramePtr;
             using ProductSpeciesFramePtr = typename T_ProductParticleBox::FramePtr;
 
-            // get frame size
             PMACC_CASSERT_MSG(
                 sourceSpecies_framesize_must_less_or_equal_productSpecies_framesize,
                 T_SourceParticleBox::frameSize == T_ProductParticleBox::frameSize);
@@ -123,7 +122,7 @@ namespace picongpu::particles::creation
             pmacc::DataSpace<picongpu::simDim> const superCellIndex
                 = areaMapping.getSuperCellIndex(worker.blockDomIdxND());
 
-            // renaming necessary for compiler unknown reasons
+            // renaming necessary for compiler, unknown reasons
             using IndexFunctor = typename Modules::template AdditionalDataIndexFunctor<T_KernelConfigOptions...>;
             auto const additionalDataIndex = IndexFunctor::getIndex(areaMapping, superCellIndex);
 
@@ -139,7 +138,6 @@ namespace picongpu::particles::creation
                     std::forward<T_AdditionalData>(additonalData)...);
             bool const noParticlesInSuperCell = !sourceSpeciesFrame.isValid();
 
-            // test for skipping superCell due to no sourceSpecies particles or SkipSuperCell == true
             if(skipSuperCell || noParticlesInSuperCell)
                 return;
 
