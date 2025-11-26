@@ -113,6 +113,11 @@ namespace picongpu
                  * unit: none */
                 constexpr bool AUTO_TDELAY = false;
 
+                /** Defines z-position offset of TWTS coordinate origin inside the simulation coordinates
+                 *  relative to the globally centered default value with respect to the simulation volume.
+                 *  unit: m */
+                constexpr float_64 Z_OFFSET_SI = 0.0;
+
                 constexpr float_X Polarization = 45.0 * (PI / 180.);
             } // namespace twtsParam
         } // namespace background

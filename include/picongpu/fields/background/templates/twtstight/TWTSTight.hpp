@@ -128,6 +128,9 @@ namespace picongpu::templates::twtstight
         PMACC_ALIGN(beta_0, float_64 const);
         /** If auto_tdelay=FALSE, then a user defined delay is used. [second] */
         PMACC_ALIGN(tdelay_user_SI, float_64 const);
+        /** Defines z-position offset of TWTS coordinate origin inside the simulation coordinates [meter]
+            relative to the globally centered default value with respect to the simulation volume. */
+        PMACC_ALIGN(focus_z_offset_SI, float_64 const);
         /** Make time step constant accessible to device. */
         PMACC_ALIGN(dt, float_64 const);
         /** Make length normalization constant accessible to device. */
@@ -161,6 +164,8 @@ namespace picongpu::templates::twtstight
          * @param tdelay_user manual time delay if auto_tdelay is false
          * @param auto_tdelay calculate the time delay such that the TWTS pulse is not
          *  inside the simulation volume at simulation start timestep = 0 [default = true]
+         * @param focus_z_offset_SI the distance to the laser focus in z-direction [m]
+         *  relative to the default simulation volume centered origin.
          * @param polAngle determines the TWTS laser polarization angle with respect to x-axis around
          * propagation direction [rad, default = 0. * (PI/180.)] Normal to laser pulse front tilt plane:
          * polAngle = 0.0 * (PI/180.) (linear polarization parallel to x-axis) Parallel to laser pulse front
@@ -176,6 +181,7 @@ namespace picongpu::templates::twtstight
             float_64 const beta_0 = 1.0,
             float_64 const tdelay_user_SI = 0.0,
             bool const auto_tdelay = true,
+            float_64 const focus_z_offset_SI = 0.0,
             float_64 const polAngle = 0. * (PI / 180.));
 
         /** Specify your background field E(r, t) or B(r, t) here

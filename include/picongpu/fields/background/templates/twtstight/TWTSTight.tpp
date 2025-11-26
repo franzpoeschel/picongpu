@@ -49,6 +49,7 @@ namespace picongpu::templates::twtstight
         float_64 const beta_0,
         float_64 const tdelay_user_SI,
         bool const auto_tdelay,
+        float_64 const focus_z_offset_SI,
         float_64 const polAngle)
         : halfSimSize(Environment<simDim>::get().SubGrid().getGlobalDomain().size / 2)
         , focus_y_SI(focus_y_SI)
@@ -59,6 +60,7 @@ namespace picongpu::templates::twtstight
         , phiPositive(phi < 0.0_X ? float_X(-1.0) : float_X(+1.0))
         , beta_0(beta_0)
         , tdelay_user_SI(tdelay_user_SI)
+        , focus_z_offset_SI(focus_z_offset_SI)
         , dt(sim.si.getDt())
         , unit_length(sim.unit.length())
         , auto_tdelay(auto_tdelay)
@@ -137,8 +139,14 @@ namespace picongpu::templates::twtstight
     {
         float_64 const time_SI = float_64(currentStep) * dt - tdelay;
 
-        pmacc::math::Vector<floatD_64, detail::numComponents> const fieldPositions_SI
-            = detail::getFieldPositions_SI(cellIdx, halfSimSize, extraShifts, unit_length, focus_y_SI, phi);
+        pmacc::math::Vector<floatD_64, detail::numComponents> const fieldPositions_SI = detail::getFieldPositions_SI(
+            cellIdx,
+            halfSimSize,
+            extraShifts,
+            unit_length,
+            focus_y_SI,
+            focus_z_offset_SI,
+            phi);
 
         /* Single TWTS-Pulse */
         return getTWTSField_Normalized(fieldPositions_SI, time_SI);
@@ -156,7 +164,14 @@ namespace picongpu::templates::twtstight
             for(uint32_t component = 0; component < detail::numComponents; ++component)
                 zeroShifts[component] = floatD_X::create(0.0);
             pmacc::math::Vector<floatD_64, detail::numComponents> const fieldPositions_SI
-                = detail::getFieldPositions_SI(cellIdx, halfSimSize, zeroShifts, unit_length, focus_y_SI, phi);
+                = detail::getFieldPositions_SI(
+                    cellIdx,
+                    halfSimSize,
+                    zeroShifts,
+                    unit_length,
+                    focus_y_SI,
+                    focus_z_offset_SI,
+                    phi);
             // Explicitly use a 3D vector so that this function compiles for 2D as well
             auto const pos = float3_64{
                 fieldPositions_SI[T_component][0],
