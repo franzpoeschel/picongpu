@@ -39,6 +39,7 @@
 #include "picongpu/random/seed/ISeed.hpp"
 #include "picongpu/simulation/control/DomainAdjuster.hpp"
 #include "picongpu/simulation/control/MovingWindow.hpp"
+#include "picongpu/simulation/control/checkpointingState.hpp"
 #include "picongpu/simulation/stage/AtomicPhysics.hpp"
 #include "picongpu/simulation/stage/Collision.hpp"
 #include "picongpu/simulation/stage/CurrentBackground.hpp"
@@ -69,6 +70,7 @@
 #include <pmacc/particles/traits/FilterByIdentifier.hpp>
 #include <pmacc/random/RNGProvider.hpp>
 #include <pmacc/random/methods/methods.hpp>
+#include <pmacc/simulationControl/Checkpointing.hpp>
 #include <pmacc/simulationControl/SimulationHelper.hpp>
 #include <pmacc/types.hpp>
 #include <pmacc/verify.hpp>
@@ -91,6 +93,8 @@ namespace picongpu
 {
     using namespace pmacc;
 
+    using SimHelper = SimulationHelper<simDim, simulationControl::Checkpointing<checkpointingEnabled>>;
+
     /**
      * Global simulation controller class.
      *
@@ -99,7 +103,7 @@ namespace picongpu
      *
      * @tparam DIM the dimension (2-3) for the simulation
      */
-    class Simulation : public SimulationHelper<simDim>
+    class Simulation : public SimHelper
     {
     public:
         /**
@@ -109,7 +113,7 @@ namespace picongpu
 
         void pluginRegisterHelp(po::options_description& desc) override
         {
-            SimulationHelper<simDim>::pluginRegisterHelp(desc);
+            SimHelper::pluginRegisterHelp(desc);
 
             // clang-format off
             desc.add_options()(
@@ -159,7 +163,7 @@ namespace picongpu
         void startSimulation() override
         {
             if(!skipSimulation)
-                SimulationHelper<simDim>::startSimulation();
+                SimHelper::startSimulation();
         }
 
         nlohmann::json metadata() const
@@ -283,7 +287,7 @@ namespace picongpu
             log<picLog::DOMAINS>("rank %1%; localsize %2%; localoffset %3%;") % myGPUpos.toString()
                 % gridSizeLocal.toString() % gridOffset.toString();
 
-            SimulationHelper<simDim>::pluginLoad();
+            SimHelper::pluginLoad();
 
             GridLayout<simDim> layout(gridSizeLocal, GuardSize::toRT() * SuperCellSize::toRT());
             cellDescription = std::make_unique<MappingDesc>(layout.sizeND(), DataSpace<simDim>(GuardSize::toRT()));
@@ -304,7 +308,7 @@ namespace picongpu
         {
             DataConnector& dc = Environment<>::get().DataConnector();
 
-            SimulationHelper<simDim>::pluginUnload();
+            SimHelper::pluginUnload();
 
             /** unshare all registered ISimulationData sets
              *
@@ -456,36 +460,10 @@ namespace picongpu
             if(initialiserController)
             {
                 initialiserController->printInformation();
-                if(this->restartRequested)
+                if(this->checkpointing.checkRestart(step))
                 {
-                    /* we do not require '--checkpoint.restart.step' if a master checkpoint file is found */
-                    if(this->restartStep < 0)
-                    {
-                        std::vector<uint32_t> checkpoints = readCheckpointMasterFile();
-
-                        if(checkpoints.empty())
-                        {
-                            if(this->tryRestart == false)
-                            {
-                                throw std::runtime_error(
-                                    "Restart failed. You must provide the "
-                                    "'--checkpoint.restart.step' argument. See picongpu --help.");
-                            }
-                            else
-                            {
-                                // no checkpoint found: start simulation from scratch
-                                this->restartRequested = false;
-                            }
-                        }
-                        else
-                            this->restartStep = checkpoints.back();
-                    }
-                }
-
-                if(this->restartRequested)
-                {
-                    initialiserController->restart((uint32_t) this->restartStep, this->restartDirectory);
-                    step = this->restartStep;
+                    step = static_cast<uint32_t>(this->checkpointing.getRestartStep());
+                    initialiserController->restart(step, this->checkpointing.getRestartDir());
                 }
                 else
                 {
@@ -547,13 +525,13 @@ namespace picongpu
         void dumpOneStep(uint32_t currentStep) override
         {
             fieldBackground->toDumpState(currentStep);
-            SimulationHelper<simDim>::dumpOneStep(currentStep);
+            SimHelper::dumpOneStep(currentStep);
         }
 
         void notifyPlugins(uint32_t currentStep) override
         {
             fieldBackground->toPluginState(currentStep);
-            SimulationHelper<simDim>::notifyPlugins(currentStep);
+            SimHelper::notifyPlugins(currentStep);
         }
 
         void movingWindowCheck(uint32_t currentStep) override

@@ -27,52 +27,33 @@
 #include "pmacc/dataManagement/DataConnector.hpp"
 #include "pmacc/dimensions/DataSpace.hpp"
 #include "pmacc/eventSystem/Manager.hpp"
-#include "pmacc/filesystem.hpp"
-#include "pmacc/mappings/simulation/Filesystem.hpp"
-#include "pmacc/mappings/simulation/GridController.hpp"
 #include "pmacc/particles/IdProvider.hpp"
 #include "pmacc/pluginSystem/IPlugin.hpp"
 #include "pmacc/pluginSystem/containsStep.hpp"
 #include "pmacc/pluginSystem/toSlice.hpp"
+#include "pmacc/simulationControl/Checkpointing.hpp"
 #include "pmacc/simulationControl/signal.hpp"
 #include "pmacc/types.hpp"
 
 #include <chrono>
-#include <condition_variable>
-#include <csignal>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <thread>
-#include <vector>
 
 namespace pmacc
 {
-    template<unsigned DIM>
-    SimulationHelper<DIM>::SimulationHelper()
-        : checkpointDirectory("checkpoints")
-        , restartDirectory("checkpoints")
-        , CHECKPOINT_MASTER_FILE("checkpoints.txt")
-        , author("")
-
+    template<unsigned DIM, typename CheckpointingClass>
+    SimulationHelper<DIM, CheckpointingClass>::SimulationHelper() : author("")
     {
         tSimulation.toggleStart();
         tInit.toggleStart();
     }
 
-    template<unsigned DIM>
-    SimulationHelper<DIM>::~SimulationHelper()
+    template<unsigned DIM, typename CheckpointingClass>
+    SimulationHelper<DIM, CheckpointingClass>::~SimulationHelper()
     {
-        {
-            // notify all concurrent threads to exit
-            std::unique_lock<std::mutex> lk(this->concurrentThreadMutex);
-            exitConcurrentThreads.notify_all();
-        }
-        // wait for time triggered checkpoint thread
-        if(checkpointTimeThread.joinable())
-            checkpointTimeThread.join();
-
+        checkpointing.finishTimeBasedCheckpointing();
         tSimulation.toggleEnd();
         if(output)
         {
@@ -82,8 +63,8 @@ namespace pmacc
         }
     }
 
-    template<unsigned DIM>
-    void SimulationHelper<DIM>::notifyPlugins(uint32_t currentStep)
+    template<unsigned DIM, typename CheckpointingClass>
+    void SimulationHelper<DIM, CheckpointingClass>::notifyPlugins(uint32_t currentStep)
     {
         Environment<DIM>::get().PluginConnector().notifyPlugins(currentStep);
         /* Handle signals after we executed the plugins but before checkpointing, this will result into lower
@@ -92,54 +73,14 @@ namespace pmacc
         checkSignals(currentStep);
     }
 
-    template<unsigned DIM>
-    void SimulationHelper<DIM>::dumpOneStep(uint32_t currentStep)
+    template<unsigned DIM, typename CheckpointingClass>
+    void SimulationHelper<DIM, CheckpointingClass>::dumpOneStep(uint32_t currentStep)
     {
-        /* trigger checkpoint notification */
-        if(pluginSystem::containsStep(seqCheckpointPeriod, currentStep))
-        {
-            /* first synchronize: if something failed, we can spare the time
-             * for the checkpoint writing */
-            alpaka::wait(manager::Device<ComputeDevice>::get().current());
-
-            // avoid deadlock between not finished PMacc tasks and MPI_Barrier
-            eventSystem::getTransactionEvent().waitForFinished();
-
-            GridController<DIM>& gc = Environment<DIM>::get().GridController();
-            /* can be spared for better scalings, but allows to spare the
-             * time for checkpointing if some ranks died */
-            MPI_CHECK(MPI_Barrier(gc.getCommunicator().getMPIComm()));
-
-            /* create directory containing checkpoints  */
-            if(numCheckpoints == 0 && gc.getGlobalRank() == 0)
-            {
-                pmacc::Filesystem::get().createDirectoryWithPermissions(checkpointDirectory);
-            }
-
-            Environment<DIM>::get().PluginConnector().checkpointPlugins(currentStep, checkpointDirectory);
-
-            /* important synchronize: only if no errors occured until this
-             * point guarantees that a checkpoint is usable */
-            alpaka::wait(manager::Device<ComputeDevice>::get().current());
-
-            /* avoid deadlock between not finished PMacc tasks and MPI_Barrier */
-            eventSystem::getTransactionEvent().waitForFinished();
-
-            /* \todo in an ideal world with MPI-3, this would be an
-             * MPI_Ibarrier call and this function would return a MPI_Request
-             * that could be checked */
-            MPI_CHECK(MPI_Barrier(gc.getCommunicator().getMPIComm()));
-
-            if(gc.getGlobalRank() == 0)
-            {
-                writeCheckpointStep(currentStep);
-            }
-            numCheckpoints++;
-        }
+        checkpointing.template dump<DIM>(currentStep);
     }
 
-    template<unsigned DIM>
-    void SimulationHelper<DIM>::dumpTimes(
+    template<unsigned DIM, typename CheckpointingClass>
+    void SimulationHelper<DIM, CheckpointingClass>::dumpTimes(
         TimeIntervall& tSimCalculation,
         TimeIntervall&,
         double& roundAvg,
@@ -173,8 +114,8 @@ namespace pmacc
         }
     }
 
-    template<unsigned DIM>
-    void SimulationHelper<DIM>::startSimulation()
+    template<unsigned DIM, typename CheckpointingClass>
+    void SimulationHelper<DIM, CheckpointingClass>::startSimulation()
     {
         if(useMpiDirect)
             Environment<>::get().enableMpiDirect();
@@ -182,20 +123,7 @@ namespace pmacc
         // Install a signal handler
         signal::activate();
 
-        // register concurrent thread to perform checkpointing periodically after a user defined time
-        if(checkpointPeriodMinutes != 0)
-            checkpointTimeThread = std::thread(
-                [&, this]()
-                {
-                    std::unique_lock<std::mutex> lk(this->concurrentThreadMutex);
-                    while(exitConcurrentThreads.wait_until(
-                              lk,
-                              std::chrono::system_clock::now() + std::chrono::minutes(checkpointPeriodMinutes))
-                          == std::cv_status::timeout)
-                    {
-                        signal::detail::setCreateCheckpoint(1);
-                    }
-                });
+        checkpointing.startTimeBasedCheckpointing();
 
         uint64_t maxRanks = Environment<DIM>::get().GridController().getGpuNodes().productOfComponents();
         uint64_t rank = Environment<DIM>::get().GridController().getScalarPosition();
@@ -206,10 +134,7 @@ namespace pmacc
 
         init();
 
-        // translate checkpointPeriod string into checkpoint intervals
-        seqCheckpointPeriod = pluginSystem::toTimeSlice(checkpointPeriod);
-
-        for(uint32_t nthSoftRestart = 0; nthSoftRestart <= softRestarts; ++nthSoftRestart)
+        while(checkpointing.hasSoftRestartAttemptsLeft())
         {
             /* Global offset is updated during the simulation. In case we perform a soft restart we need to reset
              * the offset here to be valid for the next simulation run.
@@ -239,7 +164,7 @@ namespace pmacc
             movingWindowCheck(currentStep);
 
             /* call plugins and dump initial step if simulation starts without restart */
-            if(!restartRequested)
+            if(checkpointing.getRestartState() != simulationControl::RestartState::SUCCESS)
             {
                 notifyPlugins(currentStep);
                 dumpOneStep(currentStep);
@@ -292,42 +217,26 @@ namespace pmacc
         } // softRestarts loop
     }
 
-    template<unsigned DIM>
-    void SimulationHelper<DIM>::pluginRegisterHelp(po::options_description& desc)
+    template<unsigned DIM, typename CheckpointingClass>
+    void SimulationHelper<DIM, CheckpointingClass>::pluginRegisterHelp(po::options_description& desc)
     {
         // clang-format off
             desc.add_options()
                 ("steps,s", po::value<uint32_t>(&runSteps), "Simulation steps")
-                ("checkpoint.restart.loop", po::value<uint32_t>(&softRestarts)->default_value(0),
-                 "Number of times to restart the simulation after simulation has finished (for presentations). "
-                 "Note: does not yet work with all plugins, see issue #1305")
                 ("percent,p", po::value<uint16_t>(&progress)->default_value(5),
                  "Print time statistics after p percent to stdout")
                 ("progressPeriod",po::value<std::string>(&progressPeriod),
                 "write progress [for each n-th step], plugin period syntax can be used here.")
-                ("checkpoint.restart", po::value<bool>(&restartRequested)->zero_tokens(),
-                 "Restart simulation from a checkpoint. Requires a valid checkpoint.")
-                ("checkpoint.tryRestart", po::value<bool>(&tryRestart)->zero_tokens(),
-                 "Try to restart if a checkpoint is available else start the simulation from scratch.")
-                ("checkpoint.restart.directory", po::value<std::string>(&restartDirectory)->default_value(restartDirectory),
-                 "Directory containing checkpoints for a restart")
-                ("checkpoint.restart.step", po::value<int32_t>(&restartStep),
-                 "Checkpoint step to restart from")
-                ("checkpoint.period", po::value<std::string>(&checkpointPeriod),
-                 "Period for checkpoint creation [interval(s) based on steps]")
-                ("checkpoint.timePeriod", po::value<std::uint64_t>(&checkpointPeriodMinutes),
-                 "Time periodic checkpoint creation [period in minutes]")
-                ("checkpoint.directory", po::value<std::string>(&checkpointDirectory)->default_value(checkpointDirectory),
-                 "Directory for checkpoints")
                 ("author", po::value<std::string>(&author)->default_value(std::string("")),
                  "The author that runs the simulation and is responsible for created output files")
                 ("mpiDirect", po::value<bool>(&useMpiDirect)->zero_tokens(),
                  "use device direct for MPI communication e.g. GPU direct");
         // clang-format on
+        checkpointing.registerHelp(desc);
     }
 
-    template<unsigned DIM>
-    void SimulationHelper<DIM>::pluginLoad()
+    template<unsigned DIM, typename CheckpointingClass>
+    void SimulationHelper<DIM, CheckpointingClass>::pluginLoad()
     {
         Environment<>::get().SimulationDescription().setRunSteps(runSteps);
         Environment<>::get().SimulationDescription().setAuthor(author);
@@ -338,13 +247,10 @@ namespace pmacc
             seqProgressPeriod = pluginSystem::toTimeSlice(progressPeriod);
 
         output = (getGridController().getGlobalRank() == 0);
-
-        if(tryRestart)
-            restartRequested = true;
     }
 
-    template<unsigned DIM>
-    void SimulationHelper<DIM>::checkSignals(uint32_t const currentStep)
+    template<unsigned DIM, typename CheckpointingClass>
+    void SimulationHelper<DIM, CheckpointingClass>::checkSignals(uint32_t const currentStep)
     {
         /* Avoid signal handling if the last signal is still processed.
          * Signal handling in the first step is always allowed.
@@ -420,7 +326,7 @@ namespace pmacc
                 signalCreateCheckpoint = false;
 
                 // add a new checkpoint
-                seqCheckpointPeriod.push_back(pluginSystem::Slice(signalMaxTimestep, signalMaxTimestep));
+                checkpointing.addCheckpoint(signalMaxTimestep);
             }
             if(signalStopSimulation)
             {
@@ -432,8 +338,8 @@ namespace pmacc
         }
     }
 
-    template<unsigned DIM>
-    void SimulationHelper<DIM>::calcProgress()
+    template<unsigned DIM, typename CheckpointingClass>
+    void SimulationHelper<DIM, CheckpointingClass>::calcProgress()
     {
         if(progress == 0 || progress > 100)
             progress = 100;
@@ -444,55 +350,18 @@ namespace pmacc
             showProgressAnyStep = 1;
     }
 
-    template<unsigned DIM>
-    void SimulationHelper<DIM>::writeCheckpointStep(uint32_t const checkpointStep)
-    {
-        std::ofstream file;
-        std::string const checkpointMasterFile = checkpointDirectory + std::string("/") + CHECKPOINT_MASTER_FILE;
-
-        file.open(checkpointMasterFile.c_str(), std::ofstream::app);
-
-        if(!file)
-            throw std::runtime_error("Failed to write checkpoint master file");
-
-        file << checkpointStep << std::endl;
-        file.close();
-    }
-
-    template<unsigned DIM>
-    std::vector<uint32_t> SimulationHelper<DIM>::readCheckpointMasterFile()
-    {
-        std::vector<uint32_t> checkpoints;
-
-        std::string const checkpointMasterFile
-            = this->restartDirectory + std::string("/") + this->CHECKPOINT_MASTER_FILE;
-
-        if(!stdfs::exists(checkpointMasterFile))
-            return checkpoints;
-
-        std::ifstream file(checkpointMasterFile.c_str());
-
-        /* read each line */
-        std::string line;
-        while(std::getline(file, line))
-        {
-            if(line.empty())
-                continue;
-            try
-            {
-                checkpoints.push_back(boost::lexical_cast<uint32_t>(line));
-            }
-            catch(boost::bad_lexical_cast const&)
-            {
-                std::cerr << "Warning: checkpoint master file contains invalid data (" << line << ")" << std::endl;
-            }
-        }
-
-        return checkpoints;
-    }
 
     // Explicit template instantiation to provide symbols for usage together with PMacc
-    template class SimulationHelper<DIM2>;
-    template class SimulationHelper<DIM3>;
-
+    template class SimulationHelper<
+        DIM2,
+        simulationControl::Checkpointing<simulationControl::CheckpointingAvailability::ENABLED>>;
+    template class SimulationHelper<
+        DIM3,
+        simulationControl::Checkpointing<simulationControl::CheckpointingAvailability::ENABLED>>;
+    template class SimulationHelper<
+        DIM2,
+        simulationControl::Checkpointing<simulationControl::CheckpointingAvailability::DISABLED>>;
+    template class SimulationHelper<
+        DIM3,
+        simulationControl::Checkpointing<simulationControl::CheckpointingAvailability::DISABLED>>;
 } // namespace pmacc
