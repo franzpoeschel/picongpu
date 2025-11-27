@@ -128,18 +128,8 @@ namespace pmacc
              *
              * @{
              */
-#if BOOST_COMP_CLANG_CUDA && __CUDACC_VER_MAJOR__ <= 10
-            template<typename F, typename... T_Args>
-            using InvokeResult_t = typename std::result_of<F(T_Args...)>::type;
-#else
-#    if __cplusplus >= 201703L
             template<typename F, typename... T_Args>
             using InvokeResult_t = typename std::invoke_result<F, T_Args...>::type;
-#    else
-            template<typename F, typename... T_Args>
-            using InvokeResult_t = typename std::result_of<F(T_Args...)>::type;
-#    endif
-#endif
             /**@}*/
 
             template<typename T_Functor, typename... T_CtxVars>
