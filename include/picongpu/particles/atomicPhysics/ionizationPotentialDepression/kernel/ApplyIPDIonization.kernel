@@ -31,8 +31,10 @@
 #pragma once
 
 #include "picongpu/defines.hpp"
+#include "picongpu/particles/atomicPhysics/DeltaEnergyTransition.hpp"
 #include "picongpu/particles/atomicPhysics/SetAtomicState.hpp"
 #include "picongpu/particles/atomicPhysics/enums/ProcessClass.hpp"
+#include "picongpu/particles/atomicPhysics/enums/ProcessClassGroup.hpp"
 #include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/BarrierSupressionIonization.hpp"
 #include "picongpu/particles/atomicPhysics/spawnFromSourceSpeciesModules/CacheEFieldForSuperCell.hpp"
 #include "picongpu/particles/atomicPhysics/spawnFromSourceSpeciesModules/InitAsCoMoving.hpp"
@@ -174,10 +176,6 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                 = T_AtomicStateDataBox::ConfigNumber::getChargeState(currentAtomicStateConfigNumber);
 
             // eV
-            float_X const ionizationEnergy = chargeStateBox.ionizationEnergy(currentChargeState)
-                                             - atomicStateBox.energy(currentAtomicStateClctIdx);
-
-            // eV
             float_X ipd = T_IPDModel::ipd(kernelState.superCellConstantIPDInput, currentChargeState);
 
             if constexpr(T_fieldIonizationActive::value)
@@ -198,8 +196,20 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                 ipd += BarrierSupressionIonization::getIPD(screenedCharge, eFieldNormAU);
             }
 
+            auto const ipdIonizationStateConfigNumber = atomicStateBox.configNumber(ipdIonizationStateClctIdx);
+            uint8_t const ipdIonizationStateChargeState
+                = T_AtomicStateDataBox::ConfigNumber::getChargeState(ipdIonizationStateConfigNumber);
 
-            bool const stateIsUnbound = ((ionizationEnergy - ipd) <= 0._X);
+            ///@details need to do by hand since IPD-Ionization does not always follow a defined transition
+            // eV
+            float_X const ionizationEnergyToIPDIonizationState
+                = DeltaEnergyTransition::template ionizationEnergy<
+                      s_enums::ProcessClassGroup::boundFreeBased,
+                      float_X>(currentChargeState, ipdIonizationStateChargeState, ipd, chargeStateBox)
+                  + atomicStateBox.energy(ipdIonizationStateClctIdx)
+                  - atomicStateBox.energy(currentAtomicStateClctIdx);
+
+            bool const stateIsUnbound = (ionizationEnergyToIPDIonizationState <= 0._X);
 
             /** @details states that are unbound without an IPD contribution should have option to relax via
              *  auto-ionization, electronic collisional ionization or deexcitation channels in the regular rate solver
