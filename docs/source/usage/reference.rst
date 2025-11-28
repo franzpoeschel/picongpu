@@ -77,7 +77,9 @@ Laser plasma electron acceleration
  - Refractive plasma optics for relativistic laser beams [Seeman2023]_
  - Master thesis on sensitivity of LWFA using STII [Tiebel2024]_
  - Direct visualization of shock front induced nonlinear laser wakefield dynamics [Levine2025]_
+ - Acceleration in carbon nanotubes [BontoiuPhD2025]_
  - Master thesis on radiation based diagnostic methods in PWFA [Wrobel2025]_
+ - Self-injected electron acceleration in structured targets [Bontoiu2025]_
 
 Laser plasma ion acceleration
 """""""""""""""""""""""""""""
@@ -104,6 +106,7 @@ Astrophysics
 
 Machine Learning
 """"""""""""""""
+ - In-transit correlation of radiation spectra and particle dynamics in the Kelvin Helmholtz instabilty (KHI) [Kelling2025]_
 
 
 Methods used in PIConGPU software
@@ -201,6 +204,7 @@ Theses
  - Bachelor thesis: Synthetic coherent transistion radiation [Carstens2019]_
  - Bachelor thesis: PWFA driver dynamics and peak energy loss [Wrobel2023]_
  - Master thesis: Sensitivity analysis of LWFA using STII [Tiebel2024]_
+ - PhD thesis: Electron Acceleration in Carbon Nanotubes [BontoiuPhD2025]_
  - Master thesis: Radiation based diagnostic methods in PWFA [Wrobel2025]_
 
 List of PIConGPU references in chronological order
@@ -261,34 +265,34 @@ List of PIConGPU references in chronological order
        https://doi.org/10.1016/j.nima.2013.10.073
 
 .. [Huebl2014]
-        Huebl, A.,
-        *Injection Control for Electrons in Laser-Driven Plasma Wakes on the Femtosecond Time Scale*,
-        Diploma Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf for the German Degree "Diplom-Physiker" (2014),
-        https://doi.org/10.5281/zenodo.15924
+       Huebl, A.,
+       *Injection Control for Electrons in Laser-Driven Plasma Wakes on the Femtosecond Time Scale*,
+       Diploma Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf for the German Degree "Diplom-Physiker" (2014),
+       https://doi.org/10.5281/zenodo.15924
 
 .. [Garten2015]
-        Garten, M.,
-        *Modellierung und Validierung von Feldionisation in parallelen Particle-in-Cell-Codes*,
-        Master Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2015),
-        https://doi.org/10.5281/zenodo.202500
+       Garten, M.,
+       *Modellierung und Validierung von Feldionisation in parallelen Particle-in-Cell-Codes*,
+       Master Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2015),
+       https://doi.org/10.5281/zenodo.202500
 
 .. [Burau2016]
-        Burau, H.,
-        *Entwicklung und Überprüfung eines Photonenmodells für die Abstrahlung durch hochenergetische Elektronen*,
-        Diploma Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf for the German Degree "Diplom-Physiker" (2016),
-        https://doi.org/10.5281/zenodo.192116
+       Burau, H.,
+       *Entwicklung und Überprüfung eines Photonenmodells für die Abstrahlung durch hochenergetische Elektronen*,
+       Diploma Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf for the German Degree "Diplom-Physiker" (2016),
+       https://doi.org/10.5281/zenodo.192116
 
 .. [Matthes2016]
-        Matthes, A.,
-        *In-Situ Visualisierung und Streaming von Plasmasimulationsdaten*,
-        Diploma Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf for the German Degree "Diplom-Informatiker" (2016),
-        https://doi.org/10.5281/zenodo.55329
+       Matthes, A.,
+       *In-Situ Visualisierung und Streaming von Plasmasimulationsdaten*,
+       Diploma Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf for the German Degree "Diplom-Informatiker" (2016),
+       https://doi.org/10.5281/zenodo.55329
 
 .. [Matthes2016b]
-        Matthes, A., Huebl, A., Widera, R., Grottel, S., Gumhold, S., Bussmann, M.,
-        *In situ, steerable, hardware-independent and data-structure agnostic visualization with ISAAC*,
-        Supercomputing Frontiers and Innovations, [S.l.], v. 3, n. 4, p. 30-48, oct. 2016,
-        https://doi.org/10.14529/jsfi160403
+       Matthes, A., Huebl, A., Widera, R., Grottel, S., Gumhold, S., Bussmann, M.,
+       *In situ, steerable, hardware-independent and data-structure agnostic visualization with ISAAC*,
+       Supercomputing Frontiers and Innovations, [S.l.], v. 3, n. 4, p. 30-48, oct. 2016,
+       https://doi.org/10.14529/jsfi160403
 
 .. [Pausch2017]
        Pausch, R., Bussmann, M., Huebl, A., Schramm, U., Steiniger, K., Widera, R. and Debus, A.,
@@ -321,28 +325,28 @@ List of PIConGPU references in chronological order
        https://doi.org/10.1016/j.nima.2018.02.020
 
 .. [Couperus2018]
-        Couperus, J. P.,
-        *Optimal beam loading in a nanocoulomb-class laser wakefield accelerator*,
-        PhD Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2018),
-        https://doi.org/10.5281/zenodo.1463710
+       Couperus, J. P.,
+       *Optimal beam loading in a nanocoulomb-class laser wakefield accelerator*,
+       PhD Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2018),
+       https://doi.org/10.5281/zenodo.1463710
 
 .. [Meyer2018]
-        Meyer, F.,
-        *Entwicklung eines Partikelvisualisierers für In-Situ-Simulationen*,
-        Bachelor Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2018),
-        https://doi.org/10.5281/zenodo.1423296
+       Meyer, F.,
+       *Entwicklung eines Partikelvisualisierers für In-Situ-Simulationen*,
+       Bachelor Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2018),
+       https://doi.org/10.5281/zenodo.1423296
 
 .. [Hilz2018]
-        Hilz, P, et al.,
-        *Isolated proton bunch acceleration by a petawatt laser pulse*,
-        Nature Communications, 9(1), 423 (2018),
-        https://doi.org/10.1038/s41467-017-02663-1
+       Hilz, P, et al.,
+       *Isolated proton bunch acceleration by a petawatt laser pulse*,
+       Nature Communications, 9(1), 423 (2018),
+       https://doi.org/10.1038/s41467-017-02663-1
 
 .. [Obst-Huebl2018]
-        Obst-Huebl, L., Ziegler, T., Brack, FE. et al.,
-        *All-optical structuring of laser-driven proton beam profiles*,
-        Nat Commun 9, 5292 (2018),
-        https://doi.org/10.1038/s41467-018-07756-z
+       Obst-Huebl, L., Ziegler, T., Brack, FE. et al.,
+       *All-optical structuring of laser-driven proton beam profiles*,
+       Nat Commun 9, 5292 (2018),
+       https://doi.org/10.1038/s41467-018-07756-z
 
 .. [Rudat2019]
        Rudat, S.,
@@ -405,166 +409,182 @@ List of PIConGPU references in chronological order
        https://doi.org/10.1088/1742-6596/1596/1/012028
 
 .. [Kurz2021]
-        Kurz, T. et al.,
-        *Demonstration of a compact plasma accelerator powered by laser-accelerated electron beams*,
-        Nature Communications volume 12, Article number: 2895 (2021),
-        https://doi.org/10.1038/s41467-021-23000-7
+       Kurz, T. et al.,
+       *Demonstration of a compact plasma accelerator powered by laser-accelerated electron beams*,
+       Nature Communications volume 12, Article number: 2895 (2021),
+       https://doi.org/10.1038/s41467-021-23000-7
 
 .. [Koehler2021]
-        Koehler, A., Pausch, R., Bussmann, M., et al.,
-        *Restoring betatron phase coherence in a beam-loaded laser-wakefield accelerator*,
-        Phys. Rev. Accel. Beams 24, 091302 – 20 September 2021,
-	https://doi.org/10.1103/PhysRevAccelBeams.24.091302
+       Koehler, A., Pausch, R., Bussmann, M., et al.,
+       *Restoring betatron phase coherence in a beam-loaded laser-wakefield accelerator*,
+       Phys. Rev. Accel. Beams 24, 091302 – 20 September 2021,
+       https://doi.org/10.1103/PhysRevAccelBeams.24.091302
 
 .. [Wrobel2023]
-		Wrobel, N.,
-		*Studying the impact of electron bunch characteristics on plasma wakefield performance using particle-in-cell simulations*,
-		Bachelor Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2023),
-		https://doi.org/10.14278/rodare.2127
+       Wrobel, N.,
+       *Studying the impact of electron bunch characteristics on plasma wakefield performance using particle-in-cell simulations*,
+       Bachelor Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2023),
+       https://doi.org/10.14278/rodare.2127
 
 .. [Bontoiu2023]
-        Bontoiu, C., et al.,
-	*TeV/m catapult acceleration of electrons in graphene layers*,
-	Scientific Reports volume 13, Article number: 1330 (2023),
-	https://doi.org/10.1038/s41598-023-28617-w
+       Bontoiu, C., et al.,
+       *TeV/m catapult acceleration of electrons in graphene layers*,
+       Scientific Reports volume 13, Article number: 1330 (2023),
+       https://doi.org/10.1038/s41598-023-28617-w
 
 .. [Seeman2023]
-        Seeman, O. Wan, Y., Tata S. et al.,
-        *Refractive plasma optics for relativistic laser beams*,
-        Nat Commun 14, 3296 (2023),
-        https://doi.org/10.1038/s41467-023-38937-0
+       Seeman, O. Wan, Y., Tata S. et al.,
+       *Refractive plasma optics for relativistic laser beams*,
+       Nat Commun 14, 3296 (2023),
+       https://doi.org/10.1038/s41467-023-38937-0
 
 .. [Ordyna2024]
-        Ordyna, P., Bähtz, C., Brambrink, E. et al.,
-        *Visualizing plasmons and ultrafast kinetic instabilities in laser-driven solids using X-ray scattering*,
-        Commun Phys 7, 296 (2024),
-        https://doi.org/10.1038/s42005-024-01776-6
+       Ordyna, P., Bähtz, C., Brambrink, E. et al.,
+       *Visualizing plasmons and ultrafast kinetic instabilities in laser-driven solids using X-ray scattering*,
+       Commun Phys 7, 296 (2024),
+       https://doi.org/10.1038/s42005-024-01776-6
 
 .. [Tiebel2024]
-        Tiebel, J.,
-	*A sensitivity analysis of electron injection and acceleration in LWFA using PIConGPU*,
-	Master Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2024),
-	https://doi.org/10.5281/zenodo.14605063
+       Tiebel, J.,
+       *A sensitivity analysis of electron injection and acceleration in LWFA using PIConGPU*,
+       Master Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2024),
+       https://doi.org/10.5281/zenodo.14605063
 
 .. [Levine2025]
-        Levine, E. Y., et al.,
-        *Direct visualization of shock front induced nonlinear laser wakefield dynamics*,
-        Phys. Rev. Research 7, L012041 – 25 February, 2025,
-        https://doi.org/10.1103/PhysRevResearch.7.L012041
+       Levine, E. Y., et al.,
+       *Direct visualization of shock front induced nonlinear laser wakefield dynamics*,
+       Phys. Rev. Research 7, L012041 – 25 February, 2025,
+       https://doi.org/10.1103/PhysRevResearch.7.L012041
+
+.. [Kelling2025]
+       Kelling, J., Bolea, V. Bussmann, M. et al.
+       *The Artificial Scientist: in-Transit Machine Learning of Plasma Simulations*
+       2025 IEEE International Parallel and Distributed Processing Symposium (IPDPS), Milano, Italy, 2025, pp. 407-418
+       https://doi.org/10.1109/IPDPS64566.2025.00043
+
+.. [BontoiuPhD2025]
+       Bonţoiu, C.
+       *Electron Acceleration in Carbon Nanotubes*
+       PhD Thesis at the Department of Physics, University of Liverpool, June 2025
+       https://drive.google.com/file/d/1pq-2-Kmsp76Lo4Dh1XXes7E691N0e3pt/view
 
 .. [Wrobel2025]
-		Wrobel, N.,
-		*Investigation of possible diagnostic methods for plasma wakefield accelerator (PWFA) driver degradation using synthetic diagnostics in PIConGPU*,
-		Master Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2025),
-		https://doi.org/10.5281/zenodo.17550751
+       Wrobel, N.,
+       *Investigation of possible diagnostic methods for plasma wakefield accelerator (PWFA) driver degradation using synthetic diagnostics in PIConGPU*,
+       Master Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2025),
+       https://doi.org/10.5281/zenodo.17550751
 
+.. [Bontoiu2025]
+       Bonţoiu, C., Bonatto, A., Apsimon, Ö. et al.
+       *Numerical study of self-injected electron acceleration in CNT structured targets driven by an 800 nm laser*
+       Sci Rep (2025)
+       https://doi.org/10.1038/s41598-025-29386-4
 
 List of other references in chronological order
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. [ClementiRaimondi1963]
-        Clementi, E. and Raimondi, D.,
-        *Atomic Screening Constant from SCF Functions*,
-        The Journal of Chemical Physics 38, 2686-2689 (1963),
-        https://dx.doi.org/10.1063/1.1733573
+       Clementi, E. and Raimondi, D.,
+       *Atomic Screening Constant from SCF Functions*,
+       The Journal of Chemical Physics 38, 2686-2689 (1963),
+       https://dx.doi.org/10.1063/1.1733573
 
 .. [Keldysh]
-        Keldysh, L.V.,
-        *Ionization in the field of a strong electromagnetic wave*,
-        Soviet Physics JETP 20, 1307-1314 (1965),
-        http://jetp.ac.ru/cgi-bin/dn/e_020_05_1307.pdf
+       Keldysh, L.V.,
+       *Ionization in the field of a strong electromagnetic wave*,
+       Soviet Physics JETP 20, 1307-1314 (1965),
+       http://jetp.ac.ru/cgi-bin/dn/e_020_05_1307.pdf
 
 .. [Yee1966]
-        Yee, K.,
-	*Numerical solution of initial boundary value problems involving Maxwell's equations in isotropic media*,
-	IEEE Transactions on Antennas and Propagation ( Volume: 14, Issue: 3, May 1966),
-	https://doi.org/10.1109/TAP.1966.1138693
+       Yee, K.,
+       *Numerical solution of initial boundary value problems involving Maxwell's equations in isotropic media*,
+       IEEE Transactions on Antennas and Propagation ( Volume: 14, Issue: 3, May 1966),
+       https://doi.org/10.1109/TAP.1966.1138693
 
 .. [ClementiRaimondi1967]
-        Clementi, E. and D. Raimondi, D.,
-        *Atomic Screening Constant from SCF Functions. II. Atoms with 37 to 86 Electrons*,
-        The Journal of Chemical Physics 47, 1300-1307 (1967),
-        https://dx.doi.org/10.1063/1.1712084
+       Clementi, E. and D. Raimondi, D.,
+       *Atomic Screening Constant from SCF Functions. II. Atoms with 37 to 86 Electrons*,
+       The Journal of Chemical Physics 47, 1300-1307 (1967),
+       https://dx.doi.org/10.1063/1.1712084
 
 .. [Boris1970]
-        Boris, J.,
-	*Relativistic Plasma Simulation - Optimization of a Hybrid Code*,
-	Proc. 4th Conf. on Num. Sim. of Plasmas (1970),
-	https://apps.dtic.mil/sti/citations/ADA023511
+       Boris, J.,
+       *Relativistic Plasma Simulation - Optimization of a Hybrid Code*,
+       Proc. 4th Conf. on Num. Sim. of Plasmas (1970),
+       https://apps.dtic.mil/sti/citations/ADA023511
 
 .. [More1985]
-        R. M. More.
-        *Pressure Ionization, Resonances, and the Continuity of Bound and Free States*,
-        Advances in Atomic, Molecular and Optical Physics Vol. 21 C, 305-356 (1985),
-        https://dx.doi.org/10.1016/S0065-2199(08)60145-1
+       R. M. More.
+       *Pressure Ionization, Resonances, and the Continuity of Bound and Free States*,
+       Advances in Atomic, Molecular and Optical Physics Vol. 21 C, 305-356 (1985),
+       https://dx.doi.org/10.1016/S0065-2199(08)60145-1
 
 .. [Mulser1998]
-        Mulser, P. et al.,
-        *Modeling field ionization in an energy conserving form and resulting nonstandard fluid dynamcis*,
-        Physics of Plasmas 5, 4466 (1998),
-        https://doi.org/10.1063/1.873184
+       Mulser, P. et al.,
+       *Modeling field ionization in an energy conserving form and resulting nonstandard fluid dynamcis*,
+       Physics of Plasmas 5, 4466 (1998),
+       https://doi.org/10.1063/1.873184
 
 .. [DeloneKrainov1998]
-        Delone, N. B. and Krainov, V. P.,
-        *Tunneling and barrier-suppression ionization of atoms and ions in a laser radiation field*,
-        Phys. Usp. 41 469–485 (1998),
-        http://dx.doi.org/10.1070/PU1998v041n05ABEH000393
+       Delone, N. B. and Krainov, V. P.,
+       *Tunneling and barrier-suppression ionization of atoms and ions in a laser radiation field*,
+       Phys. Usp. 41 469–485 (1998),
+       http://dx.doi.org/10.1070/PU1998v041n05ABEH000393
 
 .. [BauerMulser1999]
-        Bauer, D. and Mulser, P.,
-        *Exact field ionization rates in the barrier-suppression regime from numerical time-dependent Schrödinger-equation calculations*,
-        Physical Review A 59, 569 (1999),
-        https://dx.doi.org/10.1103/PhysRevA.59.569
+       Bauer, D. and Mulser, P.,
+       *Exact field ionization rates in the barrier-suppression regime from numerical time-dependent Schrödinger-equation calculations*,
+       Physical Review A 59, 569 (1999),
+       https://dx.doi.org/10.1103/PhysRevA.59.569
 
 .. [Ghrist2000]
-        M. Ghrist,
-        *High-Order Finite Difference Methods for Wave Equations*,
-        PhD thesis (2000),
-        Department of Applied Mathematics, University of Colorado
+       M. Ghrist,
+       *High-Order Finite Difference Methods for Wave Equations*,
+       PhD thesis (2000),
+       Department of Applied Mathematics, University of Colorado
 
 .. [Esirkepov2001]
-        Esirkepov, T. Zh.,
-	*Exact charge conservation scheme for Particle-in-Cell simulation with an arbitrary form-factor*,
-	Computer Physics Communications, Volume 135, Issue 2, 1 April 2001, Pages 144-153,
-	https://doi.org/10.1016/S0010-4655(00)00228-9
+       Esirkepov, T. Zh.,
+       *Exact charge conservation scheme for Particle-in-Cell simulation with an arbitrary form-factor*,
+       Computer Physics Communications, Volume 135, Issue 2, 1 April 2001, Pages 144-153,
+       https://doi.org/10.1016/S0010-4655(00)00228-9
 
 .. [FLYCHK2005]
-        *FLYCHK: Generalized population kinetics and spectral model for rapid spectroscopic analysis for all elements*,
-        H.-K. Chung, M.H. Chen, W.L. Morgan, Yu. Ralchenko, and R.W. Lee,
-        *High Energy Density Physics* v.1, p.3 (2005)
-        http://nlte.nist.gov/FLY/
+       *FLYCHK: Generalized population kinetics and spectral model for rapid spectroscopic analysis for all elements*,
+       H.-K. Chung, M.H. Chen, W.L. Morgan, Yu. Ralchenko, and R.W. Lee,
+       *High Energy Density Physics* v.1, p.3 (2005)
+       http://nlte.nist.gov/FLY/
 
 .. [Vay2008]
-        Vay, J.,
-	*Simulation of beams or plasmas crossing at relativistic velocity*,
-	Physics of Plasmas 15, 056701 (2008),
-	https://doi.org/10.1063/1.2837054
+       Vay, J.,
+       *Simulation of beams or plasmas crossing at relativistic velocity*,
+       Physics of Plasmas 15, 056701 (2008),
+       https://doi.org/10.1063/1.2837054
 
 .. [MulserBauer2010]
-        Mulser, P. and Bauer, D.,
-        *High Power Laser-Matter Interaction*,
-        Springer-Verlag Berlin Heidelberg (2010),
-        https://dx.doi.org/10.1007/978-3-540-46065-7
+       Mulser, P. and Bauer, D.,
+       *High Power Laser-Matter Interaction*,
+       Springer-Verlag Berlin Heidelberg (2010),
+       https://dx.doi.org/10.1007/978-3-540-46065-7
 
 .. [Perez2012]
-        Pérez, F., Gremillet, L., Decoster, A., et al.,
-        *Improved modeling of relativistic collisions and collisional ionization in particle-in-cell codes*,
-        Physics of Plasmas 19, 083104 (2012),
-        https://doi.org/10.1063/1.4742167
+       Pérez, F., Gremillet, L., Decoster, A., et al.,
+       *Improved modeling of relativistic collisions and collisional ionization in particle-in-cell codes*,
+       Physics of Plasmas 19, 083104 (2012),
+       https://doi.org/10.1063/1.4742167
 
 .. [Lehe2013]
-        Lehe, R., Lifschitz, A., Thaury, C., Malka, V. and Davoine, X.,
-	*Numerical growth of emittance in simulations of laser-wakefield acceleration*,
-	Phys. Rev. ST Accel. Beams 16, 021301 – Published 28 February 2013,
-	https://doi.org/10.1103/PhysRevSTAB.16.021301
+       Lehe, R., Lifschitz, A., Thaury, C., Malka, V. and Davoine, X.,
+       *Numerical growth of emittance in simulations of laser-wakefield acceleration*,
+       Phys. Rev. ST Accel. Beams 16, 021301 – Published 28 February 2013,
+       https://doi.org/10.1103/PhysRevSTAB.16.021301
 
 .. [Cowan2013]
-        Cowan, B.C., Bruhwiler, D.L., Cary, J.R., Cormier-Michel, E., Geddes, C.G.R.
-	*Generalized algorithm for control of numerical dispersion in explicit time-domain electromagnetic simulations*,
-	Phys. Rev. ST Accel. Beams 16, 041303 – Published 4 April, 2013,
-	https://doi.org/10.1103/PhysRevSTAB.16.041303
+       Cowan, B.C., Bruhwiler, D.L., Cary, J.R., Cormier-Michel, E., Geddes, C.G.R.
+       *Generalized algorithm for control of numerical dispersion in explicit time-domain electromagnetic simulations*,
+       Phys. Rev. ST Accel. Beams 16, 041303 – Published 4 April, 2013,
+       https://doi.org/10.1103/PhysRevSTAB.16.041303
 
-   
 .. [Gonoskov2015]
        Gonoskov, A., Bastrakov, S., Efimenko, E., et al.,
        *Extended particle-in-cell schemes for physics in ultrastrong laser fields: Review and developments*,
