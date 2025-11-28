@@ -106,6 +106,7 @@ Astrophysics
 
 Machine Learning
 """"""""""""""""
+ - In-transit correlation of radiation spectra and particle dynamics in the Kelvin Helmholtz instabilty (KHI) [Kelling2025]_
 
 
 Methods used in PIConGPU software
@@ -455,6 +456,12 @@ List of PIConGPU references in chronological order
         Phys. Rev. Research 7, L012041 – 25 February, 2025,
         https://doi.org/10.1103/PhysRevResearch.7.L012041
 
+.. [Kelling2025]
+        Kelling, J., Bolea, V. Bussmann, M. et al.
+	*The Artificial Scientist: in-Transit Machine Learning of Plasma Simulations*
+	2025 IEEE International Parallel and Distributed Processing Symposium (IPDPS), Milano, Italy, 2025, pp. 407-418
+	https://doi.org/10.1109/IPDPS64566.2025.00043
+	
 .. [BontoiuPhD2025]
         Bonţoiu, C.
 	*Electron Acceleration in Carbon Nanotubes*
