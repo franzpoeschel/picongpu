@@ -77,6 +77,7 @@ Laser plasma electron acceleration
  - Refractive plasma optics for relativistic laser beams [Seeman2023]_
  - Master thesis on sensitivity of LWFA using STII [Tiebel2024]_
  - Direct visualization of shock front induced nonlinear laser wakefield dynamics [Levine2025]_
+ - Acceleration in carbon nanotubes [BontoiuPhD2025]_
  - Master thesis on radiation based diagnostic methods in PWFA [Wrobel2025]_
  - Self-injected electron acceleration in structured targets [Bontoiu2025]_
 
@@ -202,6 +203,7 @@ Theses
  - Bachelor thesis: Synthetic coherent transistion radiation [Carstens2019]_
  - Bachelor thesis: PWFA driver dynamics and peak energy loss [Wrobel2023]_
  - Master thesis: Sensitivity analysis of LWFA using STII [Tiebel2024]_
+ - PhD thesis: Electron Acceleration in Carbon Nanotubes [BontoiuPhD2025]_
  - Master thesis: Radiation based diagnostic methods in PWFA [Wrobel2025]_
 
 List of PIConGPU references in chronological order
@@ -453,6 +455,12 @@ List of PIConGPU references in chronological order
         Phys. Rev. Research 7, L012041 – 25 February, 2025,
         https://doi.org/10.1103/PhysRevResearch.7.L012041
 
+.. [BontoiuPhD2025]
+        Bonţoiu, C.
+	*Electron Acceleration in Carbon Nanotubes*
+	PhD Thesis at the Department of Physics, University of Liverpool, June 2025
+	https://drive.google.com/file/d/1pq-2-Kmsp76Lo4Dh1XXes7E691N0e3pt/view
+	
 .. [Wrobel2025]
 		Wrobel, N.,
 		*Investigation of possible diagnostic methods for plasma wakefield accelerator (PWFA) driver degradation using synthetic diagnostics in PIConGPU*,
