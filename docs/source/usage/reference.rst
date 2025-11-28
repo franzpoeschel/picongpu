@@ -78,6 +78,7 @@ Laser plasma electron acceleration
  - Master thesis on sensitivity of LWFA using STII [Tiebel2024]_
  - Direct visualization of shock front induced nonlinear laser wakefield dynamics [Levine2025]_
  - Master thesis on radiation based diagnostic methods in PWFA [Wrobel2025]_
+ - Self-injected electron acceleration in structured targets [Bontoiu2025]_
 
 Laser plasma ion acceleration
 """""""""""""""""""""""""""""
@@ -458,6 +459,11 @@ List of PIConGPU references in chronological order
 		Master Thesis at Technische Universität Dresden & Helmholtz-Zentrum Dresden - Rossendorf (2025),
 		https://doi.org/10.5281/zenodo.17550751
 
+.. [Bontoiu2025]
+        Bonţoiu, C., Bonatto, A., Apsimon, Ö. et al.
+	*Numerical study of self-injected electron acceleration in CNT structured targets driven by an 800 nm laser*
+	Sci Rep (2025)
+	https://doi.org/10.1038/s41598-025-29386-4
 
 List of other references in chronological order
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
