@@ -73,7 +73,7 @@ namespace picongpu::particles::atomicPhysics::debug
                 static_cast<float_X>(temperatureTimesk_Boltzman),
                 static_cast<float_X>(debyeLength),
                 static_cast<float_X>(zStar),
-                static_cast<float_X>(electronDensity / (sim.unit.length() * sim.unit.length() * sim.unit.length()))};
+                static_cast<float_X>(electronDensity * (sim.unit.length() * sim.unit.length() * sim.unit.length()))};
 
             // eV
             float_64 const ipd = static_cast<float_X>(StewartPyattIPD::ipd(superCellConstantInput, chargeState));

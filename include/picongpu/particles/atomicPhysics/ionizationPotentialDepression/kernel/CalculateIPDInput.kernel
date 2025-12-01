@@ -180,11 +180,11 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                      * unit:  sqrt(unit_length^2 / unit_energy / typicalNumParticlesPerMacroParticle
                      *  * unit_energy / (1/typicalNumParticlesPerMacroParticle)) = unit_length */
                     debyeLengthBox(superCellFieldIdx)
-                        = ((!pmacc::math::isApproxZero(sumChargeNumberSquared + sumWeightElectronNormalized))
-                               ? math::sqrt(
-                                     constFactorDebyeLength * temperatureEnergy_PIC
-                                     / (sumChargeNumberSquared + sumWeightElectronNormalized))
-                               : -1._X);
+                        = (!pmacc::math::isApproxZero(sumChargeNumberSquared + sumWeightElectronNormalized))
+                              ? math::sqrt(
+                                    constFactorDebyeLength * temperatureEnergy_PIC
+                                    / (sumChargeNumberSquared + sumWeightElectronNormalized))
+                              : -1._X;
 
                     constexpr float_X constFactorFreeElectronDensity = sim.unit.typicalNumParticlesPerMacroParticle();
 

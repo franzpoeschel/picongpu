@@ -70,8 +70,65 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
 
     /** implementation of Stewart-Pyatt ionization potential depression(IPD) model
      *
-     * @tparam T_TemperatureFunctor term A to average over for all macro particles according to equi-partition theorem,
-     * average(A) = k_B * T, must follow
+     * @tparam T_TemperatureFunctor functor returning for a macro particle some value A, with average(A) = k_B * T
+     *  according to equi-partition theorem
+     * @tparam T_useSCFLYextendedStewartPyattIPD true =^= use minimum of Stewart-Pyatt and additional SCFLY IPD branch,
+     *                                           false =^= use Stewart-Pyatt IPD branch directly
+     *
+     * @details The implementation of the Stewart-Pyatt IPD model is based on [1],  with the choice of central core
+     *  charge as (chargeState + 1) according to [2] and the additional IPD branch implemented in SCFLY [3].
+     *
+     * @details additional SCFLY IPD-branch,
+     *  The SCFLY implementation of the Stewart-Pyatt IPD-model has an additional branch not mentioned in the
+     *  original SCFLY publication [4], the preceding FLYCHK publication [5], or the later description of the
+     *  extended IPD model in [2].
+     *  The SCFLY Stewart-Pyatt IPD implementation uses the minimum of this additional branch and the actual
+     *  Stewart-Pyatt IPD-model.
+     *  I was unable to find a source for this additional branch, Brian Marre, 2025.
+     *  Therefore the implementation of this branch is based directly on the non-public SCFLY source code.
+     *
+     * @details SCFLY source code for the IPD-implementation,
+     *  - actual IPD implementation, function debye,
+     * https://github.com/ComputationalRadiationPhysics/scfly/blob/5d9b0a997bb6688b04e1a34a7fa8db0f2657106a/code/src/scdrv.f#L3519-L3547
+     *  - called in the subroutine depress,
+     * https://github.com/ComputationalRadiationPhysics/scfly/blob/5d9b0a997bb6688b04e1a34a7fa8db0f2657106a/code/src/scdrv.f#L3310-L3517
+     *
+     * @details for code comparisons between the FLYonPIC and SCFLY Stewart-Pyatt IPD model,
+     *  The SCFLY implementation uses the secondary form of the Stewart-Pyatt IPD-Model, described in [1], below
+     *  equation (5).
+     * To get this form, assume (zStar == chargeState), ie. the plasma consists of only one ion, with only one charge
+     *  state,
+     * replace (zStar + 1) with the debye length definition including ions and electrons,
+     *    (zStar + 1) = 1/(lambda_Debye^2) * epsilon_0 * k_B * T /(e^2 * n_e)
+     *      lambda_Debye ... debye length
+     *      epsilon_0    ... vacuum permittivity
+     *      k_B          ... boltzman constant
+     *      n_e          ... free electron density
+     *      e            ... elementary charge
+     *      zStar = average(z^2)/average(z) ... z is charge state of an ion
+     * substitute this into the term,
+     *    3 * (zStar + 1) * K
+     * use the definition of K and and identify the remaining factors as a power of the ion sphere radius,
+     *    3 * (zStar+1) * K = ionSphereRadius^3 / lambda_Debye^3
+     * then substitute the resulting expression back into equation (5) of Stewart-Pyatt, which gives the termused in
+     * the SCFLY implementation,
+     * https://github.com/ComputationalRadiationPhysics/scfly/blob/5d9b0a997bb6688b04e1a34a7fa8db0f2657106a/code/src/scdrv.f#L3537-L3538
+     *
+     * References:
+     * - [1] "Lowering of Ionization Potentials in Plasmas", John C. Stewart and Kedat D. Pyatt Jr.,
+     *    Astrophysical Journal, vol. 144 (1966), p.1203-1211, , specifically equation (5) on p. 1208
+     * - [2] "The effects of ionization potential depression on the spectra emitted by hot dense aluminium plasmas",
+     *    Thomas R. Preston, Sam. M. Vinko, Orlando Ciricosta, Hyun-Kyung Chung, Richard W. Lee, Justin S. Wark
+     *    High Energy Density Physics 9 (2013) 258-263, equation 1 on p. 259
+     * - [3] SCFLY IPD-model source code,
+     * https://github.com/ComputationalRadiationPhysics/scfly/blob/5d9b0a997bb6688b04e1a34a7fa8db0f2657106a/code/src/scdrv.f#L3348-L3349
+     * - [4] "Extension of atomic configuration sets of the Non-LTE model in the application to the K-\alpha
+     *        diagnostics of hot dense matter",
+     *    H.K. CHung, M.H. Chen, R.W. Lee,
+     *    High energy Density Physics 3 (2007) 57-64
+     * - [5] "FLYCHK: Generalized population kinetics and spectral model for rapid spectroscopy for all elements",
+     *    H.-K. Chung, M.H. Chen, W.L. Morgan, Y. Ralchenko, R.W. Lee,
+     *    High Energy Density Physics 1 (2003) 3-12
      */
     template<typename T_TemperatureFunctor, bool T_useSCFLYextendedStewartPyattIPD>
     struct StewartPyattIPD : IPDModel
@@ -244,7 +301,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
         {
             // eV, not weighted
             float_X temperatureTimesk_Boltzman = temperatureEnergyBox(superCellFieldIdx);
-            // UNIT_LENGTH, not weighted
+            // unit_length, not weighted
             float_X debyeLength = debyeLengthBox(superCellFieldIdx);
             // unitless, not weighted
             float_X zStar = zStarBox(superCellFieldIdx);
@@ -272,49 +329,55 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
             // UNIT_ENERGY/eV
             constexpr float_X eV = sim.pic.get_eV();
 
-            float_X const chargeState_X = static_cast<float_X>(chargeState);
+            float_X const chargeStateAsFloat = static_cast<float_X>(chargeState);
 
             // UNIT_MASS * UNIT_LENGTH^3 / UNIT_TIME^2 * 1/(eV * UNIT_ENERGY/eV * UNIT_LENGTH)
             // = unitless, not weighted
+            //! @details choice of core charge as (charge state + 1), according to [2]
             float_X const K
                 = (pmacc::math::isApproxZero(
                       superCellConstantInput.temperatureTimesk_Boltzman * superCellConstantInput.debyeLength))
                       ? 0._X
-                      : constFactor * (chargeState_X + 1._X)
+                      : constFactor * (chargeStateAsFloat + 1._X)
                             / (superCellConstantInput.temperatureTimesk_Boltzman * eV
                                * superCellConstantInput.debyeLength);
 
             // eV, not weighted
+            //! @details based on equation (5) from Stewart-Pyatt(1966)
             float_X const stewartPyattIPD
                 = superCellConstantInput.temperatureTimesk_Boltzman
                   * (math::pow((3._X * (superCellConstantInput.zStar + 1._X) * K + 1._X), 2._X / 3._X) - 1._X)
                   / (2._X * (superCellConstantInput.zStar + 1._X));
 
+            //! @details additional IPD contribution as implemented in SCFLY,
             float_X result = 0._X;
-
-            // additional ipd contribution as implemented in scfly
             if constexpr(T_useSCFLYextendedStewartPyattIPD)
             {
-                /** @details taken directly from the scfly source code,
-                 *  https://github.com/ComputationalRadiationPhysics/scfly/blob/5d9b0a997bb6688b04e1a34a7fa8db0f2657106a/code/src/scdrv.f#L3519-L3547
+                /** @details as defined in [2] on p. 259 in the text before equation (4)
                  *
-                 * no source known, Brian Marre, 2025
+                 * SCFLY source code definition is at,
+                 *  - base definition,
+                 *      https://github.com/ComputationalRadiationPhysics/scfly/blob/5d9b0a997bb6688b04e1a34a7fa8db0f2657106a/code/src/scdrv.f#L3348-L3349
+                 *  - in place modification to account for charge state,
+                 *      https://github.com/ComputationalRadiationPhysics/scfly/blob/5d9b0a997bb6688b04e1a34a7fa8db0f2657106a/code/src/scdrv.f#L3536
                  */
                 // (1/(1/unit_length^3))^(1/3) = unit_length
                 float_X const ionSphereRadius = math::pow(
-                    0.75_X * (chargeState_X + 1._X) / (picongpu::PI * superCellConstantInput.freeElectronDensity),
+                    0.75_X * (chargeStateAsFloat + 1._X) / (picongpu::PI * superCellConstantInput.freeElectronDensity),
                     1. / 3.);
 
-                // (eV * cm) * m/cm * unit_length/m = eV * unit_length
-                constexpr float_X constFactorSCFLY = 1.45e-7_X / sim.unit.length() * 1.e-2_X;
+                // (eV * cm) * m/cm /(m/unit_length) = eV * m * unit_length/m = eV * unit_length
+                constexpr float_X constFactorSCFLY = 1.45e-7_X * 1.e-2_X / sim.unit.length();
 
                 // 1 * eV * unit_length / sqrt(unit_length^2 + unit_length^2) = eV, not weighted
                 float_X const scfly_secondBranch
-                    = (chargeState_X + 1._X) * constFactorSCFLY
+                    = constFactorSCFLY * (chargeStateAsFloat + 1._X)
                       / math::sqrt(
                           (ionSphereRadius / 1.5_X) * (ionSphereRadius / 1.5_X)
                           + (superCellConstantInput.debyeLength) * (superCellConstantInput.debyeLength));
 
+                /** @details the factor zz = (chargeState + 1) before the minimum in the SCFLY implementation has been
+                 *  moved inside the SCFLY and stewartPyattIPD branches for better encapsulation */
                 result = math::min(scfly_secondBranch, stewartPyattIPD);
             }
             else
@@ -322,6 +385,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
                 result = stewartPyattIPD;
             }
 
+            // eV, not weighted
             return result;
         }
 
