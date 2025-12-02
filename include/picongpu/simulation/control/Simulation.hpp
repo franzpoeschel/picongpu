@@ -387,6 +387,10 @@ namespace picongpu
             alpaka::wait(alpakaQueue);
 #endif
 
+            static_assert(
+                pmacc::isUnique<VectorAllSpecies>,
+                "VectorAllSpecies contains multiple times the same species. Please check the file "
+                "'speciedDefinition.param'.");
             // Allocate and initialize particle species with all left-over memory below
             meta::ForEach<VectorAllSpecies, particles::CreateSpecies<boost::mpl::_1>> createSpeciesMemory;
             createSpeciesMemory(deviceHeap, cellDescription.get());
