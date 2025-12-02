@@ -110,7 +110,7 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression
      *    3 * (zStar + 1) * K
      * use the definition of K and and identify the remaining factors as a power of the ion sphere radius,
      *    3 * (zStar+1) * K = ionSphereRadius^3 / lambda_Debye^3
-     * then substitute the resulting expression back into equation (5) of Stewart-Pyatt, which gives the termused in
+     * then substitute the resulting expression back into equation (5) of Stewart-Pyatt, which gives the term used in
      * the SCFLY implementation,
      * https://github.com/ComputationalRadiationPhysics/scfly/blob/5d9b0a997bb6688b04e1a34a7fa8db0f2657106a/code/src/scdrv.f#L3537-L3538
      *
