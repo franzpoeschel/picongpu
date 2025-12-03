@@ -181,8 +181,8 @@ Range
 
 .. note::
 
-    Axes are passed to addParticleBinner or addFieldBinner grouped in a tuple. This is just a collection of axis objects and is of arbitrary size.
-    Users can make a tuple for axes by using the ``createTuple()`` function and passing in the axis objects as arguments.
+  Axes are passed to addParticleBinner or addFieldBinner grouped in a tuple. This is just a collection of axis objects and is of arbitrary size.
+  Users can make a tuple for axes by using the ``createTuple()`` function and passing in the axis objects as arguments.
 
 Species
 -------
@@ -204,8 +204,8 @@ They can then create a ``FilteredSpecies`` object which contains the species and
 
 .. note::
 
-      Species are passed to addParticleBinner in the form of a tuple. This is just a collection of Species and FilteredSpecies objects (the tuple can be a mixture of both) and is of arbitrary size.
-      Users can make a species tuple by using the ``createSpeciesTuple()`` function and passing in the objects as arguments.
+  Species are passed to addParticleBinner in the form of a tuple. This is just a collection of Species and FilteredSpecies objects (the tuple can be a mixture of both) and is of arbitrary size.
+  Users can make a species tuple by using the ``createSpeciesTuple()`` function and passing in the objects as arguments.
 
 Fields
 ------
@@ -239,7 +239,7 @@ The functors receive the fields in the form of the field data box, which is the 
 
 .. note::
 
-    It is possible to have field information available while doing particle binning as well. Users can simply pass in ``FieldInfo`` objects in the extra data tuple, and the functor will be called with the field information as well.
+  It is possible to have field information available while doing particle binning as well. Users can simply pass in ``FieldInfo`` objects in the extra data tuple, and the functor will be called with the field information as well.
 
 Deposited Quantity
 ------------------
@@ -425,52 +425,52 @@ To read the electron spectrometer data in python, one could load and plot it lik
 
 .. code:: python
 
-          import numpy as np
-          import matplotlib.pyplot as plt
-          from matplotlib.colors import LogNorm
-          import openpmd_api as io
-          import scipy.constants as const
+  import numpy as np
+  import matplotlib.pyplot as plt
+  from matplotlib.colors import LogNorm
+  import openpmd_api as io
+  import scipy.constants as const
 
-          # access openPMD series of eSpec
-          series = io.Series("./LWFA/simOutput/binningOpenPMD/eSpec_%T.h5", access=io.Access_Type.read_only)
+  # access openPMD series of eSpec
+  series = io.Series("./LWFA/simOutput/binningOpenPMD/eSpec_%T.h5", access=io.Access_Type.read_only)
 
-          last_iter = list(series.iterations)[-1]
-          it = series.iterations[last_iter]
-          espec_h = it.meshes['Binning'][io.Mesh_Record_Component.SCALAR]
+  last_iter = list(series.iterations)[-1]
+  it = series.iterations[last_iter]
+  espec_h = it.meshes['Binning'][io.Mesh_Record_Component.SCALAR]
 
-          # load data
-          espec = espec_h[:,:]
-          series.flush()
+  # load data
+  espec = espec_h[:,:]
+  series.flush()
 
-          # convert to SI units and make positve (electrons have a negative charge)
-          espec *= espec_h.get_attribute('unitSI') * -1
+  # convert to SI units and make positve (electrons have a negative charge)
+  espec *= espec_h.get_attribute('unitSI') * -1
 
-          # get axes (they are already in the correct SI unit)
-          E_bins = espec_h.get_attribute('Energy_bin_edges')
-          theta_bins = espec_h.get_attribute('pointingXY_bin_edges')
+  # get axes (they are already in the correct SI unit)
+  E_bins = espec_h.get_attribute('Energy_bin_edges')
+  theta_bins = espec_h.get_attribute('pointingXY_bin_edges')
 
-          # convert C/J/rad -> C/MeV/mrad
-    convert_C_per_Joule_per_rad_to_pC_per_MeV_per_mrad = 1./1e-12 * const.elementary_charge/1e6 * 1/1e3
+  # convert C/J/rad -> C/MeV/mrad
+  convert_C_per_Joule_per_rad_to_pC_per_MeV_per_mrad = 1./1e-12 * const.elementary_charge/1e6 * 1/1e3
 
-    # plot
-    plt.pcolormesh(np.array(E_bins) / const.elementary_charge / 1e6,
-                        np.array(theta_bins) / 0.001,
-                        espec[1:-1, 1:-1] * convert_C_per_Joule_per_rad_to_pC_per_MeV_per_mrad,
-                        norm=LogNorm(), cmap=plt.cm.inferno)
-    cb = plt.colorbar()
+  # plot
+  plt.pcolormesh(np.array(E_bins) / const.elementary_charge / 1e6,
+                      np.array(theta_bins) / 0.001,
+                      espec[1:-1, 1:-1] * convert_C_per_Joule_per_rad_to_pC_per_MeV_per_mrad,
+                      norm=LogNorm(), cmap=plt.cm.inferno)
+  cb = plt.colorbar()
 
-    plt.xlabel(r"$E \, \mathrm{[MeV]}$", fontsize=18)
-    plt.xticks(fontsize=14)
+  plt.xlabel(r"$E \, \mathrm{[MeV]}$", fontsize=18)
+  plt.xticks(fontsize=14)
 
-    plt.ylabel(r"$\theta \, \mathrm{[mrad]}$", fontsize=18)
-    plt.yticks(fontsize=14)
+  plt.ylabel(r"$\theta \, \mathrm{[mrad]}$", fontsize=18)
+  plt.yticks(fontsize=14)
 
-    cb.set_label(r"$\frac{\mathrm{d}^2 Q}{\mathrm{d} E \mathrm{d}\theta} \, \mathrm{[pC/MeV/mrad]}$", fontsize=20)
-    for i in cb.ax.get_yticklabels():
-        i.set_fontsize(14)
+  cb.set_label(r"$\frac{\mathrm{d}^2 Q}{\mathrm{d} E \mathrm{d}\theta} \, \mathrm{[pC/MeV/mrad]}$", fontsize=20)
+  for i in cb.ax.get_yticklabels():
+      i.set_fontsize(14)
 
-    plt.tight_layout()
-    plt.show()
+  plt.tight_layout()
+  plt.show()
 
 
 References
