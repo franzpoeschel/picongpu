@@ -141,6 +141,11 @@ The foil can also change its position together with the comoving window when a s
 In this case, ``foilPositionY`` defines a relative offset between the window and the foil.
 If the foil position is set to zero, the foil is always positioned close to the electron bunch.
 
+The following image shows the relation of foil and bunch position for some possible example parameters.
+
+.. image:: media/transition_foil_position.svg
+   :width: 700
+   :alt: Comparison of foil position for different runtime parameters
 
 Macro-particle form factor
 """"""""""""""""""""""""""
