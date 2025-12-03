@@ -21,6 +21,10 @@
 
 #include "picongpu/fields/background/templates/twtstight/TWTSTight.hpp"
 
+#ifndef PARAM_COMPONENTWISE
+#    define PARAM_COMPONENTWISE 1
+#endif
+
 namespace picongpu::fields::incidentField
 {
     namespace profiles
@@ -33,6 +37,7 @@ namespace picongpu::fields::incidentField
                 float_X const switchEndStep,
                 float_X const length)
             {
+                /* Blackman - Nuttall window */
                 constexpr float_X a0 = 0.3635819;
                 constexpr float_X a1 = 0.4891775;
                 constexpr float_X a2 = 0.1365995;
@@ -101,6 +106,7 @@ namespace picongpu::fields::incidentField
                        * amplitude * twtsFieldE(totalCellIdx, m_currentStep);
             }
 
+#if PARAM_COMPONENTWISE
             template<uint32_t T_component>
             HDINLINE float_X getComponent(floatD_X const& totalCellIdx) const
             {
@@ -113,6 +119,7 @@ namespace picongpu::fields::incidentField
                            T_Params::windowLength)
                        * amplitude * twtsFieldE.getComponent<T_component>(totalCellIdx, m_currentStep);
             }
+#endif
         };
 
         template<typename T_Params>
@@ -153,6 +160,7 @@ namespace picongpu::fields::incidentField
                        * amplitude * twtsFieldB(totalCellIdx, m_currentStep);
             }
 
+#if PARAM_COMPONENTWISE
             template<uint32_t T_component>
             HDINLINE float_X getComponent(floatD_X const& totalCellIdx) const
             {
@@ -165,6 +173,7 @@ namespace picongpu::fields::incidentField
                            T_Params::windowLength)
                        * amplitude * twtsFieldB.getComponent<T_component>(totalCellIdx, m_currentStep);
             }
+#endif
         };
     } // namespace profiles
 } // namespace picongpu::fields::incidentField

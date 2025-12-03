@@ -1,6 +1,6 @@
 {
   "$id": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.TWTSLaser",
-  "description": "Specification of a TWTS laser pulse",
+  "description": "Specification of a Traveling-Wave Thomson-Scattering (TWTS) laser pulse",
   "type": "object",
   "properties": {
     "wave_length_si": {
@@ -15,16 +15,16 @@
     },
     "pulse_duration_si": {
       "type": "number",
-      "description": "sigma of std. gauss for intensity (E^2) [s]",
+      "description": "sigma of std. Gauss for intensity (E^2) [s]",
       "exclusiveMinimum": 0
     },
-    "phi": {
+    "laserIncidenceAngle": {
       "type": "number",
       "description": "laser incident angle with respect to y-axis [rad]"
     },
-    "phiPos": {
+    "laserIncidenceAnglePositive": {
       "type": "boolean",
-      "description": "Is phi positive?"
+      "description": "Is the laser incidence angle positive?"
     },
     "beta0": {
       "type": "number",
@@ -39,9 +39,21 @@
       "type": "number",
       "description": "time offset to apply to the pulse [s]"
     },
-    "focus_z_offset_si": {
+    "focus_lateral_offset_si": {
       "type": "number",
       "description": "offset from the middle of the simulation domain to the laser focus in z-direction [m]"
+    },
+    "windowStart": {
+      "type": "number",
+      "description": "Time step at which the window is started to be ramped up towards unity [time step #]"
+    },
+    "windowEnd": {
+      "type": "number",
+      "description": "Time step at which the window down-ramp to zero has concluded [time step #]"
+    },
+    "windowLength": {
+      "type": "number",
+      "description": "length of the window transition from 0 to 1 and vice versa [# of time steps]"
     },
     "focus_pos_si": {
       "description": "position of focus in total coordinate system, [m]",
@@ -114,7 +126,7 @@
       }
     },
     "huygens_surface_positions": {
-      "description": "position of the huygens surface relative from domain boundaries",
+      "description": "position of the Huygens surface relative from domain boundaries",
       "type": "object",
       "required": [
         "row_x",
@@ -154,18 +166,18 @@
     "waist_si",
     "pulse_duration_si",
     "focus_pos_si",
-    "phase",
     "E0_si",
-    "phi",
-    "phiPos",
+    "laserIncidenceAngle",
+    "laserIncidenceAnglePositive",
     "beta0",
     "time_offset_si",
-    "focus_z_offset_si",
+    "focus_lateral_offset_si",
     "polarizationAngle",
+    "windowStart",
+    "windowEnd",
+    "windowLength",
     "pulse_init",
-    "propagation_direction",
     "polarization_type",
-    "polarization_direction",
     "huygens_surface_positions"
   ],
   "unevaluatedProperties": false

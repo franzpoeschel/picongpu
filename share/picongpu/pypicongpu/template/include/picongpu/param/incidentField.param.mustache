@@ -152,16 +152,16 @@ namespace picongpu::fields::incidentField
     {
         {{#data}}
         static constexpr float_64 W0_SI = {{{waist_si}}};
-        static constexpr float_64 FOCUS_Y_SI = focus_position[1];//56.0e-6;
-        static constexpr float_64 FOCUS_Z_OFFSET_SI = {{{focus_z_offset_si}}};//8.0e-6;
-        static constexpr float_64 PHI = {{{phi}}};//5.0 * (PI / 180.);
-        static constexpr float_64 BETA_0 = 1.0;//{{{beta0}}};
-        static constexpr float_64 TDELAY = {{{time_offset_si}}};//124.535e-6 / sim.si.getSpeedOfLight();
+        static constexpr float_64 FOCUS_Y_SI = focus_position[1];
+        static constexpr float_64 FOCUS_Z_OFFSET_SI = {{{focus_lateral_offset_si}}};
+        static constexpr float_64 PHI = {{{laserIncidenceAngle}}};
+        static constexpr float_64 BETA_0 = {{{beta0}}};
+        static constexpr float_64 TDELAY = {{{time_offset_si}}};
         static constexpr bool AUTO_TDELAY = false;
-        static constexpr float_X Polarization = {{{polarizationAngle}}};//45.10716816968629 * (PI / 180.);
-        static constexpr float_X windowStart = 0.0;
-        static constexpr float_X windowEnd = 10.0e+20;
-        static constexpr float_X windowLength = 10000.0;//10000.0;
+        static constexpr float_X Polarization = {{{polarizationAngle}}};
+        static constexpr float_X windowStart = {{{windowStart}}};
+        static constexpr float_X windowEnd = {{{windowEnd}}};
+        static constexpr float_X windowLength = {{{windowLength}}};
         {{/data}}
     };
     {{/typeID.twts}}
@@ -251,9 +251,9 @@ namespace picongpu::fields::incidentField
     {{#laser}}
     {{#typeID.twts}}
     {{#data}}
-    {{#phiPos}}
+    {{#laserIncidenceAnglePositive}}
         LaserProfile_{{{_idx}}},
-    {{/phiPos}}
+    {{/laserIncidenceAnglePositive}}
     {{/data}}
     {{/typeID.twts}}
     {{/laser}}
@@ -263,9 +263,9 @@ namespace picongpu::fields::incidentField
     {{#laser}}
     {{#typeID.twts}}
     {{#data}}
-    {{^phiPos}}
+    {{^laserIncidenceAnglePositive}}
         LaserProfile_{{{_idx}}},
-    {{/phiPos}}
+    {{/laserIncidenceAnglePositive}}
     {{/data}}
     {{/typeID.twts}}
     {{/laser}}

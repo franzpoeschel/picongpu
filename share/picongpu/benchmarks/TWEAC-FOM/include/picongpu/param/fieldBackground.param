@@ -30,10 +30,10 @@
 #include "TwtsBackgroundLaser.param"
 
 #ifndef PARAM_FIELD_BACKGROUND
-#    define PARAM_FIELD_BACKGROUND 1
+#    define PARAM_FIELD_BACKGROUND 0
 #endif
 
-namespace Params = ::picongpu::fields::background::twtsParam;
+using Params = ::picongpu::fields::incidentField::TWTSParamPos;
 
 namespace picongpu
 {
@@ -56,22 +56,24 @@ namespace picongpu
             , twtsFieldEPos(
                   Params::FOCUS_Y_SI,
                   Params::WAVE_LENGTH_SI,
-                  Params::PULSE_LENGTH_SI,
+                  Params::PULSE_DURATION_SI,
                   Params::W0_SI,
                   Params::PHI,
                   Params::BETA_0,
                   Params::TDELAY,
                   Params::AUTO_TDELAY,
+                  Params::FOCUS_Z_OFFSET_SI,
                   Params::Polarization)
             , twtsFieldENeg(
                   Params::FOCUS_Y_SI,
                   Params::WAVE_LENGTH_SI,
-                  Params::PULSE_LENGTH_SI,
+                  Params::PULSE_DURATION_SI,
                   Params::W0_SI,
                   -Params::PHI,
                   Params::BETA_0,
                   Params::TDELAY,
                   Params::AUTO_TDELAY,
+                  -Params::FOCUS_Z_OFFSET_SI,
                   -Params::Polarization)
         {
         }
@@ -116,22 +118,24 @@ namespace picongpu
             , twtsFieldBPos(
                   Params::FOCUS_Y_SI,
                   Params::WAVE_LENGTH_SI,
-                  Params::PULSE_LENGTH_SI,
+                  Params::PULSE_DURATION_SI,
                   Params::W0_SI,
                   Params::PHI,
                   Params::BETA_0,
                   Params::TDELAY,
                   Params::AUTO_TDELAY,
+                  Params::FOCUS_Z_OFFSET_SI,
                   Params::Polarization)
             , twtsFieldBNeg(
                   Params::FOCUS_Y_SI,
                   Params::WAVE_LENGTH_SI,
-                  Params::PULSE_LENGTH_SI,
+                  Params::PULSE_DURATION_SI,
                   Params::W0_SI,
                   -Params::PHI,
                   Params::BETA_0,
                   Params::TDELAY,
                   Params::AUTO_TDELAY,
+                  -Params::FOCUS_Z_OFFSET_SI,
                   -Params::Polarization)
         {
         }
