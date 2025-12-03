@@ -1,20 +1,22 @@
 .. _usage-plugins-binningPlugin:
+
 #######
 Binning
 #######
 
 This binning plugin is a flexible binner for particles and field properties.
 Users can
-	- Define their own axes
-	- Define their own quantity which is binned
-	- Choose which species are used for particle binning
-	- Choose which fields are used for field binning
-	- Choose how frequently they want the binning to be executed
-	- Choose how many times the binned quantity should be combined over time before dumping
-	- Write custom output to file, for example other quantities related to the simulation which the user is interested in
-	- Execute multiple binnings at the same time
-	- Pass extra parameters as a tuple, if additional information is required by the kernels to do binning.
-	- Define a host-side hook to execute code before binning at each notify step, for example to fill ``FieldTmp``.
+
+- Define their own axes
+- Define their own quantity which is binned
+- Choose which species are used for particle binning
+- Choose which fields are used for field binning
+- Choose how frequently they want the binning to be executed
+- Choose how many times the binned quantity should be combined over time before dumping
+- Write custom output to file, for example other quantities related to the simulation which the user is interested in
+- Execute multiple binnings at the same time
+- Pass extra parameters as a tuple, if additional information is required by the kernels to do binning.
+- Define a host-side hook to execute code before binning at each notify step, for example to fill ``FieldTmp``.
 
 User Input
 ==========
@@ -28,7 +30,7 @@ A binner is created using the `addParticleBinner()` or `addFieldBinner()` functi
 Multiple binnings can be run at the same time by simply calling `addParticleBinner()` or `addFieldBinner()` multiple times with different parameters.
 
 .. doxygenclass:: picongpu::plugins::binning::BinningCreator
-	:members: addParticleBinner, addFieldBinner
+  :members: addParticleBinner, addFieldBinner
 
 The most important parts of defining a binning are the axes (the axes of the histogram which define the bins) and the deposited quantity (the quantity to be binned).
 Both of these are described using the "Functor Description".
@@ -156,7 +158,8 @@ Currently implemented axis types
 
 
 .. attention::
-The log axis suffers from floating point precision errors, so for certain combinations of min, max, nBins and values to be binned the bin index calculated might be off by one. If using an integral log axis, be careful of what you are doing.
+
+  The log axis suffers from floating point precision errors, so for certain combinations of min, max, nBins and values to be binned the bin index calculated might be off by one. If using an integral log axis, be careful of what you are doing.
 
 
 Binning can be done over an arbitrary number of axes, by creating a tuple of all the axes. Limited by memory depending on number of bins in each axis.
@@ -296,10 +299,10 @@ This can be configured using the ``enableRegion`` and ``disableRegion`` options 
 
 .. attention::
 
-Users must carefully configure the notify period when using the binning plugin for leaving particles. The plugin bins particles leaving the global simulation volume at every timestep (except 0) after particles are pushed, regardless of the notify period.
-If the plugin is not notified at every timestep, this can cause discrepancies between the binning process and histogram dumps, which follow the notify period.
-Additionally, the binning plugin is first notified at timestep 0, allowing users to bin initial conditions. However, leaving particles are first binned at timestep 1, after the initial particle push.
-Therefore, users should consider setting the notify period’s start at timestep 1, depending on their specific needs.
+  Users must carefully configure the notify period when using the binning plugin for leaving particles. The plugin bins particles leaving the global simulation volume at every timestep (except 0) after particles are pushed, regardless of the notify period.
+  If the plugin is not notified at every timestep, this can cause discrepancies between the binning process and histogram dumps, which follow the notify period.
+  Additionally, the binning plugin is first notified at timestep 0, allowing users to bin initial conditions. However, leaving particles are first binned at timestep 1, after the initial particle push.
+  Therefore, users should consider setting the notify period’s start at timestep 1, depending on their specific needs.
 
 writeOpenPMDFunctor
 -------------------
