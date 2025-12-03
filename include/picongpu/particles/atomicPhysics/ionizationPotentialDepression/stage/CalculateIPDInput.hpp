@@ -1,4 +1,4 @@
-/* Copyright 2024-2024 Brian Marre
+/* Copyright 2024-2025 Brian Marre
  *
  * This file is part of PIConGPU.
  *
@@ -79,6 +79,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::sta
             auto& zStarField = *dc.get<s_IPD::localHelperFields::ZStarField<picongpu::MappingDesc>>("ZStarField");
             auto& debyeLengthField
                 = *dc.get<s_IPD::localHelperFields::DebyeLengthField<picongpu::MappingDesc>>("DebyeLengthField");
+            auto& freeElectronDensityField
+                = *dc.get<s_IPD::localHelperFields::ZStarField<picongpu::MappingDesc>>("FreeElectronDensityField");
 
             // macro for kernel call
             PMACC_LOCKSTEP_KERNEL(s_IPD::kernel::CalculateIPDInputKernel<T_numberAtomicPhysicsIonSpecies>())
@@ -90,9 +92,10 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::sta
                     localSumWeightElectronField.getDeviceDataBox(),
                     localSumChargeNumberIonsField.getDeviceDataBox(),
                     localSumChargeNumberSquaredIonsField.getDeviceDataBox(),
+                    debyeLengthField.getDeviceDataBox(),
                     temperatureEnergyField.getDeviceDataBox(),
                     zStarField.getDeviceDataBox(),
-                    debyeLengthField.getDeviceDataBox());
+                    freeElectronDensityField.getDeviceDataBox());
         }
     };
 

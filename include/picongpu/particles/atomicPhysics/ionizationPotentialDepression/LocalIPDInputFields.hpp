@@ -28,5 +28,6 @@
 #pragma once
 
 #include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/localHelperFields/DebyeLengthField.hpp"
+#include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/localHelperFields/FreeElectronDensityField.hpp"
 #include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/localHelperFields/TemperatureEnergyField.hpp"
 #include "picongpu/particles/atomicPhysics/ionizationPotentialDepression/localHelperFields/ZStarField.hpp"

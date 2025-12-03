@@ -70,6 +70,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
          *  for all local superCells, unitless, not weighted
          * @param debyeLengthBox deviceDataBox giving access to the local debye length for all local superCells,
          *  sim.unit.length(), not weighted
+         * @param freeElectronDensityBox deviceDataBox giving access to the local free electron density for all local
+         *  superCells, unit 1/unit_length^3, not weighted
          */
         template<
             typename T_Worker,
@@ -82,7 +84,8 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
             typename T_SumChargeNumberSquaredIonsFieldDataBox,
             typename T_LocalTemperatureFieldDataBox,
             typename T_ZStarFieldDataBox,
-            typename T_LocaDebyeLengthFieldDataBox>
+            typename T_LocaDebyeLengthFieldDataBox,
+            typename T_FreeElectronDensityFieldDataBox>
         HDINLINE void operator()(
             T_Worker const& worker,
             T_AreaMapping const areaMapping,
@@ -92,9 +95,10 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
             T_SumWeightElectronFieldBox const sumWeightElectronNormalizedBox,
             T_SumChargeNumberIonsFieldDataBox const sumChargeNumberBox,
             T_SumChargeNumberSquaredIonsFieldDataBox const sumChargeNumberSquaredBox,
+            T_LocaDebyeLengthFieldDataBox debyeLengthBox,
             T_LocalTemperatureFieldDataBox temperatureEnergyBox,
             T_ZStarFieldDataBox zStarBox,
-            T_LocaDebyeLengthFieldDataBox debyeLengthBox) const
+            T_FreeElectronDensityFieldDataBox freeElectronDensityBox) const
         {
             auto const superCellFieldIdx = KernelIndexation::getSuperCellFieldIndex(worker, areaMapping);
 
@@ -130,8 +134,9 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                  &sumChargeNumber,
                  &sumChargeNumberSquared,
                  &temperatureEnergyBox,
-                 &zStarBox,
                  &debyeLengthBox,
+                 &zStarBox,
+                 &freeElectronDensityBox,
                  &superCellFieldIdx]()
                 {
                     /* unit: (unitless * weight / typicalNumParticlesPerMacroParticle)
@@ -180,7 +185,12 @@ namespace picongpu::particles::atomicPhysics::ionizationPotentialDepression::ker
                                     constFactorDebyeLength * temperatureEnergy_PIC
                                     / (sumChargeNumberSquared + sumWeightElectronNormalized))
                               : -1._X;
-                    ;
+
+                    constexpr float_X constFactorFreeElectronDensity = sim.unit.typicalNumParticlesPerMacroParticle();
+
+                    // unit: 1 / unit_length^3
+                    freeElectronDensityBox(superCellFieldIdx)
+                        = constFactorFreeElectronDensity * sumWeightElectronNormalized / volumeSuperCell;
                 });
         }
     };
