@@ -376,12 +376,10 @@ if(alpaka_ACC_GPU_CUDA_ENABLE OR alpaka_ACC_GPU_HIP_ENABLE)
             "Select which alpaka is used for mallocMC"
         )
     endif()
-    find_package(mallocMC 3.0.0 QUIET)
+    include(FetchContent)
 
-    if(NOT mallocMC_FOUND)
-        message(STATUS "Using mallocMC from thirdParty/ directory")
-        add_subdirectory("${PMacc_DIR}/../../thirdParty/mallocMC" ${CMAKE_BINARY_DIR}/mallocMC EXCLUDE_FROM_ALL)
-    endif(NOT mallocMC_FOUND)
+    FetchContent_Declare(mallocMC SOURCE_DIR "${PMacc_DIR}/../../thirdParty/mallocMC" FIND_PACKAGE_ARGS 3.0.0 QUIET)
+    FetchContent_MakeAvailable(mallocMC)
 
     target_link_libraries(pmacc PUBLIC mallocMC::mallocMC)
 endif()
