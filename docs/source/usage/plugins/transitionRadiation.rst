@@ -213,7 +213,8 @@ For a specific (charged) species ``<species>`` e.g. ``e``, the radiation can be 
 Command line option                        Description
 ========================================== ==============================================================================================================================
 ``--<species>_transRad.period``            Gives the number of time steps between which the radiation should be calculated.
-``--<species>_transRad.foilPositionY``     Absolute position in SI units to put a virtual foil for calculating the transition radiation. See above for more information. Disabled = 0.0. Default: 0.0
+``--<species>_transRad.foilPositionY``     Position in SI units to put a virtual foil for calculating the transition radiation. See above for more information. Default: 0.0
+``--<species>_transRad.comovingFoil``      Flag that determines if virtual foil moves together with the comoving window. Enabled = 1. Default: 0
 ``--<species>_transRad.file``              File name to store transition radiation in. Default: transRad
 ``--<species>_transRad.ext``               Backend for openPMD output. Default: default that is used internally
 ``--<species>_transRad.datOutput``         Optional text file output in numpy-readable format. Enabled = 1. Default: 0
