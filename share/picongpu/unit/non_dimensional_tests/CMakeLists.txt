@@ -6,6 +6,9 @@ foreach(testCaseFilepath ${NON_DIMENSIONAL_TESTS})
     set(testExe "${PROJECT_NAME}-${testCase}")
     alpaka_add_executable(${testExe} ${testCaseFilepath})
     target_include_directories(${testExe} PRIVATE BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/../../../../include")
+    # Workaround for this bug https://github.com/nlohmann/json/issues/3907
+    # We don't need ranges in <nlohmann/json.hpp>
+    target_compile_definitions(${testExe} PRIVATE JSON_HAS_RANGES=0)
     target_link_libraries(${testExe} PUBLIC Catch2 Catch2WithMain)
     target_link_libraries(${testExe} PRIVATE pmacc::pmacc)
     if(${testExe} MATCHES ".*CLI.*")

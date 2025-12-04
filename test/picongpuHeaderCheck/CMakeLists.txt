@@ -96,6 +96,10 @@ alpaka_add_executable(
         ${_FILES_SOURCE}
 )
 
+# Workaround for this bug https://github.com/nlohmann/json/issues/3907
+# We don't need ranges in <nlohmann/json.hpp>
+target_compile_definitions(${_TARGET_NAME} PRIVATE JSON_HAS_RANGES=0)
+
 target_link_libraries(${_TARGET_NAME} PUBLIC Catch2 Catch2WithMain)
 target_link_libraries(${_TARGET_NAME} PRIVATE pmacc::pmacc)
 target_include_directories(
