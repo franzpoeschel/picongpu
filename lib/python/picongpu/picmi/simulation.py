@@ -586,11 +586,10 @@ class Simulation(picmistandard.PICMI_Simulation):
 
     def picongpu_run(self) -> None:
         """build and run PIConGPU simulation"""
-        if self.__runner is None:
-            self.__runner = pypicongpu.runner.Runner(self.get_as_pypicongpu(), self.picongpu_template_dir)
-        self.__runner.generate()
-        self.__runner.build()
-        self.__runner.run()
+        runner = self.picongpu_get_runner()
+        runner.generate()
+        runner.build()
+        runner.run()
 
     def picongpu_get_runner(self) -> pypicongpu.runner.Runner:
         if self.__runner is None:
