@@ -153,6 +153,7 @@ class Simulation(RenderedObject):
             "species_initmanager": self.init_manager.get_rendering_context(),
             "output": self.__get_output_context(),
             "species": [s.get_rendering_context() for s in self.species],
+            "init_operations": [o.get_rendering_context() for o in self.init_operations],
         }
         if self.plugins is not None:
             serialized["output"] = self.__get_output_context()

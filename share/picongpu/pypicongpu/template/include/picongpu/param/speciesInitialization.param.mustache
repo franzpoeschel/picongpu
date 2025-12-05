@@ -34,7 +34,6 @@ namespace picongpu
          * the functors are called in order (from first to last functor)
          */
         {{! note: this serves to enter the context -- it is NOT a loop }}
-        {{#species_initmanager}}
         using InitPipeline = pmacc::mp_list<
             /* note to the editors of this file:
              *
@@ -47,8 +46,7 @@ namespace picongpu
             /**********************************/
             /* phase 1: create macroparticles */
             /**********************************/
-
-            {{#operations.simple_density}}
+{{#init_operations}}{{#typeID.simpledensity}}{{#data}}
                 /// @details This functor assumes the ratio to be 1. The correct density ratio of the species is applied
                 /// here (automatically by CreateDensity).
 
@@ -63,14 +61,13 @@ namespace picongpu
                         {{{placed_species_initial.typename}}},
                         {{{typename}}}>,
                 {{/placed_species_copied}}
-
-            {{/operations.simple_density}}
+{{/data}}{{/typeID.simpledensity}}{{/init_operations}}
 
             /*********************************************/
             /* phase 2: adjust other attributes (if any) */
             /*********************************************/
 
-            {{#operations.simple_momentum}}
+            {{#init_operations.simple_momentum}}
                 {{! simple momentum adds a temperature & drift without inter-species dependencies }}
                 {{#drift}}
                     // *sets* drift, i.e. overwrites momentum
@@ -80,15 +77,14 @@ namespace picongpu
                     // *adds* temperature, does *NOT* overwrite
                     Manipulate<manipulators::pypicongpu::AddTemperature_{{{species.typename}}}, {{{species.typename}}}>,
                 {{/temperature}}
-            {{/operations.simple_momentum}}
+            {{/init_operations.simple_momentum}}
 
-            {{#operations.set_charge_state}}
+            {{#init_operations.set_charge_state}}
                 Manipulate<manipulators::pypicongpu::PreIonize_{{{species.typename}}}, {{{species.typename}}}>,
-            {{/operations.set_charge_state}}
+            {{/init_operations.set_charge_state}}
 
             // does nothing -- exists to catch trailing comma left by code generation
             pypicongpu::nop>;
-        {{/species_initmanager}}
 
     } // namespace particles
 } // namespace picongpu

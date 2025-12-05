@@ -5,7 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-from ...rendering import RenderedObject
+from ...rendering import SelfRegisteringRenderedObject
 from ... import util
 from ..attribute import Attribute
 from ..species import Species
@@ -16,7 +16,7 @@ from functools import reduce
 
 
 @typeguard.typechecked
-class Operation(RenderedObject):
+class Operation(SelfRegisteringRenderedObject):
     """
     Defines the initialization of a set of attributes across multiple species
 

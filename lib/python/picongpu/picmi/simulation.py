@@ -619,9 +619,12 @@ class Simulation(picmistandard.PICMI_Simulation):
 
     def _translate_species(self):
         species, init_operations = zip(
-            *(species.get_as_pypicongpu(layout) for species, layout in zip(self.NEW1_species, self.NEW1_layouts))
+            *(
+                species.get_as_pypicongpu(self.solver.grid, layout)
+                for species, layout in zip(self.NEW1_species, self.NEW1_layouts)
+            )
         )
-        return species, organise_init_operations(init_operations)
+        return list(species), organise_init_operations(init_operations)
 
 
 def organise_init_operations(operations):

@@ -90,7 +90,8 @@
         }
       ]
     },
-    "species": {}
+    "species": {},
+    "init_operations": {}
   },
   "required": [
     "delta_t_si",
@@ -102,7 +103,8 @@
     "moving_window",
     "walltime",
     "customuserinput",
-    "species"
+    "species",
+    "init_operations"
   ],
   "unevaluatedProperties": false
 }

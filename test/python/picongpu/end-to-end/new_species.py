@@ -81,7 +81,9 @@ def setup_sim():
 
 # only run this once, so we don't compile each and every time
 SIM = None
-SPECIES_DEFINITION_HEADER = Path("include/picongpu/param/speciesDefinition.param")
+PARAM_PATH = Path("include/picongpu/param/")
+SPECIES_DEFINITION_HEADER = PARAM_PATH / "speciesDefinition.param"
+SPECIES_INITIALIZATION_HEADER = PARAM_PATH / "speciesInitialization.param"
 EXPECTED_RESULT_PATH = Path("expected")
 
 
@@ -105,10 +107,10 @@ class TestNEW1_Species(unittest.TestCase):
             self._setup_path = Path(self.sim.picongpu_get_runner().setup_dir)
         return self._setup_path
 
-    def test_compare_species_definition_header(self):
-        with (self.setup_path / SPECIES_DEFINITION_HEADER).open() as file:
+    def _compare_headers(self, header_path):
+        with (self.setup_path / header_path).open() as file:
             result = file.read()
-        with (EXPECTED_RESULT_PATH / SPECIES_DEFINITION_HEADER).open() as file:
+        with (EXPECTED_RESULT_PATH / header_path).open() as file:
             expected = file.read()
         try:
             assert result == expected
@@ -116,3 +118,9 @@ class TestNEW1_Species(unittest.TestCase):
             for d in unified_diff(result.split("\n"), expected.split("\n")):
                 print(d)
             raise
+
+    def test_compare_species_definition_headers(self):
+        self._compare_headers(SPECIES_DEFINITION_HEADER)
+
+    def test_compare_species_initialization_headers(self):
+        self._compare_headers(SPECIES_INITIALIZATION_HEADER)

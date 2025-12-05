@@ -9,8 +9,12 @@ from pydantic import BaseModel, PrivateAttr
 from picongpu.picmi.distribution import AnyDistribution
 from picongpu.pypicongpu.species.attribute import Position, Momentum
 from picongpu.pypicongpu.species.attribute.attribute import Attribute
+from picongpu.pypicongpu.species.attribute.weighting import Weighting
+from picongpu.pypicongpu.species.constant.charge import Charge
 from picongpu.pypicongpu.species.constant.constant import Constant
+from picongpu.pypicongpu.species.constant.mass import Mass
 from picongpu.pypicongpu.species.operation.operation import Operation
+from picongpu.pypicongpu.species.operation.simpledensity import SimpleDensity
 from picongpu.pypicongpu.species.species import Shape, Species as PyPIConGPUSpecies
 from .predefinedparticletypeproperties import PredefinedParticleTypeProperties
 from .interaction import Interaction
@@ -346,23 +350,70 @@ class NEW1_Species(BaseModel):
     picongpu_fixed_charge: bool
     _requirements: list[Any] = PrivateAttr(default_factory=lambda: [Position(), Momentum()])
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._register_initial_requirements()
+
+    def _register_initial_requirements(self):
+        if self.initial_distribution:
+            self._requirements.append(Weighting())
+        self._requirements.extend(particle_type_requirements(self.particle_type))
+
     class Config:
         arbitrary_types_allowed = True
 
-    def get_as_pypicongpu(self, layout):
-        constants, attributes, operations = self._evaluate_requirements()
-        return (
-            PyPIConGPUSpecies(name=self.name, constants=constants, attributes=attributes, shape=Shape["TSC"]),
-            operations,
+    def get_as_pypicongpu(self, grid, layout):
+        constants, attributes = self._evaluate_species_requirements()
+        species = PyPIConGPUSpecies(name=self.name, constants=constants, attributes=attributes, shape=Shape["TSC"])
+        return species, self._evaluate_operation_requirements(grid, layout, species)
+
+    def _evaluate_species_requirements(self):
+        return evaluate_requirements(self._requirements, [Constant, Attribute])
+
+    def _evaluate_operation_requirements(self, grid, layout, species):
+        return sum(
+            evaluate_requirements(
+                self._requirements
+                + initial_distribution_requirements(self.initial_distribution, grid, layout, species),
+                [Operation],
+            ),
+            [],
         )
 
-    def _evaluate_requirements(self):
-        return tuple(
-            map(
-                list,
-                (
-                    filter(lambda req: isinstance(req, Type), self._requirements)
-                    for Type in [Constant, Attribute, Operation]
-                ),
-            )
-        )
+
+def evaluate_requirements(requirements, Types):
+    return list(map(list, (filter(lambda req: isinstance(req, Type), requirements) for Type in Types)))
+
+
+class MassRequirement(BaseModel):
+    value: float
+
+    def expand(self):
+        return [Mass(mass_si=self.value)]
+
+
+class ChargeRequirement(BaseModel):
+    value: float
+
+    def expand(self):
+        return [Charge(charge_si=self.value)]
+
+
+def particle_type_requirements(particle_type):
+    if (particle_type is None) or re.match(r"other:.*", particle_type):
+        # no particle or custom particle type set
+        return []
+    if particle_type in (props := PredefinedParticleTypeProperties()).get_known_particle_types():
+        mass, charge = props.get_mass_and_charge_of_non_element(particle_type)
+    elif Element.is_element(particle_type):
+        element = pypicongpu.species.util.Element(particle_type)
+        mass = element.get_mass_si()
+        charge = element.get_charge_si()
+    else:
+        # unknown particle type
+        raise ValueError(f"Species has unknown particle type {particle_type}")
+    return MassRequirement(value=mass).expand() + ChargeRequirement(value=charge).expand()
+
+
+def initial_distribution_requirements(dist, grid, layout, species):
+    return [SimpleDensity(profile=dist.get_as_pypicongpu(grid), layout=layout.get_as_pypicongpu(), species={species})]

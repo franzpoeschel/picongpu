@@ -34,9 +34,6 @@ class SimpleDensity(DensityOperation):
       note that their density ratios will be respected
     """
 
-    ppc = util.build_typesafe_property(int)
-    """particles per cell (random layout), >0"""
-
     profile = util.build_typesafe_property(DensityProfile)
     """density profile to use, describes the actual density"""
 
@@ -45,14 +42,14 @@ class SimpleDensity(DensityOperation):
 
     layout = util.build_typesafe_property(Layout)
 
-    def __init__(self):
-        # nothing to do
-        pass
+    _name = "simpledensity"
+
+    def __init__(self, /, profile, species, layout):
+        self.profile = profile
+        self.species = species
+        self.layout = layout
 
     def check_preconditions(self) -> None:
-        if self.ppc <= 0:
-            raise ValueError("must use positive number of particles per cell")
-
         if 0 == len(self.species):
             raise ValueError("must apply to at least one species")
 
@@ -122,7 +119,6 @@ class SimpleDensity(DensityOperation):
             placed_species.append(species.get_rendering_context())
 
         return {
-            "ppc": self.ppc,
             "layout": self.layout.get_rendering_context(),
             "profile": self.profile.get_rendering_context(),
             "placed_species_initial": placed_species[0],
