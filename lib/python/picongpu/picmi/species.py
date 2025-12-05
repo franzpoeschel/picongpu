@@ -5,7 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PrivateAttr
 from picongpu.picmi.distribution import AnyDistribution
 from picongpu.pypicongpu.species.species import Shape, Species as PyPIConGPUSpecies
 from .predefinedparticletypeproperties import PredefinedParticleTypeProperties
@@ -15,6 +15,7 @@ from .. import pypicongpu
 from ..pypicongpu.species.util.element import Element
 
 import picmistandard
+from typing import Any
 
 import typing
 import typeguard
@@ -339,9 +340,10 @@ class NEW1_Species(BaseModel):
     particle_type: str
     initial_distribution: AnyDistribution
     picongpu_fixed_charge: bool
+    _requirements: list[Any] = PrivateAttr(default_factory=list)
 
     class Config:
         arbitrary_types_allowed = True
 
     def get_as_pypicongpu(self, layout):
-        return (PyPIConGPUSpecies(), [])
+        return (PyPIConGPUSpecies(name=self.name, constants=[], attributes=[], shape=Shape["TSC"]), [])

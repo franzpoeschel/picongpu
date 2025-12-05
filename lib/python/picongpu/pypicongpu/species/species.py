@@ -61,6 +61,12 @@ class Species(RenderedObject):
 
     shape = util.build_typesafe_property(Shape)
 
+    def __init__(self, /, name, constants, attributes, shape):
+        self.name = name
+        self.constants = constants
+        self.attributes = attributes
+        self.shape = shape
+
     def __str__(self) -> str:
         try:
             return (

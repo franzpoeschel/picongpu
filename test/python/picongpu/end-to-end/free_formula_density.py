@@ -11,12 +11,14 @@ from pathlib import Path
 
 import numpy as np
 from picongpu import picmi
+from picongpu.picmi.diagnostics.timestepspec import TimeStepSpec
 
 from .arbitrary_parameters import (
     CELL_SIZE,
     NUMBER_OF_CELLS,
     UPPER_BOUNDARY,
 )
+from .binning_functors import binning_diagnostics
 from .compare_particles import (
     compare_particles,
     read_binning,
@@ -55,7 +57,7 @@ def generate_name(name, suffix):
 
 def generate_species(name, distribution):
     return [
-        picmi.NEW1_Species(
+        picmi.Species(
             name=name,
             particle_type="H",
             initial_distribution=distribution,
@@ -76,9 +78,11 @@ def setup_sim():
         [],
     )
 
+    diagnostics = [picmi.diagnostics.Checkpoint(TimeStepSpec[:])] + binning_diagnostics(species, sim.time_step_size)
+
     for s in species:
         sim.add_species(s, LAYOUT)
-    # sim.diagnostics = [picmi.diagnostics.Checkpoint(TimeStepSpec[:])] + binning_diagnostics(species, sim.time_step_size)
+    sim.diagnostics = diagnostics
 
     sim.step(0)
     return sim
