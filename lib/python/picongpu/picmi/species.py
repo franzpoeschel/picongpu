@@ -7,6 +7,10 @@ License: GPLv3+
 
 from pydantic import BaseModel, PrivateAttr
 from picongpu.picmi.distribution import AnyDistribution
+from picongpu.pypicongpu.species.attribute import Position, Momentum
+from picongpu.pypicongpu.species.attribute.attribute import Attribute
+from picongpu.pypicongpu.species.constant.constant import Constant
+from picongpu.pypicongpu.species.operation.operation import Operation
 from picongpu.pypicongpu.species.species import Shape, Species as PyPIConGPUSpecies
 from .predefinedparticletypeproperties import PredefinedParticleTypeProperties
 from .interaction import Interaction
@@ -340,10 +344,25 @@ class NEW1_Species(BaseModel):
     particle_type: str
     initial_distribution: AnyDistribution
     picongpu_fixed_charge: bool
-    _requirements: list[Any] = PrivateAttr(default_factory=list)
+    _requirements: list[Any] = PrivateAttr(default_factory=lambda: [Position(), Momentum()])
 
     class Config:
         arbitrary_types_allowed = True
 
     def get_as_pypicongpu(self, layout):
-        return (PyPIConGPUSpecies(name=self.name, constants=[], attributes=[], shape=Shape["TSC"]), [])
+        constants, attributes, operations = self._evaluate_requirements()
+        return (
+            PyPIConGPUSpecies(name=self.name, constants=constants, attributes=attributes, shape=Shape["TSC"]),
+            operations,
+        )
+
+    def _evaluate_requirements(self):
+        return tuple(
+            map(
+                list,
+                (
+                    filter(lambda req: isinstance(req, Type), self._requirements)
+                    for Type in [Constant, Attribute, Operation]
+                ),
+            )
+        )

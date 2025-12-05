@@ -152,6 +152,7 @@ class Simulation(RenderedObject):
             "grid": self.grid.get_rendering_context(),
             "species_initmanager": self.init_manager.get_rendering_context(),
             "output": self.__get_output_context(),
+            "species": [s.get_rendering_context() for s in self.species],
         }
         if self.plugins is not None:
             serialized["output"] = self.__get_output_context()

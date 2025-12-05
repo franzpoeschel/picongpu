@@ -7,6 +7,7 @@ License: GPLv3+
 
 import logging
 import unittest
+from difflib import unified_diff
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -109,4 +110,9 @@ class TestNEW1_Species(unittest.TestCase):
             result = file.read()
         with (EXPECTED_RESULT_PATH / SPECIES_DEFINITION_HEADER).open() as file:
             expected = file.read()
-        assert result == expected
+        try:
+            assert result == expected
+        except:
+            for d in unified_diff(result.split("\n"), expected.split("\n")):
+                print(d)
+            raise

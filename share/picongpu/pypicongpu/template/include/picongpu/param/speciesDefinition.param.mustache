@@ -32,7 +32,7 @@
 
 namespace picongpu
 {
-    {{#species_initmanager.species}}
+    {{#species}}
         /****************************************
             Definition of Species {{{name}}}
         ****************************************/
@@ -100,15 +100,15 @@ namespace picongpu
             PMACC_CSTRING("{{{name}}}"),
             ParticleFlags_{{{typename}}},
             ParticleAttributes_{{{typename}}}>;
-    {{/species_initmanager.species}}
+    {{/species}}
 
 
     using VectorAllSpecies = MakeSeq_t<
-        {{#species_initmanager.species}}
+        {{#species}}
             {{{typename}}}
             {{^_last}}
                 ,
             {{/_last}}
-        {{/species_initmanager.species}}
+        {{/species}}
         >;
 } // namespace picongpu

@@ -89,7 +89,8 @@
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.customrenderingcontext.CustomRenderingContext"
         }
       ]
-    }
+    },
+    "species": {}
   },
   "required": [
     "delta_t_si",
@@ -100,7 +101,8 @@
     "laser",
     "moving_window",
     "walltime",
-    "customuserinput"
+    "customuserinput",
+    "species"
   ],
   "unevaluatedProperties": false
 }
