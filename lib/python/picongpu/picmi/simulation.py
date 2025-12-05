@@ -25,7 +25,7 @@ from . import constants
 from .grid import Cartesian3DGrid
 from .interaction import Interaction
 from .interaction.ionization import IonizationModel
-from .species import Species
+from .species import NEW1_Species, Species
 
 
 def _unique(iterable):
@@ -605,3 +605,11 @@ class Simulation(picmistandard.PICMI_Simulation):
         if self.__runner is None:
             self.__runner = pypicongpu.runner.Runner(self.get_as_pypicongpu(), self.picongpu_template_dir)
         return self.__runner
+
+    def _NEW1_picongpu_add_species(self, species, layout):
+        pass
+
+    def add_species(self, *args, **kwargs):
+        if isinstance(args[0], NEW1_Species):
+            return self._NEW1_picongpu_add_species(*args, **kwargs)
+        return super().add_species(*args, **kwargs)

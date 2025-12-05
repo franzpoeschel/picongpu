@@ -5,6 +5,8 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from pydantic import BaseModel
+from picongpu.picmi.distribution import AnyDistribution
 from picongpu.pypicongpu.species.species import Shape
 from .predefinedparticletypeproperties import PredefinedParticleTypeProperties
 from .interaction import Interaction
@@ -330,3 +332,13 @@ class Species(picmistandard.PICMI_Species):
             pass
 
         return all_operations
+
+
+class NEW1_Species(BaseModel):
+    name: str
+    particle_type: str
+    initial_distribution: AnyDistribution
+    picongpu_fixed_charge: bool
+
+    class Config:
+        arbitrary_types_allowed = True

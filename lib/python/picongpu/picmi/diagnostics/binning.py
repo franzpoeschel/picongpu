@@ -8,7 +8,6 @@ License: GPLv3+
 from pathlib import Path
 from ..copy_attributes import default_converts_to
 
-import typeguard
 
 from picongpu.picmi.diagnostics.backend_config import OpenPMDConfig
 
@@ -30,7 +29,6 @@ class BinSpec:
         self.nsteps = nsteps
 
 
-@typeguard.typechecked
 class BinningAxis:
     def __init__(
         self,
@@ -53,7 +51,6 @@ class BinningAxis:
         )
 
 
-@typeguard.typechecked
 class Binning:
     def __init__(
         self,
