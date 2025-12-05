@@ -527,75 +527,61 @@ class Simulation(picmistandard.PICMI_Simulation):
             filter(handled_via_openpmd, self.diagnostics), pypicongpu_by_picmi_species, num_steps
         )
 
+    def _check_compatibility(self):
+        pypicongpu.util.unsupported("verbose", self.verbose)
+        pypicongpu.util.unsupported("particle shape", self.particle_shape, "linear")
+        pypicongpu.util.unsupported("gamma boost", self.gamma_boost)
+        if len(self.laser_injection_methods) != self.laser_injection_methods.count(None):
+            pypicongpu.util.unsupported("laser injection method", self.laser_injection_methods, [])
+        if self.max_steps is None and self.max_time is None:
+            raise ValueError("runtime not specified (neither as step count nor max time)")
+
     def get_as_pypicongpu(self) -> pypicongpu.simulation.Simulation:
         """translate to PyPIConGPU object"""
+        self._check_compatibility()
+
         species, init_operations = self._translate_species()
         typical_ppc = (
             self.picongpu_typical_ppc
             if self.picongpu_typical_ppc is not None
             else mid_window(map(lambda op: op.layout.ppc, filter(lambda op: hasattr(op, "layout"), init_operations)))
         )
-        s = pypicongpu.simulation.Simulation(species=species, init_operations=init_operations, typical_ppc=typical_ppc)
+        moving_window = (
+            None
+            if self.picongpu_moving_window_move_point is None
+            else pypicongpu.movingwindow.MovingWindow(
+                move_point=self.picongpu_moving_window_move_point,
+                stop_iteration=self.picongpu_moving_window_stop_iteration,
+            )
+        )
+        walltime = (
+            None if self.picongpu_walltime is None else pypicongpu.walltime.Walltime(walltime=self.picongpu_walltime)
+        )
+        time_steps = self.max_steps if self.max_steps is not None else math.ceil(self.max_time / self.time_step_size)
 
-        s.delta_t_si = self.time_step_size
-        s.solver = self.solver.get_as_pypicongpu()
-
-        # already pypicongpu objects, therefore directly passing on
-        s.custom_user_input = self.picongpu_custom_user_input
-
-        # calculate time step
-        if self.max_steps is not None:
-            s.time_steps = self.max_steps
-        elif self.max_time is not None:
-            s.time_steps = math.ceil(self.max_time / self.time_step_size)
-        else:
-            raise ValueError("runtime not specified (neither as step count nor max time)")
-
-        pypicongpu.util.unsupported("verbose", self.verbose)
-        pypicongpu.util.unsupported("particle shape", self.particle_shape, "linear")
-        pypicongpu.util.unsupported("gamma boost", self.gamma_boost)
-
-        try:
-            s.grid = self.solver.grid.get_as_pypicongpu()
-        except AttributeError:
-            pypicongpu.util.unsupported(f"grid type: {type(self.solver.grid)}")
-
-        # any injection method != None is not supported
-        if len(self.laser_injection_methods) != self.laser_injection_methods.count(None):
-            pypicongpu.util.unsupported("laser injection method", self.laser_injection_methods, [])
-
-        if len(self.lasers) > 0:
-            s.laser = [ll.get_as_pypicongpu() for ll in self.lasers]
-        else:
-            # explictly disable laser (as required by pypicongpu)
-            s.laser = None
+        s = pypicongpu.simulation.Simulation(
+            species=species,
+            init_operations=init_operations,
+            typical_ppc=typical_ppc,
+            delta_t_si=self.time_step_size,
+            solver=self.solver.get_as_pypicongpu(),
+            custom_user_input=self.picongpu_custom_user_input,
+            grid=self.solver.grid.get_as_pypicongpu(),
+            binomial_current_interpolation=self.picongpu_binomial_current_interpolation,
+            moving_window=moving_window,
+            walltime=walltime,
+            time_steps=time_steps,
+            laser=[ll.get_as_pypicongpu() for ll in self.lasers] or None,
+        )
 
         s.init_manager, pypicongpu_by_picmi_species = self.__get_init_manager()
 
         s.plugins = self._generate_plugins(pypicongpu_by_picmi_species, s.time_steps)
         # set typical ppc if not set explicitly by user
 
-        if s.typical_ppc < 1:
-            raise ValueError("typical_ppc must be >= 1")
-
         s.base_density = self.picongpu_base_density or s.init_manager.get_base_density(s.grid)
 
         # disable moving Window if explicitly activated by the user
-        if self.picongpu_moving_window_move_point is None:
-            s.moving_window = None
-        else:
-            s.moving_window = pypicongpu.movingwindow.MovingWindow(
-                move_point=self.picongpu_moving_window_move_point,
-                stop_iteration=self.picongpu_moving_window_stop_iteration,
-            )
-
-        if self.picongpu_walltime is None:
-            s.walltime = None
-        else:
-            s.walltime = pypicongpu.walltime.Walltime(walltime=self.picongpu_walltime)
-
-        s.binomial_current_interpolation = self.picongpu_binomial_current_interpolation
-
         return s
 
     def picongpu_run(self) -> None:

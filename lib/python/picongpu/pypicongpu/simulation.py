@@ -95,7 +95,31 @@ class Simulation(RenderedObject):
     species = util.build_typesafe_property(list[Species])
     init_operations = util.build_typesafe_property(list[Operation])
 
-    def __init__(self, /, typical_ppc, species=tuple(), init_operations=tuple()):
+    def __init__(
+        self,
+        /,
+        typical_ppc,
+        delta_t_si,
+        custom_user_input,
+        solver,
+        grid,
+        binomial_current_interpolation,
+        moving_window,
+        walltime,
+        species,
+        init_operations,
+        time_steps,
+        laser,
+    ):
+        self.laser = laser
+        self.time_steps = time_steps
+        self.moving_window = moving_window
+        self.walltime = walltime
+        self.custom_user_input = custom_user_input
+        self.binomial_current_interpolation = binomial_current_interpolation
+        self.grid = grid
+        self.solver = solver
+        self.delta_t_si = delta_t_si
         self.typical_ppc = typical_ppc
         self.species = list(species)
         self.init_operations = list(init_operations)
