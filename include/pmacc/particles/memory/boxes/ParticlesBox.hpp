@@ -36,6 +36,8 @@
 
 #include <pmacc/verify.hpp>
 
+#include <new>
+
 namespace pmacc
 {
     /**
@@ -103,7 +105,7 @@ namespace pmacc
 #if (BOOST_LANG_CUDA || BOOST_COMP_HIP)
                 tmp = (FrameType*) m_deviceHeapHandle.malloc(worker.getAcc(), sizeof(FrameType));
 #else
-                tmp = new FrameType;
+                tmp = new(std::nothrow) FrameType;
 #endif
                 if(tmp != nullptr)
                 {
