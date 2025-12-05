@@ -575,13 +575,8 @@ class Simulation(picmistandard.PICMI_Simulation):
         )
 
         s.init_manager, pypicongpu_by_picmi_species = self.__get_init_manager()
-
         s.plugins = self._generate_plugins(pypicongpu_by_picmi_species, s.time_steps)
-        # set typical ppc if not set explicitly by user
-
         s.base_density = self.picongpu_base_density or s.init_manager.get_base_density(s.grid)
-
-        # disable moving Window if explicitly activated by the user
         return s
 
     def picongpu_run(self) -> None:
