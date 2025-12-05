@@ -28,7 +28,7 @@ namespace picongpu
 {
     namespace densityProfiles::pypicongpu
     {
-        {{#species_initmanager.operations.simple_density}}
+        {{#init_operations}}{{#typeID.simpledensity}}{{#data}}
         // a species has always only exactly one profile, so only one of the following blocks below will be present
 
             {{#profile.typeID.gaussian}}
@@ -199,6 +199,6 @@ namespace picongpu
             using init_{{{placed_species_initial.typename}}} = FreeFormulaImpl<init_{{{placed_species_initial.typename}}}_functor>;
             {{/profile.typeID.freeformula}}
 
-        {{/species_initmanager.operations.simple_density}}
+{{/data}}{{/typeID.simpledensity}}{{/init_operations}}
     } // namespace densityProfiles::pypicongpu
 } // namespace picongpu
