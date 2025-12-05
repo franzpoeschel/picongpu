@@ -82,13 +82,33 @@ def setup_sim():
 # only run this once, so we don't compile each and every time
 SIM = None
 PARAM_PATH = Path("include/picongpu/param/")
-SPECIES_DEFINITION_HEADER = PARAM_PATH / "speciesDefinition.param"
-SPECIES_INITIALIZATION_HEADER = PARAM_PATH / "speciesInitialization.param"
-PARTICLE_HEADER = PARAM_PATH / "particle.param"
 EXPECTED_RESULT_PATH = Path("expected")
 
+HEADERS = [
+    "binningSetup",
+    "density",
+    "fieldSolver",
+    "fileOutput",
+    "incidentField",
+    "memory",
+    "particle",
+    "png",
+    "simulation",
+    "speciesDefinition",
+    "speciesInitialization",
+]
 
-class TestNEW1_Species(unittest.TestCase):
+
+class TestNEW1_SpeciesMeta(type):
+    def __new__(cls, name, bases, dict):
+        # Generate one test for each example in the examples folder
+        for header in HEADERS:
+            name = "test_compare_" + header
+            dict[name] = (lambda header: lambda self: self._compare_headers(header))(header)
+        return type.__new__(cls, name, bases, dict)
+
+
+class TestNEW1_Species(unittest.TestCase, metaclass=TestNEW1_SpeciesMeta):
     _setup_path = None
 
     def setUp(self):
@@ -108,7 +128,8 @@ class TestNEW1_Species(unittest.TestCase):
             self._setup_path = Path(self.sim.picongpu_get_runner().setup_dir)
         return self._setup_path
 
-    def _compare_headers(self, header_path):
+    def _compare_headers(self, header_name):
+        header_path = PARAM_PATH / (header_name + ".param")
         with (self.setup_path / header_path).open() as file:
             result = [line for line in file.readlines() if line.strip() != ""]
         with (EXPECTED_RESULT_PATH / header_path).open() as file:
@@ -119,12 +140,3 @@ class TestNEW1_Species(unittest.TestCase):
             for d in unified_diff(result, expected):
                 print(d)
             raise
-
-    def test_compare_species_definition_headers(self):
-        self._compare_headers(SPECIES_DEFINITION_HEADER)
-
-    def test_compare_species_initialization_headers(self):
-        self._compare_headers(SPECIES_INITIALIZATION_HEADER)
-
-    def test_compare_particle_header(self):
-        self._compare_headers(PARTICLE_HEADER)
