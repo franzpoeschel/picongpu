@@ -95,7 +95,8 @@ class Simulation(RenderedObject):
     species = util.build_typesafe_property(list[Species])
     init_operations = util.build_typesafe_property(list[Operation])
 
-    def __init__(self, /, species=tuple(), init_operations=tuple()):
+    def __init__(self, /, typical_ppc, species=tuple(), init_operations=tuple()):
+        self.typical_ppc = typical_ppc
         self.species = list(species)
         self.init_operations = list(init_operations)
 

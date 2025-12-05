@@ -101,7 +101,6 @@ HEADERS = [
 
 class TestNEW1_SpeciesMeta(type):
     def __new__(cls, name, bases, dict):
-        # Generate one test for each example in the examples folder
         for header in HEADERS:
             name = "test_compare_" + header
             dict[name] = (lambda header: lambda self: self._compare_headers(header))(header)

@@ -7,6 +7,7 @@ License: GPLv3+
 
 # make pypicongpu classes accessible for conversion to pypicongpu
 import datetime
+from functools import reduce
 import logging
 import math
 from os import PathLike
@@ -528,7 +529,13 @@ class Simulation(picmistandard.PICMI_Simulation):
 
     def get_as_pypicongpu(self) -> pypicongpu.simulation.Simulation:
         """translate to PyPIConGPU object"""
-        s = pypicongpu.simulation.Simulation(**dict(zip(("species", "init_operations"), self._translate_species())))
+        species, init_operations = self._translate_species()
+        typical_ppc = (
+            self.picongpu_typical_ppc
+            if self.picongpu_typical_ppc is not None
+            else mid_window(map(lambda op: op.layout.ppc, filter(lambda op: hasattr(op, "layout"), init_operations)))
+        )
+        s = pypicongpu.simulation.Simulation(species=species, init_operations=init_operations, typical_ppc=typical_ppc)
 
         s.delta_t_si = self.time_step_size
         s.solver = self.solver.get_as_pypicongpu()
@@ -567,10 +574,6 @@ class Simulation(picmistandard.PICMI_Simulation):
 
         s.plugins = self._generate_plugins(pypicongpu_by_picmi_species, s.time_steps)
         # set typical ppc if not set explicitly by user
-        if self.picongpu_typical_ppc is None:
-            s.typical_ppc = (s.init_manager).get_typical_particle_per_cell()
-        else:
-            s.typical_ppc = self.picongpu_typical_ppc
 
         if s.typical_ppc < 1:
             raise ValueError("typical_ppc must be >= 1")
@@ -629,3 +632,8 @@ class Simulation(picmistandard.PICMI_Simulation):
 
 def organise_init_operations(operations):
     return sum(operations, [])
+
+
+def mid_window(iterable):
+    mi, ma = reduce(lambda lhs, rhs: (min(lhs[0], rhs), max(lhs[1], rhs)), iterable, (1000, 0))
+    return (ma - mi) // 2 + mi
