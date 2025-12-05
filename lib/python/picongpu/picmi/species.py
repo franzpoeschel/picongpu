@@ -7,7 +7,7 @@ License: GPLv3+
 
 from pydantic import BaseModel
 from picongpu.picmi.distribution import AnyDistribution
-from picongpu.pypicongpu.species.species import Shape
+from picongpu.pypicongpu.species.species import Shape, Species as PyPIConGPUSpecies
 from .predefinedparticletypeproperties import PredefinedParticleTypeProperties
 from .interaction import Interaction
 
@@ -342,3 +342,6 @@ class NEW1_Species(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+    def get_as_pypicongpu(self, layout):
+        return (PyPIConGPUSpecies(), [])

@@ -155,6 +155,8 @@ class Simulation(picmistandard.PICMI_Simulation):
         picongpu_binomial_current_interpolation: bool = False,
         **keyword_arguments,
     ):
+        self.NEW1_species = []
+        self.NEW1_layouts = []
         self.picongpu_template_dir = _normalise_template_dir(picongpu_template_dir)
         self.picongpu_typical_ppc = picongpu_typical_ppc
         self.picongpu_moving_window_move_point = picongpu_moving_window_move_point
@@ -526,7 +528,7 @@ class Simulation(picmistandard.PICMI_Simulation):
 
     def get_as_pypicongpu(self) -> pypicongpu.simulation.Simulation:
         """translate to PyPIConGPU object"""
-        s = pypicongpu.simulation.Simulation()
+        s = pypicongpu.simulation.Simulation(**dict(zip(("species", "init_operations"), self._translate_species())))
 
         s.delta_t_si = self.time_step_size
         s.solver = self.solver.get_as_pypicongpu()
@@ -607,9 +609,20 @@ class Simulation(picmistandard.PICMI_Simulation):
         return self.__runner
 
     def _NEW1_picongpu_add_species(self, species, layout):
-        pass
+        self.NEW1_species.append(species)
+        self.NEW1_layouts.append(layout)
 
     def add_species(self, *args, **kwargs):
         if isinstance(args[0], NEW1_Species):
             return self._NEW1_picongpu_add_species(*args, **kwargs)
         return super().add_species(*args, **kwargs)
+
+    def _translate_species(self):
+        species, init_operations = zip(
+            *(species.get_as_pypicongpu(layout) for species, layout in zip(self.NEW1_species, self.NEW1_layouts))
+        )
+        return species, organise_init_operations(init_operations)
+
+
+def organise_init_operations(operations):
+    return sum(operations, [])

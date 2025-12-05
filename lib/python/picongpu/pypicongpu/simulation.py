@@ -12,6 +12,9 @@ from pathlib import Path
 
 import typeguard
 
+from picongpu.pypicongpu.species.operation.operation import Operation
+from picongpu.pypicongpu.species.species import Species
+
 from . import output, species, util
 from .customuserinput import InterfaceCustomUserInput
 from .field_solver.DefaultSolver import Solver
@@ -88,6 +91,13 @@ class Simulation(RenderedObject):
     """switch on a binomial current interpolation"""
 
     plugins = util.build_typesafe_property(typing.Optional[list[Plugin] | typing.Literal["auto"]])
+
+    species = util.build_typesafe_property(list[Species])
+    init_operations = util.build_typesafe_property(list[Operation])
+
+    def __init__(self, /, species=tuple(), init_operations=tuple()):
+        self.species = list(species)
+        self.init_operations = list(init_operations)
 
     def __get_output_context(self) -> dict | list[dict] | None:
         """retrieve all output objects"""
