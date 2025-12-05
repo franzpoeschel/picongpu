@@ -44,7 +44,7 @@ namespace picongpu
         {
             namespace pypicongpu
             {
-                {{#species_initmanager.operations.simple_density}}
+                {{#init_operations}}{{#typeID.simpledensity}}{{#data}}
                 {{#layout.typeID.random}}
                     struct random_ppc_{{{placed_species_initial.typename}}}
                     {
@@ -56,7 +56,7 @@ namespace picongpu
                          *
                          * unit: none
                          */
-                        static constexpr uint32_t numParticlesPerCell = {{{ppc}}};
+                        static constexpr uint32_t numParticlesPerCell = {{{layout.data.ppc}}};
                     };
                     using init_{{{placed_species_initial.typename}}} = RandomImpl<random_ppc_{{{placed_species_initial.typename}}}>;
                 {{/layout.typeID.random}}
@@ -72,7 +72,7 @@ namespace picongpu
                          *
                          * unit: none
                          */
-                        static constexpr uint32_t numParticlesPerCell = {{{ppc}}};
+                        static constexpr uint32_t numParticlesPerCell = {{{layout.data.ppc}}};
 
                         /** each x, y, z in-cell position component in range [0.0, 1.0)
                          *
@@ -86,8 +86,7 @@ namespace picongpu
                      */
                     using init_{{{placed_species_initial.typename}}} = OnePositionImpl<one_position_{{{placed_species_initial.typename}}}>;
                 {{/layout.typeID.one_position}}
-
-                {{/species_initmanager.operations.simple_density}}
+{{/data}}{{/typeID.simpledensity}}{{/init_operations}}
             } // namespace pypicongpu
         } // namespace startPosition
 

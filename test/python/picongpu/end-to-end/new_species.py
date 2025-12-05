@@ -84,6 +84,7 @@ SIM = None
 PARAM_PATH = Path("include/picongpu/param/")
 SPECIES_DEFINITION_HEADER = PARAM_PATH / "speciesDefinition.param"
 SPECIES_INITIALIZATION_HEADER = PARAM_PATH / "speciesInitialization.param"
+PARTICLE_HEADER = PARAM_PATH / "particle.param"
 EXPECTED_RESULT_PATH = Path("expected")
 
 
@@ -109,13 +110,13 @@ class TestNEW1_Species(unittest.TestCase):
 
     def _compare_headers(self, header_path):
         with (self.setup_path / header_path).open() as file:
-            result = file.read()
+            result = [line for line in file.readlines() if line.strip() != ""]
         with (EXPECTED_RESULT_PATH / header_path).open() as file:
-            expected = file.read()
+            expected = [line for line in file.readlines() if line.strip() != ""]
         try:
             assert result == expected
         except:
-            for d in unified_diff(result.split("\n"), expected.split("\n")):
+            for d in unified_diff(result, expected):
                 print(d)
             raise
 
@@ -124,3 +125,6 @@ class TestNEW1_Species(unittest.TestCase):
 
     def test_compare_species_initialization_headers(self):
         self._compare_headers(SPECIES_INITIALIZATION_HEADER)
+
+    def test_compare_particle_header(self):
+        self._compare_headers(PARTICLE_HEADER)
