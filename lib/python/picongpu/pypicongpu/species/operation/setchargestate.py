@@ -28,8 +28,11 @@ class SetChargeState(Operation):
     charge_state = util.build_typesafe_property(int)
     """initial ion charge state"""
 
-    def __init__(self):
-        pass
+    _name = "setchargestate"
+
+    def __init__(self, species, charge_state):
+        self.species = species
+        self.charge_state = charge_state
 
     def check_preconditions(self) -> None:
         assert self.species.has_constant_of_type(GroundStateIonization), "BoundElectrons requires GroundStateIonization"

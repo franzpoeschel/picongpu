@@ -5,7 +5,8 @@ Authors: Brian Edward Marre
 License: GPLv3+
 """
 
-from picongpu.picmi.species import DependsOnRequirement
+from picongpu.picmi.species import DependsOnRequirement, OperationalRequirement
+from picongpu.pypicongpu.species.operation.setchargestate import SetChargeState
 from .... import pypicongpu
 
 from pydantic import BaseModel
@@ -32,7 +33,14 @@ class IonizationModel(BaseModel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ion_species.register_requirements([DependsOnRequirement(species=self.ionization_electron_species)])
+        self.ion_species.register_requirements(
+            [
+                DependsOnRequirement(species=self.ionization_electron_species),
+                OperationalRequirement(
+                    function=SetChargeState, kwargs=dict(charge_state=self.ion_species.charge_state)
+                ),
+            ]
+        )
 
     def __hash__(self):
         """custom hash function for indexing in dicts"""

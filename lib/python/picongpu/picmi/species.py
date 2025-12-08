@@ -5,6 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from itertools import chain
 from pydantic import BaseModel, PrivateAttr
 from picongpu.picmi.distribution import AnyDistribution
 from picongpu.pypicongpu.species.attribute import Position, Momentum
@@ -22,7 +23,7 @@ from .. import pypicongpu
 from ..pypicongpu.species.util.element import Element
 
 import picmistandard
-from typing import Any
+from typing import Any, Callable
 
 import typing
 import typeguard
@@ -347,6 +348,7 @@ class NEW1_Species(BaseModel):
     particle_type: str
     initial_distribution: AnyDistribution | None
     picongpu_fixed_charge: bool = False
+    charge_state: int | None = None
 
     # Theoretically, Position(), Momentum() and Weighting() are also requirements imposed from the outside,
     # e.g., by the current deposition, pusher, ..., but these concepts are not separately modelled in PICMI
@@ -379,14 +381,18 @@ class NEW1_Species(BaseModel):
         return evaluate_requirements(self._requirements, [Constant, Attribute])
 
     def _evaluate_operation_requirements(self, grid, layout, species):
-        return sum(
-            evaluate_requirements(
-                self._requirements
-                + initial_distribution_requirements(self.initial_distribution, grid, layout, species),
-                [Operation],
-            ),
-            [],
-        )
+        return [
+            op.function(species=species, **op.kwargs)
+            for op in resolve_operations(
+                chain(
+                    *evaluate_requirements(
+                        self._requirements
+                        + initial_distribution_requirements(self.initial_distribution, grid, layout, species),
+                        [OperationalRequirement],
+                    )
+                )
+            )
+        ]
 
     def __gt__(self, other):
         # This defines a partial ordering on all species.
@@ -397,6 +403,22 @@ class NEW1_Species(BaseModel):
 
     def register_requirements(self, requirements):
         self._requirements += requirements
+
+
+def _make_unique(requirements):
+    result = []
+    for req in requirements:
+        if not must_be_unique(req) or req not in result:
+            result.append(req)
+    return result
+
+
+def resolve_operations(requirements):
+    return _make_unique(requirements)
+
+
+def must_be_unique(requirement):
+    return hasattr(requirement, "must_be_unique") and requirement.must_be_unique
 
 
 class DependsOnRequirement(BaseModel):
@@ -437,9 +459,18 @@ def particle_type_requirements(particle_type):
     return MassRequirement(value=mass).expand() + ChargeRequirement(value=charge).expand()
 
 
+class OperationalRequirement(BaseModel):
+    function: Callable[[NEW1_Species, Any, ...], Operation]
+    kwargs: dict[str, Any]
+    must_be_unique: bool = True
+
+
 def initial_distribution_requirements(dist, grid, layout, species):
     if dist is not None:
         return [
-            SimpleDensity(profile=dist.get_as_pypicongpu(grid), layout=layout.get_as_pypicongpu(), species={species})
+            OperationalRequirement(
+                function=SimpleDensity,
+                kwargs=dict(profile=dist.get_as_pypicongpu(grid), layout=layout.get_as_pypicongpu()),
+            )
         ]
     return []
