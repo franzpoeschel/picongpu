@@ -5,6 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre, Richard Pausch
 License: GPLv3+
 """
 
+from contextlib import contextmanager
 import datetime
 import json
 import logging
@@ -23,6 +24,16 @@ from .rendering import Renderer
 from .simulation import Simulation
 
 DEFAULT_TEMPLATE_DIRECTORY = (Path(__file__).parents[4] / "share" / "picongpu" / "pypicongpu" / "template").absolute()
+
+
+@contextmanager
+def cd(path):
+    cwd = Path().absolute()
+    try:
+        chdir(path)
+        yield
+    finally:
+        chdir(cwd)
 
 
 def runArgs(name, args):
@@ -306,8 +317,8 @@ class Runner:
 
     def __build(self):
         """launch build of PIConGPU"""
-        chdir(self.setup_dir)
-        runArgs("pic-build", ["pic-build", "-j", "4"])
+        with cd(self.setup_dir):
+            runArgs("pic-build", ["pic-build", "-j"])
 
     def __run(self):
         """
@@ -317,14 +328,16 @@ class Runner:
         therefore will not work with any other configuration
         TODO multi-device support
         """
-        chdir(self.setup_dir)
-        runArgs(
-            "PIConGPU",
-            (
-                ("tbg -s bash -c etc/picongpu/N.cfg -t " + environ["PIC_SYSTEM_TEMPLATE_PATH"] + "/mpiexec.tpl").split()
-                + [self.run_dir]
-            ),
-        )
+        with cd(self.setup_dir):
+            runArgs(
+                "PIConGPU",
+                (
+                    (
+                        "tbg -s bash -c etc/picongpu/N.cfg -t " + environ["PIC_SYSTEM_TEMPLATE_PATH"] + "/mpiexec.tpl"
+                    ).split()
+                    + [self.run_dir]
+                ),
+            )
 
     def generate(self, printDirToConsole=False):
         """
