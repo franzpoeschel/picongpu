@@ -346,23 +346,26 @@ class Species(picmistandard.PICMI_Species):
 class NEW1_Species(BaseModel):
     name: str
     particle_type: str
-    initial_distribution: AnyDistribution
+    initial_distribution: AnyDistribution | None
     picongpu_fixed_charge: bool = False
-    _requirements: list[Any] = PrivateAttr(default_factory=lambda: [Position(), Momentum()])
+
+    # Theoretically, Position(), Momentum() and Weighting() are also requirements imposed from the outside,
+    # e.g., by the current deposition, pusher, ..., but these concepts are not separately modelled in PICMI
+    # particularly not as being applied to a particular species.
+    # For now, we add them to all species. Refinements might be necessary in the future.
+    _requirements: list[Any] = PrivateAttr(default_factory=lambda: [Position(), Momentum(), Weighting()])
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._register_initial_requirements()
 
     def _register_initial_requirements(self):
-        if self.initial_distribution:
-            self._requirements.append(Weighting())
         self._requirements.extend(particle_type_requirements(self.particle_type))
 
     class Config:
         arbitrary_types_allowed = True
 
-    def get_as_pypicongpu(self):
+    def get_as_pypicongpu(self, *args, **kwargs):
         return PyPIConGPUSpecies(
             name=self.name,
             **dict(zip(("constants", "attributes"), self._evaluate_species_requirements())),
@@ -422,4 +425,8 @@ def particle_type_requirements(particle_type):
 
 
 def initial_distribution_requirements(dist, grid, layout, species):
-    return [SimpleDensity(profile=dist.get_as_pypicongpu(grid), layout=layout.get_as_pypicongpu(), species={species})]
+    if dist is not None:
+        return [
+            SimpleDensity(profile=dist.get_as_pypicongpu(grid), layout=layout.get_as_pypicongpu(), species={species})
+        ]
+    return []
