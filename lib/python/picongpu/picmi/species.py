@@ -421,26 +421,8 @@ def must_be_unique(requirement):
     return hasattr(requirement, "must_be_unique") and requirement.must_be_unique
 
 
-class DependsOnRequirement(BaseModel):
-    species: NEW1_Species
-
-
 def evaluate_requirements(requirements, Types):
     return list(map(list, (filter(lambda req: isinstance(req, Type), requirements) for Type in Types)))
-
-
-class MassRequirement(BaseModel):
-    value: float
-
-    def expand(self):
-        return [Mass(mass_si=self.value)]
-
-
-class ChargeRequirement(BaseModel):
-    value: float
-
-    def expand(self):
-        return [Charge(charge_si=self.value)]
 
 
 def particle_type_requirements(particle_type):
@@ -459,12 +441,6 @@ def particle_type_requirements(particle_type):
     return MassRequirement(value=mass).expand() + ChargeRequirement(value=charge).expand()
 
 
-class OperationalRequirement(BaseModel):
-    function: Callable[[NEW1_Species, Any, ...], Operation]
-    kwargs: dict[str, Any]
-    must_be_unique: bool = True
-
-
 def initial_distribution_requirements(dist, grid, layout, species):
     if dist is not None:
         return [
@@ -474,3 +450,30 @@ def initial_distribution_requirements(dist, grid, layout, species):
             )
         ]
     return []
+
+
+### Requirements
+
+
+class DependsOnRequirement(BaseModel):
+    species: NEW1_Species
+
+
+class MassRequirement(BaseModel):
+    value: float
+
+    def expand(self):
+        return [Mass(mass_si=self.value)]
+
+
+class ChargeRequirement(BaseModel):
+    value: float
+
+    def expand(self):
+        return [Charge(charge_si=self.value)]
+
+
+class OperationalRequirement(BaseModel):
+    function: Callable[[NEW1_Species, Any, ...], Operation]
+    kwargs: dict[str, Any]
+    must_be_unique: bool = True
