@@ -496,7 +496,7 @@ class Simulation(picmistandard.PICMI_Simulation):
             )
         self.picongpu_run()
 
-    def _generate_openpmd_plugins(self, diagnostics, pypicongpu_by_picmi_species, num_steps):
+    def _generate_openpmd_plugins(self, diagnostics, num_steps):
         diagnostics = list(diagnostics)
         return [
             OpenPMDPlugin(
@@ -514,7 +514,7 @@ class Simulation(picmistandard.PICMI_Simulation):
             for options in _unique(map(lambda x: x.options, diagnostics))
         ]
 
-    def _generate_plugins(self, pypicongpu_by_picmi_species, num_steps):
+    def _generate_plugins(self, num_steps):
         return [
             entry.get_as_pypicongpu(
                 time_step_size=self.time_step_size,
@@ -522,9 +522,7 @@ class Simulation(picmistandard.PICMI_Simulation):
             )
             for entry in self.diagnostics
             if not handled_via_openpmd(entry)
-        ] + self._generate_openpmd_plugins(
-            filter(handled_via_openpmd, self.diagnostics), pypicongpu_by_picmi_species, num_steps
-        )
+        ] + self._generate_openpmd_plugins(filter(handled_via_openpmd, self.diagnostics), num_steps)
 
     def _check_compatibility(self):
         pypicongpu.util.unsupported("verbose", self.verbose)
@@ -573,10 +571,30 @@ class Simulation(picmistandard.PICMI_Simulation):
             laser=[ll.get_as_pypicongpu() for ll in self.lasers] or None,
         )
 
-        s.init_manager, pypicongpu_by_picmi_species = self.__get_init_manager()
-        s.plugins = self._generate_plugins(pypicongpu_by_picmi_species, s.time_steps)
-        s.base_density = self.picongpu_base_density or s.init_manager.get_base_density(s.grid)
+        s.init_manager, _ = self.__get_init_manager()
+        s.plugins = self._generate_plugins(s.time_steps)
+        s.base_density = self._get_base_density()
         return s
+
+    def _get_base_density(self) -> float:
+        # There's supposed to be some heuristics here along the lines of
+        #        num_grid = (
+        #            np.reshape([grid.cell_size_x_si, grid.cell_size_y_si, grid.cell_size_z_si], (-1, 1, 1, 1))
+        #            * np.mgrid[: grid.cell_cnt_x, : grid.cell_cnt_y, : grid.cell_cnt_z]
+        #        )
+        #        return float(
+        #            np.max(
+        #                np.fromiter(
+        #                    (
+        #                        operation.profile(*num_grid)
+        #                        for operation in self.all_operations
+        #                        if isinstance(operation, SimpleDensity)
+        #                    ),
+        #                    dtype=float,
+        #                )
+        #            )
+        #        )
+        return self.picongpu_base_density or 1.0e25
 
     def picongpu_run(self) -> None:
         """build and run PIConGPU simulation"""
