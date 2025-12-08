@@ -5,15 +5,16 @@ Authors: Brian Edward Marre
 License: GPLv3+
 """
 
+from picongpu.picmi.species import DependsOnRequirement
 from .... import pypicongpu
 
-import pydantic
+from pydantic import BaseModel
 import typeguard
 import typing
 
 
 @typeguard.typechecked
-class IonizationModel(pydantic.BaseModel):
+class IonizationModel(BaseModel):
     """
     common interface for all ionization models
 
@@ -28,6 +29,10 @@ class IonizationModel(pydantic.BaseModel):
 
     ionization_electron_species: typing.Any
     """PICMI electron species of which to create macro particle upon ionization"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ion_species.register_requirements([DependsOnRequirement(species=self.ionization_electron_species)])
 
     def __hash__(self):
         """custom hash function for indexing in dicts"""

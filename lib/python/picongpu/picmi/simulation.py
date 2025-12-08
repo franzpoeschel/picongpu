@@ -622,18 +622,22 @@ class Simulation(picmistandard.PICMI_Simulation):
             species, init_operations = zip(
                 *(
                     species.get_all_as_pypicongpu(self.solver.grid, layout)
-                    for species, layout in zip(self.NEW1_species, self.NEW1_layouts)
+                    for species, layout in sorted(zip(self.NEW1_species, self.NEW1_layouts), key=lambda sl: sl[0])
                 )
             )
         except ValueError:
             # too many values to unpack...
             species = []
             init_operations = []
-        return list(species), organise_init_operations(init_operations)
+        return organise_species(species), organise_init_operations(init_operations)
 
 
 def organise_init_operations(operations):
     return sum(operations, [])
+
+
+def organise_species(species):
+    return list(species)
 
 
 def mid_window(iterable):

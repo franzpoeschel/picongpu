@@ -17,7 +17,6 @@ from picongpu.pypicongpu.species.operation.operation import Operation
 from picongpu.pypicongpu.species.operation.simpledensity import SimpleDensity
 from picongpu.pypicongpu.species.species import Shape, Species as PyPIConGPUSpecies
 from .predefinedparticletypeproperties import PredefinedParticleTypeProperties
-from .interaction import Interaction
 
 from .. import pypicongpu
 from ..pypicongpu.species.util.element import Element
@@ -127,7 +126,7 @@ class Species(picmistandard.PICMI_Species):
                 # unknown particle type
                 raise ValueError(f"Species {self.name} has unknown particle type {self.particle_type}")
 
-    def has_ionization(self, interaction: Interaction | None) -> bool:
+    def has_ionization(self, interaction) -> bool:
         """does species have ionization configured?"""
         if interaction is None:
             return False
@@ -148,7 +147,7 @@ class Species(picmistandard.PICMI_Species):
             return False
         return True
 
-    def __check_ionization_configuration(self, interaction: Interaction | None) -> None:
+    def __check_ionization_configuration(self, interaction) -> None:
         """
         check species ioniaztion- and species- configuration are compatible
 
@@ -215,11 +214,11 @@ class Species(picmistandard.PICMI_Species):
                 # unknown particle type
                 raise ValueError(f"unknown particle type {self.particle_type} in species {self.name}")
 
-    def __check_interaction_configuration(self, interaction: Interaction | None) -> None:
+    def __check_interaction_configuration(self, interaction) -> None:
         """check all interactions sub groups for compatibility with this species configuration"""
         self.__check_ionization_configuration(interaction)
 
-    def check(self, interaction: Interaction | None) -> None:
+    def check(self, interaction) -> None:
         assert self.name is not None, "picongpu requires each species to have a name set."
 
         # check charge and mass explicitly set/not set depending on particle_type
@@ -238,7 +237,7 @@ class Species(picmistandard.PICMI_Species):
         self.__previous_check = True
 
     def get_as_pypicongpu(
-        self, interaction: Interaction | None
+        self, interaction
     ) -> tuple[
         pypicongpu.species.Species, None | dict[typing.Any, pypicongpu.species.constant.ionizationmodel.IonizationModel]
     ]:
@@ -297,7 +296,7 @@ class Species(picmistandard.PICMI_Species):
         return s, pypicongpu_model_by_picmi_model
 
     def get_independent_operations(
-        self, pypicongpu_species: pypicongpu.species.Species, interaction: Interaction | None
+        self, pypicongpu_species: pypicongpu.species.Species, interaction
     ) -> list[pypicongpu.species.operation.Operation]:
         """get a list of all operations only initializing attributes of this species"""
 
@@ -388,6 +387,20 @@ class NEW1_Species(BaseModel):
             ),
             [],
         )
+
+    def __gt__(self, other):
+        # This defines a partial ordering on all species.
+        # This is necessary to determine the definition order inside of the C++ header.
+        if not isinstance(other, NEW1_Species):
+            raise ValueError(f"Unknown comparison between {self=} and {other=}.")
+        return any(isinstance(req, DependsOnRequirement) and req.species == other for req in self._requirements)
+
+    def register_requirements(self, requirements):
+        self._requirements += requirements
+
+
+class DependsOnRequirement(BaseModel):
+    species: NEW1_Species
 
 
 def evaluate_requirements(requirements, Types):
