@@ -12,12 +12,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from picongpu import picmi
+from picongpu.picmi.diagnostics.timestepspec import TimeStepSpec
 
 from .arbitrary_parameters import (
     CELL_SIZE,
     NUMBER_OF_CELLS,
     UPPER_BOUNDARY,
 )
+from .binning_functors import binning_diagnostics
 from .distributions import DISTRIBUTIONS
 
 logging.basicConfig(level=logging.INFO)
@@ -72,7 +74,7 @@ def setup_sim():
 
     for s in species:
         sim.add_species(s, LAYOUT)
-    # sim.diagnostics = [picmi.diagnostics.Checkpoint(TimeStepSpec[:])] + binning_diagnostics(species, sim.time_step_size)
+    sim.diagnostics = [picmi.diagnostics.Checkpoint(TimeStepSpec[:])] + binning_diagnostics(species, sim.time_step_size)
 
     # sim.step(0)
     sim.write_input_file(TemporaryDirectory(delete=True).name)

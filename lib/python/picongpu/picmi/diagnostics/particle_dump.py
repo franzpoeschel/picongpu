@@ -10,7 +10,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from picongpu.picmi.species import Species
+from picongpu.picmi.species import NEW1_Species as Species
 
 from .backend_config import BackendConfig, OpenPMDConfig
 from .timestepspec import TimeStepSpec

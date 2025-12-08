@@ -503,7 +503,7 @@ class Simulation(picmistandard.PICMI_Simulation):
                 sources=[
                     (
                         diagnostic.period.get_as_pypicongpu(time_step_size=self.time_step_size, num_steps=num_steps),
-                        pypicongpu_by_picmi_species[diagnostic.species]
+                        diagnostic.species.get_as_pypicongpu()
                         if isinstance(diagnostic, ParticleDump)
                         else PyPIConGPUFieldDump(name=diagnostic.fieldname),
                     )
@@ -517,7 +517,6 @@ class Simulation(picmistandard.PICMI_Simulation):
     def _generate_plugins(self, pypicongpu_by_picmi_species, num_steps):
         return [
             entry.get_as_pypicongpu(
-                dict_species_picmi_to_pypicongpu=pypicongpu_by_picmi_species,
                 time_step_size=self.time_step_size,
                 num_steps=num_steps,
             )
@@ -601,12 +600,17 @@ class Simulation(picmistandard.PICMI_Simulation):
         return super().add_species(*args, **kwargs)
 
     def _translate_species(self):
-        species, init_operations = zip(
-            *(
-                species.get_as_pypicongpu(self.solver.grid, layout)
-                for species, layout in zip(self.NEW1_species, self.NEW1_layouts)
+        try:
+            species, init_operations = zip(
+                *(
+                    species.get_all_as_pypicongpu(self.solver.grid, layout)
+                    for species, layout in zip(self.NEW1_species, self.NEW1_layouts)
+                )
             )
-        )
+        except ValueError:
+            # too many values to unpack...
+            species = []
+            init_operations = []
         return list(species), organise_init_operations(init_operations)
 
 

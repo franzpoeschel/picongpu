@@ -57,7 +57,7 @@ def generate_name(name, suffix):
 
 def generate_species(name, distribution):
     return [
-        picmi.Species(
+        picmi.NEW1_Species(
             name=name,
             particle_type="H",
             initial_distribution=distribution,

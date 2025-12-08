@@ -347,7 +347,7 @@ class NEW1_Species(BaseModel):
     name: str
     particle_type: str
     initial_distribution: AnyDistribution
-    picongpu_fixed_charge: bool
+    picongpu_fixed_charge: bool = False
     _requirements: list[Any] = PrivateAttr(default_factory=lambda: [Position(), Momentum()])
 
     def __init__(self, *args, **kwargs):
@@ -362,9 +362,15 @@ class NEW1_Species(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    def get_as_pypicongpu(self, grid, layout):
-        constants, attributes = self._evaluate_species_requirements()
-        species = PyPIConGPUSpecies(name=self.name, constants=constants, attributes=attributes, shape=Shape["TSC"])
+    def get_as_pypicongpu(self):
+        return PyPIConGPUSpecies(
+            name=self.name,
+            **dict(zip(("constants", "attributes"), self._evaluate_species_requirements())),
+            shape=Shape["TSC"],
+        )
+
+    def get_all_as_pypicongpu(self, grid, layout):
+        species = self.get_as_pypicongpu()
         return species, self._evaluate_operation_requirements(grid, layout, species)
 
     def _evaluate_species_requirements(self):
