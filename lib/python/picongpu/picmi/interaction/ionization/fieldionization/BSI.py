@@ -35,13 +35,22 @@ class BSI(FieldIonization):
         self.check()
 
         if self.BSI_extensions == []:
-            return ionizationmodel.BSI(ionization_current=None_())
+            return ionizationmodel.BSI(
+                ionization_current=None_(),
+                ionization_electron_species=self.ionization_electron_species.get_as_pypicongpu(),
+            )
 
         if len(self.BSI_extensions) > 1:
             pypicongpu.util.unsupported("more than one BSI_extension, will use first entry only")
 
         if self.BSI_extensions[0] is BSIExtension.StarkShift:
-            return ionizationmodel.BSIStarkShifted(ionization_current=None_())
+            return ionizationmodel.BSIStarkShifted(
+                ionization_current=None_(),
+                ionization_electron_species=self.ionization_electron_species.get_as_pypicongpu(),
+            )
         if self.BSI_extensions[0] is BSIExtension.EffectiveZ:
-            return ionizationmodel.BSIEffectiveZ(ionization_current=None_())
+            return ionizationmodel.BSIEffectiveZ(
+                ionization_current=None_(),
+                ionization_electron_species=self.ionization_electron_species.get_as_pypicongpu(),
+            )
         raise ValueError(f"unknown BSI_extension {self.BSI_extensions[0]}.")

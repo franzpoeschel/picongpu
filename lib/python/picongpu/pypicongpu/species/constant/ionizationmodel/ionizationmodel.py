@@ -31,7 +31,7 @@ class IonizationModel(pydantic.BaseModel, Constant):
     """C++ Code type name of ionizer"""
 
     # no typecheck here -- would require circular imports
-    ionization_electron_species: typing.Any = None
+    ionization_electron_species: typing.Any
     """species to be used as electrons"""
 
     ionization_current: typing.Optional[IonizationCurrent] = None

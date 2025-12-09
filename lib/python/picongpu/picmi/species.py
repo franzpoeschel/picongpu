@@ -23,7 +23,7 @@ from .. import pypicongpu
 from ..pypicongpu.species.util.element import Element
 
 import picmistandard
-from typing import Any, Callable
+from typing import Any, Callable, Self
 
 import typing
 import typeguard
@@ -369,7 +369,7 @@ class NEW1_Species(BaseModel):
     def get_as_pypicongpu(self, *args, **kwargs):
         return PyPIConGPUSpecies(
             name=self.name,
-            **dict(zip(("constants", "attributes"), self._evaluate_species_requirements())),
+            **self._evaluate_species_requirements(),
             shape=Shape["TSC"],
         )
 
@@ -378,7 +378,9 @@ class NEW1_Species(BaseModel):
         return species, self._evaluate_operation_requirements(grid, layout, species)
 
     def _evaluate_species_requirements(self):
-        return evaluate_requirements(self._requirements, [Constant, Attribute])
+        constants, attributes = evaluate_requirements(self._requirements, [Constant, Attribute])
+        constants = [run_construction(c) for c in _make_unique(constants)]
+        return {"constants": constants, "attributes": attributes}
 
     def _evaluate_operation_requirements(self, grid, layout, species):
         return [
@@ -405,11 +407,23 @@ class NEW1_Species(BaseModel):
         self._requirements += requirements
 
 
+def run_construction(obj):
+    return obj.run_construction() if hasattr(obj, "run_construction") else obj
+
+
 def _make_unique(requirements):
     result = []
-    for req in requirements:
-        if not must_be_unique(req) or req not in result:
-            result.append(req)
+    for lhs in requirements:
+        append_this = True
+        for rhs in result:
+            merge_success = try_merge_into(rhs, lhs)
+            if merge_success:
+                append_this = False
+                break
+            if must_be_unique(lhs):
+                append_this = append_this and not is_same_as(lhs, rhs)
+        if append_this:
+            result.append(lhs)
     return result
 
 
@@ -419,6 +433,17 @@ def resolve_operations(requirements):
 
 def must_be_unique(requirement):
     return hasattr(requirement, "must_be_unique") and requirement.must_be_unique
+
+
+def is_same_as(lhs, rhs):
+    return (hasattr(lhs, "is_same_as") and lhs.is_same_as(rhs)) or (hasattr(rhs, "is_same_as") and rhs.is_same_as(lhs))
+
+
+def try_merge_into(into_instance, from_instance):
+    try:
+        return into_instance.merge(from_instance)
+    except Exception:
+        return False
 
 
 def evaluate_requirements(requirements, Types):
@@ -457,6 +482,25 @@ def initial_distribution_requirements(dist, grid, layout, species):
 
 class DependsOnRequirement(BaseModel):
     species: NEW1_Species
+
+
+class ConstantConstructingRequirement(DependsOnRequirement, Constant):
+    return_type: type
+    constructor: Callable[[NEW1_Species, Any, ...], Any]
+    kwargs: dict[str, Any]
+    must_be_unique: bool = True
+    merge_functor: Callable[[Self, Self], bool] = lambda self, other: False
+
+    def run_construction(self):
+        return self.constructor(species=self.species.get_as_pypicongpu(), **self.kwargs)
+
+    def is_same_as(self, other):
+        return isinstance(other, ConstantConstructingRequirement) and (
+            self.return_type == other.return_type and self.kwargs == other.kwargs
+        )
+
+    def merge(self, other):
+        return self.merge_functor(self, other)
 
 
 class MassRequirement(BaseModel):

@@ -22,4 +22,6 @@ class Keldysh(FieldIonization):
     def get_as_pypicongpu(self) -> ionizationmodel.IonizationModel:
         self.check()
 
-        return ionizationmodel.Keldysh(ionization_current=None_())
+        return ionizationmodel.Keldysh(
+            ionization_current=None_(), ionization_electron_species=self.ionization_electron_species.get_as_pypicongpu()
+        )

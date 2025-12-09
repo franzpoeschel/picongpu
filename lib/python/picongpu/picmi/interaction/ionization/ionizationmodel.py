@@ -5,8 +5,9 @@ Authors: Brian Edward Marre
 License: GPLv3+
 """
 
-from picongpu.picmi.species import DependsOnRequirement, OperationalRequirement
+from picongpu.picmi.species import OperationalRequirement, ConstantConstructingRequirement
 from picongpu.pypicongpu.species.operation.setchargestate import SetChargeState
+from picongpu.pypicongpu.species.constant.groundstateionization import GroundStateIonization
 from .... import pypicongpu
 
 from pydantic import BaseModel
@@ -35,7 +36,17 @@ class IonizationModel(BaseModel):
         super().__init__(*args, **kwargs)
         self.ion_species.register_requirements(
             [
-                DependsOnRequirement(species=self.ionization_electron_species),
+                ConstantConstructingRequirement(
+                    species=self.ionization_electron_species,
+                    return_type=GroundStateIonization,
+                    constructor=lambda species, **kwargs: GroundStateIonization(
+                        ionization_model_list=[m.get_as_pypicongpu() for m in kwargs["model"]]
+                    ),
+                    kwargs={"model": [self]},
+                    merge_functor=lambda self, other: isinstance(other, ConstantConstructingRequirement)
+                    and hasattr(other, "return_type")
+                    and (self.kwargs["model"].extend(other.kwargs["model"]) or True),
+                ),
                 OperationalRequirement(
                     function=SetChargeState, kwargs=dict(charge_state=self.ion_species.charge_state)
                 ),
@@ -58,7 +69,7 @@ class IonizationModel(BaseModel):
 
     def check(self):
         # import here to avoid circular import that stems from projecting different species types from PIConGPU onto the same `Species` type in PICMI
-        from ... import Species
+        from ... import NEW1_Species as Species
 
         assert isinstance(self.ion_species, Species), "ion_species must be an instance of the species object"
         assert isinstance(self.ionization_electron_species, Species), (
