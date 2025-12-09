@@ -5,9 +5,8 @@ Authors: Brian Edward Marre
 License: GPLv3+
 """
 
-from picongpu.picmi.species import OperationalRequirement, ConstantConstructingRequirement
-from picongpu.pypicongpu.species.operation.setchargestate import SetChargeState
-from picongpu.pypicongpu.species.constant.groundstateionization import GroundStateIonization
+from picongpu.picmi.species_requirements import GroundStateIonizationConstruction, SetChargeStateOperation
+from picongpu.picmi.species import DependsOn
 from .... import pypicongpu
 
 from pydantic import BaseModel
@@ -36,20 +35,9 @@ class IonizationModel(BaseModel):
         super().__init__(*args, **kwargs)
         self.ion_species.register_requirements(
             [
-                ConstantConstructingRequirement(
-                    species=self.ionization_electron_species,
-                    return_type=GroundStateIonization,
-                    constructor=lambda species, **kwargs: GroundStateIonization(
-                        ionization_model_list=[m.get_as_pypicongpu() for m in kwargs["model"]]
-                    ),
-                    kwargs={"model": [self]},
-                    merge_functor=lambda self, other: isinstance(other, ConstantConstructingRequirement)
-                    and hasattr(other, "return_type")
-                    and (self.kwargs["model"].extend(other.kwargs["model"]) or True),
-                ),
-                OperationalRequirement(
-                    function=SetChargeState, kwargs=dict(charge_state=self.ion_species.charge_state)
-                ),
+                DependsOn(species=self.ionization_electron_species),
+                GroundStateIonizationConstruction(ionization_model=self),
+                SetChargeStateOperation(species=self.ion_species),
             ]
         )
 

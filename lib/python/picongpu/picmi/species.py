@@ -8,6 +8,7 @@ License: GPLv3+
 from itertools import chain
 from pydantic import BaseModel, PrivateAttr
 from picongpu.picmi.distribution import AnyDistribution
+from picongpu.picmi.species_requirements import try_update_with, must_be_unique, is_same_as
 from picongpu.pypicongpu.species.attribute import Position, Momentum
 from picongpu.pypicongpu.species.attribute.attribute import Attribute
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
@@ -23,7 +24,7 @@ from .. import pypicongpu
 from ..pypicongpu.species.util.element import Element
 
 import picmistandard
-from typing import Any, Callable, Self
+from typing import Any, Callable
 
 import typing
 import typeguard
@@ -354,14 +355,14 @@ class NEW1_Species(BaseModel):
     # e.g., by the current deposition, pusher, ..., but these concepts are not separately modelled in PICMI
     # particularly not as being applied to a particular species.
     # For now, we add them to all species. Refinements might be necessary in the future.
-    _requirements: list[Any] = PrivateAttr(default_factory=lambda: [Position(), Momentum(), Weighting()])
+    _requirements: list[Any] = PrivateAttr(default_factory=lambda: [Position(), Weighting(), Momentum()])
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._register_initial_requirements()
 
     def _register_initial_requirements(self):
-        self._requirements.extend(particle_type_requirements(self.particle_type))
+        self.register_requirements(particle_type_requirements(self.particle_type))
 
     class Config:
         arbitrary_types_allowed = True
@@ -401,7 +402,7 @@ class NEW1_Species(BaseModel):
         # This is necessary to determine the definition order inside of the C++ header.
         if not isinstance(other, NEW1_Species):
             raise ValueError(f"Unknown comparison between {self=} and {other=}.")
-        return any(isinstance(req, DependsOnRequirement) and req.species == other for req in self._requirements)
+        return any(isinstance(req, DependsOn) and req.species == other for req in self._requirements)
 
     def register_requirements(self, requirements):
         self._requirements += requirements
@@ -416,7 +417,7 @@ def _make_unique(requirements):
     for lhs in requirements:
         append_this = True
         for rhs in result:
-            merge_success = try_merge_into(rhs, lhs)
+            merge_success = try_update_with(rhs, lhs)
             if merge_success:
                 append_this = False
                 break
@@ -429,21 +430,6 @@ def _make_unique(requirements):
 
 def resolve_operations(requirements):
     return _make_unique(requirements)
-
-
-def must_be_unique(requirement):
-    return hasattr(requirement, "must_be_unique") and requirement.must_be_unique
-
-
-def is_same_as(lhs, rhs):
-    return (hasattr(lhs, "is_same_as") and lhs.is_same_as(rhs)) or (hasattr(rhs, "is_same_as") and rhs.is_same_as(lhs))
-
-
-def try_merge_into(into_instance, from_instance):
-    try:
-        return into_instance.merge(from_instance)
-    except Exception:
-        return False
 
 
 def evaluate_requirements(requirements, Types):
@@ -480,29 +466,6 @@ def initial_distribution_requirements(dist, grid, layout, species):
 ### Requirements
 
 
-class DependsOnRequirement(BaseModel):
-    species: NEW1_Species
-
-
-class ConstantConstructingRequirement(DependsOnRequirement, Constant):
-    return_type: type
-    constructor: Callable[[NEW1_Species, Any, ...], Any]
-    kwargs: dict[str, Any]
-    must_be_unique: bool = True
-    merge_functor: Callable[[Self, Self], bool] = lambda self, other: False
-
-    def run_construction(self):
-        return self.constructor(species=self.species.get_as_pypicongpu(), **self.kwargs)
-
-    def is_same_as(self, other):
-        return isinstance(other, ConstantConstructingRequirement) and (
-            self.return_type == other.return_type and self.kwargs == other.kwargs
-        )
-
-    def merge(self, other):
-        return self.merge_functor(self, other)
-
-
 class MassRequirement(BaseModel):
     value: float
 
@@ -521,3 +484,7 @@ class OperationalRequirement(BaseModel):
     function: Callable[[NEW1_Species, Any, ...], Operation]
     kwargs: dict[str, Any]
     must_be_unique: bool = True
+
+
+class DependsOn(BaseModel):
+    species: NEW1_Species
