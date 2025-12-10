@@ -216,7 +216,7 @@ class SimpleMomentumOperation(DelayedConstruction):
         def constructor(self):
             species = self.metadata.kwargs["species"].get_as_pypicongpu()
             particle_mass_si = species.get_constant_by_type(Mass).mass_si
-            rms_velocity_si_squared = np.linalg.norm(self.metadata.kwargs["rms_velocity"]) ** 2
+            rms_velocity_si_squared = np.linalg.norm(self.metadata.kwargs["rms_velocity"]) ** 2 / 3
             temperature_kev = particle_mass_si * rms_velocity_si_squared * electron_volt**-1 * 10**-3
             temperature = Temperature(temperature_kev=temperature_kev) if temperature_kev > 0 else None
             return SimpleMomentum(species=species, drift=self.metadata.kwargs["drift"], temperature=temperature)
