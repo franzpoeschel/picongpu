@@ -74,7 +74,7 @@ The output of the picongpu simulation in the default templates is configured in 
           $USED_CHARGE_CONSERVATION_FLAGS
 
 
-          {{#species_initmanager.species}}
+          {{#species}}
               --{{{name}}}_macroParticlesCount.period {{{period}}}
 
               --{{{name}}}_energy.period {{{period}}}
@@ -92,7 +92,7 @@ The output of the picongpu simulation in the default templates is configured in 
                   --{{{name}}}_png.slicePoint 0.5
                   --{{{name}}}_png.folder png_{{{name}}}_{{{axis}}}
               {{/png_axis}}
-          {{/species_initmanager.species}}
+          {{/species}}
 
       {{/output.auto}}
 
@@ -148,9 +148,9 @@ Instead of hard coding the output we might want to automatically generate one in
          --Cu_energyHistogram.minEnergy 0
          --Cu_energyHistogram.maxEnergy 256000
 
-          {{#species_initmanager.species}}
+          {{#species}}
               --{{{name}}}_macroParticlesCount.period 1
-          {{/species_initmanager.species}}
+          {{/species}}
       {{/output.auto}}
 
 Let's go in detail through the above example.
@@ -218,9 +218,9 @@ And of course it will be available as such in the rendering of the template whic
          --Cu_energyHistogram.minEnergy 0
          --Cu_energyHistogram.maxEnergy 256000
 
-          {{#species_initmanager.species}}
+          {{#species}}
               --{{{name}}}_macroParticlesCount.period 1
-          {{/species_initmanager.species}}
+          {{/species}}
       {{/output.auto}}
 
 .. warning::
