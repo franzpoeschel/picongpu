@@ -7,6 +7,7 @@ License: GPLv3+
 
 from picongpu.picmi.species_requirements import GroundStateIonizationConstruction, SetChargeStateOperation
 from picongpu.picmi.species import DependsOn
+from picongpu.pypicongpu.species.attribute.boundelectrons import BoundElectrons
 from .... import pypicongpu
 
 from pydantic import BaseModel
@@ -38,6 +39,7 @@ class IonizationModel(BaseModel):
                 DependsOn(species=self.ionization_electron_species),
                 GroundStateIonizationConstruction(ionization_model=self),
                 SetChargeStateOperation(species=self.ion_species),
+                BoundElectrons(),
             ]
         )
 

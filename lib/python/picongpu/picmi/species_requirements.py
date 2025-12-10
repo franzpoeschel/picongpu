@@ -29,11 +29,17 @@ def must_be_unique(requirement):
 
 
 def is_same_as(lhs, rhs):
-    return (
-        (hasattr(lhs, "is_same_as") and lhs.is_same_as(rhs))
-        or (hasattr(rhs, "is_same_as") and rhs.is_same_as(lhs))
-        or (lhs == rhs)
-    )
+    if hasattr(lhs, "is_same_as") and lhs.is_same_as(rhs):
+        return True
+    if hasattr(rhs, "is_same_as") and rhs.is_same_as(lhs):
+        return True
+    try:
+        # These might well be apples and oranges and the comparison might fail.
+        if lhs == rhs:
+            return True
+    except Exception:
+        pass
+    return False
 
 
 def try_update_with(into_instance, from_instance):

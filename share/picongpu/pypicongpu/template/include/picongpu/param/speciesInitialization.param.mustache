@@ -79,9 +79,9 @@ namespace picongpu
                 {{/temperature}}
             {{/init_operations.simple_momentum}}
 
-            {{#init_operations.set_charge_state}}
+{{#init_operations}}{{#typeID.setchargestate}}{{#data}}
                 Manipulate<manipulators::pypicongpu::PreIonize_{{{species.typename}}}, {{{species.typename}}}>,
-            {{/init_operations.set_charge_state}}
+{{/data}}{{/typeID.setchargestate}}{{/init_operations}}
 
             // does nothing -- exists to catch trailing comma left by code generation
             pypicongpu::nop>;

@@ -6,7 +6,7 @@ License: GPLv3+
 """
 
 from itertools import chain
-from pydantic import BaseModel, PrivateAttr
+from pydantic import BaseModel, PrivateAttr, computed_field
 from picongpu.picmi.distribution import AnyDistribution
 from picongpu.picmi.species_requirements import (
     DelayedConstruction,
@@ -363,6 +363,15 @@ class NEW1_Species(BaseModel):
     # For now, we add them to all species. Refinements might be necessary in the future.
     _requirements: list[Any] = PrivateAttr(default_factory=lambda: [Position(), Weighting(), Momentum()])
 
+    @computed_field
+    def picongpu_element(self) -> Element | None:
+        try:
+            return (
+                pypicongpu.species.util.Element(self.particle_type) if Element.is_element(self.particle_type) else None
+            )
+        except ValueError:
+            return None
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._register_initial_requirements()
@@ -456,24 +465,7 @@ def particle_type_requirements(particle_type):
     else:
         # unknown particle type
         raise ValueError(f"Species has unknown particle type {particle_type}")
-    return MassRequirement(value=mass).expand() + ChargeRequirement(value=charge).expand()
-
-
-### Requirements
-
-
-class MassRequirement(BaseModel):
-    value: float
-
-    def expand(self):
-        return [Mass(mass_si=self.value)]
-
-
-class ChargeRequirement(BaseModel):
-    value: float
-
-    def expand(self):
-        return [Charge(charge_si=self.value)]
+    return [Mass(mass_si=mass), Charge(charge_si=charge)]
 
 
 class DependsOn(BaseModel):
