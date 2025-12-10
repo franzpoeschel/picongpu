@@ -15,7 +15,7 @@ import typeguard
 from picongpu.pypicongpu.species.operation.operation import Operation
 from picongpu.pypicongpu.species.species import Species
 
-from . import output, species, util
+from . import species, util
 from .customuserinput import InterfaceCustomUserInput
 from .field_solver.DefaultSolver import Solver
 from .grid import Grid3D
@@ -27,7 +27,6 @@ from .laser import (
 )
 from .movingwindow import MovingWindow
 from .output import Plugin, OpenPMDPlugin
-from .output.timestepspec import TimeStepSpec
 from .rendering import RenderedObject
 from .walltime import Walltime
 
@@ -90,7 +89,7 @@ class Simulation(RenderedObject):
     binomial_current_interpolation = util.build_typesafe_property(bool)
     """switch on a binomial current interpolation"""
 
-    plugins = util.build_typesafe_property(typing.Optional[list[Plugin] | typing.Literal["auto"]])
+    plugins = util.build_typesafe_property(typing.Optional[list[Plugin]])
 
     species = util.build_typesafe_property(list[Species])
     init_operations = util.build_typesafe_property(list[Operation])
@@ -123,20 +122,6 @@ class Simulation(RenderedObject):
         self.typical_ppc = typical_ppc
         self.species = list(species)
         self.init_operations = list(init_operations)
-
-    def __get_output_context(self) -> dict | list[dict] | None:
-        """retrieve all output objects"""
-
-        if self.plugins == "auto":
-            auto = output.Auto(period=TimeStepSpec([slice(0, None, max(1, int(self.time_steps / 100)))]))
-
-            return [auto.get_rendering_context()]
-        else:
-            output_rendering_context = []
-            for entry in self.plugins:
-                output_rendering_context.append(entry.get_rendering_context())
-
-            return output_rendering_context
 
     def __render_custom_user_input_list(self) -> dict:
         custom_rendering_context = {"tags": []}
@@ -176,14 +161,10 @@ class Simulation(RenderedObject):
             "solver": self.solver.get_rendering_context(),
             "grid": self.grid.get_rendering_context(),
             "species_initmanager": self.init_manager.get_rendering_context(),
-            "output": self.__get_output_context(),
+            "output": [entry.get_rendering_context() for entry in (self.plugins or [])],
             "species": [s.get_rendering_context() for s in self.species],
             "init_operations": [o.get_rendering_context() for o in self.init_operations],
         }
-        if self.plugins is not None:
-            serialized["output"] = self.__get_output_context()
-        else:
-            serialized["output"] = None
 
         if self.laser is not None:
             serialized["laser"] = [ll.get_rendering_context() for ll in self.laser]

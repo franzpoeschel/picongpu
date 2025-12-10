@@ -5,7 +5,6 @@ Authors: Julian Lenz, Masoud Afshari
 License: GPLv3+
 """
 
-from .auto import Auto
 from .binning import Binning, BinningAxis, BinSpec
 from .phase_space import PhaseSpace
 from .energy_histogram import EnergyHistogram
@@ -19,7 +18,6 @@ from .backend_config import BackendConfig, OpenPMDConfig
 from .unit_dimension import UnitDimension
 
 __all__ = [
-    "Auto",
     "BackendConfig",
     "OpenPMDConfig",
     "Binning",
