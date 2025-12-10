@@ -15,10 +15,14 @@ import typing
 from pathlib import Path
 
 import picmistandard
+from pydantic import BaseModel
 import typeguard
 
 from picongpu.picmi.diagnostics import ParticleDump, FieldDump
+from picongpu.picmi.layout import AnyLayout
+from picongpu.picmi.species_requirements import SimpleDensityOperation
 from picongpu.pypicongpu.output.openpmd_plugin import OpenPMDPlugin, FieldDump as PyPIConGPUFieldDump
+from picongpu.pypicongpu.species.attribute.weighting import Weighting
 from picongpu.pypicongpu.species.initmanager import InitManager
 
 from .. import pypicongpu
@@ -27,6 +31,21 @@ from .grid import Cartesian3DGrid
 from .interaction import Interaction
 from .interaction.ionization import IonizationModel
 from .species import NEW1_Species, Species
+
+
+class _DensityImpl(BaseModel):
+    layout: AnyLayout
+    grid: Cartesian3DGrid
+    species: NEW1_Species
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.species.register_requirements(
+            [Weighting(), SimpleDensityOperation(species=self.species, layout=self.layout, grid=self.grid)]
+        )
 
 
 def _unique(iterable):
@@ -140,6 +159,8 @@ class Simulation(picmistandard.PICMI_Simulation):
     picongpu_binomial_current_interpolation = pypicongpu.util.build_typesafe_property(bool)
     """switch on a binomial current interpolation"""
 
+    picongpu_NEW1_distributions = pypicongpu.util.build_typesafe_property(list[_DensityImpl])
+
     __runner = pypicongpu.util.build_typesafe_property(typing.Optional[pypicongpu.runner.Runner])
 
     # @todo remove boiler plate constructor argument list once picmistandard reference implementation switches to
@@ -158,6 +179,7 @@ class Simulation(picmistandard.PICMI_Simulation):
     ):
         self.NEW1_species = []
         self.NEW1_layouts = []
+        self.picongpu_NEW1_distributions = []
         self.picongpu_template_dir = _normalise_template_dir(picongpu_template_dir)
         self.picongpu_typical_ppc = picongpu_typical_ppc
         self.picongpu_moving_window_move_point = picongpu_moving_window_move_point
@@ -611,6 +633,8 @@ class Simulation(picmistandard.PICMI_Simulation):
     def _NEW1_picongpu_add_species(self, species, layout):
         self.NEW1_species.append(species)
         self.NEW1_layouts.append(layout)
+        if species.initial_distribution is not None:
+            self.picongpu_NEW1_distributions.append(_DensityImpl(species=species, layout=layout, grid=self.solver.grid))
 
     def add_species(self, *args, **kwargs):
         if isinstance(args[0], NEW1_Species):

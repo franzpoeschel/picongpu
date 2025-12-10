@@ -9,6 +9,8 @@ from typing import Any, Callable
 
 from pydantic import BaseModel, Field
 
+from picongpu.pypicongpu.species.constant.constant import Constant
+from picongpu.pypicongpu.species.attribute.attribute import Attribute
 from picongpu.pypicongpu.species.constant.groundstateionization import GroundStateIonization
 from picongpu.pypicongpu.species.operation.setchargestate import SetChargeState
 from picongpu.pypicongpu.species.operation.simpledensity import SimpleDensity
@@ -21,18 +23,40 @@ def get_as_pypicongpu(obj, *args, **kwargs):
 
 
 def must_be_unique(requirement):
-    return hasattr(requirement, "must_be_unique") and requirement.must_be_unique
+    return (hasattr(requirement, "must_be_unique") and requirement.must_be_unique) or (
+        isinstance(requirement, Constant) or isinstance(requirement, Attribute)
+    )
 
 
 def is_same_as(lhs, rhs):
-    return (hasattr(lhs, "is_same_as") and lhs.is_same_as(rhs)) or (hasattr(rhs, "is_same_as") and rhs.is_same_as(lhs))
+    return (
+        (hasattr(lhs, "is_same_as") and lhs.is_same_as(rhs))
+        or (hasattr(rhs, "is_same_as") and rhs.is_same_as(lhs))
+        or (lhs == rhs)
+    )
 
 
 def try_update_with(into_instance, from_instance):
+    if hasattr(into_instance, "try_update_with"):
+        return into_instance.try_update_with(from_instance)
+    return False
+
+
+def check_for_conflict(obj1, obj2):
     try:
-        return into_instance.merge(from_instance)
-    except Exception:
-        return False
+        if hasattr(obj1, "check_for_conflict"):
+            obj1.check_for_conflict(obj2)
+        if hasattr(obj2, "check_for_conflict"):
+            obj2.check_for_conflict(obj1)
+    except Exception as err:
+        raise ValueError(
+            f"A conflict in requirements between {obj1=} and {obj2=} has been detected."
+            "See above error message for details."
+        ) from err
+
+
+def run_construction(obj):
+    return obj.run_construction() if hasattr(obj, "run_construction") else obj
 
 
 class _Operators(BaseModel):
@@ -41,12 +65,14 @@ class _Operators(BaseModel):
     # and I've got more urgent matters to deal with.
     constructor: Callable[[Any], Any] = lambda self: self.metadata.Type(
         *map(get_as_pypicongpu, self.metadata.args),
-        **dict(map(lambda kv: (kv[0], get_as_pypicongpu(kv[1])), self.metadata.kwargs)),
+        **dict(map(lambda kv: (kv[0], get_as_pypicongpu(kv[1])), self.metadata.kwargs.items())),
     )
     try_update_with: Callable[[Any, Any], bool] = lambda self, other: False
     is_same_as: Callable[[Any, Any], bool] = lambda self, other: isinstance(other, DelayedConstruction) and (
         self.metadata == other.metadata
     )
+    # This is supposed to raise in case of conflict:
+    check_for_conflict: Callable[[Any, Any], None] = lambda self, other: None
 
 
 class _Metadata(BaseModel):
@@ -111,6 +137,9 @@ class DelayedConstruction(BaseModel):
     def is_same_as(self, other):
         return self.operators.is_same_as(self, other)
 
+    def check_for_conflict(self, other):
+        return self.operators.check_for_conflict(self, other)
+
 
 class GroundStateIonizationConstruction(DelayedConstruction):
     def __init__(self, /, ionization_model):
@@ -120,15 +149,17 @@ class GroundStateIonizationConstruction(DelayedConstruction):
             )
 
         def try_update_with(self, other):
-            return isinstance(other, GroundStateIonizationConstruction) and (
-                self.metadata.kwargs["ionization_model_list"].extend(other.metadata.kwargs["ionization_model_list"])
-                or True
-            )
+            if not isinstance(other, GroundStateIonizationConstruction):
+                return False
+            for model in other.metadata.kwargs["ionization_model_list"]:
+                if model not in self.metadata.kwargs["ionization_model_list"]:
+                    self.metadata.kwargs["ionization_model_list"].append(model)
+            return True
 
         operators = {"constructor": constructor, "try_update_with": try_update_with}
         metadata = {"Type": GroundStateIonization, "kwargs": {"ionization_model_list": [ionization_model]}}
 
-        return super().__init__(operators=operators, metadata=metadata)
+        return super().__init__(operators=operators, metadata=metadata, must_be_unique=True)
 
 
 class SetChargeStateOperation(DelayedConstruction):

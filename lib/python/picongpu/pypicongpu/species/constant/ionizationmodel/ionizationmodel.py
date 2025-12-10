@@ -27,7 +27,7 @@ class IonizationModel(pydantic.BaseModel, Constant):
     PIConGPU term: "ionizer"
     """
 
-    PICONGPU_NAME: str
+    picongpu_name: str
     """C++ Code type name of ionizer"""
 
     # no typecheck here -- would require circular imports
@@ -69,21 +69,21 @@ class IonizationModel(pydantic.BaseModel, Constant):
         if self.ionization_current is None:
             # case no ionization_current configurable
             return {
-                "ionizer_picongpu_name": self.PICONGPU_NAME,
+                "ionizer_picongpu_name": self.picongpu_name,
                 "ionization_electron_species": self.ionization_electron_species.get_rendering_context(),
                 "ionization_current": None,
             }
 
         # default case
         return {
-            "ionizer_picongpu_name": self.PICONGPU_NAME,
+            "ionizer_picongpu_name": self.picongpu_name,
             "ionization_electron_species": self.ionization_electron_species.get_rendering_context(),
             "ionization_current": self.ionization_current.get_generic_rendering_context(),
         }
 
     def get_generic_rendering_context(self) -> dict[str, typing.Any]:
         return IonizationModel(
-            PICONGPU_NAME=self.PICONGPU_NAME,
+            picongpu_name=self.picongpu_name,
             ionization_electron_species=self.ionization_electron_species,
             ionization_current=self.ionization_current,
         ).get_rendering_context()

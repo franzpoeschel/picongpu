@@ -19,7 +19,7 @@ class BSIEffectiveZ(IonizationModel):
     shielding, but still neglecting the Stark upshift of ionization energies.
     """
 
-    PICONGPU_NAME: str = "BSIEffectiveZ"
+    picongpu_name: str = "BSIEffectiveZ"
     """C++ Code type name of ionizer"""
 
     ionization_current: IonizationCurrent

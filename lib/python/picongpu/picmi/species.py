@@ -8,7 +8,14 @@ License: GPLv3+
 from itertools import chain
 from pydantic import BaseModel, PrivateAttr
 from picongpu.picmi.distribution import AnyDistribution
-from picongpu.picmi.species_requirements import try_update_with, must_be_unique, is_same_as
+from picongpu.picmi.species_requirements import (
+    DelayedConstruction,
+    try_update_with,
+    must_be_unique,
+    is_same_as,
+    check_for_conflict,
+    run_construction,
+)
 from picongpu.pypicongpu.species.attribute import Position, Momentum
 from picongpu.pypicongpu.species.attribute.attribute import Attribute
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
@@ -16,7 +23,6 @@ from picongpu.pypicongpu.species.constant.charge import Charge
 from picongpu.pypicongpu.species.constant.constant import Constant
 from picongpu.pypicongpu.species.constant.mass import Mass
 from picongpu.pypicongpu.species.operation.operation import Operation
-from picongpu.pypicongpu.species.operation.simpledensity import SimpleDensity
 from picongpu.pypicongpu.species.species import Shape, Species as PyPIConGPUSpecies
 from .predefinedparticletypeproperties import PredefinedParticleTypeProperties
 
@@ -24,7 +30,7 @@ from .. import pypicongpu
 from ..pypicongpu.species.util.element import Element
 
 import picmistandard
-from typing import Any, Callable
+from typing import Any
 
 import typing
 import typeguard
@@ -385,16 +391,8 @@ class NEW1_Species(BaseModel):
 
     def _evaluate_operation_requirements(self, grid, layout, species):
         return [
-            op.function(species=species, **op.kwargs)
-            for op in resolve_operations(
-                chain(
-                    *evaluate_requirements(
-                        self._requirements
-                        + initial_distribution_requirements(self.initial_distribution, grid, layout, species),
-                        [OperationalRequirement],
-                    )
-                )
-            )
+            run_construction(op)
+            for op in resolve_operations(chain(*evaluate_requirements(self._requirements, [Operation])))
         ]
 
     def __gt__(self, other):
@@ -408,15 +406,12 @@ class NEW1_Species(BaseModel):
         self._requirements += requirements
 
 
-def run_construction(obj):
-    return obj.run_construction() if hasattr(obj, "run_construction") else obj
-
-
 def _make_unique(requirements):
     result = []
     for lhs in requirements:
         append_this = True
         for rhs in result:
+            check_for_conflict(lhs, rhs)
             merge_success = try_update_with(rhs, lhs)
             if merge_success:
                 append_this = False
@@ -433,7 +428,19 @@ def resolve_operations(requirements):
 
 
 def evaluate_requirements(requirements, Types):
-    return list(map(list, (filter(lambda req: isinstance(req, Type), requirements) for Type in Types)))
+    return list(
+        map(
+            _make_unique,
+            (
+                filter(
+                    lambda req: isinstance(req, Type)
+                    or (isinstance(req, DelayedConstruction) and issubclass(req.metadata.Type, Type)),
+                    requirements,
+                )
+                for Type in Types
+            ),
+        )
+    )
 
 
 def particle_type_requirements(particle_type):
@@ -452,17 +459,6 @@ def particle_type_requirements(particle_type):
     return MassRequirement(value=mass).expand() + ChargeRequirement(value=charge).expand()
 
 
-def initial_distribution_requirements(dist, grid, layout, species):
-    if dist is not None:
-        return [
-            OperationalRequirement(
-                function=SimpleDensity,
-                kwargs=dict(profile=dist.get_as_pypicongpu(grid), layout=layout.get_as_pypicongpu()),
-            )
-        ]
-    return []
-
-
 ### Requirements
 
 
@@ -478,12 +474,6 @@ class ChargeRequirement(BaseModel):
 
     def expand(self):
         return [Charge(charge_si=self.value)]
-
-
-class OperationalRequirement(BaseModel):
-    function: Callable[[NEW1_Species, Any, ...], Operation]
-    kwargs: dict[str, Any]
-    must_be_unique: bool = True
 
 
 class DependsOn(BaseModel):

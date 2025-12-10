@@ -150,7 +150,7 @@ class InitManager(RenderedObject):
         assert 0 == len(self.__get_all_attributes()), "phase {} of operation {} added attributes: {}".format(
             phase_name,
             str(operation),
-            ", ".join(map(lambda attr: attr.PICONGPU_NAME, self.__get_all_attributes())),
+            ", ".join(map(lambda attr: attr.picongpu_name, self.__get_all_attributes())),
         )
 
     def __check_operation_prebook_only_known_species(self, operation: Operation) -> None:
@@ -327,7 +327,7 @@ class InitManager(RenderedObject):
         dependencies can be checked with this method.
         """
         for species in self.all_species:
-            species_attr_names = set(map(lambda attr: attr.PICONGPU_NAME, species.attributes))
+            species_attr_names = set(map(lambda attr: attr.picongpu_name, species.attributes))
 
             for constant in species.constants:
                 required_attrs = constant.get_attribute_dependencies()
@@ -341,7 +341,7 @@ class InitManager(RenderedObject):
                         )
 
                     # actual check:
-                    assert required_attr.PICONGPU_NAME in species_attr_names, (
+                    assert required_attr.picongpu_name in species_attr_names, (
                         "constant {} of species {} requires attribute {} to be present, but it is not".format(
                             constant, species.name, required_attr
                         )

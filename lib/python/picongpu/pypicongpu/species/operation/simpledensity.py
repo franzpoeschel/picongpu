@@ -46,7 +46,7 @@ class SimpleDensity(DensityOperation):
 
     def __init__(self, /, species, profile, layout):
         self.profile = profile
-        self.species = species if isinstance(species, set) else {species}
+        self.species = species if isinstance(species, set) else set(species)
         self.layout = layout
 
     def check_preconditions(self) -> None:

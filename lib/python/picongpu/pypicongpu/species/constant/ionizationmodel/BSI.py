@@ -24,7 +24,7 @@ class BSI(IonizationModel):
     `proton number - number of inner shell electrons`, but neglects the Stark upshift of ionization energies.
     """
 
-    PICONGPU_NAME: str = "BSI"
+    picongpu_name: str = "BSI"
     """C++ Code type name of ionizer"""
 
     ionization_current: IonizationCurrent

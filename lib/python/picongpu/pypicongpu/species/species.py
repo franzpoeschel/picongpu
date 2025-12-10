@@ -140,7 +140,7 @@ class Species(RenderedObject):
             )
 
         # each attribute (-name) can only be used once
-        attr_names = list(map(lambda attr: attr.PICONGPU_NAME, self.attributes))
+        attr_names = list(map(lambda attr: attr.picongpu_name, self.attributes))
         non_unique_attributes = set([c for c in attr_names if attr_names.count(c) > 1])
         if 0 != len(non_unique_attributes):
             raise ValueError(
@@ -226,6 +226,6 @@ class Species(RenderedObject):
             "name": self.name,
             "typename": self.get_cxx_typename(),
             "shape": shape.value,
-            "attributes": list(map(lambda attr: {"picongpu_name": attr.PICONGPU_NAME}, self.attributes)),
+            "attributes": list(map(lambda attr: {"picongpu_name": attr.picongpu_name}, self.attributes)),
             "constants": constants_context,
         }

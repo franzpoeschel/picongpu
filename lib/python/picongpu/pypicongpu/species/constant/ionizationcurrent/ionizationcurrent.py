@@ -15,11 +15,11 @@ from ..constant import Constant
 class IonizationCurrent(Constant, pydantic.BaseModel):
     """base class for all ionization currents models"""
 
-    PICONGPU_NAME: str
+    picongpu_name: str
     """C++ Code type name of ionizer"""
 
     def _get_serialized(self) -> dict:
-        return {"picongpu_name": self.PICONGPU_NAME}
+        return {"picongpu_name": self.picongpu_name}
 
     def get_generic_rendering_context(self) -> dict:
-        return IonizationCurrent(PICONGPU_NAME=self.PICONGPU_NAME).get_rendering_context()
+        return IonizationCurrent(picongpu_name=self.picongpu_name).get_rendering_context()
