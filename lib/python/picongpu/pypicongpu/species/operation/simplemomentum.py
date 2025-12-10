@@ -38,8 +38,12 @@ class SimpleMomentum(Operation):
     drift = util.build_typesafe_property(typing.Optional[Drift])
     """drift of particles (if any)"""
 
-    def __init__(self):
-        pass
+    _name = "simplemomentum"
+
+    def __init__(self, /, species, temperature=None, drift=None):
+        self.species = species
+        self.temperature = temperature
+        self.drift = drift
 
     def check_preconditions(self) -> None:
         # acces species to make sure it is set -> no required constants

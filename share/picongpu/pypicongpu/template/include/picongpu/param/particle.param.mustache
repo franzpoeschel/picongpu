@@ -93,7 +93,7 @@ namespace picongpu
         namespace manipulators
         {
             namespace pypicongpu {
-                {{#species_initmanager.operations.simple_momentum}}
+                {{#init_operations}}{{#typeID.simplemomentum}}{{#data}}
                     {{! note: this is a loop }}
                     {{! -> there can be multiple "simple momentum"s }}
 
@@ -130,7 +130,7 @@ namespace picongpu
                             };
                             using AddTemperature_{{{species.typename}}} = unary::Temperature<AddTemperature_{{{species.typename}}}_Param>;
                     {{/temperature}}
-                {{/species_initmanager.operations.simple_momentum}}
+                {{/data}}{{/typeID.simplemomentum}}{{/init_operations}}
 
                 {{#init_operations}}{{#typeID.setchargestate}}{{#data}}
                     //! definition of PreIonized manipulator

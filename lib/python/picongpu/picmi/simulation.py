@@ -20,9 +20,10 @@ import typeguard
 
 from picongpu.picmi.diagnostics import ParticleDump, FieldDump
 from picongpu.picmi.layout import AnyLayout
-from picongpu.picmi.species_requirements import SimpleDensityOperation
+from picongpu.picmi.species_requirements import SimpleDensityOperation, SimpleMomentumOperation
 from picongpu.pypicongpu.output.openpmd_plugin import OpenPMDPlugin, FieldDump as PyPIConGPUFieldDump
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
+from picongpu.pypicongpu.species.attribute.momentum import Momentum
 from picongpu.pypicongpu.species.initmanager import InitManager
 
 from .. import pypicongpu
@@ -44,7 +45,12 @@ class _DensityImpl(BaseModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.species.register_requirements(
-            [Weighting(), SimpleDensityOperation(species=self.species, layout=self.layout, grid=self.grid)]
+            [
+                Weighting(),
+                SimpleDensityOperation(species=self.species, layout=self.layout, grid=self.grid),
+                Momentum(),
+                SimpleMomentumOperation(species=self.species),
+            ]
         )
 
 
