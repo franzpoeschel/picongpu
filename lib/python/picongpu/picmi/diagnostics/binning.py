@@ -14,7 +14,7 @@ from picongpu.picmi.diagnostics.backend_config import OpenPMDConfig
 from ...pypicongpu.output.binning import Binning as PyPIConGPUBinning
 from ...pypicongpu.output.binning import BinningAxis as PyPIConGPUBinningAxis
 from ...pypicongpu.output.binning import BinSpec as PyPIConGPUBinSpec
-from ..species import NEW1_Species as Species
+from ..species import Species as Species
 from .particle_functor import ParticleFunctor as BinningFunctor
 from .timestepspec import TimeStepSpec
 

@@ -13,7 +13,7 @@ from picongpu.picmi.copy_attributes import default_converts_to
 from ...pypicongpu.output.energy_histogram import (
     EnergyHistogram as PyPIConGPUEnergyHistogram,
 )
-from ..species import NEW1_Species as Species
+from ..species import Species as Species
 from .timestepspec import TimeStepSpec
 
 

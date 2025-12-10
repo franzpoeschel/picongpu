@@ -51,7 +51,7 @@ def generate_name(name, suffix):
 
 def generate_species(name, distribution):
     return [
-        picmi.NEW1_Species(
+        picmi.Species(
             name=name,
             particle_type="H",
             initial_distribution=distribution,
@@ -101,7 +101,7 @@ HEADERS = [
 ]
 
 
-class TestNEW1_SpeciesMeta(type):
+class TestSpeciesMeta(type):
     def __new__(cls, name, bases, dict):
         for header in HEADERS:
             name = "test_compare_" + header
@@ -109,7 +109,7 @@ class TestNEW1_SpeciesMeta(type):
         return type.__new__(cls, name, bases, dict)
 
 
-class TestNEW1_Species(unittest.TestCase, metaclass=TestNEW1_SpeciesMeta):
+class TestSpecies(unittest.TestCase, metaclass=TestSpeciesMeta):
     _setup_path = None
 
     def setUp(self):

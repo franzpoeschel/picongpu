@@ -21,7 +21,7 @@ from picongpu.picmi import (
     ElectromagneticSolver,
     GriddedLayout,
     Simulation,
-    NEW1_Species as Species,
+    Species as Species,
 )
 from picongpu.picmi.diagnostics import (
     Checkpoint,

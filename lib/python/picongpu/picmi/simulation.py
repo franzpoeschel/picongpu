@@ -29,13 +29,13 @@ from .. import pypicongpu
 from . import constants
 from .grid import Cartesian3DGrid
 from .interaction import Interaction
-from .species import NEW1_Species
+from .species import Species
 
 
 class _DensityImpl(BaseModel):
     layout: AnyLayout
     grid: Cartesian3DGrid
-    species: NEW1_Species
+    species: Species
 
     class Config:
         arbitrary_types_allowed = True
@@ -163,7 +163,7 @@ class Simulation(picmistandard.PICMI_Simulation):
     picongpu_binomial_current_interpolation = pypicongpu.util.build_typesafe_property(bool)
     """switch on a binomial current interpolation"""
 
-    picongpu_NEW1_distributions = pypicongpu.util.build_typesafe_property(list[_DensityImpl])
+    picongpu_distributions = pypicongpu.util.build_typesafe_property(list[_DensityImpl])
 
     __runner = pypicongpu.util.build_typesafe_property(typing.Optional[pypicongpu.runner.Runner])
 
@@ -181,9 +181,9 @@ class Simulation(picmistandard.PICMI_Simulation):
         picongpu_binomial_current_interpolation: bool = False,
         **keyword_arguments,
     ):
-        self.NEW1_species = []
-        self.NEW1_layouts = []
-        self.picongpu_NEW1_distributions = []
+        self.species = []
+        self.layouts = []
+        self.picongpu_distributions = []
         self.picongpu_template_dir = _normalise_template_dir(picongpu_template_dir)
         self.picongpu_typical_ppc = picongpu_typical_ppc
         self.picongpu_moving_window_move_point = picongpu_moving_window_move_point
@@ -422,17 +422,17 @@ class Simulation(picmistandard.PICMI_Simulation):
             self.__runner = pypicongpu.runner.Runner(self.get_as_pypicongpu(), self.picongpu_template_dir)
         return self.__runner
 
-    def _NEW1_picongpu_add_species(self, species, layout):
-        self.NEW1_species.append(species)
-        self.NEW1_layouts.append(layout)
+    def _picongpu_add_species(self, species, layout):
+        self.species.append(species)
+        self.layouts.append(layout)
         if species.density_scale is not None and (layout is None and species.initial_distribution is None):
             raise ValueError("layout and initial distribution must be set to use density scale")
         if species.initial_distribution is not None:
-            self.picongpu_NEW1_distributions.append(_DensityImpl(species=species, layout=layout, grid=self.solver.grid))
+            self.picongpu_distributions.append(_DensityImpl(species=species, layout=layout, grid=self.solver.grid))
 
     def add_species(self, *args, **kwargs):
-        if isinstance(args[0], NEW1_Species):
-            return self._NEW1_picongpu_add_species(*args, **kwargs)
+        if isinstance(args[0], Species):
+            return self._picongpu_add_species(*args, **kwargs)
         return super().add_species(*args, **kwargs)
 
     def _translate_species(self):
@@ -440,7 +440,7 @@ class Simulation(picmistandard.PICMI_Simulation):
             species, init_operations = zip(
                 *(
                     species.get_all_as_pypicongpu(self.solver.grid, layout)
-                    for species, layout in sorted(zip(self.NEW1_species, self.NEW1_layouts), key=lambda sl: sl[0])
+                    for species, layout in sorted(zip(self.species, self.layouts), key=lambda sl: sl[0])
                 )
             )
         except ValueError:
