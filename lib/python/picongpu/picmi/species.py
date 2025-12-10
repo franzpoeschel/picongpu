@@ -358,6 +358,9 @@ class NEW1_Species(BaseModel):
     picongpu_fixed_charge: bool = False
     charge_state: int | None = None
     density_scale: float | None = None
+    mass: float | None = None
+    charge: float | None = None
+    #    particle_shape: ParticleShape = ParticleShape["TSC"]
 
     # Theoretically, Position(), Momentum() and Weighting() are also requirements imposed from the outside,
     # e.g., by the current deposition, pusher, ..., but these concepts are not separately modelled in PICMI
@@ -379,7 +382,11 @@ class NEW1_Species(BaseModel):
         self._register_initial_requirements()
 
     def _register_initial_requirements(self):
-        constants = [DensityRatio(ratio=self.density_scale)] if self.density_scale is not None else []
+        constants = (
+            ([DensityRatio(ratio=self.density_scale)] if self.density_scale is not None else [])
+            + ([Mass(mass_si=self.mass)] if self.mass is not None else [])
+            + ([Charge(charge_si=self.charge)] if self.charge is not None else [])
+        )
         self.register_requirements(particle_type_requirements(self.particle_type) + constants)
 
     class Config:

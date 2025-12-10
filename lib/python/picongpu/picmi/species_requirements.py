@@ -53,14 +53,21 @@ def try_update_with(into_instance, from_instance):
     return False
 
 
+class RequirementConflict(Exception):
+    pass
+
+
 def check_for_conflict(obj1, obj2):
     try:
         if hasattr(obj1, "check_for_conflict"):
             obj1.check_for_conflict(obj2)
         if hasattr(obj2, "check_for_conflict"):
             obj2.check_for_conflict(obj1)
+        if isinstance(obj1, Constant) and (isinstance(obj1, type(obj2)) or isinstance(obj2, type(obj1))):
+            if obj1 != obj2:
+                raise RequirementConflict(f"Conflicting constants {obj1=} and {obj2=} required.")
     except Exception as err:
-        raise ValueError(
+        raise RequirementConflict(
             f"A conflict in requirements between {obj1=} and {obj2=} has been detected."
             "See above error message for details."
         ) from err
