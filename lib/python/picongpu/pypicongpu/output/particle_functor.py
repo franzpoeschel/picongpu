@@ -71,19 +71,19 @@ def translate_to_cpp_type(return_type):
 
 class UnitDimension(BaseModel):
     _num_unit_dimensions: int = PrivateAttr(7)
-    unit_vector: list = _num_unit_dimensions.default * [0.0]
+    unit_dimension: list = _num_unit_dimensions.default * [0.0]
 
     @model_validator(mode="after")
     def check(self):
-        if len(self.unit_vector) != self._num_unit_dimensions:
+        if len(self.unit_dimension) != self._num_unit_dimensions:
             raise ValueError(
-                f"Unit dimension vector has {len(self.unit_vector)=} but {self._num_unit_dimensions=}. They must match."
+                f"Unit dimension vector has {len(self.unit_dimension)=} but {self._num_unit_dimensions=}. They must match."
             )
         return self
 
     @model_serializer(mode="plain")
     def translate_to_cpp(self) -> str:
-        return f"std::array<double, {self._num_unit_dimensions}>{{{','.join(map(str, self.unit_vector))}}}"
+        return f"std::array<double, {self._num_unit_dimensions}>{{{','.join(map(str, self.unit_dimension))}}}"
 
 
 class _PreambleStatement(BaseModel):
