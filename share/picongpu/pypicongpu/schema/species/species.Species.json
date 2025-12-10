@@ -8,6 +8,7 @@
     "typename",
     "attributes",
     "shape",
+    "pusher",
     "constants"
   ],
   "properties": {
@@ -24,6 +25,9 @@
       "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
     },
     "shape": {
+      "type": "string"
+    },
+    "pusher": {
       "type": "string"
     },
     "attributes": {

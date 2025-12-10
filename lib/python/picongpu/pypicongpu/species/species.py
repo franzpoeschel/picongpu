@@ -33,6 +33,20 @@ class Shape(Enum):
     TSC = "TSC"
 
 
+class Pusher(Enum):
+    # supported by standard and PIConGPU
+    Boris = "Boris"
+    Vay = "Vay"
+    Higuera = "Higuera-Cary"
+    Free = "Free"
+    # not supported by standard
+    ReducedLandauLifshitz = "ReducedLandauLifshitz"
+    Acceleration = "Acceleration"
+    Photon = "Photon"
+    Probe = "Probe"
+    Axel = "Axel"
+
+
 @typeguard.typechecked
 class Species(RenderedObject):
     """
@@ -56,16 +70,19 @@ class Species(RenderedObject):
     attributes = util.build_typesafe_property(typing.List[Attribute])
     """PIConGPU particle attributes"""
 
+    pusher = util.build_typesafe_property(Pusher)
+
     name = util.build_typesafe_property(str)
     """name of the species"""
 
     shape = util.build_typesafe_property(Shape)
 
-    def __init__(self, /, name, constants, attributes, shape):
+    def __init__(self, /, name, constants, attributes, shape, pusher):
         self.name = name
         self.constants = constants
         self.attributes = attributes
         self.shape = shape
+        self.pusher = pusher
 
     def __str__(self) -> str:
         try:
@@ -226,6 +243,7 @@ class Species(RenderedObject):
             "name": self.name,
             "typename": self.get_cxx_typename(),
             "shape": shape.value,
+            "pusher": self.pusher.value,
             "attributes": list(map(lambda attr: {"picongpu_name": attr.picongpu_name}, self.attributes)),
             "constants": constants_context,
         }

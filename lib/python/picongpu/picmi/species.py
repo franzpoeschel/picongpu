@@ -5,6 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from enum import Enum
 import re
 from itertools import chain
 from typing import Any
@@ -28,12 +29,37 @@ from picongpu.pypicongpu.species.constant.constant import Constant
 from picongpu.pypicongpu.species.constant.densityratio import DensityRatio
 from picongpu.pypicongpu.species.constant.mass import Mass
 from picongpu.pypicongpu.species.operation.operation import Operation
-from picongpu.pypicongpu.species.species import Shape
-from picongpu.pypicongpu.species.species import Species as PyPIConGPUSpecies
+from picongpu.pypicongpu.species.species import Shape, Pusher, Species as PyPIConGPUSpecies
 
 from .. import pypicongpu
 from ..pypicongpu.species.util.element import Element
 from .predefinedparticletypeproperties import PredefinedParticleTypeProperties
+
+
+class ParticleShape(Enum):
+    NGP = "NGP"
+    CIC = "linear"
+    TSC = "quadratic"
+    PQS = "cubic"
+    PCS = "quartic"
+    counter = "counter"
+
+
+class PusherMethod(Enum):
+    # supported by standard and PIConGPU
+    Boris = "Boris"
+    Vay = "Vay"
+    HigueraCary = "Higuera-Cary"
+    Free = "free"
+    # not supported by standard
+    ReducedLandauLifshitz = "ReducedLandauLifshitz"
+    Acceleration = "Acceleration"
+    Photon = "Photon"
+    Probe = "Probe"
+    Axel = "Axel"
+    # not supported by PIConGPU
+    Li = "Li"
+    LLRK4 = "LLRK4"
 
 
 class Species(BaseModel):
@@ -45,7 +71,8 @@ class Species(BaseModel):
     density_scale: float | None = None
     mass: float | None = None
     charge: float | None = None
-    #    particle_shape: ParticleShape = ParticleShape["TSC"]
+    particle_shape: ParticleShape = ParticleShape("quadratic")
+    method: PusherMethod = PusherMethod["Boris"]
 
     # Theoretically, Position(), Momentum() and Weighting() are also requirements imposed from the outside,
     # e.g., by the current deposition, pusher, ..., but these concepts are not separately modelled in PICMI
@@ -107,7 +134,8 @@ class Species(BaseModel):
         return PyPIConGPUSpecies(
             name=self.name,
             **self._evaluate_species_requirements(),
-            shape=Shape["TSC"],
+            shape=Shape[self.particle_shape.name],
+            pusher=Pusher[self.method.name],
         )
 
     def get_all_as_pypicongpu(self, grid, layout):
