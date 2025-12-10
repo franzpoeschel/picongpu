@@ -21,6 +21,7 @@ from picongpu.pypicongpu.species.attribute.attribute import Attribute
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
 from picongpu.pypicongpu.species.constant.charge import Charge
 from picongpu.pypicongpu.species.constant.constant import Constant
+from picongpu.pypicongpu.species.constant.densityratio import DensityRatio
 from picongpu.pypicongpu.species.constant.mass import Mass
 from picongpu.pypicongpu.species.operation.operation import Operation
 from picongpu.pypicongpu.species.species import Shape, Species as PyPIConGPUSpecies
@@ -356,6 +357,7 @@ class NEW1_Species(BaseModel):
     initial_distribution: AnyDistribution | None
     picongpu_fixed_charge: bool = False
     charge_state: int | None = None
+    density_scale: float | None = None
 
     # Theoretically, Position(), Momentum() and Weighting() are also requirements imposed from the outside,
     # e.g., by the current deposition, pusher, ..., but these concepts are not separately modelled in PICMI
@@ -377,7 +379,8 @@ class NEW1_Species(BaseModel):
         self._register_initial_requirements()
 
     def _register_initial_requirements(self):
-        self.register_requirements(particle_type_requirements(self.particle_type))
+        constants = [DensityRatio(ratio=self.density_scale)] if self.density_scale is not None else []
+        self.register_requirements(particle_type_requirements(self.particle_type) + constants)
 
     class Config:
         arbitrary_types_allowed = True

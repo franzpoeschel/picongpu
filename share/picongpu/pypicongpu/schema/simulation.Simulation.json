@@ -62,9 +62,6 @@
       "type": "boolean",
       "description": "use binomial current interpolation"
     },
-    "species_initmanager": {
-      "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.species.initmanager.InitManager"
-    },
     "output": {
       "description": "configuration of simulation output",
       "anyOf": [
@@ -103,8 +100,7 @@
     "moving_window",
     "walltime",
     "customuserinput",
-    "species",
-    "init_operations"
+    "species"
   ],
   "unevaluatedProperties": false
 }

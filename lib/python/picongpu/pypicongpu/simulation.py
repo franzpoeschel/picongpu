@@ -15,7 +15,7 @@ import typeguard
 from picongpu.pypicongpu.species.operation.operation import Operation
 from picongpu.pypicongpu.species.species import Species
 
-from . import species, util
+from . import util
 from .customuserinput import InterfaceCustomUserInput
 from .field_solver.DefaultSolver import Solver
 from .grid import Grid3D
@@ -63,9 +63,6 @@ class Simulation(RenderedObject):
     solver = util.build_typesafe_property(Solver)
     """Used Solver"""
 
-    init_manager = util.build_typesafe_property(species.InitManager)
-    """init manager holding all species & their information"""
-
     typical_ppc = util.build_typesafe_property(int)
     """
     typical number of macro particles spawned per cell, >=1
@@ -109,6 +106,8 @@ class Simulation(RenderedObject):
         init_operations,
         time_steps,
         laser,
+        plugins,
+        base_density,
     ):
         self.laser = laser
         self.time_steps = time_steps
@@ -122,6 +121,8 @@ class Simulation(RenderedObject):
         self.typical_ppc = typical_ppc
         self.species = list(species)
         self.init_operations = list(init_operations)
+        self.plugins = plugins
+        self.base_density = base_density
 
     def __render_custom_user_input_list(self) -> dict:
         custom_rendering_context = {"tags": []}
@@ -160,7 +161,6 @@ class Simulation(RenderedObject):
             "typical_ppc": self.typical_ppc,
             "solver": self.solver.get_rendering_context(),
             "grid": self.grid.get_rendering_context(),
-            "species_initmanager": self.init_manager.get_rendering_context(),
             "output": [entry.get_rendering_context() for entry in (self.plugins or [])],
             "species": [s.get_rendering_context() for s in self.species],
             "init_operations": [o.get_rendering_context() for o in self.init_operations],

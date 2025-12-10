@@ -12,11 +12,9 @@ from . import attribute
 from . import constant
 
 from .species import Species
-from .initmanager import InitManager
 
 __all__ = [
     "Species",
-    "InitManager",
     "attribute",
     "constant",
     "operation",
