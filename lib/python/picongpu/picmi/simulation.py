@@ -8,6 +8,7 @@ License: GPLv3+
 # make pypicongpu classes accessible for conversion to pypicongpu
 import datetime
 from functools import reduce
+from itertools import chain
 import logging
 import math
 from os import PathLike
@@ -20,7 +21,13 @@ import typeguard
 
 from picongpu.picmi.diagnostics import ParticleDump, FieldDump
 from picongpu.picmi.layout import AnyLayout
-from picongpu.picmi.species_requirements import SimpleDensityOperation, SimpleMomentumOperation
+from picongpu.picmi.species_requirements import (
+    SimpleDensityOperation,
+    SimpleMomentumOperation,
+    get_as_pypicongpu,
+    run_construction,
+    _make_unique,
+)
 from picongpu.pypicongpu.output.openpmd_plugin import OpenPMDPlugin, FieldDump as PyPIConGPUFieldDump
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
 from picongpu.pypicongpu.species.attribute.momentum import Momentum
@@ -436,22 +443,14 @@ class Simulation(picmistandard.PICMI_Simulation):
         return super().add_species(*args, **kwargs)
 
     def _translate_species(self):
-        try:
-            species, init_operations = zip(
-                *(
-                    species.get_all_as_pypicongpu(self.solver.grid, layout)
-                    for species, layout in sorted(zip(self.species, self.layouts), key=lambda sl: sl[0])
-                )
-            )
-        except ValueError:
-            # too many values to unpack...
-            species = []
-            init_operations = []
-        return organise_species(species), organise_init_operations(init_operations)
+        picmi_species = sorted(self.species)
+        return organise_species(map(get_as_pypicongpu, picmi_species)), organise_init_operations(
+            chain(*(s.get_operations() for s in picmi_species))
+        )
 
 
 def organise_init_operations(operations):
-    return sum(operations, [])
+    return [run_construction(op) for op in _make_unique(operations)]
 
 
 def organise_species(species):

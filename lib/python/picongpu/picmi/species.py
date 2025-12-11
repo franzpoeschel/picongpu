@@ -7,20 +7,12 @@ License: GPLv3+
 
 from enum import Enum
 import re
-from itertools import chain
 from typing import Any
 
 from pydantic import BaseModel, PrivateAttr, computed_field, model_validator
 
 from picongpu.picmi.distribution import AnyDistribution
-from picongpu.picmi.species_requirements import (
-    DelayedConstruction,
-    check_for_conflict,
-    is_same_as,
-    must_be_unique,
-    run_construction,
-    try_update_with,
-)
+from picongpu.picmi.species_requirements import evaluate_requirements, run_construction
 from picongpu.pypicongpu.species.attribute import Momentum, Position
 from picongpu.pypicongpu.species.attribute.attribute import Attribute
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
@@ -80,6 +72,9 @@ class Species(BaseModel):
     # For now, we add them to all species. Refinements might be necessary in the future.
     _requirements: list[Any] = PrivateAttr(default_factory=lambda: [Position(), Weighting(), Momentum()])
 
+    class Config:
+        arbitrary_types_allowed = True
+
     @model_validator(mode="after")
     def check(self):
         try:
@@ -127,9 +122,6 @@ class Species(BaseModel):
         )
         self.register_requirements(particle_type_requirements(self.particle_type) + constants)
 
-    class Config:
-        arbitrary_types_allowed = True
-
     def get_as_pypicongpu(self, *args, **kwargs):
         return PyPIConGPUSpecies(
             name=self.name,
@@ -138,20 +130,16 @@ class Species(BaseModel):
             pusher=Pusher[self.method.name],
         )
 
-    def get_all_as_pypicongpu(self, grid, layout):
-        species = self.get_as_pypicongpu()
-        return species, self._evaluate_operation_requirements(grid, layout, species)
+    def get_operations(self):
+        return evaluate_requirements(self._requirements, Operation)
 
     def _evaluate_species_requirements(self):
-        constants, attributes = evaluate_requirements(self._requirements, [Constant, Attribute])
-        constants = [run_construction(c) for c in _make_unique(constants)]
-        return {"constants": constants, "attributes": attributes}
-
-    def _evaluate_operation_requirements(self, grid, layout, species):
-        return [
-            run_construction(op)
-            for op in resolve_operations(chain(*evaluate_requirements(self._requirements, [Operation])))
-        ]
+        return {
+            key: [run_construction(value) for value in values]
+            for key, values in zip(
+                ("constants", "attributes"), evaluate_requirements(self._requirements, [Constant, Attribute])
+            )
+        }
 
     def __gt__(self, other):
         # This defines a partial ordering on all species.
@@ -162,43 +150,6 @@ class Species(BaseModel):
 
     def register_requirements(self, requirements):
         self._requirements += requirements
-
-
-def _make_unique(requirements):
-    result = []
-    for lhs in requirements:
-        append_this = True
-        for rhs in result:
-            check_for_conflict(lhs, rhs)
-            merge_success = try_update_with(rhs, lhs)
-            if merge_success:
-                append_this = False
-                break
-            if must_be_unique(lhs):
-                append_this = append_this and not is_same_as(lhs, rhs)
-        if append_this:
-            result.append(lhs)
-    return result
-
-
-def resolve_operations(requirements):
-    return _make_unique(requirements)
-
-
-def evaluate_requirements(requirements, Types):
-    return list(
-        map(
-            _make_unique,
-            (
-                filter(
-                    lambda req: isinstance(req, Type)
-                    or (isinstance(req, DelayedConstruction) and issubclass(req.metadata.Type, Type)),
-                    requirements,
-                )
-                for Type in Types
-            ),
-        )
-    )
 
 
 def particle_type_requirements(particle_type):

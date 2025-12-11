@@ -77,6 +77,41 @@ def run_construction(obj):
     return obj.run_construction() if hasattr(obj, "run_construction") else obj
 
 
+def _make_unique(requirements):
+    result = []
+    for lhs in requirements:
+        append_this = True
+        for rhs in result:
+            check_for_conflict(lhs, rhs)
+            merge_success = try_update_with(rhs, lhs)
+            if merge_success:
+                append_this = False
+                break
+            if must_be_unique(lhs):
+                append_this = append_this and not is_same_as(lhs, rhs)
+        if append_this:
+            result.append(lhs)
+    return result
+
+
+def evaluate_requirements(requirements, Types):
+    if isinstance(Types, type):
+        return next(evaluate_requirements(requirements, [Types]))
+    return (
+        map(
+            run_construction,
+            _make_unique(
+                filter(
+                    lambda req: isinstance(req, Type)
+                    or (isinstance(req, DelayedConstruction) and issubclass(req.metadata.Type, Type)),
+                    requirements,
+                )
+            ),
+        )
+        for Type in Types
+    )
+
+
 class _Operators(BaseModel):
     # More precisely, this returns self.metadata.Type
     # but it is kinda hard to express this in type hints
