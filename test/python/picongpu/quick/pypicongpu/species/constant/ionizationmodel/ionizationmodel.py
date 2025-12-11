@@ -79,16 +79,7 @@ class Test_IonizationModel(unittest.TestCase):
 
     def test_circular_ionization(self):
         """electron species must not be ionizable itself"""
-        other_electron = Species()
-        other_electron.name = "e"
-        mass_constant = Mass(mass_si=constants.m_e)
-        charge_constant = Charge(charge_si=constants.q_e)
-        other_electron.constants = [
-            charge_constant,
-            mass_constant,
-        ]
-        # note: attributes not set yet, as would be case in init manager
-
+        other_electron = Species(name="e", constants=[Mass(mass_si=constants.m_e), Charge(charge_si=constants.q_e)])
         instance_transitive_const = Implementation()
         instance_transitive_const.ionization_electron_species = other_electron
 
