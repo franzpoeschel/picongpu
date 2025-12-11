@@ -19,17 +19,15 @@ from picongpu.pypicongpu.species.attribute import BoundElectrons
 
 class TestNoBoundElectrons(unittest.TestCase):
     def setUp(self):
-        electron = Species()
-        electron.name = "e"
-        self.electron = electron
-
-        self.species1 = Species()
-        self.species1.name = "ion"
-        self.species1.constants = [
-            GroundStateIonization(
-                ionization_model_list=[BSI(ionization_electron_species=self.electron, ionization_current=None_())]
-            )
-        ]
+        self.electron = Species(name="e")
+        self.species1 = Species(
+            name="ion",
+            constants=[
+                GroundStateIonization(
+                    ionization_model_list=[BSI(ionization_electron_species=self.electron, ionization_current=None_())]
+                )
+            ],
+        )
 
     def test_no_rendering_context(self):
         """results in no rendered code, hence no rendering context available"""

@@ -77,12 +77,12 @@ class Species(RenderedObject):
 
     shape = util.build_typesafe_property(Shape)
 
-    def __init__(self, /, name, constants, attributes, shape, pusher):
+    def __init__(self, /, name, constants=None, attributes=None, shape=None, pusher=None):
         self.name = name
-        self.constants = constants
-        self.attributes = attributes
-        self.shape = shape
-        self.pusher = pusher
+        self.constants = constants or []
+        self.attributes = attributes or []
+        self.shape = shape or Shape["TSC"]
+        self.pusher = pusher or Pusher["Boris"]
 
     def __str__(self) -> str:
         try:

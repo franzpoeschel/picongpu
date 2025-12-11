@@ -19,19 +19,15 @@ from picongpu.pypicongpu.species.attribute import BoundElectrons, Position, Mome
 
 class TestSetChargeState(unittest.TestCase):
     def setUp(self):
-        electron = Species()
-        electron.name = "e"
-        # note: attributes not set yet (as would be in init manager)
-
-        self.electron = electron
-
-        self.species1 = Species()
-        self.species1.name = "ion"
-        self.species1.constants = [
-            GroundStateIonization(
-                ionization_model_list=[BSI(ionization_electron_species=self.electron, ionization_current=None_())]
-            )
-        ]
+        self.electron = Species(name="e")
+        self.species1 = Species(
+            name="ion",
+            constants=[
+                GroundStateIonization(
+                    ionization_model_list=[BSI(ionization_electron_species=self.electron, ionization_current=None_())]
+                )
+            ],
+        )
 
     def test_basic(self):
         """basic operation"""

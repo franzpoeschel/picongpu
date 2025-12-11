@@ -15,10 +15,7 @@ import typeguard
 
 
 def create_species():
-    species = Species()
-    species.name = "electron"
-    species.attributes = [Position(), Momentum()]
-    species.constants = []
+    species = Species(name="electron", attributes=[Position(), Momentum()], constants=[])
     return species
 
 

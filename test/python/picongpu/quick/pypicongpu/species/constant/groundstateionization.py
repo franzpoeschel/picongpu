@@ -21,16 +21,7 @@ class TestGroundStateIonization(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        electron = Species()
-        electron.name = "e"
-        mass_constant = Mass(mass_si=constants.m_e)
-        charge_constant = Charge(charge_si=constants.q_e)
-        electron.constants = [
-            charge_constant,
-            mass_constant,
-        ]
-
-        self.electron = electron
+        self.electron = Species(name="e", constants=[Mass(mass_si=constants.m_e), Charge(charge_si=constants.q_e)])
 
         self.BSI_instance = BSI(ionization_electron_species=self.electron, ionization_current=None_())
         self.BSIstark_instance = BSIStarkShifted(ionization_electron_species=self.electron, ionization_current=None_())

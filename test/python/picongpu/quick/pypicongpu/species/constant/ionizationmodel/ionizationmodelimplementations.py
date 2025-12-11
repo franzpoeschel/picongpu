@@ -29,17 +29,7 @@ class Test_IonizationModelImplementations(unittest.TestCase):
     implementations_withoutIonizationCurrent = {ThomasFermi: "ThomasFermi"}
 
     def setUp(self):
-        electron = Species()
-        electron.name = "e"
-        mass_constant = Mass(mass_si=constants.m_e)
-        charge_constant = Charge(charge_si=constants.q_e)
-        electron.constants = [
-            charge_constant,
-            mass_constant,
-        ]
-        # note: attributes not set yet (as would be in init manager)
-
-        self.electron = electron
+        self.electron = Species(name="e", constants=[Mass(mass_si=constants.m_e), Charge(charge_si=constants.q_e)])
 
     def test_ionizationCurrentRequired(self):
         """ionization current must be explicitly configured"""
