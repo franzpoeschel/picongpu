@@ -7,7 +7,6 @@ License: GPLv3+
 
 from .operation import Operation
 from ..species import Species
-from ..attribute import BoundElectrons
 from ..constant import GroundStateIonization
 from ... import util
 
@@ -32,11 +31,6 @@ class NoBoundElectrons(Operation):
 
     def check_preconditions(self) -> None:
         assert self.species.has_constant_of_type(GroundStateIonization), "BoundElectrons requires GroundStateIonization"
-
-    def prebook_species_attributes(self) -> None:
-        self.attributes_by_species = {
-            self.species: [BoundElectrons()],
-        }
 
     def _get_serialized(self) -> dict:
         """

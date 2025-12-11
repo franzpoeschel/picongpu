@@ -9,7 +9,6 @@ from .layout import Layout
 from .densityoperation import DensityOperation
 from .densityprofile import DensityProfile
 from ..species import Species
-from ..attribute import Position, Weighting
 from ..constant import DensityRatio
 from ... import util
 
@@ -60,13 +59,6 @@ class SimpleDensity(DensityOperation):
 
         if hasattr(self.profile, "check"):
             self.profile.check()
-
-    def prebook_species_attributes(self) -> None:
-        self.attributes_by_species = {}
-
-        # assign weighting & position to every species
-        for species in self.species:
-            self.attributes_by_species[species] = [Position(), Weighting()]
 
     def _get_serialized(self) -> dict:
         """

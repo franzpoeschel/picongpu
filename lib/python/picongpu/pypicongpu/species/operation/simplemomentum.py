@@ -8,7 +8,6 @@ License: GPLv3+
 from .operation import Operation
 from .momentum import Temperature, Drift
 from ..species import Species
-from ..attribute import Momentum
 from ... import util
 
 import typeguard
@@ -45,17 +44,7 @@ class SimpleMomentum(Operation):
         self.temperature = temperature
         self.drift = drift
 
-    def check_preconditions(self) -> None:
-        # acces species to make sure it is set -> no required constants
-        assert self.species is not None
-
-    def prebook_species_attributes(self) -> None:
-        # always provides attribute -- might not be set (i.e. left at 0) though
-        self.attributes_by_species = {self.species: [Momentum()]}
-
     def _get_serialized(self) -> dict:
-        self.check_preconditions()
-
         context = {
             "species": self.species.get_rendering_context(),
             "temperature": None,

@@ -19,19 +19,11 @@ from . import util
 from .customuserinput import InterfaceCustomUserInput
 from .field_solver.DefaultSolver import Solver
 from .grid import Grid3D
-from .laser import (
-    DispersivePulseLaser,
-    FromOpenPMDPulseLaser,
-    GaussianLaser,
-    PlaneWaveLaser,
-)
+from .laser import AnyLaser
 from .movingwindow import MovingWindow
 from .output import Plugin, OpenPMDPlugin
 from .rendering import RenderedObject
 from .walltime import Walltime
-
-
-AnyLaser = DispersivePulseLaser | FromOpenPMDPulseLaser | GaussianLaser | PlaneWaveLaser
 
 
 @typeguard.typechecked
@@ -164,24 +156,14 @@ class Simulation(RenderedObject):
             "output": [entry.get_rendering_context() for entry in (self.plugins or [])],
             "species": [s.get_rendering_context() for s in self.species],
             "init_operations": [o.get_rendering_context() for o in self.init_operations],
+            "laser": None if self.laser is None else [ll.get_rendering_context() for ll in self.laser],
+            "moving_window": None if self.moving_window is None else self.moving_window.get_rendering_context(),
+            "walltime": (self.walltime or Walltime(walltime=datetime.timedelta(hours=1))).get_rendering_context(),
+            "binomial_current_interpolation": self.binomial_current_interpolation,
+            "customuserinput": None if self.custom_user_input is None else self.__render_custom_user_input_list(),
         }
 
-        if self.laser is not None:
-            serialized["laser"] = [ll.get_rendering_context() for ll in self.laser]
-        else:
-            serialized["laser"] = None
-
-        serialized["moving_window"] = None if self.moving_window is None else self.moving_window.get_rendering_context()
-        serialized["walltime"] = (
-            self.walltime or Walltime(walltime=datetime.timedelta(hours=1))
-        ).get_rendering_context()
-
-        serialized["binomial_current_interpolation"] = self.binomial_current_interpolation
-
         if self.custom_user_input is not None:
-            serialized["customuserinput"] = self.__render_custom_user_input_list()
             self.__found_custom_input(serialized)
-        else:
-            serialized["customuserinput"] = None
 
         return serialized

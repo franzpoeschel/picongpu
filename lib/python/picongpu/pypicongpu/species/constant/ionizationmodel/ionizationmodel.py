@@ -6,9 +6,7 @@ License: GPLv3+
 """
 
 from ..constant import Constant
-from ...attribute import BoundElectrons
 from ..ionizationcurrent import IonizationCurrent
-from ..elementproperties import ElementProperties
 
 import pydantic
 import typing
@@ -87,13 +85,3 @@ class IonizationModel(pydantic.BaseModel, Constant):
             ionization_electron_species=self.ionization_electron_species,
             ionization_current=self.ionization_current,
         ).get_rendering_context()
-
-    def get_species_dependencies(self) -> list[typing.Any]:
-        self.check()
-        return [self.ionization_electron_species]
-
-    def get_attribute_dependencies(self) -> list[type]:
-        return [BoundElectrons]
-
-    def get_constant_dependencies(self) -> list[type]:
-        return [ElementProperties]
