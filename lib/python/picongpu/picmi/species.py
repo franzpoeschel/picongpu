@@ -54,8 +54,8 @@ class PusherMethod(Enum):
 
 
 class Species(BaseModel):
-    name: str
-    particle_type: str
+    name: str | None
+    particle_type: str | None
     initial_distribution: AnyDistribution | None
     picongpu_fixed_charge: bool = False
     charge_state: int | None = None
@@ -76,6 +76,12 @@ class Species(BaseModel):
 
     @model_validator(mode="after")
     def check(self):
+        if self.name is None and self.particle_type is None:
+            raise ValueError(
+                "Can't come up with a proper name for your species because neither name nor particle type are given."
+            )
+        if self.name is None:
+            self.name = self.particle_type
         try:
             is_element = Element.is_element(self.particle_type)
         except ValueError:
