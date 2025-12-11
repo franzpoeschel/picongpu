@@ -43,15 +43,14 @@ class PusherMethod(Enum):
     Vay = "Vay"
     HigueraCary = "Higuera-Cary"
     Free = "free"
+    ReducedLandauLifshitz = "LLRK4"
     # not supported by standard
-    ReducedLandauLifshitz = "ReducedLandauLifshitz"
     Acceleration = "Acceleration"
     Photon = "Photon"
     Probe = "Probe"
     Axel = "Axel"
     # not supported by PIConGPU
     Li = "Li"
-    LLRK4 = "LLRK4"
 
 
 class Species(BaseModel):
@@ -64,7 +63,7 @@ class Species(BaseModel):
     mass: float | None = None
     charge: float | None = None
     particle_shape: ParticleShape = ParticleShape("quadratic")
-    method: PusherMethod = PusherMethod["Boris"]
+    method: PusherMethod = PusherMethod("Boris")
 
     # Theoretically, Position(), Momentum() and Weighting() are also requirements imposed from the outside,
     # e.g., by the current deposition, pusher, ..., but these concepts are not separately modelled in PICMI
