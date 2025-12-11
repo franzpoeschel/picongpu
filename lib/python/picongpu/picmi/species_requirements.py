@@ -33,10 +33,10 @@ def must_be_unique(requirement):
     )
 
 
-def is_same_as(lhs, rhs):
-    if hasattr(lhs, "is_same_as") and lhs.is_same_as(rhs):
+def can_be_dropped_due_to_uniqueness(lhs, rhs):
+    if hasattr(lhs, "can_be_dropped_due_to_uniqueness") and lhs.can_be_dropped_due_to_uniqueness(rhs):
         return True
-    if hasattr(rhs, "is_same_as") and rhs.is_same_as(lhs):
+    if hasattr(rhs, "can_be_dropped_due_to_uniqueness") and rhs.can_be_dropped_due_to_uniqueness(lhs):
         return True
     try:
         # These might well be apples and oranges and the comparison might fail.
@@ -88,7 +88,7 @@ def _make_unique(requirements):
                 append_this = False
                 break
             if must_be_unique(lhs):
-                append_this = append_this and not is_same_as(lhs, rhs)
+                append_this = append_this and not can_be_dropped_due_to_uniqueness(lhs, rhs)
         if append_this:
             result.append(lhs)
     return result
@@ -160,7 +160,7 @@ class DelayedConstruction(BaseModel):
     The operators are customisable actions to take under specific circumstances:
         - constructor: How to perform the construction.
         - update_with: How to merge another object into this one (returns if successful or not)
-        - is_same_as: How to compare with another object
+        - can_be_dropped_due_to_uniqueness: How to compare with another object
     The constructor is allowed to assume that at the time of its execution
         - all information is available and all objects can be constructed
         - the handled objects are stateless,
@@ -187,7 +187,7 @@ class DelayedConstruction(BaseModel):
     def try_update_with(self, other):
         return self.operators.try_update_with(self, other)
 
-    def is_same_as(self, other):
+    def can_be_dropped_due_to_uniqueness(self, other):
         return self.operators.is_same_as(self, other)
 
     def check_for_conflict(self, other):
@@ -226,7 +226,7 @@ class SimpleDensityOperation(DelayedConstruction):
         def constructor(self):
             kwargs = self.metadata.kwargs
             return self.metadata.Type(
-                species=[s.get_as_pypicongpu() for s in kwargs["species"]],
+                species=[s.get_as_pypicongpu() for s in sorted(kwargs["species"])],
                 profile=kwargs["profile"].get_as_pypicongpu(kwargs["grid"]),
                 layout=kwargs["layout"].get_as_pypicongpu(),
             )
