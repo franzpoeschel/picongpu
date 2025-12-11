@@ -54,9 +54,9 @@ class PusherMethod(Enum):
 
 
 class Species(BaseModel):
-    name: str | None
-    particle_type: str | None
-    initial_distribution: AnyDistribution | None
+    name: str | None = None
+    particle_type: str | None = None
+    initial_distribution: AnyDistribution | None = None
     picongpu_fixed_charge: bool = False
     charge_state: int | None = None
     density_scale: float | None = None
@@ -83,7 +83,7 @@ class Species(BaseModel):
         if self.name is None:
             self.name = self.particle_type
         try:
-            is_element = Element.is_element(self.particle_type)
+            is_element = self.particle_type is not None and Element.is_element(self.particle_type)
         except ValueError:
             is_element = False
         if self.particle_type is None:
@@ -108,6 +108,8 @@ class Species(BaseModel):
 
     @computed_field
     def picongpu_element(self) -> Element | None:
+        if self.particle_type is None:
+            return None
         try:
             return (
                 pypicongpu.species.util.Element(self.particle_type) if Element.is_element(self.particle_type) else None

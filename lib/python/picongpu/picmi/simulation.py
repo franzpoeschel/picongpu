@@ -204,6 +204,9 @@ class Simulation(picmistandard.PICMI_Simulation):
 
         picmistandard.PICMI_Simulation.__init__(self, **keyword_arguments)
 
+        if picongpu_typical_ppc is not None and picongpu_typical_ppc <= 0:
+            raise ValueError(f"Typical ppc should be > 0, not {self.picongpu_typical_ppc=}.")
+
         # additional PICMI stuff checks, @todo move to picmistandard, Brian Marre, 2024
         ## throw if both cfl & delta_t are set
         if (
@@ -361,7 +364,8 @@ class Simulation(picmistandard.PICMI_Simulation):
         """translate to PyPIConGPU object"""
         self._check_compatibility()
 
-        species, init_operations = self._translate_species()
+        init_operations = organise_init_operations(chain(*(s.get_operations() for s in sorted(self.species))))
+
         typical_ppc = (
             self.picongpu_typical_ppc
             if self.picongpu_typical_ppc is not None
@@ -381,7 +385,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         time_steps = self.max_steps if self.max_steps is not None else math.ceil(self.max_time / self.time_step_size)
 
         return pypicongpu.simulation.Simulation(
-            species=species,
+            species=map(get_as_pypicongpu, sorted(self.species)),
             init_operations=init_operations,
             typical_ppc=typical_ppc,
             delta_t_si=self.time_step_size,
@@ -434,27 +438,19 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.layouts.append(layout)
         if species.density_scale is not None and (layout is None and species.initial_distribution is None):
             raise ValueError("layout and initial distribution must be set to use density scale")
+        if layout is not None and species.initial_distribution is None:
+            raise ValueError(
+                f"An initial distribution needs a layout. You've given {layout=} but {species.initial_distribution=}."
+            )
         if species.initial_distribution is not None:
             self.picongpu_distributions.append(_DensityImpl(species=species, layout=layout, grid=self.solver.grid))
 
     def add_species(self, *args, **kwargs):
-        if isinstance(args[0], Species):
-            return self._picongpu_add_species(*args, **kwargs)
-        return super().add_species(*args, **kwargs)
-
-    def _translate_species(self):
-        picmi_species = sorted(self.species)
-        return organise_species(map(get_as_pypicongpu, picmi_species)), organise_init_operations(
-            chain(*(s.get_operations() for s in picmi_species))
-        )
+        return self._picongpu_add_species(*args, **kwargs)
 
 
 def organise_init_operations(operations):
     return [run_construction(op) for op in _make_unique(operations)]
-
-
-def organise_species(species):
-    return list(species)
 
 
 def mid_window(iterable):

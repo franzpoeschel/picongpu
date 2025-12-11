@@ -98,15 +98,12 @@ def evaluate_requirements(requirements, Types):
     if isinstance(Types, type):
         return next(evaluate_requirements(requirements, [Types]))
     return (
-        map(
-            run_construction,
-            _make_unique(
-                filter(
-                    lambda req: isinstance(req, Type)
-                    or (isinstance(req, DelayedConstruction) and issubclass(req.metadata.Type, Type)),
-                    requirements,
-                )
-            ),
+        _make_unique(
+            filter(
+                lambda req: isinstance(req, Type)
+                or (isinstance(req, DelayedConstruction) and issubclass(req.metadata.Type, Type)),
+                requirements,
+            )
         )
         for Type in Types
     )
@@ -235,7 +232,7 @@ class SimpleDensityOperation(DelayedConstruction):
             return (
                 isinstance(other, SimpleDensityOperation)
                 and other.metadata.kwargs["profile"] == self.metadata.kwargs["profile"]
-                and other.metaddata.kwargs["layout"] == self.metadata.kwargs["layout"]
+                and other.metadata.kwargs["layout"] == self.metadata.kwargs["layout"]
                 and (self.metadata.kwargs["species"].extend(other.metadata.kwargs["species"]) or True)
             )
 
