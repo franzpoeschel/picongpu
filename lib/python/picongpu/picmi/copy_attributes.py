@@ -89,7 +89,11 @@ def copy_attributes(
     """
     assignments = {
         to_name: _value_generator(from_name)
-        for from_name, _ in inspect.getmembers(from_instance)
+        for from_name, _ in (
+            type(from_instance).model_fields.items()
+            if isinstance(from_instance, BaseModel)
+            else inspect.getmembers(from_instance)
+        )
         if from_name not in ignore
         and not from_name.startswith("_")
         and has_attribute(to, to_name := from_name.removeprefix(remove_prefix))
