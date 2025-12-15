@@ -41,32 +41,33 @@ class TestSimulation(unittest.TestCase):
         return picmi.Simulation(time_step_size=1.39e-16, max_steps=int(2048), solver=solver, **kw)
 
     def _set_up_minimal_sim(self, steps=1):
-        sim = pypicongpu.Simulation()
-        sim.delta_t_si = 1.39e-16
-        sim.time_steps = steps
-        sim.typical_ppc = 1
-        sim.grid = pypicongpu.grid.Grid3D(
-            cell_size_si=(1.776e-07, 4.43e-08, 1.776e-07),
-            cell_cnt=(1, 1, 1),
-            n_gpus=(1, 1, 1),
-            boundary_condition=(
-                BoundaryCondition.PERIODIC,
-                BoundaryCondition.PERIODIC,
-                BoundaryCondition.PERIODIC,
+        return pypicongpu.Simulation(
+            delta_t_si=1.39e-16,
+            time_steps=steps,
+            typical_ppc=1,
+            grid=pypicongpu.grid.Grid3D(
+                cell_size_si=(1.776e-07, 4.43e-08, 1.776e-07),
+                cell_cnt=(1, 1, 1),
+                n_gpus=(1, 1, 1),
+                boundary_condition=(
+                    BoundaryCondition.PERIODIC,
+                    BoundaryCondition.PERIODIC,
+                    BoundaryCondition.PERIODIC,
+                ),
+                super_cell_size=(8, 8, 4),
+                grid_dist=None,
             ),
-            super_cell_size=(8, 8, 4),
-            grid_dist=None,
+            laser=None,
+            custom_user_input=None,
+            moving_window=None,
+            walltime=None,
+            binomial_current_interpolation=False,
+            solver=pypicongpu.field_solver.Yee.YeeSolver(),
+            species=[],
+            init_operations=[],
+            plugins=[],
+            base_density=1.0e25,
         )
-        sim.laser = None
-        sim.custom_user_input = None
-        sim.moving_window = None
-        sim.walltime = None
-        sim.binomial_current_interpolation = False
-        sim.solver = pypicongpu.field_solver.Yee.YeeSolver()
-        sim.plugins = "auto"
-        sim.init_manager = pypicongpu.species.InitManager()
-        sim.base_density = 1.0e25
-        return sim
 
     def test_minimal(self):
         """smallest possible example"""
