@@ -8,7 +8,6 @@ License: GPLv3+
 import logging
 
 from picongpu import picmi
-from picongpu.picmi.diagnostics.timestepspec import TimeStepSpec
 
 # set log level:
 # options (in ascending order) are: DEBUG, INFO, WARNING, ERROR, CRITICAL
@@ -49,9 +48,6 @@ sim = picmi.Simulation(
     max_steps=1024,
     solver=solver,
 )
-
-sim.add_diagnostic(picmi.diagnostics.Auto(period=TimeStepSpec[::100]))
-
 
 layout = picmi.PseudoRandomLayout(n_macroparticles_per_cell=25)
 sim.add_species(electron, layout)
