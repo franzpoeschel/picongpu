@@ -5,12 +5,11 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-from pydantic import BaseModel
 from .constant import Constant
 from ..util import Element
 
 
-class ElementProperties(Constant, BaseModel):
+class ElementProperties(Constant):
     """
     represents constants associated to a chemical element
 

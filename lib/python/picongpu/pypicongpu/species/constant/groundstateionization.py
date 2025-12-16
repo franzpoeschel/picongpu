@@ -8,11 +8,10 @@ License: GPLv3+
 from .constant import Constant
 from .ionizationmodel import IonizationModel, IonizationModelGroups
 
-import pydantic
 import typing
 
 
-class GroundStateIonization(Constant, pydantic.BaseModel):
+class GroundStateIonization(Constant):
     ionization_model_list: list[IonizationModel]
     """list of ground state only ionization models to apply for the species"""
 

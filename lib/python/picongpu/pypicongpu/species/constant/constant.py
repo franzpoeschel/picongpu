@@ -5,10 +5,12 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from pydantic import BaseModel
+
 from ...rendering import RenderedObject
 
 
-class Constant(RenderedObject):
+class Constant(RenderedObject, BaseModel):
     """
     unmodifiable property of a species
 
@@ -44,64 +46,5 @@ class Constant(RenderedObject):
           constant)
     """
 
-    def __eq__(self, other) -> bool:
-        """two constants are equal if they have the same attributes values"""
-        return set(self.__dict__.items()) == set(other.__dict__.items())
-
-    def check(self) -> None:
-        """
-        ensure validity of self
-
-        If ok passes silently, else raises.
-        Intendend to check for invalid value (ranges), perhaps types etc.
-
-        Must be overwritten in child implementation.
-        """
+    def check(self):
         pass
-
-    # note: forward declaration requires "Species" to be defined, which is not
-    # always the case -> no type declaration
-    def get_species_dependencies(self) -> list:
-        """
-        get dependencies for definition
-
-        Returns a list of species which this flags requires being present.
-        Mainly intended for ionization flags, i.e. should typically return [].
-        """
-        return []
-
-    def get_attribute_dependencies(self) -> list[type]:
-        """
-        get required attributes (during execution)
-
-        During execution some constants require an attribute to be present,
-        e.g. the pusher required the Momentum attribute
-
-        This method returns a list of attribute types which it requires on its
-        species.
-        """
-        return []
-
-    def get_constant_dependencies(self) -> list[type]:
-        """
-        get required constants (during execution)
-
-        Some constants (e.g. those selecting algorithms) may require other
-        constants to be present.
-
-        This method returns the types of constants that must be present for
-        this constant to be valid.
-        Checking the value of these dependency constants is **NOT** possible.
-
-        Dependencies between constants **MAY** be circular.
-        Rationale: Only presence of constants is checked, a reordering (as for
-        inter-species-dependencies) is not performed, hence circular
-        dependencies between constants can be handled.
-
-        However, as self-references do not make sense (theoretically speaking
-        are always true), they are considered a programmer error and therefore
-        self-references are **NOT** allowed.
-
-        This has no influence on the order of code generation.
-        """
-        return []

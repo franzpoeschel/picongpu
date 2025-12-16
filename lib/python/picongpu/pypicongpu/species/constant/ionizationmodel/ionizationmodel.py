@@ -8,13 +8,12 @@ License: GPLv3+
 from ..constant import Constant
 from ..ionizationcurrent import IonizationCurrent
 
-import pydantic
 import typing
 import typeguard
 
 
 @typeguard.typechecked
-class IonizationModel(pydantic.BaseModel, Constant):
+class IonizationModel(Constant):
     """
     base class for an ground state only ionization models of an ion species
 

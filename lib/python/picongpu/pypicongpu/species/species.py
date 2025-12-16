@@ -6,12 +6,12 @@ License: GPLv3+
 """
 
 import re
+from pydantic import BaseModel, computed_field, field_serializer
 import typing
 from enum import Enum
 
 import typeguard
 
-from .. import util
 from ..rendering import RenderedObject
 from .attribute import Attribute, Momentum, Position
 from .constant import (
@@ -48,7 +48,7 @@ class Pusher(Enum):
 
 
 @typeguard.typechecked
-class Species(RenderedObject):
+class Species(RenderedObject, BaseModel):
     """
     PyPIConGPU species definition
 
@@ -64,43 +64,21 @@ class Species(RenderedObject):
     mandatory. Each species constant or attribute may only be defined once.
     """
 
-    constants = util.build_typesafe_property(typing.List[Constant])
+    constants: list[Constant]
     """PIConGPU particle flags"""
 
-    attributes = util.build_typesafe_property(typing.List[Attribute])
+    attributes: list[Attribute]
     """PIConGPU particle attributes"""
 
-    pusher = util.build_typesafe_property(Pusher)
+    pusher: Pusher = Pusher["Boris"]
 
-    name = util.build_typesafe_property(str)
+    name: str
     """name of the species"""
 
-    shape = util.build_typesafe_property(Shape)
+    shape: Shape = Shape["TSC"]
 
-    def __init__(self, /, name, constants=None, attributes=None, shape=None, pusher=None):
-        self.name = name
-        self.constants = constants or []
-        self.attributes = attributes or []
-        self.shape = shape or Shape["TSC"]
-        self.pusher = pusher or Pusher["Boris"]
-
-    def __str__(self) -> str:
-        try:
-            return (
-                self.name
-                + " : \n\t constants: "
-                + str(self.constants)
-                + "\n\t attributes: "
-                + str(self.attributes)
-                + "\n"
-            )
-        except Exception:
-            try:
-                return self.name + " : \n\t constants: " + str(self.constants) + "\n"
-            except Exception:
-                return self.name
-
-    def get_cxx_typename(self) -> str:
+    @computed_field
+    def typename(self) -> str:
         """
         get (standalone) C++ name for this species
         """
@@ -179,7 +157,7 @@ class Species(RenderedObject):
         for const in self.constants:
             # note: check using type equality, because polymorphy messes with
             # duplicate detection & rendering
-            if needle_type == type(const):
+            if needle_type is type(const):
                 return const
 
         raise RuntimeError("no constant of requested type available: {}".format(needle_type))
@@ -198,27 +176,8 @@ class Species(RenderedObject):
         constants_types = list(map(type, self.constants))
         return needle_type in constants_types
 
-    def _get_serialized(self) -> dict:
-        self.check()
-
-        # Constants are rendered into sth like this:
-        # {"mass": null, "charge": {OBJECT}, ...}
-        # i.e. all constants are *always* defined, but they can be null
-        #
-        # rationale:
-        # The templating engine does not consider "optional variables",
-        # i.e. variables that are only present sometimes. It *always* suspects
-        # a typo in the variable name in prints a warning (still continues
-        # though -- to be compliant to the rendering standard).
-        #
-        # To accommodate this behavior, we always define all keys for constant,
-        # but maybe set them to null. For this below there is a list of *all
-        # known constants*. When adding a constant do not forget to add it in
-        # the JSON schema too.
-        #
-        # Note: Attributes are only required as a set of strings for type
-        # generation, so there is no similar treatment there.
-
+    @field_serializer("constants")
+    def constants_context(self, _):
         constant_names_by_type = {
             "mass": Mass,
             "charge": Charge,
@@ -233,17 +192,4 @@ class Species(RenderedObject):
                 constants_context[constant_name] = self.get_constant_by_type(constant_type).get_rendering_context()
             else:
                 constants_context[constant_name] = None
-
-        try:
-            shape = self.shape
-        except AttributeError:
-            shape = Shape["TSC"]
-
-        return {
-            "name": self.name,
-            "typename": self.get_cxx_typename(),
-            "shape": shape.value,
-            "pusher": self.pusher.value,
-            "attributes": list(map(lambda attr: {"picongpu_name": attr.picongpu_name}, self.attributes)),
-            "constants": constants_context,
-        }
+        return constants_context

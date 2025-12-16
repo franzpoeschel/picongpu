@@ -6,13 +6,12 @@ License: GPLv3+
 """
 
 import typeguard
-from pydantic import BaseModel
 
 from .constant import Constant
 
 
 @typeguard.typechecked
-class Charge(Constant, BaseModel):
+class Charge(Constant):
     """
     charge of a physical particle
     """
