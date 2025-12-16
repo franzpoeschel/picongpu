@@ -124,7 +124,7 @@ class Simulation(picmistandard.PICMI_Simulation):
     """
 
     picongpu_custom_user_input = pypicongpu.util.build_typesafe_property(
-        typing.Optional[list[pypicongpu.customuserinput.InterfaceCustomUserInput]]
+        typing.Optional[list[pypicongpu.customuserinput.CustomUserInput]]
     )
     """
     list of custom user input objects
@@ -304,7 +304,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.__runner = pypicongpu.runner.Runner(pypicongpu_simulation, self.picongpu_template_dir, setup_dir=file_name)
         self.__runner.generate()
 
-    def picongpu_add_custom_user_input(self, custom_user_input: pypicongpu.customuserinput.InterfaceCustomUserInput):
+    def picongpu_add_custom_user_input(self, custom_user_input: pypicongpu.customuserinput.CustomUserInput):
         """add custom user input to previously stored input"""
         self.picongpu_custom_user_input = (self.picongpu_custom_user_input or []) + [custom_user_input]
 

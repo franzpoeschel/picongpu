@@ -16,7 +16,7 @@ from picongpu.pypicongpu.species.operation.operation import Operation
 from picongpu.pypicongpu.species.species import Species
 
 from . import util
-from .customuserinput import InterfaceCustomUserInput
+from .customuserinput import CustomUserInput
 from .field_solver.DefaultSolver import Solver
 from .grid import Grid3D
 from .laser import AnyLaser
@@ -62,7 +62,7 @@ class Simulation(RenderedObject):
     used for normalization of units
     """
 
-    custom_user_input = util.build_typesafe_property(typing.Optional[list[InterfaceCustomUserInput]])
+    custom_user_input = util.build_typesafe_property(typing.Optional[list[CustomUserInput]])
     """
     object that contains additional user specified input parameters to be used in custom templates
 
@@ -120,7 +120,7 @@ class Simulation(RenderedObject):
         custom_rendering_context = {"tags": []}
 
         for entry in self.custom_user_input:
-            add_context = entry.get_generic_rendering_context()
+            add_context = entry.get_rendering_context()
             tags = entry.get_tags()
 
             entry.check_does_not_change_existing_key_values(custom_rendering_context, add_context)
