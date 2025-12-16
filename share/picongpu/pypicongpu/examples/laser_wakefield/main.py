@@ -13,7 +13,6 @@ import sympy
 import logging
 import datetime
 
-from picongpu.pypicongpu.output.png import EMFieldScaleEnum, ColorScaleEnum
 from picongpu.picmi.diagnostics import binning
 from picongpu.picmi.diagnostics.unit_dimension import L, M, T, I
 
@@ -217,31 +216,6 @@ sim.diagnostics = [
     picmi.diagnostics.MacroParticleCount(
         species=electrons,
         period=picmi.diagnostics.TimeStepSpec[::100],
-    ),
-    picmi.diagnostics.Png(
-        species=electrons,
-        period=picmi.diagnostics.TimeStepSpec[::100],
-        axis="yx",
-        slice_point=0.5,
-        folder_name="pngElectronsYX",
-        scale_image=1.0,
-        scale_to_cellsize=True,
-        white_box_per_gpu=False,
-        em_field_scale_channel1=EMFieldScaleEnum(7),
-        em_field_scale_channel2=EMFieldScaleEnum(-1),
-        em_field_scale_channel3=EMFieldScaleEnum(-1),
-        pre_particle_density_color_scales=ColorScaleEnum("grayInv"),
-        pre_channel1_color_scales=ColorScaleEnum("green"),
-        pre_channel2_color_scales=ColorScaleEnum("none"),
-        pre_channel3_color_scales=ColorScaleEnum("none"),
-        custom_normalization_si=[5.0e12 / c, 5.0e12, 15.0],
-        pre_particle_density_opacity=0.25,
-        pre_channel1_opacity=1.0,
-        pre_channel2_opacity=1.0,
-        pre_channel3_opacity=1.0,
-        pre_channel1="field_E.x() * field_E.x()",
-        pre_channel2="field_E.y()",
-        pre_channel3="-1.0_X * field_E.y()",
     ),
     picmi.diagnostics.Checkpoint(
         period=picmi.diagnostics.TimeStepSpec[::100],
