@@ -6,12 +6,10 @@ License: GPLv3+
 """
 
 import json
-from typing import Optional
+from typing import Annotated
 
-import typeguard
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PlainSerializer, PrivateAttr
 
-from .. import util
 from ..rendering.renderedobject import RenderedObject
 from ..species import Species
 from .particle_functor import ParticleFunctor as BinningFunctor
@@ -33,40 +31,15 @@ class BinningAxis(RenderedObject, BaseModel):
     use_overflow_bins: bool
 
 
-@typeguard.typechecked
-class Binning(Plugin):
-    name = util.build_typesafe_property(str)
-    species = util.build_typesafe_property(list[Species])
-    period = util.build_typesafe_property(TimeStepSpec)
-    openPMD = util.build_typesafe_property(Optional[dict])
-    openPMDExt = util.build_typesafe_property(Optional[str])
-    openPMDInfix = util.build_typesafe_property(Optional[str])
-    dumpPeriod = util.build_typesafe_property(int)
+class Binning(Plugin, BaseModel):
+    binner_name: str = Field(alias="name")
+    deposition_functor: BinningFunctor
+    axes: list[BinningAxis]
+    species: list[Species]
+    period: TimeStepSpec
+    openPMD: Annotated[dict | None, PlainSerializer(lambda x: json.dumps(x) if x is not None else x)]
+    openPMDExtension: str | None = Field(alias="openPMDExt")
+    openPMDInfix: str | None
+    dumpPeriod: int
 
-    _name = "binning"
-
-    def __init__(
-        self, name, deposition_functor, axes, species, period, openPMD, openPMDInfix, dumpPeriod, openPMDExt="bp5"
-    ):
-        self.name = name
-        self.deposition_functor = deposition_functor
-        self.axes = axes
-        self.species = species
-        self.period = period
-        self.openPMD = openPMD
-        self.openPMDInfix = openPMDInfix
-        self.dumpPeriod = dumpPeriod
-        self.openPMDExt = openPMDExt
-
-    def _get_serialized(self) -> dict:
-        return {
-            "binner_name": self.name,
-            "deposition_functor": self.deposition_functor.get_rendering_context(),
-            "axes": list(map(BinningAxis.get_rendering_context, self.axes)),
-            "species": list(map(Species.get_rendering_context, self.species)),
-            "period": self.period.get_rendering_context(),
-            "openPMD": json.dumps(self.openPMD) if self.openPMD else self.openPMD,
-            "openPMDExtension": self.openPMDExt,
-            "openPMDInfix": self.openPMDInfix,
-            "dumpPeriod": self.dumpPeriod,
-        }
+    _name: str = PrivateAttr("binning")

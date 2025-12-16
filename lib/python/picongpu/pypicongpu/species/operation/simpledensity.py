@@ -5,18 +5,15 @@ Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
-from .layout import Layout
+from pydantic import PrivateAttr, BaseModel
+
+from ..constant import DensityRatio
+from ..species import Species
 from .densityoperation import DensityOperation
 from .densityprofile import DensityProfile
-from ..species import Species
-from ..constant import DensityRatio
-from ... import util
-
-import typeguard
-import typing
+from .layout import Layout
 
 
-@typeguard.typechecked
 class SimpleDensity(DensityOperation):
     """
     Place a set of species together, using the same density profile
@@ -33,20 +30,18 @@ class SimpleDensity(DensityOperation):
       note that their density ratios will be respected
     """
 
-    profile = util.build_typesafe_property(DensityProfile)
+    profile: DensityProfile
     """density profile to use, describes the actual density"""
 
-    species = util.build_typesafe_property(typing.Set[Species])
+    species: set[Species]
     """species to be placed"""
 
-    layout = util.build_typesafe_property(Layout)
+    layout: Layout
 
-    _name = "simpledensity"
+    _name: str = PrivateAttr("simpledensity")
 
-    def __init__(self, /, species, profile, layout):
-        self.profile = profile
-        self.species = species if isinstance(species, set) else set(species)
-        self.layout = layout
+    def __init__(self, *args, **kwargs):
+        return BaseModel.__init__(self, *args, **kwargs)
 
     def check_preconditions(self) -> None:
         if 0 == len(self.species):
