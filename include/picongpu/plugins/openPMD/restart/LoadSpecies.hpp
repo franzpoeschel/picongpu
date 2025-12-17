@@ -51,12 +51,12 @@ namespace picongpu
         template<typename T_Identifier>
         struct RedistributeFilteredParticles
         {
-            template<typename FrameType, typename FilterType, typename RemapType>
+            template<typename FrameType, typename FilterType>
             HINLINE void operator()(
                 FrameType& frame,
                 FilterType const& filter,
-                RemapType const& remap,
                 uint64_t const numParticlesCurrentBatch,
+                MemIdxType& particleIndexTarget, // becomes numParticlesAfterFiltering after this function call
                 char const filterRemove)
             {
                 using Identifier = T_Identifier;
@@ -65,13 +65,14 @@ namespace picongpu
 
                 ValueType* dataPtr = frame.getIdentifier(Identifier()).getPointer();
 
-                for(size_t particleIndex = 0; particleIndex < numParticlesCurrentBatch; ++particleIndex)
+                particleIndexTarget = 0;
+                for(MemIdxType particleIndexSrc = 0; particleIndexSrc < numParticlesCurrentBatch; ++particleIndexSrc)
                 {
-                    if(filter[particleIndex] == filterRemove)
+                    if(filter[particleIndexSrc] == filterRemove)
                     {
                         continue;
                     }
-                    dataPtr[remap[particleIndex]] = dataPtr[particleIndex];
+                    dataPtr[particleIndexTarget++] = dataPtr[particleIndexSrc];
                 }
             }
         };
@@ -291,17 +292,13 @@ namespace picongpu
                         manager::Device<HostDevice>::get().current(),
                         manager::Device<ComputeDevice>::get().getPlatform(),
                         MemSpace<DIM1>(maxChunkSize).toAlpakaMemVec());
-                    auto remap = alpaka::allocMappedBuf<MemIdxType, MemIdxType>(
-                        manager::Device<HostDevice>::get().current(),
-                        manager::Device<ComputeDevice>::get().getPlatform(),
-                        MemSpace<DIM1>(maxChunkSize).toAlpakaMemVec());
 
                     loadMatchesGeneric(
                         partialMatches,
                         threadParams,
                         totalNumParticles,
                         maxChunkSize, /* forEachPatch = */
-                        [this, threadParams, &filter, &remap, &patchTotalOffset, &patchExtent, &patchUpperCorner](
+                        [this, threadParams, &filter, &patchTotalOffset, &patchExtent, &patchUpperCorner](
                             uint64_t loadRound,
                             uint64_t numParticlesCurrentBatch,
                             FrameType& mappedFrame,
@@ -330,20 +327,7 @@ namespace picongpu
                                     alpaka::getPtrNative(filter));
                             eventSystem::getTransactionEvent().waitForFinished();
 
-                            // For simplicity, do the remapping on the CPU again
-                            MemIdxType remapCurrent = 0;
-                            for(size_t particleIndex = 0; particleIndex < numParticlesCurrentBatch; ++particleIndex)
-                            {
-                                if(filter[particleIndex] == filterKeep)
-                                {
-                                    remap[particleIndex] = remapCurrent++;
-                                }
-                                else
-                                {
-                                    remap[particleIndex] = std::numeric_limits<MemIdxType>::max();
-                                }
-                            }
-
+                            MemIdxType numParticlesAfterFiltering = 0;
                             meta::ForEach<
                                 typename NewParticleDescription::ValueTypeSeq,
                                 RedistributeFilteredParticles<boost::mpl::_1>>
@@ -351,18 +335,19 @@ namespace picongpu
                             redistributeFilteredParticles(
                                 mappedFrame,
                                 filter,
-                                remap,
                                 numParticlesCurrentBatch,
+                                numParticlesAfterFiltering,
                                 filterRemove);
 
                             log<picLog::INPUT_OUTPUT>(
                                 "openPMD: Keeping %1% of the current batch's %2% particles after filtering.")
-                                % remapCurrent % numParticlesCurrentBatch;
+                                % numParticlesAfterFiltering % numParticlesCurrentBatch;
 
                             pmacc::particles::operations::splitIntoListOfFrames(
                                 *speciesTmp,
                                 mappedFrame,
-                                remapCurrent, // !! not numParticlesCurrentBatch, filtered vs. unfiltered number
+                                numParticlesAfterFiltering, // !! not numParticlesCurrentBatch, filtered vs. unfiltered
+                                                            // number
                                 cellOffsetToTotalDomain,
                                 totalCellIdx_,
                                 *threadParams->cellDescription,
