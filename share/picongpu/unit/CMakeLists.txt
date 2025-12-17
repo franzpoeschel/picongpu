@@ -70,7 +70,7 @@ add_subdirectory(
 
 list(APPEND CMAKE_PREFIX_PATH "$ENV{BOOST_ROOT}")
 
-find_package(Boost 1.74.0 REQUIRED COMPONENTS program_options)
+find_package(Boost 1.74.0 REQUIRED CONFIG COMPONENTS program_options)
 if(TARGET Boost::boost)
     list(PREPEND HOST_LIBS Boost::boost Boost::program_options)
 else()
