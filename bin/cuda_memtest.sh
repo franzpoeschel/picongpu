@@ -43,7 +43,7 @@ if [ $? -ne 0 ] ; then
        echo "Error: $0 did not find directory: $old_path (on host: $host_name with rank: $host_rank)" >&2
        echo "error message of memtest is:" >&2
        echo -e "$output" >&2
-      exit 2
+       exit 2
    else
       echo -e "$output" > $old_path/cuda_memtest_"$host_name"_"$host_rank".err
       echo cuda_memtest crash: see file $old_path/cuda_memtest_"$host_name"_"$host_rank".err >&2
