@@ -7,10 +7,9 @@ License: GPLv3+
 
 from pydantic import BaseModel, computed_field
 from ..rendering import RenderedObject
-from .DefaultSolver import Solver
 
 
-class LeheSolver(Solver, RenderedObject, BaseModel):
+class LeheSolver(RenderedObject, BaseModel):
     """
     Lehe solver as defined by PIConGPU
 

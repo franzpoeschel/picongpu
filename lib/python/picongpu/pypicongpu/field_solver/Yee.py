@@ -7,10 +7,9 @@ License: GPLv3+
 
 from pydantic import BaseModel, computed_field
 from ..rendering import RenderedObject
-from .DefaultSolver import Solver
 
 
-class YeeSolver(Solver, RenderedObject, BaseModel):
+class YeeSolver(RenderedObject, BaseModel):
     """
     Yee solver as defined by PIConGPU
 
