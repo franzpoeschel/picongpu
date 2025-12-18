@@ -8,7 +8,6 @@ from .output.phase_space import PhaseSpace
 from .output.energy_histogram import EnergyHistogram
 from .output.macro_particle_count import MacroParticleCount
 from .output.checkpoint import Checkpoint
-from .field_solver.DefaultSolver import Solver
 from .field_solver.Yee import YeeSolver
 from .field_solver.Lehe import LeheSolver
 
@@ -26,7 +25,6 @@ __all__ = [
     "laser",
     "output",
     "rendering",
-    "Solver",
     "YeeSolver",
     "LeheSolver",
     "species",
