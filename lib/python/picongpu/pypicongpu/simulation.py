@@ -6,7 +6,7 @@ License: GPLv3+
 """
 
 from typing import Annotated
-from pydantic import BaseModel, Field, PlainSerializer
+from pydantic import BaseModel, PlainSerializer
 from pathlib import Path
 
 from pydantic import field_serializer
@@ -65,7 +65,7 @@ class Simulation(RenderedObject, BaseModel):
     used for normalization of units
     """
 
-    customuserinput: list[CustomUserInput] | None = Field(alias="custom_user_input")
+    customuserinput: list[CustomUserInput] | None
     """
     object that contains additional user specified input parameters to be used in custom templates
 
@@ -81,7 +81,7 @@ class Simulation(RenderedObject, BaseModel):
     binomial_current_interpolation: bool
     """switch on a binomial current interpolation"""
 
-    output: Annotated[list[Plugin] | None, PlainSerializer(_serialize)] = Field(alias="plugins")
+    output: Annotated[list[Plugin] | None, PlainSerializer(_serialize)]
     species: list[Species]
     init_operations: Annotated[list[Operation], PlainSerializer(_serialize)]
 
