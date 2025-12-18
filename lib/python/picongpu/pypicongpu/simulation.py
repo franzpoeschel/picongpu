@@ -52,7 +52,7 @@ class Simulation(RenderedObject, BaseModel):
     grid: Grid3D
     """Used grid Object"""
 
-    laser: list[AnyLaser] | None
+    laser: Annotated[list[AnyLaser] | None, PlainSerializer(_serialize)]
     """List of laser objects to use in the simulation, or None to disable lasers"""
 
     solver: AnySolver
