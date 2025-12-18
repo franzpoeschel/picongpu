@@ -5,19 +5,17 @@ Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
-import datetime
-import logging
-import typing
+from typing import Annotated
+from pydantic import BaseModel, Field, PlainSerializer
 from pathlib import Path
 
-import typeguard
+from pydantic import field_serializer
 
 from picongpu.pypicongpu.species.operation.operation import Operation
 from picongpu.pypicongpu.species.species import Species
 
-from . import util
 from .customuserinput import CustomUserInput
-from .field_solver.DefaultSolver import Solver
+from .field_solver import AnySolver
 from .grid import Grid3D
 from .laser import AnyLaser
 from .movingwindow import MovingWindow
@@ -26,8 +24,13 @@ from .rendering import RenderedObject
 from .walltime import Walltime
 
 
-@typeguard.typechecked
-class Simulation(RenderedObject):
+def _serialize(value):
+    if isinstance(value, list):
+        return [_serialize(v) for v in value]
+    return value.get_rendering_context() if value is not None else None
+
+
+class Simulation(RenderedObject, BaseModel):
     """
     Represents all parameters required to build & run a PIConGPU simulation.
 
@@ -37,89 +40,58 @@ class Simulation(RenderedObject):
     To run a Simulation object pass it to the Runner (for details see there).
     """
 
-    base_density = util.build_typesafe_property(float)
+    base_density: float
     """value to normalise densities"""
 
-    delta_t_si = util.build_typesafe_property(float)
+    delta_t_si: float
     """Width of a single timestep, given in seconds."""
 
-    time_steps = util.build_typesafe_property(int)
+    time_steps: int
     """Total number of time steps to be executed."""
 
-    grid = util.build_typesafe_property(typing.Union[Grid3D])
+    grid: Grid3D
     """Used grid Object"""
 
-    laser = util.build_typesafe_property(typing.Optional[list[AnyLaser]])
+    laser: list[AnyLaser] | None
     """List of laser objects to use in the simulation, or None to disable lasers"""
 
-    solver = util.build_typesafe_property(Solver)
+    solver: AnySolver
     """Used Solver"""
 
-    typical_ppc = util.build_typesafe_property(int)
+    typical_ppc: int
     """
     typical number of macro particles spawned per cell, >=1
 
     used for normalization of units
     """
 
-    custom_user_input = util.build_typesafe_property(typing.Optional[list[CustomUserInput]])
+    customuserinput: list[CustomUserInput] | None = Field(alias="custom_user_input")
     """
     object that contains additional user specified input parameters to be used in custom templates
 
     @attention custom user input is global to the simulation
     """
 
-    moving_window = util.build_typesafe_property(typing.Optional[MovingWindow])
+    moving_window: MovingWindow | None
     """used moving Window, set to None to disable"""
 
-    walltime = util.build_typesafe_property(typing.Optional[Walltime])
+    walltime: Walltime
     """time limit of the simulation run"""
 
-    binomial_current_interpolation = util.build_typesafe_property(bool)
+    binomial_current_interpolation: bool
     """switch on a binomial current interpolation"""
 
-    plugins = util.build_typesafe_property(typing.Optional[list[Plugin]])
+    output: Annotated[list[Plugin] | None, PlainSerializer(_serialize)] = Field(alias="plugins")
+    species: list[Species]
+    init_operations: Annotated[list[Operation], PlainSerializer(_serialize)]
 
-    species = util.build_typesafe_property(list[Species])
-    init_operations = util.build_typesafe_property(list[Operation])
-
-    def __init__(
-        self,
-        /,
-        typical_ppc,
-        delta_t_si,
-        custom_user_input,
-        solver,
-        grid,
-        binomial_current_interpolation,
-        moving_window,
-        walltime,
-        species,
-        init_operations,
-        time_steps,
-        laser,
-        plugins,
-        base_density,
-    ):
-        self.laser = laser
-        self.time_steps = time_steps
-        self.moving_window = moving_window
-        self.walltime = walltime
-        self.custom_user_input = custom_user_input
-        self.binomial_current_interpolation = binomial_current_interpolation
-        self.grid = grid
-        self.solver = solver
-        self.delta_t_si = delta_t_si
-        self.typical_ppc = typical_ppc
-        self.species = list(species)
-        self.init_operations = list(init_operations)
-        self.plugins = plugins
-        self.base_density = base_density
-
-    def __render_custom_user_input_list(self) -> dict:
+    @field_serializer("customuserinput")
+    def _render_custom_user_input_list(self, value):
+        if value is None:
+            return None
         custom_rendering_context = {"tags": []}
 
-        for entry in self.custom_user_input:
+        for entry in value:
             add_context = entry.get_rendering_context()
             tags = entry.get_tags()
 
@@ -131,39 +103,7 @@ class Simulation(RenderedObject):
 
         return custom_rendering_context
 
-    def __found_custom_input(self, serialized: dict):
-        logging.info(
-            "found custom user input with tags: "
-            + str(serialized["customuserinput"]["tags"])
-            + "\n"
-            + "\t WARNING: custom input is not checked, it is the user's responsibility to check inputs and generated input.\n"
-            + "\t WARNING: custom templates are required if using custom user input.\n"
-        )
-
     def spread_directory_information(self, setup_dir):
-        for plugin in self.plugins:
+        for plugin in self.output or []:
             if isinstance(plugin, OpenPMDPlugin):
                 plugin.setup_dir = Path(setup_dir)
-
-    def _get_serialized(self) -> dict:
-        serialized = {
-            "delta_t_si": self.delta_t_si,
-            "base_density": float(self.base_density),
-            "time_steps": self.time_steps,
-            "typical_ppc": self.typical_ppc,
-            "solver": self.solver.get_rendering_context(),
-            "grid": self.grid.get_rendering_context(),
-            "output": [entry.get_rendering_context() for entry in (self.plugins or [])],
-            "species": [s.get_rendering_context() for s in self.species],
-            "init_operations": [o.get_rendering_context() for o in self.init_operations],
-            "laser": None if self.laser is None else [ll.get_rendering_context() for ll in self.laser],
-            "moving_window": None if self.moving_window is None else self.moving_window.get_rendering_context(),
-            "walltime": (self.walltime or Walltime(walltime=datetime.timedelta(hours=1))).get_rendering_context(),
-            "binomial_current_interpolation": self.binomial_current_interpolation,
-            "customuserinput": None if self.custom_user_input is None else self.__render_custom_user_input_list(),
-        }
-
-        if self.custom_user_input is not None:
-            self.__found_custom_input(serialized)
-
-        return serialized

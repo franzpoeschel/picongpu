@@ -56,7 +56,7 @@ def _get_huygens_surface_serialized(huygens_surface_positions) -> dict:
     }
 
 
-class Laser(SelfRegisteringRenderedObject):
+class Laser(SelfRegisteringRenderedObject, BaseModel):
     pass
 
 

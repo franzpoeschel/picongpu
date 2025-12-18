@@ -5,11 +5,10 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-import typeguard
+from pydantic import BaseModel
 
 
-@typeguard.typechecked
-class Solver:
+class Solver(BaseModel):
     """
     represents a field solver
 
