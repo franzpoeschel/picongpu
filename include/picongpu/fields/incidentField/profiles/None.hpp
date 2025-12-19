@@ -28,8 +28,6 @@
 #include <cstdint>
 #include <string>
 
-#include <nlohmann/json.hpp>
-
 namespace picongpu
 {
     namespace fields
@@ -44,11 +42,6 @@ namespace picongpu
                     HINLINE static std::string getName()
                     {
                         return "None";
-                    }
-
-                    static nlohmann::json metadata()
-                    {
-                        return nlohmann::json::object();
                     }
                 };
             } // namespace profiles
