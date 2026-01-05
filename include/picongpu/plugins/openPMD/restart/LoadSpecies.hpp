@@ -56,7 +56,8 @@ namespace picongpu
                 FrameType& frame,
                 FilterType const& filter,
                 uint64_t const numParticlesCurrentBatch,
-                MemIdxType& particleIndexTarget, // becomes numParticlesAfterFiltering after this function call
+                // becomes numParticlesAfterFiltering after this function call
+                MemIdxType& particleIndexTarget,
                 char const filterRemove)
             {
                 using Identifier = T_Identifier;
@@ -346,8 +347,8 @@ namespace picongpu
                             pmacc::particles::operations::splitIntoListOfFrames(
                                 *speciesTmp,
                                 mappedFrame,
-                                numParticlesAfterFiltering, // !! not numParticlesCurrentBatch, filtered vs. unfiltered
-                                                            // number
+                                // @attention not numParticlesCurrentBatch, filtered vs. unfiltered number
+                                numParticlesAfterFiltering,
                                 cellOffsetToTotalDomain,
                                 totalCellIdx_,
                                 *threadParams->cellDescription,
