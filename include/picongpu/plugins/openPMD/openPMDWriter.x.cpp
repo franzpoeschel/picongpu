@@ -1459,8 +1459,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 mThreadParams.times.push_back(interval);
                 double average = std::accumulate(mThreadParams.times.begin(), mThreadParams.times.end(), 0);
                 average /= mThreadParams.times.size();
-                log<picLog::INPUT_OUTPUT>("openPMD: IO plugin ran for %1% (average: %2%)") % timer.printeTime(interval)
-                    % timer.printeTime(average);
+                log<picLog::INPUT_OUTPUT>("openPMD: IO plugin ran for %1% (average: %2%)") % timer.printTime(interval)
+                    % timer.printTime(average);
             }
 
             static void writeFieldAttributes(

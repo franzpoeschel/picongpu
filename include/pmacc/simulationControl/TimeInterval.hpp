@@ -66,51 +66,37 @@ namespace pmacc
 
         std::string printInterval()
         {
-            return printeTime(getInterval());
+            return printTime(getInterval());
         }
 
-        static std::string printeTime(double time)
+        static std::string printTime(double time_ms)
         {
+            std::chrono::hh_mm_ss time_split{std::chrono::milliseconds(static_cast<long long>(time_ms))};
+
+            auto const h = time_split.hours().count();
+            auto const m = time_split.minutes().count();
+            auto const s = time_split.seconds().count();
+            auto const ms = time_split.subseconds().count();
+
             std::ostringstream outstr;
 
-
-            int p_time;
-
-            bool write_all = false;
-            if(time / (3600. * 1000.) > 1.)
+            if(h > 0)
             {
-                p_time = time / (3600. * 1000.);
-                time = time - 3600. * 1000. * p_time;
-                outstr << std::setw(2) << p_time << "h ";
-                write_all = true;
+                outstr << std::setw(2) << h << "h " << std::setw(2) << m << "min " << std::setw(2) << s << "sec "
+                       << std::setw(3) << ms << "msec";
             }
-
-
-            if(write_all || time / (60 * 1000) > 1.)
+            else if(m > 0)
             {
-                p_time = time / (60. * 1000.);
-                time = time - 60. * 1000. * p_time;
-                outstr << std::setw(2) << p_time << "min ";
-                write_all = true;
+                outstr << std::setw(2) << m << "min " << std::setw(2) << s << "sec " << std::setw(3) << ms << "msec";
             }
-
-
-            if(write_all || time / 1000. > 1.)
+            else if(s > 0)
             {
-                p_time = time / 1000.;
-                time = time - 1000. * p_time;
-                outstr << std::setw(2) << p_time << "sec ";
-                write_all = true;
+                outstr << std::setw(2) << s << "sec " << std::setw(3) << ms << "msec";
             }
-
-
-            if(write_all || time > 1.)
+            else
             {
-                outstr << std::setw(3) << (int) time << "msec";
+                outstr << std::setw(3) << ms << "msec";
             }
-
-            if(outstr.str().empty())
-                outstr << "  0msec";
 
             return outstr.str();
         }

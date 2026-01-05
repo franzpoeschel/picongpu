@@ -105,7 +105,7 @@ namespace pmacc
                              * 100.)
                       << " % = " << std::setw(8) << currentStep << " | time elapsed:" << std::setw(25)
                       << tSimCalculation.printInterval()
-                      << " | avg time per step: " << TimeIntervall::printeTime(roundAvg / (double) progressInterval)
+                      << " | avg time per step: " << TimeIntervall::printTime(roundAvg / (double) progressInterval)
                       << std::endl;
             std::cout.flush();
 

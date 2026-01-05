@@ -41,7 +41,7 @@ namespace pmacc
 #if (PMACC_DEVICE_COMPILE == 1) // we are on gpu
                     return ::cyl_bessel_i0f(x);
 #else
-                    return std::cyl_bessel_i(0, x);
+                    return std::cyl_bessel_i(0.f, x);
 #endif
                 }
             };
@@ -56,7 +56,7 @@ namespace pmacc
 #if (PMACC_DEVICE_COMPILE == 1) // we are on gpu
                     return ::cyl_bessel_i1f(x);
 #else
-                    return std::cyl_bessel_i(1, x);
+                    return std::cyl_bessel_i(1.f, x);
 #endif
                 }
             };
@@ -71,7 +71,7 @@ namespace pmacc
 #if (PMACC_DEVICE_COMPILE == 1) // we are on gpu_
                     return ::j0f(x);
 #else
-                    return std::cyl_bessel_j(0, x);
+                    return std::cyl_bessel_j(0.f, x);
 #endif
                 }
             };
@@ -86,7 +86,7 @@ namespace pmacc
 #if (PMACC_DEVICE_COMPILE == 1) // we are on gpu
                     return ::j1f(x);
 #else
-                    return std::cyl_bessel_j(1, x);
+                    return std::cyl_bessel_j(1.f, x);
 #endif
                 }
             };
@@ -101,7 +101,7 @@ namespace pmacc
 #if (PMACC_DEVICE_COMPILE == 1) // we are on gpu
                     return ::jnf(n, x);
 #else
-                    return std::cyl_bessel_j(n, x);
+                    return std::cyl_bessel_j(static_cast<float>(n), x);
 #endif
                 }
             };
@@ -116,7 +116,7 @@ namespace pmacc
 #if (PMACC_DEVICE_COMPILE == 1) // we are on gpu
                     return ::y0f(x);
 #else
-                    return std::cyl_neumann(0, x);
+                    return std::cyl_neumann(0.f, x);
 #endif
                 }
             };
@@ -131,7 +131,7 @@ namespace pmacc
 #if (PMACC_DEVICE_COMPILE == 1) // we are on gpu
                     return ::y1f(x);
 #else
-                    return std::cyl_neumann(1, x);
+                    return std::cyl_neumann(1.f, x);
 #endif
                 }
             };
@@ -146,7 +146,7 @@ namespace pmacc
 #if (PMACC_DEVICE_COMPILE == 1) // we are on gpu
                     return ::ynf(n, x);
 #else
-                    return std::cyl_neumann(n, x);
+                    return std::cyl_neumann(static_cast<float>(n), x);
 #endif
                 }
             };

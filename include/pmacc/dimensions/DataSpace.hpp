@@ -100,7 +100,7 @@ namespace pmacc
         {
             for(uint32_t i = 0; i < T_dim; ++i)
             {
-                (*this)[i] = vec[i];
+                (*this)[i] = static_cast<int>(vec[i]);
             }
         }
 

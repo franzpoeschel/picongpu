@@ -176,8 +176,7 @@ namespace pmacc
                 constexpr uint32_t xChunkSize = 256;
 
                 // number of blocks in x direction
-                gridSize.x() = ceil(static_cast<double>(gridSize.x()) / static_cast<double>(xChunkSize));
-
+                gridSize.x() = (gridSize.x() + xChunkSize - 1) / xChunkSize;
                 auto blockCfg = lockstep::makeBlockCfg<xChunkSize>();
                 auto destBox = this->destination->getDataBox();
                 auto blockSize = DataSpace<dim>::create(1);
