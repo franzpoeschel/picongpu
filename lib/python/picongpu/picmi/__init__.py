@@ -45,7 +45,6 @@ __all__ = [
     "GaussianLaser",
     "PlaneWaveLaser",
     "Species",
-    "Species",
     "PseudoRandomLayout",
     "GriddedLayout",
     "constants",

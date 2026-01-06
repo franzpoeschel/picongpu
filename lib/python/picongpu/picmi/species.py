@@ -38,13 +38,13 @@ class ParticleShape(Enum):
 
 
 class PusherMethod(Enum):
-    # supported by standard and PIConGPU
+    # supported by PICMI standard and PIConGPU
     Boris = "Boris"
     Vay = "Vay"
     HigueraCary = "Higuera-Cary"
     Free = "free"
     ReducedLandauLifshitz = "LLRK4"
-    # not supported by standard
+    # only supported by PIConGPU
     Acceleration = "Acceleration"
     Photon = "Photon"
     Probe = "Probe"

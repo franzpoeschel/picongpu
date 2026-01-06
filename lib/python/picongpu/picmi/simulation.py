@@ -188,11 +188,8 @@ class Simulation(picmistandard.PICMI_Simulation):
         picongpu_binomial_current_interpolation: bool = False,
         **keyword_arguments,
     ):
-        self.species = []
-        self.layouts = []
         self.picongpu_distributions = []
         self.picongpu_template_dir = _normalise_template_dir(picongpu_template_dir)
-        self.picongpu_typical_ppc = picongpu_typical_ppc
         self.picongpu_moving_window_move_point = picongpu_moving_window_move_point
         self.picongpu_moving_window_stop_iteration = picongpu_moving_window_stop_iteration
         self.picongpu_interaction = picongpu_interaction
@@ -202,10 +199,11 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.picongpu_custom_user_input = None
         self.__runner = None
 
-        picmistandard.PICMI_Simulation.__init__(self, **keyword_arguments)
-
         if picongpu_typical_ppc is not None and picongpu_typical_ppc <= 0:
-            raise ValueError(f"Typical ppc should be > 0, not {self.picongpu_typical_ppc=}.")
+            raise ValueError(f"Typical ppc should be > 0, not {picongpu_typical_ppc=}.")
+        self.picongpu_typical_ppc = picongpu_typical_ppc
+
+        picmistandard.PICMI_Simulation.__init__(self, **keyword_arguments)
 
         # additional PICMI stuff checks, @todo move to picmistandard, Brian Marre, 2024
         ## throw if both cfl & delta_t are set
