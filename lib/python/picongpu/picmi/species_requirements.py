@@ -194,6 +194,10 @@ class DelayedConstruction(BaseModel):
     def check_for_conflict(self, other):
         return self.operators.check_for_conflict(self, other)
 
+    def __eq__(self, other):
+        # We do not check for operator equality here because we can't possibly inspect that.
+        return (self.metadata == other.metadata) and (self.must_be_unique == other.must_be_unique)
+
 
 class GroundStateIonizationConstruction(DelayedConstruction):
     def __init__(self, /, ionization_model):
