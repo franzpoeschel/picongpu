@@ -77,12 +77,11 @@ def run_construction(obj):
     return obj.run_construction() if hasattr(obj, "run_construction") else obj
 
 
-def _make_unique(requirements):
+def resolve_requirements(requirements):
     result = []
     for lhs in requirements:
         append_this = True
         for rhs in result:
-            check_for_conflict(lhs, rhs)
             merge_success = try_update_with(rhs, lhs)
             if merge_success:
                 append_this = False
@@ -91,6 +90,11 @@ def _make_unique(requirements):
                 append_this = append_this and not can_be_dropped_due_to_uniqueness(lhs, rhs)
         if append_this:
             result.append(lhs)
+
+    for lhs in result:
+        for rhs in result:
+            check_for_conflict(lhs, rhs)
+
     return result
 
 
@@ -98,7 +102,7 @@ def evaluate_requirements(requirements, Types):
     if isinstance(Types, type):
         return next(evaluate_requirements(requirements, [Types]))
     return (
-        _make_unique(
+        resolve_requirements(
             filter(
                 lambda req: isinstance(req, Type)
                 or (isinstance(req, DelayedConstruction) and issubclass(req.metadata.Type, Type)),

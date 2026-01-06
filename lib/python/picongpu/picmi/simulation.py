@@ -26,7 +26,7 @@ from picongpu.picmi.species_requirements import (
     SimpleMomentumOperation,
     get_as_pypicongpu,
     run_construction,
-    _make_unique,
+    resolve_requirements,
 )
 from picongpu.pypicongpu.output.openpmd_plugin import OpenPMDPlugin, FieldDump as PyPIConGPUFieldDump
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
@@ -448,7 +448,7 @@ class Simulation(picmistandard.PICMI_Simulation):
 
 
 def organise_init_operations(operations):
-    return [run_construction(op) for op in _make_unique(operations)]
+    return [run_construction(op) for op in resolve_requirements(operations)]
 
 
 def mid_window(iterable):
