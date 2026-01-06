@@ -1720,16 +1720,17 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                     // in some backends (ADIOS2), this allows avoiding memcopies
                     auto span = mrc.storeChunk<ComponentType>(
                         asStandardVector(recordOffsetDims),
-                        asStandardVector(recordLocalSizeDims),
-                        [&fieldBuffer](size_t size)
-                        {
-                            // if there is no special backend support for creating buffers,
-                            // reuse the fieldBuffer
-                            fieldBuffer.resize(sizeof(ComponentType) * size);
-                            return std::shared_ptr<ComponentType>{
-                                reinterpret_cast<ComponentType*>(fieldBuffer.data()),
-                                [](auto*) {}};
-                        });
+                        asStandardVector(recordLocalSizeDims)
+                        // [&fieldBuffer](size_t size)
+                        // {
+                        //     // if there is no special backend support for creating buffers,
+                        //     // reuse the fieldBuffer
+                        //     fieldBuffer.resize(sizeof(ComponentType) * size);
+                        //     return std::shared_ptr<ComponentType>{
+                        //         reinterpret_cast<ComponentType*>(fieldBuffer.data()),
+                        //         [](auto*) {}};
+                        // }
+                    );
                     auto dstBuffer = span.currentBuffer();
 
                     size_t const bufferSizeXYPlane = bufferSize[1] * bufferSize[0] * nComponents;

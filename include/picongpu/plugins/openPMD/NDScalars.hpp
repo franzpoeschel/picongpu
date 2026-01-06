@@ -122,7 +122,7 @@ namespace picongpu
                 log<picLog::INPUT_OUTPUT>("openPMD: write %1%D scalars: %2%") % simDim % name;
 
                 std::get<0>(tuple).storeChunk(
-                    std::make_shared<T_Scalar>(value),
+                    std::make_unique<T_Scalar>(value),
                     std::move(std::get<1>(tuple)),
                     std::move(std::get<2>(tuple)));
                 params.openPMDSeries->flush(PreferredFlushTarget::Buffer);
