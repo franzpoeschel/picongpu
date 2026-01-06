@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2023-2025 Pawel Ordyna
+# Copyright 2023-2026 Pawel Ordyna
 #
 # This file is part of PIConGPU.
 #
