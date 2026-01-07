@@ -1,6 +1,6 @@
 {
-  "$id": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.DispersivePulseLaser",
-  "description": "Specification of a dispersive Gaussian laser pulse with dispersion parameters",
+  "$id": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.TWTSLaser",
+  "description": "Specification of a Traveling-Wave Thomson-Scattering (TWTS) laser pulse",
   "type": "object",
   "properties": {
     "wave_length_si": {
@@ -17,6 +17,43 @@
       "type": "number",
       "description": "sigma of std. Gauss for intensity (E^2) [s]",
       "exclusiveMinimum": 0
+    },
+    "laserIncidenceAngle": {
+      "type": "number",
+      "description": "laser incident angle with respect to y-axis [rad]"
+    },
+    "laserIncidenceAnglePositive": {
+      "type": "boolean",
+      "description": "Is the laser incidence angle positive?"
+    },
+    "beta0": {
+      "type": "number",
+      "description": "speed of focal region normalized to the vacuum speed of light [dimensionless]",
+      "exclusiveMinimum": 0
+    },
+    "polarizationAngle": {
+      "type": "number",
+      "description": "linear polarization angle with respect to x-axis polarization [rad]"
+    },
+    "time_offset_si": {
+      "type": "number",
+      "description": "time offset to apply to the pulse [s]"
+    },
+    "focus_lateral_offset_si": {
+      "type": "number",
+      "description": "offset from the middle of the simulation domain to the laser focus in z-direction [m]"
+    },
+    "windowStart": {
+      "type": "number",
+      "description": "Time step at which the window is started to be ramped up towards unity [time step #]"
+    },
+    "windowEnd": {
+      "type": "number",
+      "description": "Time step at which the window down-ramp to zero has concluded [time step #]"
+    },
+    "windowLength": {
+      "type": "number",
+      "description": "length of the window transition from 0 to 1 and vice versa [# of time steps]"
     },
     "focus_pos_si": {
       "description": "position of focus in total coordinate system, [m]",
@@ -44,7 +81,7 @@
       "exclusiveMinimum": 0
     },
     "pulse_init": {
-      "description": "The laser pulse will be initialized pulse_init times of the pulse_duration_si",
+      "description": " The laser pulse will be initialized pulse_init times of the pulse_duration_si",
       "type": "number",
       "exclusiveMinimum": 0
     },
@@ -88,27 +125,6 @@
         }
       }
     },
-    "spectral_support": {
-      "description": "Width of the spectral support for the discrete Fourier transform [none]",
-      "type": "number",
-      "exclusiveMinimum": 0
-    },
-    "sd_si": {
-      "description": "Spatial dispersion in focus [m*s]",
-      "type": "number"
-    },
-    "ad_si": {
-      "description": "Angular dispersion in focus [rad*s]",
-      "type": "number"
-    },
-    "gdd_si": {
-      "description": "Group velocity dispersion in focus [s^2]",
-      "type": "number"
-    },
-    "tod_si": {
-      "description": "Third order dispersion in focus [s^3]",
-      "type": "number"
-    },
     "huygens_surface_positions": {
       "description": "position of the Huygens surface relative from domain boundaries",
       "type": "object",
@@ -150,17 +166,18 @@
     "waist_si",
     "pulse_duration_si",
     "focus_pos_si",
-    "phase",
     "E0_si",
+    "laserIncidenceAngle",
+    "laserIncidenceAnglePositive",
+    "beta0",
+    "time_offset_si",
+    "focus_lateral_offset_si",
+    "polarizationAngle",
+    "windowStart",
+    "windowEnd",
+    "windowLength",
     "pulse_init",
-    "propagation_direction",
     "polarization_type",
-    "polarization_direction",
-    "spectral_support",
-    "sd_si",
-    "ad_si",
-    "gdd_si",
-    "tod_si",
     "huygens_surface_positions"
   ],
   "unevaluatedProperties": false

@@ -1,4 +1,4 @@
-/* Copyright 2020-2025 Sergei Bastrakov, Rene Widera, Brian Marre, Julian Lenz
+/* Copyright 2020-2025 Sergei Bastrakov, Rene Widera, Brian Marre, Julian Lenz, Alexander Debus
  *
  * This file is part of PIConGPU.
  *
@@ -147,6 +147,25 @@ namespace picongpu::fields::incidentField
     };
     {{/typeID.fromOpenPMDPulse}}
 
+    {{#typeID.twts}}
+    struct PyPIConGPUTWTSParam_{{{_idx}}} : public PyPIConGPULaserBaseParam_{{{_idx}}}
+    {
+        {{#data}}
+        static constexpr float_64 W0_SI = {{{waist_si}}};
+        static constexpr float_64 FOCUS_Y_SI = focus_position[1];
+        static constexpr float_64 FOCUS_Z_OFFSET_SI = {{{focus_lateral_offset_si}}};
+        static constexpr float_64 PHI = {{{laserIncidenceAngle}}};
+        static constexpr float_64 BETA_0 = {{{beta0}}};
+        static constexpr float_64 TDELAY = {{{time_offset_si}}};
+        static constexpr bool AUTO_TDELAY = false;
+        static constexpr float_X Polarization = {{{polarizationAngle}}};
+        static constexpr float_X windowStart = {{{windowStart}}};
+        static constexpr float_X windowEnd = {{{windowEnd}}};
+        static constexpr float_X windowLength = {{{windowLength}}};
+        {{/data}}
+    };
+    {{/typeID.twts}}
+
     {{#typeID.gaussian}}
     using LaserProfile_{{{_idx}}} = profiles::GaussianPulse<PyPIConGPUGaussianPulseParam_{{{_idx}}}>;
     {{/typeID.gaussian}}
@@ -159,6 +178,12 @@ namespace picongpu::fields::incidentField
     {{#typeID.fromOpenPMDPulse}}
     using LaserProfile_{{{_idx}}} = profiles::FromOpenPMDPulse<PyPIConGPUFromOpenPMDPulseParam_{{{_idx}}}>;
     {{/typeID.fromOpenPMDPulse}}
+    {{#typeID.twts}}
+    using LaserProfile_{{{_idx}}} = profiles::Free<
+            profiles::TWTSFunctorIncidentE<PyPIConGPUTWTSParam_{{{_idx}}}>,
+            profiles::TWTSFunctorIncidentB<PyPIConGPUTWTSParam_{{{_idx}}}>
+            >;
+    {{/typeID.twts}}
 
     // TODO: find a better solution and move it into simulation class, or add a check that all lasers use the same positions
     {{/laser}}
@@ -222,7 +247,29 @@ namespace picongpu::fields::incidentField
     using XMin = profiles::None;
     using XMax = profiles::None;
     using YMax = profiles::None;
-    using ZMin = profiles::None;
-    using ZMax = profiles::None;
+    using ZMin = MakeSeq_t<
+    {{#laser}}
+    {{#typeID.twts}}
+    {{#data}}
+    {{#laserIncidenceAnglePositive}}
+        LaserProfile_{{{_idx}}},
+    {{/laserIncidenceAnglePositive}}
+    {{/data}}
+    {{/typeID.twts}}
+    {{/laser}}
+    profiles::None
+    >;
+    using ZMax = MakeSeq_t<
+    {{#laser}}
+    {{#typeID.twts}}
+    {{#data}}
+    {{^laserIncidenceAnglePositive}}
+        LaserProfile_{{{_idx}}},
+    {{/laserIncidenceAnglePositive}}
+    {{/data}}
+    {{/typeID.twts}}
+    {{/laser}}
+    profiles::None
+    >;
     /**@}*/
 } // namespace picongpu::fields::incidentField

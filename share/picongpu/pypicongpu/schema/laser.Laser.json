@@ -13,7 +13,8 @@
       "required": [
         "gaussian",
         "dispersive",
-        "planewave"
+        "planewave",
+        "twts"
       ],
       "unevaluatedProperties": false,
       "properties": {
@@ -27,6 +28,9 @@
           "type": "boolean"
         },
         "planewave": {
+          "type": "boolean"
+        },
+        "twts": {
           "type": "boolean"
         }
       }
@@ -45,6 +49,9 @@
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.PlaneWaveLaser"
+        },
+        {
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.laser.TWTSLaser"
         }
       ]
     }

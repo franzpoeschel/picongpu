@@ -16,12 +16,7 @@ from . import output, species, util
 from .customuserinput import InterfaceCustomUserInput
 from .field_solver.DefaultSolver import Solver
 from .grid import Grid3D
-from .laser import (
-    DispersivePulseLaser,
-    FromOpenPMDPulseLaser,
-    GaussianLaser,
-    PlaneWaveLaser,
-)
+from .laser import DispersivePulseLaser, FromOpenPMDPulseLaser, GaussianLaser, PlaneWaveLaser, TWTSLaser
 from .movingwindow import MovingWindow
 from .output import Plugin, OpenPMDPlugin
 from .output.timestepspec import TimeStepSpec
@@ -29,7 +24,7 @@ from .rendering import RenderedObject
 from .walltime import Walltime
 
 
-AnyLaser = DispersivePulseLaser | FromOpenPMDPulseLaser | GaussianLaser | PlaneWaveLaser
+AnyLaser = DispersivePulseLaser | FromOpenPMDPulseLaser | GaussianLaser | PlaneWaveLaser | TWTSLaser
 
 
 @typeguard.typechecked
