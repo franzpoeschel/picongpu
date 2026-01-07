@@ -81,8 +81,8 @@ namespace pmacc
 
     template<unsigned DIM, typename CheckpointingClass>
     void SimulationHelper<DIM, CheckpointingClass>::dumpTimes(
-        TimeIntervall& tSimCalculation,
-        TimeIntervall&,
+        TimeInterval& tSimCalculation,
+        TimeInterval&,
         double& roundAvg,
         uint32_t currentStep)
     {
@@ -101,12 +101,11 @@ namespace pmacc
             }
             std::cout << std::setw(3)
                       << uint16_t(
-                             double(currentStep) / double(Environment<>::get().SimulationDescription().getRunSteps())
-                             * 100.)
+                             static_cast<double>(currentStep)
+                             / static_cast<double>(Environment<>::get().SimulationDescription().getRunSteps()) * 100.)
                       << " % = " << std::setw(8) << currentStep << " | time elapsed:" << std::setw(25)
-                      << tSimCalculation.printInterval()
-                      << " | avg time per step: " << TimeIntervall::printeTime(roundAvg / (double) progressInterval)
-                      << std::endl;
+                      << tSimCalculation.printInterval() << " | avg time per step: "
+                      << TimeInterval::printTime(roundAvg / static_cast<double>(progressInterval)) << std::endl;
             std::cout.flush();
 
             lastProgressStep = currentStep;
@@ -152,8 +151,8 @@ namespace pmacc
                           << std::resetiosflags(std::ios::showbase) << " sec" << std::endl;
             }
 
-            TimeIntervall tSimCalculation;
-            TimeIntervall tRound;
+            TimeInterval tSimCalculation;
+            TimeInterval tRound;
             double roundAvg = 0.0;
 
             /* Since in the main loop movingWindow is called always before the dump, we also call it here for
