@@ -26,7 +26,7 @@ class TestResolveRequirements(TestCase):
     def test_duplicates(self):
         # Constants, Attributes and some DelayedConstructions must be unique and will get deduplicated.
         for requirements in [[Mass(mass_si=1.0)], [Weighting()], [SetChargeStateOperation(DUMMY_SPECIES)]]:
-            assert resolve_requirements(2 * requirements) == requirements
+            self.assertListEqual(resolve_requirements(2 * requirements), requirements)
 
     def test_conflicting_constants(self):
         req_with_conflicting_constants = [Mass(mass_si=1.0), Mass(mass_si=2.0)]
