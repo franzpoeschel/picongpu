@@ -31,10 +31,10 @@
 
 namespace pmacc
 {
-    class TimeIntervall
+    class TimeInterval
     {
     public:
-        TimeIntervall()
+        TimeInterval()
         {
             start = end = getTime();
         }

@@ -1447,7 +1447,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 }
 #    endif
 
-                TimeIntervall timer;
+                TimeInterval timer;
                 timer.toggleStart();
                 initWrite();
 

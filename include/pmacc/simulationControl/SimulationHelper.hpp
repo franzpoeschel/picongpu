@@ -117,7 +117,7 @@ namespace pmacc
             return Environment<DIM>::get().GridController();
         }
 
-        void dumpTimes(TimeIntervall& tSimCalculation, TimeIntervall&, double& roundAvg, uint32_t currentStep);
+        void dumpTimes(TimeInterval& tSimCalculation, TimeInterval&, double& roundAvg, uint32_t currentStep);
 
         /**
          * Begin the simulation.
@@ -187,8 +187,8 @@ namespace pmacc
         std::string progressPeriod;
         uint32_t lastProgressStep = 0u;
 
-        TimeIntervall tSimulation;
-        TimeIntervall tInit;
+        TimeInterval tSimulation;
+        TimeInterval tInit;
     };
 
 } // namespace pmacc

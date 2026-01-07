@@ -165,7 +165,7 @@ namespace pmacc
                 T_DeviceBuffer& buffer,
                 T_Random const& rand)
             {
-                pmacc::TimeIntervall timer;
+                pmacc::TimeInterval timer;
                 timer.toggleStart();
 
                 constexpr uint32_t blockSize = 256;
