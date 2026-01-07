@@ -1,7 +1,7 @@
 """
 This file is part of PIConGPU.
 Copyright 2021-2024 PIConGPU contributors
-Authors: Hannes Troepgen, Brian Edward Marre
+Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
@@ -137,7 +137,7 @@ class Species(BaseModel):
             pusher=Pusher[self.method.name],
         )
 
-    def get_operations(self):
+    def get_operation_requirements(self):
         return evaluate_requirements(self._requirements, Operation)
 
     def _evaluate_species_requirements(self):

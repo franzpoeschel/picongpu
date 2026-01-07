@@ -196,7 +196,11 @@ class DelayedConstruction(BaseModel):
 
     def __eq__(self, other):
         # We do not check for operator equality here because we can't possibly inspect that.
-        return (self.metadata == other.metadata) and (self.must_be_unique == other.must_be_unique)
+        return (
+            isinstance(other, DelayedConstruction)
+            and (self.metadata == other.metadata)
+            and (self.must_be_unique == other.must_be_unique)
+        )
 
 
 class GroundStateIonizationConstruction(DelayedConstruction):

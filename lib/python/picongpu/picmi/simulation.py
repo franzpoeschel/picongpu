@@ -362,7 +362,9 @@ class Simulation(picmistandard.PICMI_Simulation):
         """translate to PyPIConGPU object"""
         self._check_compatibility()
 
-        init_operations = organise_init_operations(chain(*(s.get_operations() for s in sorted(self.species))))
+        init_operations = organise_init_operations(
+            chain(*(s.get_operation_requirements() for s in sorted(self.species)))
+        )
 
         typical_ppc = (
             self.picongpu_typical_ppc
