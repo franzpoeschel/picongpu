@@ -21,6 +21,23 @@ from picongpu.pypicongpu.species.operation.simpledensity import SimpleDensity
 from picongpu.pypicongpu.species.operation.simplemomentum import SimpleMomentum
 
 
+def resolving_add(new, to):
+    # safeguard against exhaustible iterators, this is multi-pass
+    to = list(to)
+
+    for rhs in to:
+        check_for_conflict(new, rhs)
+
+    if must_be_unique(new) and any(can_be_dropped_due_to_uniqueness(new, rhs) for rhs in to):
+        return to
+
+    for into_instance in to:
+        if try_update_with(into_instance, new):
+            return to
+
+    return to + [new]
+
+
 def get_as_pypicongpu(obj, *args, **kwargs):
     if hasattr(obj, "get_as_pypicongpu"):
         return obj.get_as_pypicongpu(*args, **kwargs)
@@ -77,37 +94,14 @@ def run_construction(obj):
     return obj.run_construction() if hasattr(obj, "run_construction") else obj
 
 
-def resolve_requirements(requirements):
-    result = []
-    for lhs in requirements:
-        append_this = True
-        for rhs in result:
-            merge_success = try_update_with(rhs, lhs)
-            if merge_success:
-                append_this = False
-                break
-            if must_be_unique(lhs):
-                append_this = append_this and not can_be_dropped_due_to_uniqueness(lhs, rhs)
-        if append_this:
-            result.append(lhs)
-
-    for lhs in result:
-        for rhs in result:
-            check_for_conflict(lhs, rhs)
-
-    return result
-
-
 def evaluate_requirements(requirements, Types):
     if isinstance(Types, type):
         return next(evaluate_requirements(requirements, [Types]))
     return (
-        resolve_requirements(
-            filter(
-                lambda req: isinstance(req, Type)
-                or (isinstance(req, DelayedConstruction) and issubclass(req.metadata.Type, Type)),
-                requirements,
-            )
+        filter(
+            lambda req: isinstance(req, Type)
+            or (isinstance(req, DelayedConstruction) and issubclass(req.metadata.Type, Type)),
+            requirements,
         )
         for Type in Types
     )

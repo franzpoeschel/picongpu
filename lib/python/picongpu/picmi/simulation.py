@@ -24,9 +24,9 @@ from picongpu.picmi.layout import AnyLayout
 from picongpu.picmi.species_requirements import (
     SimpleDensityOperation,
     SimpleMomentumOperation,
+    resolving_add,
     get_as_pypicongpu,
     run_construction,
-    resolve_requirements,
 )
 from picongpu.pypicongpu.output.openpmd_plugin import OpenPMDPlugin, FieldDump as PyPIConGPUFieldDump
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
@@ -450,7 +450,10 @@ class Simulation(picmistandard.PICMI_Simulation):
 
 
 def organise_init_operations(operations):
-    return [run_construction(op) for op in resolve_requirements(operations)]
+    cleaned = []
+    for op in operations:
+        cleaned = resolving_add(op, cleaned)
+    return [run_construction(op) for op in cleaned]
 
 
 def mid_window(iterable):

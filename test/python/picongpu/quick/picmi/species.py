@@ -21,10 +21,12 @@ from picongpu.pypicongpu.species.constant.mass import Mass
 
 
 def subset_of(subset, superset):
+    superset = list(superset)
     return all(any(e1 == e2 for e2 in superset) for e1 in subset)
 
 
 def count_all_one(subset, superset):
+    superset = list(superset)
     return all(superset.count(e) == 1 for e in subset)
 
 

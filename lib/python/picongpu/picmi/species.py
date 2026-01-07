@@ -12,7 +12,7 @@ from typing import Any
 from pydantic import BaseModel, PrivateAttr, computed_field, model_validator
 
 from picongpu.picmi.distribution import AnyDistribution
-from picongpu.picmi.species_requirements import evaluate_requirements, run_construction
+from picongpu.picmi.species_requirements import resolving_add, evaluate_requirements, run_construction
 from picongpu.pypicongpu.species.attribute import Momentum, Position
 from picongpu.pypicongpu.species.attribute.attribute import Attribute
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
@@ -156,7 +156,8 @@ class Species(BaseModel):
         return any(isinstance(req, DependsOn) and req.species == other for req in self._requirements)
 
     def register_requirements(self, requirements):
-        self._requirements += requirements
+        for requirement in requirements:
+            self._requirements = resolving_add(requirement, self._requirements)
 
 
 def particle_type_requirements(particle_type):
