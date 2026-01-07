@@ -35,8 +35,10 @@
 
 #    include <boost/mpl/placeholders.hpp>
 
+#    include <algorithm>
 #    include <cassert>
 #    include <stdexcept>
+#    include <utility>
 
 #    include <openPMD/openPMD.hpp>
 
@@ -45,6 +47,86 @@ namespace picongpu
     namespace openPMD
     {
         using namespace pmacc;
+
+        template<typename T_Identifier>
+        struct RedistributeFilteredParticles
+        {
+            template<typename FrameType, typename FilterType>
+            HINLINE void operator()(
+                FrameType& frame,
+                FilterType const& filter,
+                uint64_t const numParticlesCurrentBatch,
+                // becomes numParticlesAfterFiltering after this function call
+                MemIdxType& particleIndexTarget,
+                char const filterRemove)
+            {
+                using Identifier = T_Identifier;
+                using ValueType = typename pmacc::traits::Resolve<Identifier>::type::type;
+                using ComponentType = typename GetComponentsType<ValueType>::type;
+
+                ValueType* dataPtr = frame.getIdentifier(Identifier()).getPointer();
+
+                particleIndexTarget = 0;
+                for(MemIdxType particleIndexSrc = 0; particleIndexSrc < numParticlesCurrentBatch; ++particleIndexSrc)
+                {
+                    if(filter[particleIndexSrc] == filterRemove)
+                    {
+                        continue;
+                    }
+                    dataPtr[particleIndexTarget++] = dataPtr[particleIndexSrc];
+                }
+            }
+        };
+
+        struct KernelFilterParticles
+        {
+            template<typename T_Worker, typename FrameType, typename FilterType>
+            DINLINE void operator()(
+                T_Worker const& worker,
+                FrameType&& loadedData,
+                MemIdxType size,
+                DataSpace<simDim> patchTotalOffset,
+                DataSpace<simDim> patchUpperCorner,
+                char const filterKeep,
+                char const filterRemove,
+                FilterType&& filterOut) const
+            {
+                // DataSpace<1> particleIndex = worker.blockDomIdxND();
+                constexpr uint32_t blockDomSize = T_Worker::blockDomSize();
+                auto numDataBlocks = (size + blockDomSize - 1u) / blockDomSize;
+                auto position_ = loadedData.getIdentifier(position()).getPointer();
+                auto positionOffset = loadedData.getIdentifier(totalCellIdx()).getPointer();
+
+                // grid-strided loop over the chunked data
+                for(uint32_t dataBlock = worker.blockDomIdx(); dataBlock < numDataBlocks;
+                    dataBlock += worker.gridDomSize())
+                {
+                    auto dataBlockOffset = dataBlock * blockDomSize;
+                    auto forEach = pmacc::lockstep::makeForEach(worker);
+                    forEach(
+                        [&](uint32_t const inBlockIdx)
+                        {
+                            auto idx = dataBlockOffset + inBlockIdx;
+                            if(idx < size)
+                            {
+                                auto& positionVec = position_[idx];
+                                auto& positionOffsetVec = positionOffset[idx];
+                                char filterCurrent = filterKeep;
+                                for(size_t d = 0; d < simDim; ++d)
+                                {
+                                    auto positionInD = positionVec[d] + positionOffsetVec[d];
+                                    if(positionInD < patchTotalOffset[d] || positionInD >= patchUpperCorner[d])
+                                    {
+                                        filterCurrent = filterRemove;
+                                        break;
+                                    }
+                                }
+                                filterOut[idx] = filterCurrent;
+                            }
+                        });
+                }
+            }
+        };
 
         /** Load species from openPMD checkpoint storage
          *
@@ -70,6 +152,211 @@ namespace picongpu
             using NewParticleDescription =
                 typename ReplaceValueTypeSeq<ParticleDescription, ParticleNewAttributeList>::type;
 
+            struct LoadParams
+            {
+                using FrameType = Frame<OperatorCreateVectorBox, NewParticleDescription>;
+                using BufferType = Frame<OperatorCreateAlpakaBuffer, NewParticleDescription>;
+
+                std::string const& speciesName;
+                ::openPMD::ParticleSpecies const& particleSpecies;
+                std::shared_ptr<ThisSpecies> const& speciesTmp;
+                uint64_t* patchNumParticles;
+                uint64_t* patchNumParticlesOffset;
+                DataSpace<simDim> const& cellOffsetToTotalDomain;
+                uint32_t restartChunkSize;
+
+                auto numParticlesAndChunkSize(std::deque<size_t> const& matches) const -> std::pair<uint64_t, uint64_t>
+                {
+                    uint64_t totalNumParticles = std::transform_reduce(
+                        matches.begin(),
+                        matches.end(),
+                        0,
+                        /* reduce = */ [](uint64_t left, uint64_t right) { return left + right; },
+                        /* transform = */ [this](size_t patchIdx) { return patchNumParticles[patchIdx]; });
+                    uint64_t maxChunkSize = std::min(static_cast<uint64_t>(restartChunkSize), totalNumParticles);
+                    return std::make_pair(totalNumParticles, maxChunkSize);
+                }
+
+                template<typename Functor>
+                void loadMatchesGeneric(
+                    std::deque<size_t> const& matches,
+                    ThreadParams* threadParams,
+                    uint64_t totalNumParticles,
+                    uint64_t maxChunkSize,
+                    Functor&& forEachPatch) const
+                {
+                    BufferType buffers;
+                    FrameType mappedFrame;
+                    log<picLog::INPUT_OUTPUT>("openPMD: malloc mapped memory: %1%") % speciesName;
+                    /*malloc mapped memory*/
+                    meta::ForEach<typename NewParticleDescription::ValueTypeSeq, MallocMappedMemory<boost::mpl::_1>>
+                        mallocMem;
+                    mallocMem(buffers, mappedFrame, maxChunkSize);
+
+                    for(size_t const patchIdx : matches)
+                    {
+                        uint64_t particleOffset = patchNumParticlesOffset[patchIdx];
+                        uint64_t numParticles = patchNumParticles[patchIdx];
+
+                        log<picLog::INPUT_OUTPUT>("openPMD: Loading %1% particles from offset %2%")
+                            % (long long unsigned) totalNumParticles % (long long unsigned) particleOffset;
+
+
+                        uint32_t const numLoadIterations
+                            = maxChunkSize == 0u ? 0u : alpaka::core::divCeil(numParticles, maxChunkSize);
+
+                        for(uint64_t loadRound = 0u; loadRound < numLoadIterations; ++loadRound)
+                        {
+                            auto particleLoadOffset = particleOffset + loadRound * maxChunkSize;
+                            auto numLeftParticles = numParticles - loadRound * maxChunkSize;
+
+                            auto numParticlesCurrentBatch = std::min(numLeftParticles, maxChunkSize);
+
+                            log<picLog::INPUT_OUTPUT>("openPMD: (begin) load species %1% round: %2%/%3%") % speciesName
+                                % (loadRound + 1) % numLoadIterations;
+                            if(numParticlesCurrentBatch != 0)
+                            {
+                                std::forward<Functor>(forEachPatch)(
+                                    loadRound,
+                                    numParticlesCurrentBatch,
+                                    mappedFrame,
+                                    particleLoadOffset);
+                            }
+                            log<picLog::INPUT_OUTPUT>("openPMD: ( end ) load species %1% round: %2%/%3%") % speciesName
+                                % (loadRound + 1) % numLoadIterations;
+                        }
+                    }
+                }
+
+                void loadFullMatches(std::deque<size_t> const& fullMatches, ThreadParams* threadParams) const
+                {
+                    auto [totalNumParticles, maxChunkSize] = numParticlesAndChunkSize(fullMatches);
+                    loadMatchesGeneric(
+                        fullMatches,
+                        threadParams,
+                        totalNumParticles,
+                        maxChunkSize,
+                        /* forEachPatch = */
+                        [this, threadParams](
+                            uint64_t loadRound,
+                            uint64_t numParticlesCurrentBatch,
+                            FrameType& mappedFrame,
+                            uint64_t particleLoadOffset)
+                        {
+                            meta::ForEach<
+                                typename NewParticleDescription::ValueTypeSeq,
+                                LoadParticleAttributesFromOpenPMD<boost::mpl::_1>>
+                                loadAttributes;
+                            loadAttributes(
+                                threadParams,
+                                mappedFrame,
+                                particleSpecies,
+                                particleLoadOffset,
+                                numParticlesCurrentBatch);
+
+                            pmacc::particles::operations::splitIntoListOfFrames(
+                                *speciesTmp,
+                                mappedFrame,
+                                numParticlesCurrentBatch,
+                                cellOffsetToTotalDomain,
+                                totalCellIdx_,
+                                *threadParams->cellDescription,
+                                picLog::INPUT_OUTPUT());
+                        });
+                }
+
+                void loadPartialMatches(std::deque<size_t> const& partialMatches, ThreadParams* threadParams) const
+                {
+                    auto [totalNumParticles, maxChunkSize] = numParticlesAndChunkSize(partialMatches);
+
+                    SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
+                    pmacc::Selection<simDim> const localDomain = subGrid.getLocalDomain();
+                    pmacc::Selection<simDim> const globalDomain = subGrid.getGlobalDomain();
+                    /* Offset to transform local particle offsets into total offsets for all particles within the
+                     * current local domain.
+                     * @attention A window can be the full simulation domain or the moving window.
+                     */
+                    DataSpace<simDim> localToTotalDomainOffset(localDomain.offset + globalDomain.offset);
+
+                    /* params->localWindowToDomainOffset is in PIConGPU for a restart zero but to stay generic we take
+                     * the variable into account.
+                     */
+                    DataSpace<simDim> const patchTotalOffset
+                        = localToTotalDomainOffset + threadParams->localWindowToDomainOffset;
+                    DataSpace<simDim> const patchExtent = threadParams->window.localDimensions.size;
+                    DataSpace<simDim> const patchUpperCorner = patchTotalOffset + patchExtent;
+
+                    constexpr bool isMappedMemorySupported
+                        = alpaka::hasMappedBufSupport<::alpaka::Platform<pmacc::ComputeDevice>>;
+                    PMACC_VERIFY_MSG(isMappedMemorySupported, "Device must support mapped memory!");
+                    auto filter = alpaka::allocMappedBuf<char, MemIdxType>(
+                        manager::Device<HostDevice>::get().current(),
+                        manager::Device<ComputeDevice>::get().getPlatform(),
+                        MemSpace<DIM1>(maxChunkSize).toAlpakaMemVec());
+
+                    loadMatchesGeneric(
+                        partialMatches,
+                        threadParams,
+                        totalNumParticles,
+                        maxChunkSize, /* forEachPatch = */
+                        [this, threadParams, &filter, &patchTotalOffset, &patchExtent, &patchUpperCorner](
+                            uint64_t loadRound,
+                            uint64_t numParticlesCurrentBatch,
+                            FrameType& mappedFrame,
+                            uint64_t particleLoadOffset)
+                        {
+                            meta::ForEach<
+                                typename NewParticleDescription::ValueTypeSeq,
+                                LoadParticleAttributesFromOpenPMD<boost::mpl::_1>>
+                                loadAttributes;
+                            loadAttributes(
+                                threadParams,
+                                mappedFrame,
+                                particleSpecies,
+                                particleLoadOffset,
+                                numParticlesCurrentBatch);
+
+                            constexpr char filterKeep{1}, filterRemove{0};
+                            PMACC_LOCKSTEP_KERNEL(KernelFilterParticles{})
+                                .config<DIM1>(pmacc::math::Vector{numParticlesCurrentBatch})(
+                                    mappedFrame,
+                                    numParticlesCurrentBatch,
+                                    patchTotalOffset,
+                                    patchUpperCorner,
+                                    filterKeep,
+                                    filterRemove,
+                                    alpaka::getPtrNative(filter));
+                            eventSystem::getTransactionEvent().waitForFinished();
+
+                            MemIdxType numParticlesAfterFiltering = 0;
+                            meta::ForEach<
+                                typename NewParticleDescription::ValueTypeSeq,
+                                RedistributeFilteredParticles<boost::mpl::_1>>
+                                redistributeFilteredParticles;
+                            redistributeFilteredParticles(
+                                mappedFrame,
+                                filter,
+                                numParticlesCurrentBatch,
+                                numParticlesAfterFiltering,
+                                filterRemove);
+
+                            log<picLog::INPUT_OUTPUT>(
+                                "openPMD: Keeping %1% of the current batch's %2% particles after filtering.")
+                                % numParticlesAfterFiltering % numParticlesCurrentBatch;
+
+                            pmacc::particles::operations::splitIntoListOfFrames(
+                                *speciesTmp,
+                                mappedFrame,
+                                // @attention not numParticlesCurrentBatch, filtered vs. unfiltered number
+                                numParticlesAfterFiltering,
+                                cellOffsetToTotalDomain,
+                                totalCellIdx_,
+                                *threadParams->cellDescription,
+                                picLog::INPUT_OUTPUT());
+                        });
+                }
+            };
+
             /** Load species from openPMD checkpoint storage
              *
              * @param params thread params
@@ -81,7 +368,6 @@ namespace picongpu
                 std::string const speciesName = FrameType::getName();
                 log<picLog::INPUT_OUTPUT>("openPMD: (begin) load species: %1%") % speciesName;
                 DataConnector& dc = Environment<>::get().DataConnector();
-                GridController<simDim>& gc = Environment<simDim>::get().GridController();
 
                 ::openPMD::Series& series = *params->openPMDSeries;
                 ::openPMD::Container<::openPMD::ParticleSpecies>& particles
@@ -99,93 +385,54 @@ namespace picongpu
                 // openPMD
                 eventSystem::getTransactionEvent().waitForFinished();
 
-                auto numRanks = gc.getGlobalSize();
+                auto [fullMatches, partialMatches] = getPatchIdx(params, particleSpecies);
 
-                size_t patchIdx = getPatchIdx(params, particleSpecies, numRanks);
-
-                std::shared_ptr<uint64_t> fullParticlesInfoShared
+                std::shared_ptr<uint64_t> numParticlesShared
                     = particleSpecies.particlePatches["numParticles"][::openPMD::RecordComponent::SCALAR]
                           .load<uint64_t>();
+                std::shared_ptr<uint64_t> numParticlesOffsetShared
+                    = particleSpecies.particlePatches["numParticlesOffset"][::openPMD::RecordComponent::SCALAR]
+                          .load<uint64_t>();
                 particles.seriesFlush();
-                uint64_t* fullParticlesInfo = fullParticlesInfoShared.get();
+                uint64_t* patchNumParticles = numParticlesShared.get();
+                uint64_t* patchNumParticlesOffset = numParticlesOffsetShared.get();
 
-                /* Run a prefix sum over the numParticles[0] element in
-                 * particlesInfo to retreive the offset of particles
-                 */
-                uint64_t particleOffset = 0u;
-                /* count total number of particles on the device */
-                uint64_t totalNumParticles = 0u;
+                LoadParams lp{
+                    speciesName,
+                    particleSpecies,
+                    speciesTmp,
+                    patchNumParticles,
+                    patchNumParticlesOffset,
+                    cellOffsetToTotalDomain,
+                    restartChunkSize};
+                lp.loadFullMatches(fullMatches, params);
+                lp.loadPartialMatches(partialMatches, params);
 
-                assert(patchIdx < numRanks);
-
-                for(size_t i = 0u; i <= patchIdx; ++i)
-                {
-                    if(i < patchIdx)
-                        particleOffset += fullParticlesInfo[i];
-                    if(i == patchIdx)
-                        totalNumParticles = fullParticlesInfo[i];
-                }
-
-                log<picLog::INPUT_OUTPUT>("openPMD: Loading %1% particles from offset %2%")
-                    % (long long unsigned) totalNumParticles % (long long unsigned) particleOffset;
-
-                log<picLog::INPUT_OUTPUT>("openPMD: malloc mapped memory: %1%") % speciesName;
-
-                using FrameType = Frame<OperatorCreateVectorBox, NewParticleDescription>;
-                using BufferType = Frame<OperatorCreateAlpakaBuffer, NewParticleDescription>;
-
-                BufferType buffers;
-                FrameType mappedFrame;
-
-                uint64_t maxChunkSize = std::min(static_cast<uint64_t>(restartChunkSize), totalNumParticles);
-
-                /*malloc mapped memory*/
-                meta::ForEach<typename NewParticleDescription::ValueTypeSeq, MallocMappedMemory<boost::mpl::_1>>
-                    mallocMem;
-                mallocMem(buffers, mappedFrame, maxChunkSize);
-
-                uint32_t const numLoadIterations
-                    = maxChunkSize == 0u ? 0u : alpaka::core::divCeil(totalNumParticles, maxChunkSize);
-
-                for(uint64_t loadRound = 0u; loadRound < numLoadIterations; ++loadRound)
-                {
-                    auto particleLoadOffset = particleOffset + loadRound * maxChunkSize;
-                    auto numLeftParticles = totalNumParticles - loadRound * maxChunkSize;
-
-                    auto numParticlesCurrentBatch = std::min(numLeftParticles, maxChunkSize);
-
-                    log<picLog::INPUT_OUTPUT>("openPMD: (begin) load species %1% round: %2%/%3%") % speciesName
-                        % (loadRound + 1) % numLoadIterations;
-                    if(numParticlesCurrentBatch != 0)
-                    {
-                        meta::ForEach<
-                            typename NewParticleDescription::ValueTypeSeq,
-                            LoadParticleAttributesFromOpenPMD<boost::mpl::_1>>
-                            loadAttributes;
-                        loadAttributes(
-                            params,
-                            mappedFrame,
-                            particleSpecies,
-                            particleLoadOffset,
-                            numParticlesCurrentBatch);
-
-
-                        pmacc::particles::operations::splitIntoListOfFrames(
-                            *speciesTmp,
-                            mappedFrame,
-                            numParticlesCurrentBatch,
-                            cellOffsetToTotalDomain,
-                            totalCellIdx_,
-                            *(params->cellDescription),
-                            picLog::INPUT_OUTPUT());
-                    }
-                    log<picLog::INPUT_OUTPUT>("openPMD: ( end ) load species %1% round: %2%/%3%") % speciesName
-                        % (loadRound + 1) % numLoadIterations;
-                }
                 log<picLog::INPUT_OUTPUT>("openPMD: ( end ) load species: %1%") % speciesName;
             }
 
         private:
+            // o: offset, e: extent, u: upper corner (= o+e)
+            static std::pair<DataSpace<simDim>, DataSpace<simDim>> intersect(
+                DataSpace<simDim> const& o1,
+                DataSpace<simDim> const& e1,
+                DataSpace<simDim> const& o2,
+                DataSpace<simDim> const& e2)
+            {
+                // Convert extents into upper coordinates
+                auto u1 = o1 + e1;
+                auto u2 = o2 + e2;
+
+                DataSpace<simDim> intersect_o, intersect_u, intersect_e;
+                for(unsigned d = 0; d < simDim; ++d)
+                {
+                    intersect_o[d] = std::max(o1[d], o2[d]);
+                    intersect_u[d] = std::min(u1[d], u2[d]);
+                    intersect_e[d] = intersect_u[d] > intersect_o[d] ? intersect_u[d] - intersect_o[d] : 0;
+                }
+                return {intersect_o, intersect_e};
+            }
+
             /** get index for particle data within the openPMD patch data
              *
              * It is not possible to assume that we can use the MPI rank to load the particle data.
@@ -197,13 +444,17 @@ namespace picongpu
              *
              * @return index of the particle patch within the openPMD data
              */
-            HINLINE size_t
-            getPatchIdx(ThreadParams* params, ::openPMD::ParticleSpecies particleSpecies, size_t numRanks)
+            HINLINE std::pair<std::deque<size_t>, std::deque<size_t>> getPatchIdx(
+                ThreadParams* params,
+                ::openPMD::ParticleSpecies particleSpecies)
             {
                 std::string const name_lookup[] = {"x", "y", "z"};
 
-                std::vector<DataSpace<simDim>> offsets(numRanks);
-                std::vector<DataSpace<simDim>> extents(numRanks);
+                size_t patches = particleSpecies.particlePatches["numParticles"][::openPMD::RecordComponent::SCALAR]
+                                     .getExtent()[0];
+
+                std::vector<DataSpace<simDim>> offsets(patches);
+                std::vector<DataSpace<simDim>> extents(patches);
 
                 // transform openPMD particle patch data into PIConGPU data objects
                 for(uint32_t d = 0; d < simDim; ++d)
@@ -213,7 +464,7 @@ namespace picongpu
                     std::shared_ptr<uint64_t> patchExtentsInfoShared
                         = particleSpecies.particlePatches["extent"][name_lookup[d]].load<uint64_t>();
                     particleSpecies.seriesFlush();
-                    for(size_t i = 0; i < numRanks; ++i)
+                    for(size_t i = 0; i < patches; ++i)
                     {
                         offsets[i][d] = patchOffsetsInfoShared.get()[i];
                         extents[i][d] = patchExtentsInfoShared.get()[i];
@@ -235,18 +486,47 @@ namespace picongpu
                 DataSpace<simDim> const patchTotalOffset
                     = localToTotalDomainOffset + params->localWindowToDomainOffset;
                 DataSpace<simDim> const patchExtent = params->window.localDimensions.size;
+                math::Vector<bool, simDim> true_;
+                for(unsigned d = 0; d < simDim; ++d)
+                {
+                    true_[d] = true;
+                }
 
                 // search the patch index based on the offset and extents of local domain size
-                for(size_t i = 0; i < numRanks; ++i)
+                std::deque<size_t> fullMatches;
+                std::deque<size_t> partialMatches;
+                size_t noMatches = 0;
+                for(size_t i = 0; i < patches; ++i)
                 {
-                    if(patchTotalOffset == offsets[i] && patchExtent == extents[i])
-                        return i;
+                    // std::cout << "Comp.: " << patchTotalOffset << " - " << (patchTotalOffset + patchExtent)
+                    //           << "\tAGAINST " << offsets[i] << " - " << (offsets[i] + extents[i])
+                    //           << "\toffsets: " << (patchTotalOffset <= offsets[i])
+                    //           << ", extents: " << ((offsets[i] + extents[i]) <= (patchTotalOffset +
+                    //           patchExtent)) <<
+                    //           '\n';
+                    if((patchTotalOffset <= offsets[i]) == true_
+                       && ((offsets[i] + extents[i]) <= (patchTotalOffset + patchExtent)) == true_)
+                    {
+                        fullMatches.emplace_back(i);
+                    }
+                    else if(
+                        intersect(offsets[i], extents[i], patchTotalOffset, patchExtent).second.productOfComponents()
+                        != 0)
+                    {
+                        partialMatches.emplace_back(i);
+                    }
+                    else
+                    {
+                        ++noMatches;
+                    }
                 }
-                // If no patch fits the conditions, something went wrong before
-                throw std::runtime_error(
-                    "Error while restarting: no particle patch matches the required offset and extent");
-                // Fake return still needed to avoid warnings
-                return 0;
+
+                log<picLog::INPUT_OUTPUT>(
+                    "openPMD: Found %1% fully and %2% partially matching particle patch(es). %3% "
+                    "patch was / patches were not matched.")
+                    % fullMatches.size() % partialMatches.size() % noMatches;
+
+                return std::make_pair(std::move(fullMatches), std::move(partialMatches));
             }
         };
 

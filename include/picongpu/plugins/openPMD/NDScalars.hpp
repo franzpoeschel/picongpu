@@ -174,11 +174,17 @@ namespace picongpu
                 DataSpace<simDim> gridPos = Environment<simDim>::get().GridController().getPosition();
                 ::openPMD::Offset start;
                 ::openPMD::Extent count;
+                ::openPMD::Extent extent = mrc.getExtent();
                 start.reserve(ndim);
                 count.reserve(ndim);
                 for(int d = 0; d < ndim; ++d)
                 {
-                    start.push_back(gridPos.revert()[d]);
+                    /*
+                     * When restarting with more parallel processes than the checkpoint had originally been written
+                     * with, we must take care not to index past the dataset boundaries. Just loop around to the start
+                     * in that case. Not the finest way, but it does the job for now..
+                     */
+                    start.push_back(gridPos.revert()[d] % extent[d]);
                     count.push_back(1);
                 }
 

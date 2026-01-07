@@ -172,11 +172,12 @@ namespace pmacc
         {
             // getDataBox is notifying the event system, no need to do it manually
             auto memBox = this->getDataBox();
-            auto current_size = static_cast<int64_t>(this->size());
+            // narrowing conversion, implicit assumption when using a DataSpace is that size fits in int.
+            auto current_size = static_cast<int>(this->size());
             using D1Box = DataBoxDim1Access<DataBoxType>;
             D1Box d1Box(memBox, this->capacityND());
 #pragma omp parallel for
-            for(int64_t i = 0; i < current_size; i++)
+            for(int i = 0; i < current_size; i++)
             {
                 d1Box[i] = value;
             }

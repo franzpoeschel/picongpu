@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include "picongpu/MetadataAggregator.hpp"
 #include "picongpu/defines.hpp"
 #include "picongpu/fields/FieldB.hpp"
 #include "picongpu/fields/FieldE.hpp"
@@ -86,8 +85,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <nlohmann/json.hpp>
 
 namespace picongpu
 {
@@ -164,13 +161,6 @@ namespace picongpu
         {
             if(!skipSimulation)
                 SimHelper::startSimulation();
-        }
-
-        nlohmann::json metadata() const
-        {
-            auto result = nlohmann::json::object();
-            result["simulation"]["steps"] = runSteps;
-            return result;
         }
 
         std::string pluginGetName() const override
@@ -299,9 +289,6 @@ namespace picongpu
                 else
                     log<picLog::PHYSICS>("Sliding Window is OFF");
             }
-            // doc-include-start: metadata pluginLoad
-            addMetadataOf(*this);
-            // doc-include-end: metadata pluginLoad
         }
 
         void pluginUnload() override

@@ -52,7 +52,8 @@ namespace pmacc
                 {
                     // avoid deadlock between not finished pmacc tasks and mpi blocking collectives
                     eventSystem::getTransactionEvent().waitForFinished();
-                    MPI_CHECK(MPI_Allreduce((void*) src, (void*) dest, count, type, op, comm));
+
+                    MPI_CHECK(MPI_Allreduce((void*) src, (void*) dest, static_cast<int>(count), type, op, comm));
                 }
             };
 

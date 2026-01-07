@@ -10,7 +10,7 @@
     },
     "pulse_duration_si": {
       "type": "number",
-      "description": "sigma of std. gauss for intensity (E^2) [s]",
+      "description": "sigma of std. Gauss for intensity (E^2) [s]",
       "exclusiveMinimum": 0
     },
     "focus_pos_si": {
@@ -39,7 +39,7 @@
       "exclusiveMinimum": 0
     },
     "pulse_init": {
-      "description": " The laser pulse will be initialized pulse_init times of the pulse_duration_si",
+      "description": "The laser pulse will be initialized pulse_init times of the pulse_duration_si",
       "type": "number",
       "exclusiveMinimum": 0
     },
@@ -88,7 +88,7 @@
       "type": "number"
     },
     "huygens_surface_positions": {
-      "description": "position of the huygens surface relative from domain boundaries",
+      "description": "position of the Huygens surface relative from domain boundaries",
       "type": "object",
       "required": [
         "row_x",

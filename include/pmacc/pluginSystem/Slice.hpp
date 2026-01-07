@@ -24,6 +24,7 @@
 #include "pmacc/verify.hpp"
 
 #include <array>
+#include <charconv>
 #include <cstdint>
 #include <string>
 
@@ -59,7 +60,7 @@ namespace pmacc
             {
                 if(!str.empty())
                 {
-                    uint32_t value = std::stoul(str);
+                    auto value = static_cast<uint32_t>(std::stoul(str));
                     PMACC_VERIFY_MSG(!(idx == 2 && value == 0), "Zero is not a valid period");
                     values.at(idx) = value;
                 }

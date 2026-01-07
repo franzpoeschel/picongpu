@@ -87,7 +87,7 @@ namespace pmacc
                     std::string("time slice without a defined element is not allowed") + str);
 
                 // id of the component
-                size_t n = 0;
+                uint32_t n = 0;
                 bool const sliceOnly = sliceComponents.size() == 1u;
                 Slice rangeSlice;
 

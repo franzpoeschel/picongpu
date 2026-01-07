@@ -1024,6 +1024,12 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 {
                     loadRngStatesImpl(&mThreadParams, restartStep);
                 }
+                catch(std::exception const& e)
+                {
+                    log<picLog::INPUT_OUTPUT>("openPMD: loading RNG states failed, they will be re-initialized "
+                                              "instead. Original error:\n\t%1%")
+                        % e.what();
+                }
                 catch(...)
                 {
                     log<picLog::INPUT_OUTPUT>(
@@ -1447,7 +1453,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 }
 #    endif
 
-                TimeIntervall timer;
+                TimeInterval timer;
                 timer.toggleStart();
                 initWrite();
 
@@ -1459,8 +1465,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 mThreadParams.times.push_back(interval);
                 double average = std::accumulate(mThreadParams.times.begin(), mThreadParams.times.end(), 0);
                 average /= mThreadParams.times.size();
-                log<picLog::INPUT_OUTPUT>("openPMD: IO plugin ran for %1% (average: %2%)") % timer.printeTime(interval)
-                    % timer.printeTime(average);
+                log<picLog::INPUT_OUTPUT>("openPMD: IO plugin ran for %1% (average: %2%)") % timer.printTime(interval)
+                    % timer.printTime(average);
             }
 
             static void writeFieldAttributes(
