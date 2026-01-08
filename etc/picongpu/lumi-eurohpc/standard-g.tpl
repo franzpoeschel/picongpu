@@ -184,4 +184,4 @@ else
     echo "Job stopped because of previous issues." >&2
 fi
 
-rm -rf ./select_gpu
+rm ./select_gpu
