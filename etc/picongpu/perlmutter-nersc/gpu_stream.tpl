@@ -153,4 +153,4 @@ if [ $node_check_err -eq 0 ] || [ $run_cuda_memtest -eq 0 ] ; then
   sleep 120
 fi
 
-rm -rf ./select_gpu
+rm ./select_gpu
