@@ -12,6 +12,8 @@ from enum import Enum
 
 import typeguard
 
+from picongpu.pypicongpu.species.constant.synchrotron import SynchrotronConstant
+
 from ..rendering import RenderedObject
 from .attribute import Attribute, Momentum, Position
 from .constant import (
@@ -184,6 +186,7 @@ class Species(RenderedObject, BaseModel):
             "density_ratio": DensityRatio,
             "element_properties": ElementProperties,
             "ground_state_ionization": GroundStateIonization,
+            "synchrotron": SynchrotronConstant,
         }
 
         constants_context = {}

@@ -14,5 +14,5 @@ class Mass(Constant):
     mass of a physical particle
     """
 
-    mass_si: float = Field(gt=0.0)
+    mass_si: float = Field(ge=0.0)
     """mass in kg of an individual particle"""

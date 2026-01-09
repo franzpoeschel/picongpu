@@ -62,6 +62,7 @@
       "type": "boolean",
       "description": "use binomial current interpolation"
     },
+    "synchrotron_params": {},
     "output": {
       "description": "configuration of simulation output",
       "anyOf": [
@@ -101,6 +102,7 @@
     "walltime",
     "customuserinput",
     "output",
+    "synchrotron_params",
     "base_density",
     "species"
   ],

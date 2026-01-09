@@ -80,6 +80,10 @@ namespace picongpu
                     ionizationEnergies<ionization::energies::AU::{{{element.picongpu_name}}}_t>,
                     effectiveNuclearCharge<ionization::effectiveNuclearCharge::{{{element.picongpu_name}}}_t>,
                 {{/element_properties}}
+
+                {{#synchrotron}}
+                    synchrotron<{{{photon_species.typename}}}>,
+                {{/synchrotron}}
             {{/constants}}
 
             particlePusher<{{#pusher}}particles::pusher::{{{pusher}}}{{/pusher}}{{^pusher}}UsedParticlePusher{{/pusher}}>,

@@ -20,6 +20,7 @@ from .distribution import (
     AnalyticDistribution,
 )
 
+from .interaction import Interaction, Synchrotron
 from .interaction.ionization.fieldionization import (
     ADK,
     ADKVariant,
@@ -58,6 +59,8 @@ __all__ = [
     "BSIExtension",
     "Keldysh",
     "ThomasFermi",
+    "Synchrotron",
+    "Interaction",
     "diagnostics",
     "CylindricalDistribution",
 ]

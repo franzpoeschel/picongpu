@@ -175,7 +175,7 @@ def particle_type_requirements(particle_type):
     else:
         # unknown particle type
         raise ValueError(f"Species has unknown particle type {particle_type}")
-    return [Mass(mass_si=mass), Charge(charge_si=charge)]
+    return [Mass(mass_si=mass or 0.0), Charge(charge_si=charge or 0.0)]
 
 
 class DependsOn(BaseModel):
