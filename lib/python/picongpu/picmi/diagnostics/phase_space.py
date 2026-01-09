@@ -7,18 +7,17 @@ License: GPLv3+
 
 from typing import Literal
 
-import typeguard
+from pydantic import BaseModel
 
-from picongpu.picmi.diagnostics.util import diagnostic_converts_to
+from picongpu.picmi.copy_attributes import default_converts_to
 
 from ...pypicongpu.output.phase_space import PhaseSpace as PyPIConGPUPhaseSpace
-from ..species import Species as PICMISpecies
+from ..species import Species as Species
 from .timestepspec import TimeStepSpec
 
 
-@diagnostic_converts_to(PyPIConGPUPhaseSpace)
-@typeguard.typechecked
-class PhaseSpace:
+@default_converts_to(PyPIConGPUPhaseSpace)
+class PhaseSpace(BaseModel):
     """
     Specifies the parameters for the output of Phase Space of species such as electrons.
 
@@ -52,30 +51,16 @@ class PhaseSpace:
         Optional name for the phase-space plugin.
     """
 
-    def check(self, dict_species_picmi_to_pypicongpu, *args, **kwargs):
+    species: Species
+    period: TimeStepSpec
+    spatial_coordinate: Literal["x", "y", "z"]
+    momentum_coordinate: Literal["px", "py", "pz"]
+    min_momentum: float
+    max_momentum: float
+
+    def check(self, *args, **kwargs):
         if self.min_momentum >= self.max_momentum:
             raise ValueError("min_momentum must be less than max_momentum")
 
-        if self.species not in dict_species_picmi_to_pypicongpu.keys():
-            raise ValueError(f"Species {self.species} is not known to Simulation")
-
-        # checks if PICMISpecies instance exists in the dictionary. If yes, it returns the corresponding PyPIConGPUSpecies instance.
-        # self.species refers to the species attribute of the class  PhaseSpace(picmistandard.PICMI_PhaseSpace).
-        if dict_species_picmi_to_pypicongpu.get(self.species) is None:
-            raise ValueError(f"Species {self.species} is not mapped to a PyPIConGPUSpecies.")
-
-    def __init__(
-        self,
-        species: PICMISpecies,
-        period: TimeStepSpec,
-        spatial_coordinate: Literal["x", "y", "z"],
-        momentum_coordinate: Literal["px", "py", "pz"],
-        min_momentum: float,
-        max_momentum: float,
-    ):
-        self.species = species
-        self.period = period
-        self.spatial_coordinate = spatial_coordinate
-        self.momentum_coordinate = momentum_coordinate
-        self.min_momentum = min_momentum
-        self.max_momentum = max_momentum
+    class Config:
+        arbitrary_types_allowed = True

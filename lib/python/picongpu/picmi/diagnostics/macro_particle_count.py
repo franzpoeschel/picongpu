@@ -5,21 +5,19 @@ Authors: Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
-import typeguard
+from pydantic import BaseModel
 
-from picongpu.picmi.diagnostics.util import diagnostic_converts_to
+from picongpu.picmi.copy_attributes import default_converts_to
 
 from ...pypicongpu.output.macro_particle_count import (
     MacroParticleCount as PyPIConGPUMacroParticleCount,
 )
-from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
-from ..species import Species as PICMISpecies
+from ..species import Species as Species
 from .timestepspec import TimeStepSpec
 
 
-@diagnostic_converts_to(PyPIConGPUMacroParticleCount)
-@typeguard.typechecked
-class MacroParticleCount:
+@default_converts_to(PyPIConGPUMacroParticleCount)
+class MacroParticleCount(BaseModel):
     """
     Specifies the parameters for counting the total number of macro particles of a given species.
 
@@ -39,13 +37,8 @@ class MacroParticleCount:
         Optional name for the macro particle count plugin.
     """
 
-    def __init__(self, species: PICMISpecies, period: TimeStepSpec):
-        self.species = species
-        self.period = period
+    species: Species
+    period: TimeStepSpec
 
-    def check(self, dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies], *args, **kwargs):
-        if self.species not in dict_species_picmi_to_pypicongpu.keys():
-            raise ValueError(f"Species {self.species} is not known to Simulation")
-        pypicongpu_species = dict_species_picmi_to_pypicongpu.get(self.species)
-        if pypicongpu_species is None:
-            raise ValueError(f"Species {self.species} is not mapped to a PyPIConGPUSpecies.")
+    class Config:
+        arbitrary_types_allowed = True

@@ -109,10 +109,7 @@ else:
         raise ValueError("Ions species required for ionization")
 
     hydrogen_with_ionization = picmi.Species(
-        particle_type="H",
-        name="hydrogen",
-        charge_state=0,
-        initial_distribution=gaussianProfile,
+        particle_type="H", name="hydrogen", charge_state=0, initial_distribution=gaussianProfile
     )
     species_list.append((hydrogen_with_ionization, random_layout))
 

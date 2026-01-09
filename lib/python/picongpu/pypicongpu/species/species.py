@@ -33,6 +33,20 @@ class Shape(Enum):
     TSC = "TSC"
 
 
+class Pusher(Enum):
+    # supported by standard and PIConGPU
+    Boris = "Boris"
+    Vay = "Vay"
+    Higuera = "Higuera-Cary"
+    Free = "Free"
+    # not supported by standard
+    ReducedLandauLifshitz = "ReducedLandauLifshitz"
+    Acceleration = "Acceleration"
+    Photon = "Photon"
+    Probe = "Probe"
+    Axel = "Axel"
+
+
 @typeguard.typechecked
 class Species(RenderedObject):
     """
@@ -56,10 +70,19 @@ class Species(RenderedObject):
     attributes = util.build_typesafe_property(typing.List[Attribute])
     """PIConGPU particle attributes"""
 
+    pusher = util.build_typesafe_property(Pusher)
+
     name = util.build_typesafe_property(str)
     """name of the species"""
 
     shape = util.build_typesafe_property(Shape)
+
+    def __init__(self, /, name, constants=None, attributes=None, shape=None, pusher=None):
+        self.name = name
+        self.constants = constants or []
+        self.attributes = attributes or []
+        self.shape = shape or Shape["TSC"]
+        self.pusher = pusher or Pusher["Boris"]
 
     def __str__(self) -> str:
         try:
@@ -134,7 +157,7 @@ class Species(RenderedObject):
             )
 
         # each attribute (-name) can only be used once
-        attr_names = list(map(lambda attr: attr.PICONGPU_NAME, self.attributes))
+        attr_names = list(map(lambda attr: attr.picongpu_name, self.attributes))
         non_unique_attributes = set([c for c in attr_names if attr_names.count(c) > 1])
         if 0 != len(non_unique_attributes):
             raise ValueError(
@@ -220,6 +243,7 @@ class Species(RenderedObject):
             "name": self.name,
             "typename": self.get_cxx_typename(),
             "shape": shape.value,
-            "attributes": list(map(lambda attr: {"picongpu_name": attr.PICONGPU_NAME}, self.attributes)),
+            "pusher": self.pusher.value,
+            "attributes": list(map(lambda attr: {"picongpu_name": attr.picongpu_name}, self.attributes)),
             "constants": constants_context,
         }

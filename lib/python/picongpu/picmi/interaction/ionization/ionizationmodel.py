@@ -5,15 +5,18 @@ Authors: Brian Edward Marre
 License: GPLv3+
 """
 
+from picongpu.pypicongpu.species.util import Element
+from picongpu.picmi.species_requirements import GroundStateIonizationConstruction, SetChargeStateOperation
+from picongpu.picmi.species import DependsOn, Species
+from picongpu.pypicongpu.species.attribute.boundelectrons import BoundElectrons
 from .... import pypicongpu
 
-import pydantic
+from pydantic import BaseModel, model_validator
 import typeguard
-import typing
 
 
 @typeguard.typechecked
-class IonizationModel(pydantic.BaseModel):
+class IonizationModel(BaseModel):
     """
     common interface for all ionization models
 
@@ -23,11 +26,37 @@ class IonizationModel(pydantic.BaseModel):
     MODEL_NAME: str
     """ionization model"""
 
-    ion_species: typing.Any
+    ion_species: Species
     """PICMI ion species to apply ionization model for"""
 
-    ionization_electron_species: typing.Any
+    ionization_electron_species: Species
     """PICMI electron species of which to create macro particle upon ionization"""
+
+    @model_validator(mode="after")
+    def check(self):
+        if not Element.is_element(self.ion_species.particle_type):
+            raise ValueError(f"{self.ion_species=} must be an ion.")
+        if self.ion_species.picongpu_fixed_charge:
+            raise ValueError(
+                f"I'm trying hard to ionize here but {self.ion_species.picongpu_fixed_charge=} is getting in the way."
+            )
+        if self.ion_species.charge_state is None:
+            raise ValueError(
+                f"Species {self.ion_species.name} configured with ionization but no initial charge state specified, "
+                "must be explicitly specified via charge_state."
+            )
+        return self
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ion_species.register_requirements(
+            [
+                DependsOn(species=self.ionization_electron_species),
+                GroundStateIonizationConstruction(ionization_model=self),
+                SetChargeStateOperation(species=self.ion_species),
+                BoundElectrons(),
+            ]
+        )
 
     def __hash__(self):
         """custom hash function for indexing in dicts"""
@@ -42,15 +71,6 @@ class IonizationModel(pydantic.BaseModel):
                 print(type(self))
                 raise TypeError
         return hash_value
-
-    def check(self):
-        # import here to avoid circular import that stems from projecting different species types from PIConGPU onto the same `Species` type in PICMI
-        from ... import Species
-
-        assert isinstance(self.ion_species, Species), "ion_species must be an instance of the species object"
-        assert isinstance(self.ionization_electron_species, Species), (
-            "ionization_electron_species must be an instance of the species object"
-        )
 
     def get_constants(self) -> list[pypicongpu.species.constant.Constant]:
         raise NotImplementedError("abstract base class only!")

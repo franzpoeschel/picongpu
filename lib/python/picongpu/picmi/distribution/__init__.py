@@ -9,6 +9,10 @@ from .GaussianDistribution import GaussianDistribution
 from .CylindricalDistribution import CylindricalDistribution
 from .AnalyticDistribution import AnalyticDistribution
 
+AnyDistribution = (
+    UniformDistribution | FoilDistribution | GaussianDistribution | CylindricalDistribution | AnalyticDistribution
+)
+
 __all__ = [
     "UniformDistribution",
     "FoilDistribution",

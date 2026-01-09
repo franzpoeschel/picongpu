@@ -5,20 +5,20 @@ Authors: Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
-import typeguard
+from pydantic import BaseModel
 
-from picongpu.picmi.diagnostics.util import diagnostic_converts_to
+from picongpu.picmi.copy_attributes import default_converts_to
+
 
 from ...pypicongpu.output.energy_histogram import (
     EnergyHistogram as PyPIConGPUEnergyHistogram,
 )
-from ..species import Species as PICMISpecies
+from ..species import Species as Species
 from .timestepspec import TimeStepSpec
 
 
-@diagnostic_converts_to(PyPIConGPUEnergyHistogram)
-@typeguard.typechecked
-class EnergyHistogram:
+@default_converts_to(PyPIConGPUEnergyHistogram)
+class EnergyHistogram(BaseModel):
     """
     Specifies the parameters for the output of Energy Histogram of species such as electrons.
 
@@ -53,24 +53,17 @@ class EnergyHistogram:
         Optional name for the energy histogram plugin.
     """
 
-    def check(self, dict_species_picmi_to_pypicongpu, *args, **kwargs):
+    def check(self, *args, **kwargs):
         if self.min_energy >= self.max_energy:
             raise ValueError("min_energy must be less than max_energy")
         if self.bin_count <= 0:
             raise ValueError("bin_count must be > 0")
-        if self.species not in dict_species_picmi_to_pypicongpu.keys():
-            raise ValueError(f"Species {self.species} is not known to Simulation")
 
-    def __init__(
-        self,
-        species: PICMISpecies,
-        period: TimeStepSpec,
-        bin_count: int,
-        min_energy: float,
-        max_energy: float,
-    ):
-        self.species = species
-        self.period = period
-        self.bin_count = bin_count
-        self.min_energy = min_energy
-        self.max_energy = max_energy
+    species: Species
+    period: TimeStepSpec
+    bin_count: int
+    min_energy: float
+    max_energy: float
+
+    class Config:
+        arbitrary_types_allowed = True

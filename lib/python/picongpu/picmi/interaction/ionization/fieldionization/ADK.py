@@ -38,9 +38,15 @@ class ADK(FieldIonization):
         self.check()
 
         if self.ADK_variant is ADKVariant.LinearPolarization:
-            return ADKLinearPolarization(ionization_current=None_())
+            return ADKLinearPolarization(
+                ionization_current=None_(),
+                ionization_electron_species=self.ionization_electron_species.get_as_pypicongpu(),
+            )
         if self.ADK_variant is ADKVariant.CircularPolarization:
-            return ADKCircularPolarization(ionization_current=None_())
+            return ADKCircularPolarization(
+                ionization_current=None_(),
+                ionization_electron_species=self.ionization_electron_species.get_as_pypicongpu(),
+            )
 
         # unknown ADK variant
         raise ValueError(f"ADKVariant {self.ADK_variant} is not supported.")

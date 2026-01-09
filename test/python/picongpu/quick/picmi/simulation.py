@@ -134,7 +134,7 @@ class TestPicmiSimulation(unittest.TestCase):
         layout4 = picmi.PseudoRandomLayout(n_macroparticles_per_cell=4)
 
         # species list empty by default
-        self.assertEqual([], sim.get_as_pypicongpu().init_manager.all_species)
+        self.assertEqual([], sim.get_as_pypicongpu().species)
 
         # not placed
         sim.add_species(picmi.Species(name="dummy1", mass=5), None)
@@ -146,12 +146,12 @@ class TestPicmiSimulation(unittest.TestCase):
         sim.add_species(picmi.Species(name="dummy3", mass=3, initial_distribution=profile), layout4)
 
         picongpu = sim.get_as_pypicongpu()
-        self.assertEqual(3, len(picongpu.init_manager.all_species))
-        species_names = set(map(lambda species: species.name, picongpu.init_manager.all_species))
+        self.assertEqual(3, len(picongpu.species))
+        species_names = set(map(lambda species: species.name, picongpu.species))
         self.assertEqual({"dummy1", "dummy2", "dummy3"}, species_names)
 
         # check typical ppc is derived
-        self.assertEqual(picongpu.typical_ppc, 2)
+        self.assertEqual(picongpu.typical_ppc, 3)
 
     def test_explicit_typical_ppc(self):
         grid = get_grid(1, 1, 1, 64)
@@ -170,8 +170,8 @@ class TestPicmiSimulation(unittest.TestCase):
         sim.add_species(picmi.Species(name="dummy3", mass=3, charge=4, initial_distribution=profile), layout4)
 
         picongpu = sim.get_as_pypicongpu()
-        self.assertEqual(2, len(picongpu.init_manager.all_species))
-        species_names = set(map(lambda species: species.name, picongpu.init_manager.all_species))
+        self.assertEqual(2, len(picongpu.species))
+        species_names = set(map(lambda species: species.name, picongpu.species))
         self.assertEqual({"dummy2", "dummy3"}, species_names)
 
         # check explicitly set typical ppc is respected
@@ -183,16 +183,15 @@ class TestPicmiSimulation(unittest.TestCase):
 
         wrongValues = [0, -1, -15]
         for value in wrongValues:
-            sim = picmi.Simulation(time_step_size=17, max_steps=4, solver=solver, picongpu_typical_ppc=value)
-            with self.assertRaisesRegex(ValueError, "typical_ppc must be >= 1"):
-                sim.get_as_pypicongpu()
+            with self.assertRaisesRegex(ValueError, "Typical ppc should be > 0"):
+                picmi.Simulation(time_step_size=17, max_steps=4, solver=solver, picongpu_typical_ppc=value)
 
         wrongTypes = [0.0, -1.0, -15.0, 1.0, 15.0]
         for value in wrongTypes:
             with self.assertRaisesRegex(
                 typeguard.TypeCheckError, '"picongpu_typical_ppc" .* did not match any element in the union'
             ):
-                sim = picmi.Simulation(time_step_size=17, max_steps=4, solver=solver, picongpu_typical_ppc=value)
+                picmi.Simulation(time_step_size=17, max_steps=4, solver=solver, picongpu_typical_ppc=value)
 
     def test_invalid_placement(self):
         profile = picmi.UniformDistribution(density=42)
@@ -241,20 +240,21 @@ class TestPicmiSimulation(unittest.TestCase):
         )
 
         pypic = self.sim.get_as_pypicongpu()
-        initmgr = pypic.init_manager
+        my_species = pypic.species
+        operations = pypic.init_operations
 
         # species
-        self.assertEqual(4, len(initmgr.all_species))
+        self.assertEqual(4, len(my_species))
         self.assertEqual(
             ["colocated1", "colocated2", "separate1", "separate2"],
-            list(map(lambda species: species.name, initmgr.all_species)),
+            list(map(lambda species: species.name, my_species)),
         )
 
         # operations
         density_operations = list(
             filter(
                 lambda op: isinstance(op, species.operation.SimpleDensity),
-                initmgr.all_operations,
+                operations,
             )
         )
         self.assertEqual(3, len(density_operations))
@@ -285,10 +285,10 @@ class TestPicmiSimulation(unittest.TestCase):
             # check layout
             if "separate1" in species_names or "colocated1" in species_names:
                 # used "layout"
-                self.assertEqual(3, op.ppc)
+                self.assertEqual(3, op.layout.ppc)
             else:
                 # used "other_layout"
-                self.assertEqual(4, op.ppc)
+                self.assertEqual(4, op.layout.ppc)
 
     def test_operation_not_placed_translated(self):
         """non-placed species are correctly translated"""
@@ -296,19 +296,9 @@ class TestPicmiSimulation(unittest.TestCase):
 
         pypicongpu = self.sim.get_as_pypicongpu()
 
-        self.assertEqual(1, len(pypicongpu.init_manager.all_species))
+        self.assertEqual(1, len(pypicongpu.species))
         # not placed, momentum (both initialize to empty)
-        self.assertEqual(2, len(pypicongpu.init_manager.all_operations))
-
-        notplaced_ops = list(
-            filter(
-                lambda op: isinstance(op, species.operation.NotPlaced),
-                pypicongpu.init_manager.all_operations,
-            )
-        )
-
-        self.assertEqual(1, len(notplaced_ops))
-        self.assertEqual("notplaced", notplaced_ops[0].species.name)
+        self.assertEqual(0, len(pypicongpu.init_operations))
 
     def test_operation_momentum(self):
         """operation for momentum correctly derived from species"""
@@ -330,7 +320,7 @@ class TestPicmiSimulation(unittest.TestCase):
         mom_ops = list(
             filter(
                 lambda op: isinstance(op, species.operation.SimpleMomentum),
-                pypicongpu.init_manager.all_operations,
+                pypicongpu.init_operations,
             )
         )
 
@@ -393,12 +383,12 @@ class TestPicmiSimulation(unittest.TestCase):
         sim.picongpu_interaction = interaction
 
         pypic_sim = sim.get_as_pypicongpu()
-        initmgr = pypic_sim.init_manager
+        operations = pypic_sim.init_operations
 
-        operation_types = list(map(lambda op: type(op), initmgr.all_operations))
+        operation_types = list(map(lambda op: type(op), operations))
         self.assertEqual(2, operation_types.count(species.operation.SetChargeState))
 
-        for op in initmgr.all_operations:
+        for op in operations:
             if isinstance(op, species.operation.SetChargeState) and op.species.name == "Nitrogen":
                 self.assertEqual(5, op.bound_electrons)
             if isinstance(op, species.operation.SetChargeState) and op.species.name == "Hydrogen":

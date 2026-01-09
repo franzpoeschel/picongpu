@@ -5,8 +5,10 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
+from pydantic import BaseModel
 
-class Attribute:
+
+class Attribute(BaseModel):
     """
     attribute of a species
 
@@ -24,8 +26,5 @@ class Attribute:
     PIConGPU term: "particle attributes"
     """
 
-    PICONGPU_NAME: str = None
+    picongpu_name: str
     """C++ Code implementing this attribute"""
-
-    def __init__(self):
-        raise NotImplementedError()

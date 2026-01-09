@@ -6,9 +6,7 @@ License: GPLv3+
 """
 
 from ..constant import Constant
-from ...attribute import BoundElectrons
 from ..ionizationcurrent import IonizationCurrent
-from ..elementproperties import ElementProperties
 
 import pydantic
 import typing
@@ -27,11 +25,11 @@ class IonizationModel(pydantic.BaseModel, Constant):
     PIConGPU term: "ionizer"
     """
 
-    PICONGPU_NAME: str
+    picongpu_name: str
     """C++ Code type name of ionizer"""
 
     # no typecheck here -- would require circular imports
-    ionization_electron_species: typing.Any = None
+    ionization_electron_species: typing.Any
     """species to be used as electrons"""
 
     ionization_current: typing.Optional[IonizationCurrent] = None
@@ -69,31 +67,21 @@ class IonizationModel(pydantic.BaseModel, Constant):
         if self.ionization_current is None:
             # case no ionization_current configurable
             return {
-                "ionizer_picongpu_name": self.PICONGPU_NAME,
+                "ionizer_picongpu_name": self.picongpu_name,
                 "ionization_electron_species": self.ionization_electron_species.get_rendering_context(),
                 "ionization_current": None,
             }
 
         # default case
         return {
-            "ionizer_picongpu_name": self.PICONGPU_NAME,
+            "ionizer_picongpu_name": self.picongpu_name,
             "ionization_electron_species": self.ionization_electron_species.get_rendering_context(),
             "ionization_current": self.ionization_current.get_generic_rendering_context(),
         }
 
     def get_generic_rendering_context(self) -> dict[str, typing.Any]:
         return IonizationModel(
-            PICONGPU_NAME=self.PICONGPU_NAME,
+            picongpu_name=self.picongpu_name,
             ionization_electron_species=self.ionization_electron_species,
             ionization_current=self.ionization_current,
         ).get_rendering_context()
-
-    def get_species_dependencies(self) -> list[typing.Any]:
-        self.check()
-        return [self.ionization_electron_species]
-
-    def get_attribute_dependencies(self) -> list[type]:
-        return [BoundElectrons]
-
-    def get_constant_dependencies(self) -> list[type]:
-        return [ElementProperties]

@@ -12,4 +12,4 @@ import typeguard
 
 @typeguard.typechecked
 class None_(IonizationCurrent):
-    PICONGPU_NAME: str = "None"
+    picongpu_name: str = "None"

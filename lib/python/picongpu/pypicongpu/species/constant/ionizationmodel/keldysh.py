@@ -22,7 +22,7 @@ class Keldysh(IonizationModel):
         high intensity laser fields.
     """
 
-    PICONGPU_NAME: str = "Keldysh"
+    picongpu_name: str = "Keldysh"
     """C++ Code type name of ionizer"""
 
     ionization_current: IonizationCurrent

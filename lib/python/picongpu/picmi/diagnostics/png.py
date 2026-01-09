@@ -7,19 +7,18 @@ License: GPLv3+
 
 from typing import List
 
-import typeguard
+from pydantic import BaseModel
 
-from picongpu.picmi.diagnostics.util import diagnostic_converts_to
+from picongpu.picmi.copy_attributes import default_converts_to
 
 from ...pypicongpu.output.png import ColorScaleEnum, EMFieldScaleEnum
 from ...pypicongpu.output.png import Png as PyPIConGPUPNG
-from ..species import Species as PICMISpecies
+from ..species import Species as Species
 from .timestepspec import TimeStepSpec
 
 
-@diagnostic_converts_to(PyPIConGPUPNG)
-@typeguard.typechecked
-class Png:
+@default_converts_to(PyPIConGPUPNG)
+class Png(BaseModel):
     """
     Specifies the parameters for PNG output in PIConGPU.
 
@@ -105,7 +104,7 @@ class Png:
         Custom expression for channel 3.
     """
 
-    def check(self, dict_species_picmi_to_pypicongpu, *args, **kwargs):
+    def check(self, *args, **kwargs):
         if not (0.0 <= self.slice_point <= 1.0):
             raise ValueError("Slice point must be between 0.0 and 1.0")
 
@@ -136,60 +135,29 @@ class Png:
         if self.pre_channel3_color_scales not in ColorScaleEnum:
             raise ValueError(f"Invalid color scale for channel 3. Valid options are {list(ColorScaleEnum)}.")
 
-        if self.species not in dict_species_picmi_to_pypicongpu.keys():
-            raise ValueError(f"Species {self.species} is not known to Simulation")
+    species: Species
+    period: TimeStepSpec
+    axis: str
+    slice_point: float
+    folder_name: str
+    scale_image: float
+    scale_to_cellsize: bool
+    white_box_per_gpu: bool
+    em_field_scale_channel1: EMFieldScaleEnum
+    em_field_scale_channel2: EMFieldScaleEnum
+    em_field_scale_channel3: EMFieldScaleEnum
+    pre_particle_density_color_scales: ColorScaleEnum
+    pre_channel1_color_scales: ColorScaleEnum
+    pre_channel2_color_scales: ColorScaleEnum
+    pre_channel3_color_scales: ColorScaleEnum
+    custom_normalization_si: List[float]
+    pre_particle_density_opacity: float
+    pre_channel1_opacity: float
+    pre_channel2_opacity: float
+    pre_channel3_opacity: float
+    pre_channel1: str
+    pre_channel2: str
+    pre_channel3: str
 
-        pypicongpu_species = dict_species_picmi_to_pypicongpu.get(self.species)
-
-        if pypicongpu_species is None:
-            raise ValueError(f"Species {self.species} is not mapped to a PyPIConGPUSpecies.")
-
-    def __init__(
-        self,
-        species: PICMISpecies,
-        period: TimeStepSpec,
-        axis: str,
-        slice_point: float,
-        folder_name: str,
-        scale_image: float,
-        scale_to_cellsize: bool,
-        white_box_per_gpu: bool,
-        em_field_scale_channel1: EMFieldScaleEnum,
-        em_field_scale_channel2: EMFieldScaleEnum,
-        em_field_scale_channel3: EMFieldScaleEnum,
-        pre_particle_density_color_scales: ColorScaleEnum,
-        pre_channel1_color_scales: ColorScaleEnum,
-        pre_channel2_color_scales: ColorScaleEnum,
-        pre_channel3_color_scales: ColorScaleEnum,
-        custom_normalization_si: List[float],
-        pre_particle_density_opacity: float,
-        pre_channel1_opacity: float,
-        pre_channel2_opacity: float,
-        pre_channel3_opacity: float,
-        pre_channel1: str,
-        pre_channel2: str,
-        pre_channel3: str,
-    ):
-        self.period = period
-        self.axis = axis
-        self.slice_point = slice_point
-        self.species = species
-        self.folder_name = folder_name
-        self.scale_image = scale_image
-        self.scale_to_cellsize = scale_to_cellsize
-        self.white_box_per_gpu = white_box_per_gpu
-        self.em_field_scale_channel1 = em_field_scale_channel1
-        self.em_field_scale_channel2 = em_field_scale_channel2
-        self.em_field_scale_channel3 = em_field_scale_channel3
-        self.pre_particle_density_color_scales = pre_particle_density_color_scales
-        self.pre_channel1_color_scales = pre_channel1_color_scales
-        self.pre_channel2_color_scales = pre_channel2_color_scales
-        self.pre_channel3_color_scales = pre_channel3_color_scales
-        self.custom_normalization_si = custom_normalization_si
-        self.pre_particle_density_opacity = pre_particle_density_opacity
-        self.pre_channel1_opacity = pre_channel1_opacity
-        self.pre_channel2_opacity = pre_channel2_opacity
-        self.pre_channel3_opacity = pre_channel3_opacity
-        self.pre_channel1 = pre_channel1
-        self.pre_channel2 = pre_channel2
-        self.pre_channel3 = pre_channel3
+    class Config:
+        arbitrary_types_allowed = True

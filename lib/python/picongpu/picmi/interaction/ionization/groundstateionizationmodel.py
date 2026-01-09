@@ -14,6 +14,10 @@ import typeguard
 
 @typeguard.typechecked
 class GroundStateIonizationModel(IonizationModel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ion_species.register_requirements(self.get_constants())
+
     def get_constants(self) -> list[pypicongpu.species.constant.Constant]:
         """get all PyPIConGPU constants required by a ground state ionization model in PIConGPU"""
         self.check()

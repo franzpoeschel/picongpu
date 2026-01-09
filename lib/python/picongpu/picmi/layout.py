@@ -64,3 +64,6 @@ class GriddedLayout(picmistandard.PICMI_GriddedLayout):
 
     def get_as_pypicongpu(self):
         return OnePosition(ppc=self.n_macroparticles_per_cell)
+
+
+AnyLayout = PseudoRandomLayout | GriddedLayout

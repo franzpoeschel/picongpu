@@ -9,7 +9,6 @@ from .layout import Layout
 from .densityoperation import DensityOperation
 from .densityprofile import DensityProfile
 from ..species import Species
-from ..attribute import Position, Weighting
 from ..constant import DensityRatio
 from ... import util
 
@@ -34,9 +33,6 @@ class SimpleDensity(DensityOperation):
       note that their density ratios will be respected
     """
 
-    ppc = util.build_typesafe_property(int)
-    """particles per cell (random layout), >0"""
-
     profile = util.build_typesafe_property(DensityProfile)
     """density profile to use, describes the actual density"""
 
@@ -45,14 +41,14 @@ class SimpleDensity(DensityOperation):
 
     layout = util.build_typesafe_property(Layout)
 
-    def __init__(self):
-        # nothing to do
-        pass
+    _name = "simpledensity"
+
+    def __init__(self, /, species, profile, layout):
+        self.profile = profile
+        self.species = species if isinstance(species, set) else set(species)
+        self.layout = layout
 
     def check_preconditions(self) -> None:
-        if self.ppc <= 0:
-            raise ValueError("must use positive number of particles per cell")
-
         if 0 == len(self.species):
             raise ValueError("must apply to at least one species")
 
@@ -63,13 +59,6 @@ class SimpleDensity(DensityOperation):
 
         if hasattr(self.profile, "check"):
             self.profile.check()
-
-    def prebook_species_attributes(self) -> None:
-        self.attributes_by_species = {}
-
-        # assign weighting & position to every species
-        for species in self.species:
-            self.attributes_by_species[species] = [Position(), Weighting()]
 
     def _get_serialized(self) -> dict:
         """
@@ -122,7 +111,6 @@ class SimpleDensity(DensityOperation):
             placed_species.append(species.get_rendering_context())
 
         return {
-            "ppc": self.ppc,
             "layout": self.layout.get_rendering_context(),
             "profile": self.profile.get_rendering_context(),
             "placed_species_initial": placed_species[0],

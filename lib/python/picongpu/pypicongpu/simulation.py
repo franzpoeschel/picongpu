@@ -12,19 +12,18 @@ from pathlib import Path
 
 import typeguard
 
-from . import output, species, util
+from picongpu.pypicongpu.species.operation.operation import Operation
+from picongpu.pypicongpu.species.species import Species
+
+from . import util
 from .customuserinput import InterfaceCustomUserInput
 from .field_solver.DefaultSolver import Solver
 from .grid import Grid3D
-from .laser import DispersivePulseLaser, FromOpenPMDPulseLaser, GaussianLaser, PlaneWaveLaser, TWTSLaser
+from .laser import AnyLaser
 from .movingwindow import MovingWindow
 from .output import Plugin, OpenPMDPlugin
-from .output.timestepspec import TimeStepSpec
 from .rendering import RenderedObject
 from .walltime import Walltime
-
-
-AnyLaser = DispersivePulseLaser | FromOpenPMDPulseLaser | GaussianLaser | PlaneWaveLaser | TWTSLaser
 
 
 @typeguard.typechecked
@@ -56,9 +55,6 @@ class Simulation(RenderedObject):
     solver = util.build_typesafe_property(Solver)
     """Used Solver"""
 
-    init_manager = util.build_typesafe_property(species.InitManager)
-    """init manager holding all species & their information"""
-
     typical_ppc = util.build_typesafe_property(int)
     """
     typical number of macro particles spawned per cell, >=1
@@ -82,21 +78,43 @@ class Simulation(RenderedObject):
     binomial_current_interpolation = util.build_typesafe_property(bool)
     """switch on a binomial current interpolation"""
 
-    plugins = util.build_typesafe_property(typing.Optional[list[Plugin] | typing.Literal["auto"]])
+    plugins = util.build_typesafe_property(typing.Optional[list[Plugin]])
 
-    def __get_output_context(self) -> dict | list[dict] | None:
-        """retrieve all output objects"""
+    species = util.build_typesafe_property(list[Species])
+    init_operations = util.build_typesafe_property(list[Operation])
 
-        if self.plugins == "auto":
-            auto = output.Auto(period=TimeStepSpec([slice(0, None, max(1, int(self.time_steps / 100)))]))
-
-            return [auto.get_rendering_context()]
-        else:
-            output_rendering_context = []
-            for entry in self.plugins:
-                output_rendering_context.append(entry.get_rendering_context())
-
-            return output_rendering_context
+    def __init__(
+        self,
+        /,
+        typical_ppc,
+        delta_t_si,
+        custom_user_input,
+        solver,
+        grid,
+        binomial_current_interpolation,
+        moving_window,
+        walltime,
+        species,
+        init_operations,
+        time_steps,
+        laser,
+        plugins,
+        base_density,
+    ):
+        self.laser = laser
+        self.time_steps = time_steps
+        self.moving_window = moving_window
+        self.walltime = walltime
+        self.custom_user_input = custom_user_input
+        self.binomial_current_interpolation = binomial_current_interpolation
+        self.grid = grid
+        self.solver = solver
+        self.delta_t_si = delta_t_si
+        self.typical_ppc = typical_ppc
+        self.species = list(species)
+        self.init_operations = list(init_operations)
+        self.plugins = plugins
+        self.base_density = base_density
 
     def __render_custom_user_input_list(self) -> dict:
         custom_rendering_context = {"tags": []}
@@ -135,30 +153,17 @@ class Simulation(RenderedObject):
             "typical_ppc": self.typical_ppc,
             "solver": self.solver.get_rendering_context(),
             "grid": self.grid.get_rendering_context(),
-            "species_initmanager": self.init_manager.get_rendering_context(),
-            "output": self.__get_output_context(),
+            "output": [entry.get_rendering_context() for entry in (self.plugins or [])],
+            "species": [s.get_rendering_context() for s in self.species],
+            "init_operations": [o.get_rendering_context() for o in self.init_operations],
+            "laser": None if self.laser is None else [ll.get_rendering_context() for ll in self.laser],
+            "moving_window": None if self.moving_window is None else self.moving_window.get_rendering_context(),
+            "walltime": (self.walltime or Walltime(walltime=datetime.timedelta(hours=1))).get_rendering_context(),
+            "binomial_current_interpolation": self.binomial_current_interpolation,
+            "customuserinput": None if self.custom_user_input is None else self.__render_custom_user_input_list(),
         }
-        if self.plugins is not None:
-            serialized["output"] = self.__get_output_context()
-        else:
-            serialized["output"] = None
-
-        if self.laser is not None:
-            serialized["laser"] = [ll.get_rendering_context() for ll in self.laser]
-        else:
-            serialized["laser"] = None
-
-        serialized["moving_window"] = None if self.moving_window is None else self.moving_window.get_rendering_context()
-        serialized["walltime"] = (
-            self.walltime or Walltime(walltime=datetime.timedelta(hours=1))
-        ).get_rendering_context()
-
-        serialized["binomial_current_interpolation"] = self.binomial_current_interpolation
 
         if self.custom_user_input is not None:
-            serialized["customuserinput"] = self.__render_custom_user_input_list()
             self.__found_custom_input(serialized)
-        else:
-            serialized["customuserinput"] = None
 
         return serialized

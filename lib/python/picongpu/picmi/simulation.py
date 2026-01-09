@@ -7,6 +7,8 @@ License: GPLv3+
 
 # make pypicongpu classes accessible for conversion to pypicongpu
 import datetime
+from functools import reduce
+from itertools import chain
 import logging
 import math
 from os import PathLike
@@ -14,18 +16,47 @@ import typing
 from pathlib import Path
 
 import picmistandard
+from pydantic import BaseModel
 import typeguard
 
 from picongpu.picmi.diagnostics import ParticleDump, FieldDump
+from picongpu.picmi.layout import AnyLayout
+from picongpu.picmi.species_requirements import (
+    SimpleDensityOperation,
+    SimpleMomentumOperation,
+    resolving_add,
+    get_as_pypicongpu,
+    run_construction,
+)
 from picongpu.pypicongpu.output.openpmd_plugin import OpenPMDPlugin, FieldDump as PyPIConGPUFieldDump
-from picongpu.pypicongpu.species.initmanager import InitManager
+from picongpu.pypicongpu.species.attribute.weighting import Weighting
+from picongpu.pypicongpu.species.attribute.momentum import Momentum
 
 from .. import pypicongpu
 from . import constants
 from .grid import Cartesian3DGrid
 from .interaction import Interaction
-from .interaction.ionization import IonizationModel
 from .species import Species
+
+
+class _DensityImpl(BaseModel):
+    layout: AnyLayout
+    grid: Cartesian3DGrid
+    species: Species
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.species.register_requirements(
+            [
+                Weighting(),
+                SimpleDensityOperation(species=self.species, layout=self.layout, grid=self.grid),
+                Momentum(),
+                SimpleMomentumOperation(species=self.species),
+            ]
+        )
 
 
 def _unique(iterable):
@@ -139,6 +170,8 @@ class Simulation(picmistandard.PICMI_Simulation):
     picongpu_binomial_current_interpolation = pypicongpu.util.build_typesafe_property(bool)
     """switch on a binomial current interpolation"""
 
+    picongpu_distributions = pypicongpu.util.build_typesafe_property(list[_DensityImpl])
+
     __runner = pypicongpu.util.build_typesafe_property(typing.Optional[pypicongpu.runner.Runner])
 
     # @todo remove boiler plate constructor argument list once picmistandard reference implementation switches to
@@ -155,8 +188,8 @@ class Simulation(picmistandard.PICMI_Simulation):
         picongpu_binomial_current_interpolation: bool = False,
         **keyword_arguments,
     ):
+        self.picongpu_distributions = []
         self.picongpu_template_dir = _normalise_template_dir(picongpu_template_dir)
-        self.picongpu_typical_ppc = picongpu_typical_ppc
         self.picongpu_moving_window_move_point = picongpu_moving_window_move_point
         self.picongpu_moving_window_stop_iteration = picongpu_moving_window_stop_iteration
         self.picongpu_interaction = picongpu_interaction
@@ -165,6 +198,10 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.picongpu_binomial_current_interpolation = picongpu_binomial_current_interpolation
         self.picongpu_custom_user_input = None
         self.__runner = None
+
+        if picongpu_typical_ppc is not None and picongpu_typical_ppc <= 0:
+            raise ValueError(f"Typical ppc should be > 0, not {picongpu_typical_ppc=}.")
+        self.picongpu_typical_ppc = picongpu_typical_ppc
 
         picmistandard.PICMI_Simulation.__init__(self, **keyword_arguments)
 
@@ -244,215 +281,6 @@ class Simulation(picmistandard.PICMI_Simulation):
             # if neither delta_t nor cfl are given simply silently pass
             # (might change in the future)
 
-    def __get_operations_simple_density(
-        self,
-        pypicongpu_by_picmi_species: typing.Dict[Species, pypicongpu.species.Species],
-    ) -> typing.List[pypicongpu.species.operation.SimpleDensity]:
-        """
-        retrieve operations for simple density placements
-
-        Initialized Position & Weighting based on picmi initial distribution &
-        layout.
-
-        initializes species using the same layout & profile from the same
-        operation
-        """
-        # species with the same layout and initial distribution will result in
-        # the same macro particle placement
-        # -> throw them into a single operation
-        picmi_species_by_profile_by_layout = {}
-        for picmi_species, layout in zip(self.species, self.layouts):
-            if layout is None or picmi_species.initial_distribution is None:
-                # not placed -> not handled here
-                continue
-
-            if layout not in picmi_species_by_profile_by_layout:
-                picmi_species_by_profile_by_layout[layout] = {}
-
-            profile = picmi_species.initial_distribution
-            if profile not in picmi_species_by_profile_by_layout[layout]:
-                picmi_species_by_profile_by_layout[layout][profile] = []
-
-            picmi_species_by_profile_by_layout[layout][profile].append(picmi_species)
-
-        # re-group as operations
-        all_operations = []
-        for (
-            layout,
-            picmi_species_by_profile,
-        ) in picmi_species_by_profile_by_layout.items():
-            for profile, picmi_species_list in picmi_species_by_profile.items():
-                op = pypicongpu.species.operation.SimpleDensity()
-                op.ppc = layout.n_macroparticles_per_cell
-                op.profile = profile.get_as_pypicongpu(self.solver.grid)
-                op.layout = layout.get_as_pypicongpu()
-
-                op.species = set(
-                    map(
-                        lambda picmi_species: pypicongpu_by_picmi_species[picmi_species],
-                        picmi_species_list,
-                    )
-                )
-
-                all_operations.append(op)
-
-        return all_operations
-
-    def __get_operations_not_placed(
-        self,
-        pypicongpu_by_picmi_species: typing.Dict[Species, pypicongpu.species.Species],
-    ) -> typing.List[pypicongpu.species.operation.NotPlaced]:
-        """
-        retrieve operations for not placed species
-
-        Problem: PIConGPU species need a position. But to get a position
-        generated, a species needs an operation which provides this position.
-        (E.g. SimpleDensity for regular profiles.)
-
-        Solution: If a species has no initial distribution (profile), the
-        position attribute is provided by a NotPlaced operator, which does not
-        create any macroparticles (during initialization, that is). However,
-        using other methods (electron spawning...) macrosparticles can be
-        created by PIConGPU itself.
-        """
-        all_operations = []
-
-        for picmi_species, layout in zip(self.species, self.layouts):
-            if layout is not None or picmi_species.initial_distribution is not None:
-                continue
-
-            # is not placed -> add op
-            not_placed = pypicongpu.species.operation.NotPlaced()
-            not_placed.species = pypicongpu_by_picmi_species[picmi_species]
-            all_operations.append(not_placed)
-
-        return all_operations
-
-    def __get_operations_from_individual_species(
-        self,
-        pypicongpu_by_picmi_species: typing.Dict[Species, pypicongpu.species.Species],
-    ) -> typing.List[pypicongpu.species.operation.Operation]:
-        """
-        call get_independent_operations() of all species
-
-        used for momentum: Momentum depends only on temperature & drift, NOT on
-        other species. Therefore, the generation of the momentum operations is
-        performed inside of the individual species objects.
-        """
-        all_operations = []
-
-        for picmi_species, pypicongpu_species in pypicongpu_by_picmi_species.items():
-            all_operations += picmi_species.get_independent_operations(pypicongpu_species, self.picongpu_interaction)
-
-        return all_operations
-
-    def __check_preconditions_init_manager(self) -> None:
-        """check preconditions, @todo move to picmistandard, Brian Marre 2024"""
-        assert len(self.species) == len(self.layouts)
-
-        for layout, picmi_species in zip(self.layouts, self.species):
-            profile = picmi_species.initial_distribution
-            ratio = picmi_species.density_scale
-
-            assert 1 != [layout, profile].count(None), (
-                "species need BOTH layout AND initial distribution set (or neither)"
-            )
-
-            if ratio is not None:
-                assert layout is not None and profile is not None, (
-                    "layout and initial distribution must be set to use density scale"
-                )
-
-    def __get_translated_species_and_ionization_models(
-        self,
-    ) -> tuple[
-        dict[Species, pypicongpu.species.Species],
-        dict[
-            Species,
-            None
-            | dict[
-                IonizationModel,
-                pypicongpu.species.constant.ionizationmodel.IonizationModel,
-            ],
-        ],
-    ]:
-        """
-        get mappping of PICMI species to PyPIConGPU species and mapping of of simulation
-
-        @details cache to reuse *exactly the same* object in operations
-        """
-
-        pypicongpu_by_picmi_species = {}
-        ionization_model_conversion_by_species = {}
-        for picmi_species in self.species:
-            # @todo split into two different fucntion calls?, Brian Marre, 2024
-            pypicongpu_species, ionization_model_conversion = picmi_species.get_as_pypicongpu(self.picongpu_interaction)
-
-            pypicongpu_by_picmi_species[picmi_species] = pypicongpu_species
-            ionization_model_conversion_by_species[picmi_species] = ionization_model_conversion
-
-        return pypicongpu_by_picmi_species, ionization_model_conversion_by_species
-
-    def __fill_in_ionization_electrons(
-        self,
-        pypicongpu_by_picmi_species: dict[Species, pypicongpu.species.Species],
-        ionization_model_conversion_by_species: dict[
-            Species,
-            None
-            | dict[
-                IonizationModel,
-                pypicongpu.species.constant.ionizationmodel.IonizationModel,
-            ],
-        ],
-    ) -> None:
-        """
-        set the ionization electron species for each ionization model
-
-        Ionization electron species need to be set after species translation is complete since the PyPIConGPU electron
-        species is not at the time of translation by the PICMI ion species.
-        """
-        if self.picongpu_interaction is not None:
-            self.picongpu_interaction.fill_in_ionization_electron_species(
-                pypicongpu_by_picmi_species, ionization_model_conversion_by_species
-            )
-
-    def __get_init_manager(
-        self,
-    ) -> tuple[InitManager, typing.Dict[Species, pypicongpu.species.Species]]:
-        """
-        create & fill an Initmanager
-
-        performs the following steps:
-        1. check preconditions
-        2. translate species and ionization models to PyPIConGPU representations
-           Note: Cache translations to avoid creating new translations by continuously translating again and again
-        3. generate operations which have inter-species dependencies
-        4. generate operations without inter-species dependencies
-        """
-        self.__check_preconditions_init_manager()
-        (
-            pypicongpu_by_picmi_species,
-            ionization_model_conversion_by_species,
-        ) = self.__get_translated_species_and_ionization_models()
-
-        # fill inter-species dependencies
-        self.__fill_in_ionization_electrons(pypicongpu_by_picmi_species, ionization_model_conversion_by_species)
-
-        # init PyPIConGPU init manager
-        initmgr = InitManager()  # This works because InitManager is imported
-
-        for pypicongpu_species in pypicongpu_by_picmi_species.values():
-            initmgr.all_species.append(pypicongpu_species)
-
-        # operations on multiple species
-        initmgr.all_operations += self.__get_operations_simple_density(pypicongpu_by_picmi_species)
-
-        # operations on single species
-        initmgr.all_operations += self.__get_operations_not_placed(pypicongpu_by_picmi_species)
-        initmgr.all_operations += self.__get_operations_from_individual_species(pypicongpu_by_picmi_species)
-
-        return initmgr, pypicongpu_by_picmi_species
-
     def write_input_file(
         self,
         file_name: str,
@@ -493,14 +321,14 @@ class Simulation(picmistandard.PICMI_Simulation):
             )
         self.picongpu_run()
 
-    def _generate_openpmd_plugins(self, diagnostics, pypicongpu_by_picmi_species, num_steps):
+    def _generate_openpmd_plugins(self, diagnostics, num_steps):
         diagnostics = list(diagnostics)
         return [
             OpenPMDPlugin(
                 sources=[
                     (
                         diagnostic.period.get_as_pypicongpu(time_step_size=self.time_step_size, num_steps=num_steps),
-                        pypicongpu_by_picmi_species[diagnostic.species]
+                        diagnostic.species.get_as_pypicongpu()
                         if isinstance(diagnostic, ParticleDump)
                         else PyPIConGPUFieldDump(name=diagnostic.fieldname),
                     )
@@ -511,97 +339,114 @@ class Simulation(picmistandard.PICMI_Simulation):
             for options in _unique(map(lambda x: x.options, diagnostics))
         ]
 
-    def _generate_plugins(self, pypicongpu_by_picmi_species, num_steps):
+    def _generate_plugins(self, num_steps):
         return [
             entry.get_as_pypicongpu(
-                dict_species_picmi_to_pypicongpu=pypicongpu_by_picmi_species,
                 time_step_size=self.time_step_size,
                 num_steps=num_steps,
             )
             for entry in self.diagnostics
             if not handled_via_openpmd(entry)
-        ] + self._generate_openpmd_plugins(
-            filter(handled_via_openpmd, self.diagnostics), pypicongpu_by_picmi_species, num_steps
-        )
+        ] + self._generate_openpmd_plugins(filter(handled_via_openpmd, self.diagnostics), num_steps)
 
-    def get_as_pypicongpu(self) -> pypicongpu.simulation.Simulation:
-        """translate to PyPIConGPU object"""
-        s = pypicongpu.simulation.Simulation()
-
-        s.delta_t_si = self.time_step_size
-        s.solver = self.solver.get_as_pypicongpu()
-
-        # already pypicongpu objects, therefore directly passing on
-        s.custom_user_input = self.picongpu_custom_user_input
-
-        # calculate time step
-        if self.max_steps is not None:
-            s.time_steps = self.max_steps
-        elif self.max_time is not None:
-            s.time_steps = math.ceil(self.max_time / self.time_step_size)
-        else:
-            raise ValueError("runtime not specified (neither as step count nor max time)")
-
+    def _check_compatibility(self):
         pypicongpu.util.unsupported("verbose", self.verbose)
         pypicongpu.util.unsupported("particle shape", self.particle_shape, "linear")
         pypicongpu.util.unsupported("gamma boost", self.gamma_boost)
-
-        try:
-            s.grid = self.solver.grid.get_as_pypicongpu()
-        except AttributeError:
-            pypicongpu.util.unsupported(f"grid type: {type(self.solver.grid)}")
-
-        # any injection method != None is not supported
         if len(self.laser_injection_methods) != self.laser_injection_methods.count(None):
             pypicongpu.util.unsupported("laser injection method", self.laser_injection_methods, [])
+        if self.max_steps is None and self.max_time is None:
+            raise ValueError("runtime not specified (neither as step count nor max time)")
 
-        if len(self.lasers) > 0:
-            s.laser = [ll.get_as_pypicongpu() for ll in self.lasers]
-        else:
-            # explictly disable laser (as required by pypicongpu)
-            s.laser = None
+    def get_as_pypicongpu(self) -> pypicongpu.simulation.Simulation:
+        """translate to PyPIConGPU object"""
+        self._check_compatibility()
 
-        s.init_manager, pypicongpu_by_picmi_species = self.__get_init_manager()
+        init_operations = organise_init_operations(
+            chain(*(s.get_operation_requirements() for s in sorted(self.species)))
+        )
 
-        s.plugins = self._generate_plugins(pypicongpu_by_picmi_species, s.time_steps)
-        # set typical ppc if not set explicitly by user
-        if self.picongpu_typical_ppc is None:
-            s.typical_ppc = (s.init_manager).get_typical_particle_per_cell()
-        else:
-            s.typical_ppc = self.picongpu_typical_ppc
-
-        if s.typical_ppc < 1:
-            raise ValueError("typical_ppc must be >= 1")
-
-        s.base_density = self.picongpu_base_density or s.init_manager.get_base_density(s.grid)
-
-        # disable moving Window if explicitly activated by the user
-        if self.picongpu_moving_window_move_point is None:
-            s.moving_window = None
-        else:
-            s.moving_window = pypicongpu.movingwindow.MovingWindow(
+        typical_ppc = (
+            self.picongpu_typical_ppc
+            if self.picongpu_typical_ppc is not None
+            else _mid_window(map(lambda op: op.layout.ppc, filter(lambda op: hasattr(op, "layout"), init_operations)))
+        )
+        moving_window = (
+            None
+            if self.picongpu_moving_window_move_point is None
+            else pypicongpu.movingwindow.MovingWindow(
                 move_point=self.picongpu_moving_window_move_point,
                 stop_iteration=self.picongpu_moving_window_stop_iteration,
             )
+        )
+        walltime = (
+            None if self.picongpu_walltime is None else pypicongpu.walltime.Walltime(walltime=self.picongpu_walltime)
+        )
+        time_steps = self.max_steps if self.max_steps is not None else math.ceil(self.max_time / self.time_step_size)
 
-        if self.picongpu_walltime is None:
-            s.walltime = None
-        else:
-            s.walltime = pypicongpu.walltime.Walltime(walltime=self.picongpu_walltime)
+        return pypicongpu.simulation.Simulation(
+            species=map(get_as_pypicongpu, sorted(self.species)),
+            init_operations=init_operations,
+            typical_ppc=typical_ppc,
+            delta_t_si=self.time_step_size,
+            solver=self.solver.get_as_pypicongpu(),
+            custom_user_input=self.picongpu_custom_user_input,
+            grid=self.solver.grid.get_as_pypicongpu(),
+            binomial_current_interpolation=self.picongpu_binomial_current_interpolation,
+            moving_window=moving_window,
+            walltime=walltime,
+            time_steps=time_steps,
+            laser=[ll.get_as_pypicongpu() for ll in self.lasers] or None,
+            plugins=self._generate_plugins(time_steps),
+            base_density=self._get_base_density(),
+        )
 
-        s.binomial_current_interpolation = self.picongpu_binomial_current_interpolation
-
-        return s
+    def _get_base_density(self) -> float:
+        return self.picongpu_base_density or 1.0e25
 
     def picongpu_run(self) -> None:
         """build and run PIConGPU simulation"""
-        if self.__runner is None:
-            self.__runner = pypicongpu.runner.Runner(self.get_as_pypicongpu(), self.picongpu_template_dir)
-        self.__runner.generate()
-        self.__runner.build()
-        self.__runner.run()
+        runner = self.picongpu_get_runner()
+        runner.generate()
+        runner.build()
+        runner.run()
 
     def picongpu_get_runner(self) -> pypicongpu.runner.Runner:
         if self.__runner is None:
             self.__runner = pypicongpu.runner.Runner(self.get_as_pypicongpu(), self.picongpu_template_dir)
         return self.__runner
+
+    def _picongpu_add_species(self, species, layout):
+        self.species.append(species)
+        self.layouts.append(layout)
+        if species.density_scale is not None and (layout is None and species.initial_distribution is None):
+            raise ValueError("layout and initial distribution must be set to use density scale")
+        if layout is not None and species.initial_distribution is None:
+            raise ValueError(
+                f"An initial distribution needs a layout. You've given {layout=} but {species.initial_distribution=}."
+            )
+        if species.initial_distribution is not None:
+            self.picongpu_distributions.append(_DensityImpl(species=species, layout=layout, grid=self.solver.grid))
+
+    def add_species(self, *args, **kwargs):
+        return self._picongpu_add_species(*args, **kwargs)
+
+
+def organise_init_operations(operations):
+    cleaned = []
+    for op in operations:
+        cleaned = resolving_add(op, cleaned)
+    return [run_construction(op) for op in cleaned]
+
+
+def _mid_window(iterable):
+    """Compute the integer in the middle between min(iterable), max(iterable), return 1 if empty."""
+    iterable = iter(iterable)
+
+    try:
+        start = next(iterable)
+    except StopIteration:
+        return 1
+
+    mi, ma = reduce(lambda lhs, rhs: (min(lhs[0], rhs), max(lhs[1], rhs)), iterable, (start, start))
+    return int((ma - mi) // 2 + mi)

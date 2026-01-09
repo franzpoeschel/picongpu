@@ -62,9 +62,6 @@
       "type": "boolean",
       "description": "use binomial current interpolation"
     },
-    "species_initmanager": {
-      "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.species.initmanager.InitManager"
-    },
     "output": {
       "description": "configuration of simulation output",
       "anyOf": [
@@ -89,7 +86,9 @@
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.customrenderingcontext.CustomRenderingContext"
         }
       ]
-    }
+    },
+    "species": {},
+    "init_operations": {}
   },
   "required": [
     "delta_t_si",
@@ -100,7 +99,8 @@
     "laser",
     "moving_window",
     "walltime",
-    "customuserinput"
+    "customuserinput",
+    "species"
   ],
   "unevaluatedProperties": false
 }

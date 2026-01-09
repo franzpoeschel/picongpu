@@ -7,8 +7,6 @@ License: GPLv3+
 
 from .operation import Operation
 from ..species import Species
-from ..attribute import BoundElectrons
-from ..constant import GroundStateIonization
 from ... import util
 
 import typeguard
@@ -28,23 +26,18 @@ class SetChargeState(Operation):
     charge_state = util.build_typesafe_property(int)
     """initial ion charge state"""
 
-    def __init__(self):
-        pass
+    _name = "setchargestate"
+
+    def __init__(self, species, charge_state):
+        self.species = species
+        self.charge_state = charge_state
 
     def check_preconditions(self) -> None:
-        assert self.species.has_constant_of_type(GroundStateIonization), "BoundElectrons requires GroundStateIonization"
-
         if self.charge_state < 0:
             raise ValueError("charge state must be > 0")
 
-        # may not check for charge_state > Z since Z not known in this context
-
-    def prebook_species_attributes(self) -> None:
-        self.attributes_by_species = {
-            self.species: [BoundElectrons()],
-        }
-
     def _get_serialized(self) -> dict:
+        self.check_preconditions()
         return {
             "species": self.species.get_rendering_context(),
             "charge_state": self.charge_state,

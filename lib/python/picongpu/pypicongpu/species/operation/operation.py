@@ -5,7 +5,7 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-from ...rendering import RenderedObject
+from ...rendering import SelfRegisteringRenderedObject
 from ... import util
 from ..attribute import Attribute
 from ..species import Species
@@ -16,7 +16,7 @@ from functools import reduce
 
 
 @typeguard.typechecked
-class Operation(RenderedObject):
+class Operation(SelfRegisteringRenderedObject):
     """
     Defines the initialization of a set of attributes across multiple species
 
@@ -167,7 +167,7 @@ class Operation(RenderedObject):
         # (2) every object is exclusive to its species
         # extract all attribute lists, then join them
         all_attributes = list(reduce(lambda a, b: a + b, self.attributes_by_species.values()))
-        duplicate_attribute_names = [attr.PICONGPU_NAME for attr in all_attributes if all_attributes.count(attr) > 1]
+        duplicate_attribute_names = [attr.picongpu_name for attr in all_attributes if all_attributes.count(attr) > 1]
         if 0 != len(duplicate_attribute_names):
             raise ValueError(
                 "attribute objects must be exclusive to species, offending: {}".format(
@@ -177,7 +177,7 @@ class Operation(RenderedObject):
 
         # (3) each species only gets one attribute of each type (==name)
         for species, attributes in self.attributes_by_species.items():
-            attr_names = list(map(lambda attr: attr.PICONGPU_NAME, attributes))
+            attr_names = list(map(lambda attr: attr.picongpu_name, attributes))
             duplicate_names = [name for name in attr_names if attr_names.count(name) > 1]
             if 0 != len(duplicate_names):
                 raise ValueError(
@@ -189,8 +189,8 @@ class Operation(RenderedObject):
         # part B: check species to be assigned to
         # is a pre-booked attribute already defined?
         for species, attributes in self.attributes_by_species.items():
-            present_attr_names = list(map(lambda attr: attr.PICONGPU_NAME, species.attributes))
-            prebooked_attr_names = list(map(lambda attr: attr.PICONGPU_NAME, attributes))
+            present_attr_names = list(map(lambda attr: attr.picongpu_name, species.attributes))
+            prebooked_attr_names = list(map(lambda attr: attr.picongpu_name, attributes))
             conflicting_attr_names = set(present_attr_names).intersection(prebooked_attr_names)
             if 0 != len(conflicting_attr_names):
                 raise ValueError(

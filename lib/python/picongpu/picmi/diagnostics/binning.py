@@ -8,15 +8,13 @@ License: GPLv3+
 from pathlib import Path
 from ..copy_attributes import default_converts_to
 
-import typeguard
 
 from picongpu.picmi.diagnostics.backend_config import OpenPMDConfig
 
 from ...pypicongpu.output.binning import Binning as PyPIConGPUBinning
 from ...pypicongpu.output.binning import BinningAxis as PyPIConGPUBinningAxis
 from ...pypicongpu.output.binning import BinSpec as PyPIConGPUBinSpec
-from ...pypicongpu.species.species import Species as PyPIConGPUSpecies
-from ..species import Species as PICMISpecies
+from ..species import Species as Species
 from .particle_functor import ParticleFunctor as BinningFunctor
 from .timestepspec import TimeStepSpec
 
@@ -30,7 +28,6 @@ class BinSpec:
         self.nsteps = nsteps
 
 
-@typeguard.typechecked
 class BinningAxis:
     def __init__(
         self,
@@ -53,14 +50,13 @@ class BinningAxis:
         )
 
 
-@typeguard.typechecked
 class Binning:
     def __init__(
         self,
         name: str,
         deposition_functor: BinningFunctor,
         axes: list[BinningAxis],
-        species: PICMISpecies | list[PICMISpecies],
+        species: Species | list[Species],
         period: TimeStepSpec | None = None,
         openPMD: dict | None = None,
         openPMDExt: str | None = None,
@@ -70,7 +66,7 @@ class Binning:
         self.name = name
         self.deposition_functor = deposition_functor
         self.axes = axes
-        if isinstance(species, PICMISpecies):
+        if isinstance(species, Species):
             species = [species]
         self.species = species
         self.period = period or TimeStepSpec[:]
@@ -86,19 +82,14 @@ class Binning:
 
     def get_as_pypicongpu(
         self,
-        dict_species_picmi_to_pypicongpu: dict[PICMISpecies, PyPIConGPUSpecies],
         time_step_size,
         num_steps,
     ) -> PyPIConGPUBinning:
-        if len(not_found := [s for s in self.species if s not in dict_species_picmi_to_pypicongpu.keys()]) > 0:
-            raise ValueError(f"Species {not_found} are not known to Simulation")
-        pypic_species = list(map(dict_species_picmi_to_pypicongpu.get, self.species))
-
         return PyPIConGPUBinning(
             name=self.name,
             deposition_functor=self.deposition_functor.get_as_pypicongpu(),
             axes=list(map(BinningAxis.get_as_pypicongpu, self.axes)),
-            species=pypic_species,
+            species=[s.get_as_pypicongpu() for s in self.species],
             period=self.period.get_as_pypicongpu(time_step_size, num_steps),
             openPMD=self.openPMD,
             openPMDExt=self.openPMDExt,

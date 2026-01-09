@@ -21,7 +21,7 @@ class ADKCircularPolarization(IonizationModel):
         high intensity laser fields.
     """
 
-    PICONGPU_NAME: str = "ADKCircPol"
+    picongpu_name: str = "ADKCircPol"
     """C++ Code type name of ionizer"""
 
     ionization_current: IonizationCurrent
