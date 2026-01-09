@@ -20,14 +20,9 @@ from picongpu.pypicongpu.species.attribute.weighting import Weighting
 from picongpu.pypicongpu.species.constant.mass import Mass
 
 
-def subset_of(subset, superset):
-    superset = list(superset)
-    return all(any(e1 == e2 for e2 in superset) for e1 in subset)
-
-
-def count_all_one(subset, superset):
-    superset = list(superset)
-    return all(superset.count(e) == 1 for e in subset)
+def unique_in(elements, collection):
+    collection = list(collection)
+    return (collection.count(e) == 1 for e in elements)
 
 
 class TestSpeciesRequirementResolution(TestCase):
@@ -35,19 +30,19 @@ class TestSpeciesRequirementResolution(TestCase):
         species = Species(name="dummy")
         requirements = [Weighting()]
         species.register_requirements(2 * requirements)
-        assert count_all_one(requirements, species.get_as_pypicongpu().attributes)
+        assert all(unique_in(requirements, species.get_as_pypicongpu().attributes))
 
     def test_deduplicate_constants(self):
         species = Species(name="dummy")
         requirements = [Mass(mass_si=1.0)]
         species.register_requirements(2 * requirements)
-        assert count_all_one(requirements, species.get_as_pypicongpu().constants)
+        assert all(unique_in(requirements, species.get_as_pypicongpu().constants))
 
     def test_deduplicate_delayed_construction(self):
         species = Species(name="dummy", particle_type="H", charge_state=1)
         requirements = [SetChargeStateOperation(species)]
         species.register_requirements(2 * requirements)
-        assert count_all_one(requirements, species.get_operation_requirements())
+        assert all(unique_in(requirements, species.get_operation_requirements()))
 
     def test_conflicting_constants(self):
         species = Species(name="dummy")

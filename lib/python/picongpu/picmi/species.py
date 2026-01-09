@@ -9,7 +9,7 @@ from enum import Enum
 import re
 from typing import Any
 
-from pydantic import BaseModel, PrivateAttr, computed_field, model_validator
+from pydantic import BaseModel, PrivateAttr, computed_field, model_validator, field_validator
 
 from picongpu.picmi.distribution import AnyDistribution
 from picongpu.picmi.species_requirements import resolving_add, evaluate_requirements, run_construction
@@ -54,7 +54,7 @@ class PusherMethod(Enum):
 
 
 class Species(BaseModel):
-    name: str | None = None
+    name: str
     particle_type: str | None = None
     initial_distribution: AnyDistribution | None = None
     picongpu_fixed_charge: bool = False
@@ -71,21 +71,22 @@ class Species(BaseModel):
     # For now, we add them to all species. Refinements might be necessary in the future.
     _requirements: list[Any] = PrivateAttr(default_factory=lambda: [Position(), Weighting(), Momentum()])
 
+    @field_validator("name", mode="before")
+    @classmethod
+    def _validate_name(cls, value, values):
+        if value is None:
+            if values["particle_type"] is None:
+                raise ValueError(
+                    "Can't come up with a proper name for your species because neither name nor particle type are given."
+                )
+            value = values["particle_type"]
+        return value
+
     class Config:
         arbitrary_types_allowed = True
 
     @model_validator(mode="after")
     def check(self):
-        if self.name is None and self.particle_type is None:
-            raise ValueError(
-                "Can't come up with a proper name for your species because neither name nor particle type are given."
-            )
-        if self.name is None:
-            self.name = self.particle_type
-        try:
-            is_element = self.particle_type is not None and Element.is_element(self.particle_type)
-        except ValueError:
-            is_element = False
         if self.particle_type is None:
             assert self.charge_state is None, (
                 f"Species {self.name} specified initial charge state via charge_state without also specifying particle "
@@ -94,7 +95,8 @@ class Species(BaseModel):
             assert self.picongpu_fixed_charge is False, (
                 f"Species {self.name} specified fixed charge without also specifying particle_type"
             )
-        elif is_element:
+        # Returns None if it is not an element, so is False-y in those cases, and True-y otherwise:
+        elif self.picongpu_element:
             if self.charge_state is not None:
                 assert Element(self.particle_type).get_atomic_number() >= self.charge_state, (
                     f"Species {self.name} intial charge state is unphysical"

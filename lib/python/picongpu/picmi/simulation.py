@@ -369,7 +369,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         typical_ppc = (
             self.picongpu_typical_ppc
             if self.picongpu_typical_ppc is not None
-            else mid_window(map(lambda op: op.layout.ppc, filter(lambda op: hasattr(op, "layout"), init_operations)))
+            else _mid_window(map(lambda op: op.layout.ppc, filter(lambda op: hasattr(op, "layout"), init_operations)))
         )
         moving_window = (
             None
@@ -402,23 +402,6 @@ class Simulation(picmistandard.PICMI_Simulation):
         )
 
     def _get_base_density(self) -> float:
-        # There's supposed to be some heuristics here along the lines of
-        #        num_grid = (
-        #            np.reshape([grid.cell_size_x_si, grid.cell_size_y_si, grid.cell_size_z_si], (-1, 1, 1, 1))
-        #            * np.mgrid[: grid.cell_cnt_x, : grid.cell_cnt_y, : grid.cell_cnt_z]
-        #        )
-        #        return float(
-        #            np.max(
-        #                np.fromiter(
-        #                    (
-        #                        operation.profile(*num_grid)
-        #                        for operation in self.all_operations
-        #                        if isinstance(operation, SimpleDensity)
-        #                    ),
-        #                    dtype=float,
-        #                )
-        #            )
-        #        )
         return self.picongpu_base_density or 1.0e25
 
     def picongpu_run(self) -> None:
@@ -456,6 +439,14 @@ def organise_init_operations(operations):
     return [run_construction(op) for op in cleaned]
 
 
-def mid_window(iterable):
-    mi, ma = reduce(lambda lhs, rhs: (min(lhs[0], rhs), max(lhs[1], rhs)), iterable, (1000, 0))
-    return (ma - mi) // 2 + mi
+def _mid_window(iterable):
+    """Compute the integer in the middle between min(iterable), max(iterable), return 1 if empty."""
+    iterable = iter(iterable)
+
+    try:
+        start = next(iterable)
+    except StopIteration:
+        return 1
+
+    mi, ma = reduce(lambda lhs, rhs: (min(lhs[0], rhs), max(lhs[1], rhs)), iterable, (start, start))
+    return int((ma - mi) // 2 + mi)
