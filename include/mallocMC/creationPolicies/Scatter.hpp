@@ -1293,8 +1293,7 @@ namespace mallocMC
                     auto const gid = alpaka::getIdx<alpaka::Grid, alpaka::Threads>(acc).sum();
 
                     auto const nWorker = alpaka::getWorkDiv<alpaka::Grid, alpaka::Threads>(acc).prod();
-                    unsigned const temp
-                        = heapPtr->template getAvailaibleSlotsDeviceFunction(acc, numBytes, gid, nWorker);
+                    unsigned const temp = heapPtr->getAvailaibleSlotsDeviceFunction(acc, numBytes, gid, nWorker);
                     if(temp)
                         alpaka::atomicOp<alpaka::AtomicAdd>(acc, slots, temp);
                 };
@@ -1381,8 +1380,7 @@ namespace mallocMC
 
                 // printf("Block %d, id %d: activeThreads=%d
                 // linearId=%d\n",blockIdx.x,threadIdx.x,activeThreads,linearId);
-                unsigned const temp
-                    = this->template getAvailaibleSlotsDeviceFunction(acc, slotSize, linearId, activeThreads);
+                unsigned const temp = this->getAvailaibleSlotsDeviceFunction(acc, slotSize, linearId, activeThreads);
                 if(temp)
                     alpaka::atomicOp<alpaka::AtomicAdd>(acc, &warpResults[wId], temp);
 
