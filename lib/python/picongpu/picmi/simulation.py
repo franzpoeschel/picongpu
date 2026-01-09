@@ -36,7 +36,6 @@ from picongpu.pypicongpu.walltime import Walltime
 from .. import pypicongpu
 from . import constants
 from .grid import Cartesian3DGrid
-from .interaction import Interaction
 from .species import Species
 
 
@@ -133,9 +132,6 @@ class Simulation(picmistandard.PICMI_Simulation):
     update using picongpu_add_custom_user_input() or by direct setting
     """
 
-    picongpu_interaction = pypicongpu.util.build_typesafe_property(typing.Optional[Interaction])
-    """Interaction instance containing all particle interactions of the simulation, set to None to have no interactions"""
-
     picongpu_typical_ppc = pypicongpu.util.build_typesafe_property(typing.Optional[int])
     """
     typical number of particle in a cell in the simulation
@@ -183,7 +179,6 @@ class Simulation(picmistandard.PICMI_Simulation):
         picongpu_typical_ppc: typing.Optional[int] = None,
         picongpu_moving_window_move_point: typing.Optional[float] = None,
         picongpu_moving_window_stop_iteration: typing.Optional[int] = None,
-        picongpu_interaction: typing.Optional[Interaction] = None,
         picongpu_base_density: typing.Optional[float] = None,
         picongpu_walltime: typing.Optional[datetime.timedelta] = None,
         picongpu_binomial_current_interpolation: bool = False,
@@ -193,7 +188,6 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.picongpu_template_dir = _normalise_template_dir(picongpu_template_dir)
         self.picongpu_moving_window_move_point = picongpu_moving_window_move_point
         self.picongpu_moving_window_stop_iteration = picongpu_moving_window_stop_iteration
-        self.picongpu_interaction = picongpu_interaction
         self.picongpu_base_density = picongpu_base_density
         self.picongpu_walltime = picongpu_walltime
         self.picongpu_binomial_current_interpolation = picongpu_binomial_current_interpolation
