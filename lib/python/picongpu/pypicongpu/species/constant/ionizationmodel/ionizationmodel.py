@@ -6,7 +6,7 @@ License: GPLv3+
 """
 
 from ..constant import Constant
-from pydantic import model_validator
+from pydantic import Field, model_validator
 from ..ionizationcurrent import IonizationCurrent
 
 import typing
@@ -23,7 +23,7 @@ class IonizationModel(Constant):
     PIConGPU term: "ionizer"
     """
 
-    picongpu_name: str
+    ionizer_picongpu_name: str = Field(alias="picongpu_name")
     """C++ Code type name of ionizer"""
 
     # no typecheck here -- would require circular imports

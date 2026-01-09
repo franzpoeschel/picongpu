@@ -18,7 +18,7 @@ class BSIStarkShifted(IonizationModel):
     Variant of the BSI ionization model accounting for the Stark upshift of ionization energies.
     """
 
-    picongpu_name: str = "BSIStarkShifted"
+    ionizer_picongpu_name: str = "BSIStarkShifted"
     """C++ Code type name of ionizer"""
 
     ionization_current: IonizationCurrent
