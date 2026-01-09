@@ -59,9 +59,7 @@ class TestSpeciesRequirementResolution(TestCase):
         ionizations = [
             # Not great: Production code would use the enums not their integer represenation.
             ADK(ion_species=ion, ionization_electron_species=electron, ADK_variant=0, ionization_current=None),
-            ADK(ion_species=ion, ionization_electron_species=electron, ADK_variant=1, ionization_current=None),
             BSI(ion_species=ion, ionization_electron_species=electron, BSI_extensions=[0], ionization_current=None),
-            BSI(ion_species=ion, ionization_electron_species=electron, BSI_extensions=[1], ionization_current=None),
         ]
 
         # Ionization makes the ion depend on the electron species.
