@@ -113,6 +113,37 @@ pypicongpu_output_with_newlines="
       --{{{species.name}}}_macroParticlesCount.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
     {{/typeID.macroparticlecount}}
 
+    {{#typeID.radiation}}
+    {{#species}}
+    {{#config}}
+          --{{{name}}}_radiation.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
+          --{{{name}}}_radiation.dump {{{num_accumulation_steps}}}
+           {{#last_radiation}}
+          --{{{name}}}_radiation.lastRadiation
+          --{{{name}}}_radiation.folderLastRad {{{folder_last_rad}}}
+           {{/last_radiation}}
+           {{#total_radiation}}
+          --{{{name}}}_radiation.totalRadiation
+          --{{{name}}}_radiation.folderTotalRad {{{folder_total_rad}}}
+           {{/total_radiation}}
+          --{{{name}}}_radiation.start {{{start}}}
+          --{{{name}}}_radiation.end {{{end}}}
+           {{#rad_per_gpu}}
+          --{{{name}}}_radiation.radPerGPU
+          --{{{name}}}_radiation.folderRadPerGPU {{{folder_rad_per_gpu}}}
+           {{/rad_per_gpu}}
+          --{{{name}}}_radiation.numJobs {{{num_jobs}}}
+          --{{{name}}}_radiation.openPMDSuffix {{{open_pmd_suffix}}}
+          --{{{name}}}_radiation.openPMDCheckpointExtension {{{open_pmd_checkpoint_extension}}}
+          --{{{name}}}_radiation.openPMDConfig {{{open_pmd_config}}}
+          --{{{name}}}_radiation.openPMDCheckpointConfig {{{open_pmd_checkpoint_config}}}
+           {{#distributed_amplitude}}
+          --{{{name}}}_radiation.distributedAmplitude
+           {{/distributed_amplitude}}
+    {{/config}}
+    {{/species}}
+    {{/typeID.radiation}}
+
 {{#typeID.checkpoint}}
 {{#period}}--checkpoint.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
 {{/period}}

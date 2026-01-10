@@ -128,8 +128,6 @@ class CylindricalDistribution(Distribution):
         pre_l = self.exponential_pre_plasma_length or 0.0
         pre_c = self.exponential_pre_plasma_cutoff or 0.0
 
-        # Every vector is expressed as a linear combination of basis vectors.
-        # This is abstracted away in `_make_vector`.
         cylinder_axis = np.array(self.cylinder_axis) / np.linalg.norm(self.cylinder_axis)
         args = (x, y, z)
         positions = np.moveaxis(np.broadcast_arrays(x, y, z), 0, -1)

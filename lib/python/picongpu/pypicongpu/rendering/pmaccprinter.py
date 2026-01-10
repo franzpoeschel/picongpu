@@ -26,7 +26,7 @@ class PMAccPrinter(cxx_code_printers["c++17"]):
             (settings or {})
             | {
                 "math_macros": {
-                    S.Pi: "pmacc::math::Pi<float_X>::Value",
+                    S.Pi: "pmacc::math::Pi<float_X>::value",
                     S.Pi / 2: "pmacc::math::Pi<float_X>::halfValue",
                     S.Pi / 4: "pmacc::math::Pi<float_X>::quarterValue",
                     2 / S.Pi: "pmacc::math::Pi<float_X>::doubleReciprocalValue",

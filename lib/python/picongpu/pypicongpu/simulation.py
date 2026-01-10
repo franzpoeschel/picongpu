@@ -8,9 +8,11 @@ License: GPLv3+
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import BaseModel, PlainSerializer, field_serializer
+from pydantic import BaseModel, PlainSerializer, field_serializer, field_validator
 
 from picongpu.pypicongpu.collisions import CollisionalPhysicsSetup
+from picongpu.pypicongpu.output.radiation import RadiationPlugin
+from picongpu.pypicongpu.output.timestepspec import TimeStepSpec
 from picongpu.pypicongpu.species.constant.synchrotron import SynchrotronParams
 from picongpu.pypicongpu.species.operation.operation import Operation
 from picongpu.pypicongpu.species.species import Species
@@ -87,6 +89,24 @@ class Simulation(RenderedObject, BaseModel):
     init_operations: Annotated[list[Operation], PlainSerializer(_serialize)]
     synchrotron_params: SynchrotronParams = SynchrotronParams()
     collisional_physics: CollisionalPhysicsSetup = CollisionalPhysicsSetup()
+
+    @field_validator("output", mode="after")
+    @classmethod
+    def _output_validation(cls, outputs):
+        # The radiation plugin expects to always have content in its param file,
+        # so we'll always add a RadiationPlugin to make them appear.
+        default = [
+            RadiationPlugin(
+                species=[],
+                period=TimeStepSpec([]),
+                config={"observer": {"N_observer": 1, "index_to_direction": lambda _: [1, 0, 0]}},
+            )
+        ]
+        if outputs is None:
+            return default
+        if not any(isinstance(o, RadiationPlugin) for o in outputs):
+            return outputs + default
+        return outputs
 
     @field_serializer("customuserinput")
     def _render_custom_user_input_list(self, value):

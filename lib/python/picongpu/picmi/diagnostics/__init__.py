@@ -15,6 +15,7 @@ from .particle_dump import ParticleDump
 from .field_dump import FieldDump
 from .backend_config import BackendConfig, OpenPMDConfig
 from .unit_dimension import UnitDimension
+from .radiation import Radiation
 
 __all__ = [
     "BackendConfig",
@@ -30,4 +31,5 @@ __all__ = [
     "TimeStepSpec",
     "Checkpoint",
     "UnitDimension",
+    "Radiation",
 ]
