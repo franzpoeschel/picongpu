@@ -1,5 +1,5 @@
-/* Copyright 2014-2024 Rene Widera, Felix Schmitt, Axel Huebl,
- *                     Alexander Grund, Franz Poeschel
+/* Copyright 2014-2026 Rene Widera, Felix Schmitt, Axel Huebl,
+ *                     Alexander Grund, Franz Poeschel, Pawel Ordyna
  *
  * This file is part of PIConGPU.
  *
@@ -352,9 +352,8 @@ namespace picongpu
                 auto idProvider = dc.get<IdProvider>("globalId");
 
                 // enforce that the filter interface is fulfilled
-                particles::filter::IUnary<typename T_SpeciesFilter::Filter> particleFilter(
-                    currentStep,
-                    idProvider->getDeviceGenerator());
+                particles::filter::IUnary<typename T_SpeciesFilter::Filter::template apply<ThisSpecies>::type>
+                    particleFilter(currentStep, idProvider->getDeviceGenerator());
                 using usedFilters = pmacc::mp_list<typename GetPositionFilter<simDim>::type>;
                 using MyParticleFilter = typename FilterFactory<usedFilters>::FilterType;
                 MyParticleFilter filter;
