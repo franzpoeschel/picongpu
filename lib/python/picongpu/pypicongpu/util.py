@@ -12,6 +12,15 @@ import logging
 attr_cnt = 0
 
 
+def unique(iterable):
+    # very naive, just for non-hashables that can still be compared
+    result = []
+    for x in iterable:
+        if x not in result:
+            result.append(x)
+    return result
+
+
 # note: type_ may be either a type, or a definition by typing
 # depending on the python version the type of typing.XXXX is different
 # (_GenericMeta vs. GenericMeta) -- so we compute it on the fly

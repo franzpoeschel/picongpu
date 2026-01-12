@@ -20,7 +20,7 @@ from .distribution import (
     AnalyticDistribution,
 )
 
-from .interaction import Interaction, Synchrotron
+from .interaction import Interaction, Synchrotron, Collision, ConstLogCollision, DynamicLogCollision
 from .interaction.ionization.fieldionization import (
     ADK,
     ADKVariant,
@@ -63,6 +63,9 @@ __all__ = [
     "Interaction",
     "diagnostics",
     "CylindricalDistribution",
+    "Collision",
+    "ConstLogCollision",
+    "DynamicLogCollision",
 ]
 
 
