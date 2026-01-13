@@ -31,6 +31,7 @@ from picongpu.picmi.species_requirements import (
 from picongpu.pypicongpu.output.openpmd_plugin import OpenPMDPlugin, FieldDump as PyPIConGPUFieldDump
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
 from picongpu.pypicongpu.species.attribute.momentum import Momentum
+from picongpu.pypicongpu.walltime import Walltime
 
 from .. import pypicongpu
 from . import constants
@@ -124,7 +125,7 @@ class Simulation(picmistandard.PICMI_Simulation):
     """
 
     picongpu_custom_user_input = pypicongpu.util.build_typesafe_property(
-        typing.Optional[list[pypicongpu.customuserinput.InterfaceCustomUserInput]]
+        typing.Optional[list[pypicongpu.customuserinput.CustomUserInput]]
     )
     """
     list of custom user input objects
@@ -304,7 +305,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.__runner = pypicongpu.runner.Runner(pypicongpu_simulation, self.picongpu_template_dir, setup_dir=file_name)
         self.__runner.generate()
 
-    def picongpu_add_custom_user_input(self, custom_user_input: pypicongpu.customuserinput.InterfaceCustomUserInput):
+    def picongpu_add_custom_user_input(self, custom_user_input: pypicongpu.customuserinput.CustomUserInput):
         """add custom user input to previously stored input"""
         self.picongpu_custom_user_input = (self.picongpu_custom_user_input or []) + [custom_user_input]
 
@@ -390,14 +391,14 @@ class Simulation(picmistandard.PICMI_Simulation):
             typical_ppc=typical_ppc,
             delta_t_si=self.time_step_size,
             solver=self.solver.get_as_pypicongpu(),
-            custom_user_input=self.picongpu_custom_user_input,
+            customuserinput=self.picongpu_custom_user_input,
             grid=self.solver.grid.get_as_pypicongpu(),
             binomial_current_interpolation=self.picongpu_binomial_current_interpolation,
             moving_window=moving_window,
-            walltime=walltime,
+            walltime=walltime or Walltime(walltime=datetime.timedelta(hours=1)),
             time_steps=time_steps,
             laser=[ll.get_as_pypicongpu() for ll in self.lasers] or None,
-            plugins=self._generate_plugins(time_steps),
+            output=self._generate_plugins(time_steps),
             base_density=self._get_base_density(),
         )
 

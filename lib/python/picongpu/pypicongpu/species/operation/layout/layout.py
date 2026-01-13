@@ -6,9 +6,10 @@ License: GPLv3+
 """
 
 from ....rendering import SelfRegisteringRenderedObject
+from pydantic import BaseModel
 
 
-class Layout(SelfRegisteringRenderedObject):
+class Layout(SelfRegisteringRenderedObject, BaseModel):
     """
     (abstract) parent class of all layouts
 

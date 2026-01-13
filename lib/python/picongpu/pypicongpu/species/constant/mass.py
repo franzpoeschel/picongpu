@@ -5,11 +5,11 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 from .constant import Constant
 
 
-class Mass(Constant, BaseModel):
+class Mass(Constant):
     """
     mass of a physical particle
     """

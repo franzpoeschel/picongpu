@@ -5,13 +5,11 @@ Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
+from pydantic import BaseModel
 from ....rendering import SelfRegisteringRenderedObject
 
-import typeguard
 
-
-@typeguard.typechecked
-class DensityProfile(SelfRegisteringRenderedObject):
+class DensityProfile(SelfRegisteringRenderedObject, BaseModel):
     """
     (abstract) parent class of all density profiles
 

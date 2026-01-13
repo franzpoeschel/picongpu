@@ -6,15 +6,13 @@ License: GPLv3+
 """
 
 from ..constant import Constant
+from pydantic import Field, model_validator
 from ..ionizationcurrent import IonizationCurrent
 
-import pydantic
 import typing
-import typeguard
 
 
-@typeguard.typechecked
-class IonizationModel(pydantic.BaseModel, Constant):
+class IonizationModel(Constant):
     """
     base class for an ground state only ionization models of an ion species
 
@@ -25,7 +23,7 @@ class IonizationModel(pydantic.BaseModel, Constant):
     PIConGPU term: "ionizer"
     """
 
-    picongpu_name: str
+    ionizer_picongpu_name: str = Field(alias="picongpu_name")
     """C++ Code type name of ionizer"""
 
     # no typecheck here -- would require circular imports
@@ -35,7 +33,8 @@ class IonizationModel(pydantic.BaseModel, Constant):
     ionization_current: typing.Optional[IonizationCurrent] = None
     """ionization current implementation to use"""
 
-    def check(self) -> None:
+    @model_validator(mode="after")
+    def check(self):
         """check internal consistency"""
 
         # import here to avoid circular import
@@ -51,37 +50,4 @@ class IonizationModel(pydantic.BaseModel, Constant):
             raise ValueError(
                 "used electron species {} must not be ionizable itself".format(self.ionization_electron_species.name)
             )
-
-        # test ionization current set if required
-        test = self.ionization_current  # noqa
-
-        # note: do **NOT** check() electron species here
-        # -> it is not fully initialized at this point in the initialization
-        # (check requires attributes which are added last,
-        # but constants are added first)
-
-    def _get_serialized(self) -> dict[str, typing.Any]:
-        # do not remove!, always do a check call
-        self.check()
-
-        if self.ionization_current is None:
-            # case no ionization_current configurable
-            return {
-                "ionizer_picongpu_name": self.picongpu_name,
-                "ionization_electron_species": self.ionization_electron_species.get_rendering_context(),
-                "ionization_current": None,
-            }
-
-        # default case
-        return {
-            "ionizer_picongpu_name": self.picongpu_name,
-            "ionization_electron_species": self.ionization_electron_species.get_rendering_context(),
-            "ionization_current": self.ionization_current.get_generic_rendering_context(),
-        }
-
-    def get_generic_rendering_context(self) -> dict[str, typing.Any]:
-        return IonizationModel(
-            picongpu_name=self.picongpu_name,
-            ionization_electron_species=self.ionization_electron_species,
-            ionization_current=self.ionization_current,
-        ).get_rendering_context()
+        return self

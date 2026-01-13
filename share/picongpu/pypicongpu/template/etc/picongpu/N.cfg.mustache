@@ -47,9 +47,7 @@ set -u
 ## Section: Required Variables ##
 #################################
 
-{{#walltime}}
-TBG_wallTime="{{{walltime}}}"
-{{/walltime}}
+TBG_wallTime="{{{walltime.walltime}}}"
 
 {{#grid.gpu_cnt}}
   TBG_devices_x={{{x}}}
@@ -114,13 +112,6 @@ pypicongpu_output_with_newlines="
     {{#typeID.macroparticlecount}}
       --{{{species.name}}}_macroParticlesCount.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
     {{/typeID.macroparticlecount}}
-
-    {{#typeID.png}}
-          --{{{species.name}}}_png.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}
-          --{{{species.name}}}_png.axis {{{axis}}}
-          --{{{species.name}}}_png.slicePoint {{{slicePoint}}}
-          --{{{species.name}}}_png.folder {{{folder}}}
-    {{/typeID.png}}
 
 {{#typeID.checkpoint}}
 {{#period}}--checkpoint.period {{#period.specs}}{{{start}}}:{{{stop}}}:{{{step}}}{{^_last}},{{/_last}}{{/period.specs}}

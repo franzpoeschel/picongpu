@@ -9,7 +9,6 @@ from .binning import Binning, BinningAxis, BinSpec
 from .phase_space import PhaseSpace
 from .energy_histogram import EnergyHistogram
 from .macro_particle_count import MacroParticleCount
-from .png import Png
 from .timestepspec import TimeStepSpec
 from .checkpoint import Checkpoint
 from .particle_dump import ParticleDump
@@ -28,7 +27,6 @@ __all__ = [
     "MacroParticleCount",
     "ParticleDump",
     "FieldDump",
-    "Png",
     "TimeStepSpec",
     "Checkpoint",
     "UnitDimension",

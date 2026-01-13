@@ -5,17 +5,17 @@ Authors: Brian Edward Marre
 License: GPLv3+
 """
 
+from pydantic import model_validator
+
 from .constant import Constant
 from .ionizationmodel import IonizationModel, IonizationModelGroups
 
-import pydantic
-import typing
 
-
-class GroundStateIonization(Constant, pydantic.BaseModel):
+class GroundStateIonization(Constant):
     ionization_model_list: list[IonizationModel]
     """list of ground state only ionization models to apply for the species"""
 
+    @model_validator(mode="after")
     def check(self) -> None:
         # check that at least one ionization model in list
         if len(self.ionization_model_list) == 0:
@@ -39,12 +39,4 @@ class GroundStateIonization(Constant, pydantic.BaseModel):
                 raise ValueError(f"ionization model group already represented: {group}")
             else:
                 type_already_present[group] = True
-
-    def _get_serialized(self) -> dict[str, list[dict[str, typing.Any]]]:
-        self.check()
-
-        list_serialized = []
-        for ionization_model in self.ionization_model_list:
-            list_serialized.append(ionization_model.get_generic_rendering_context())
-
-        return {"ionization_model_list": list_serialized}
+        return self

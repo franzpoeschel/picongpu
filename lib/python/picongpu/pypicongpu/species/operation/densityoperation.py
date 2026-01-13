@@ -7,10 +7,7 @@ License: GPLv3+
 
 from .operation import Operation
 
-import typeguard
 
-
-@typeguard.typechecked
 class DensityOperation(Operation):
     """
     common interface for all operations that create density

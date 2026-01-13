@@ -5,18 +5,16 @@ Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
-from .layout import Layout
+from typing import Annotated
+from pydantic import PlainSerializer, PrivateAttr, BaseModel, field_validator, model_validator, Field, computed_field
+
+from ..constant import DensityRatio
+from ..species import Species
 from .densityoperation import DensityOperation
 from .densityprofile import DensityProfile
-from ..species import Species
-from ..constant import DensityRatio
-from ... import util
-
-import typeguard
-import typing
+from .layout import Layout
 
 
-@typeguard.typechecked
 class SimpleDensity(DensityOperation):
     """
     Place a set of species together, using the same density profile
@@ -33,22 +31,39 @@ class SimpleDensity(DensityOperation):
       note that their density ratios will be respected
     """
 
-    profile = util.build_typesafe_property(DensityProfile)
+    profile: Annotated[DensityProfile, PlainSerializer(lambda x: x.get_rendering_context())]
     """density profile to use, describes the actual density"""
 
-    species = util.build_typesafe_property(typing.Set[Species])
+    species: list[Species] = Field(exclude=True)
     """species to be placed"""
 
-    layout = util.build_typesafe_property(Layout)
+    layout: Annotated[Layout, PlainSerializer(lambda x: x.get_rendering_context())]
 
-    _name = "simpledensity"
+    _name: str = PrivateAttr("simpledensity")
 
-    def __init__(self, /, species, profile, layout):
-        self.profile = profile
-        self.species = species if isinstance(species, set) else set(species)
-        self.layout = layout
+    @field_validator("species", mode="before")
+    @classmethod
+    def validate_species(cls, species):
+        return sorted(
+            set(species),
+            key=lambda species: 1
+            if not species.has_constant_of_type(DensityRatio)
+            else species.get_constant_by_type(DensityRatio).ratio,
+        )
 
-    def check_preconditions(self) -> None:
+    @computed_field
+    def placed_species_initial(self) -> Species:
+        return self.species[0]
+
+    @computed_field
+    def placed_species_copied(self) -> list[Species]:
+        return self.species[1:]
+
+    def __init__(self, *args, **kwargs):
+        return BaseModel.__init__(self, *args, **kwargs)
+
+    @model_validator(mode="after")
+    def check_preconditions(self):
         if 0 == len(self.species):
             raise ValueError("must apply to at least one species")
 
@@ -59,60 +74,4 @@ class SimpleDensity(DensityOperation):
 
         if hasattr(self.profile, "check"):
             self.profile.check()
-
-    def _get_serialized(self) -> dict:
-        """
-        get rendering context for C++ generation
-
-        ppc and species are translated 1-by-1,
-        species with lowest ratio is "placed initially", i.e. it is placed
-        first.
-
-        All other species are put into a separate list, which will have their
-        macroparticle position copied from the first species.
-
-        Rationale:
-        PIConGPU works using this pattern, i.e. copying the macroparticle
-        position from the first species.
-
-        Also, there is a "minimum weighting" inside of PIConGPU, which prevents
-        macroparticle creation if the weighting of a macroparticle is too low.
-        (This has physics reasons.)
-
-        However, this minimum weighting is ignored when copying particles.
-        To ensure that the minimum weighting is kept the species with the
-        **lowest density ratio** is placed first.
-
-        I.e. **IF NO PARTICLES ARE PLACED** check **MINIMUM WEIGHTING**
-
-        After the initial species has been placed all other species' (stored in
-        a separate list without particluar order) macroparticle positions are
-        copied from the first. Weightings are adjusted to the ratio between the
-        first (copy source) and the respective (copy destination) species
-        density ratios.
-
-        Notably, this requires the initial placement to *adjust the first
-        species' weighting according to its density weighting*.
-        This is automatically performed by PIConGPU's `CreateDensity`.
-        """
-        self.check_preconditions()
-
-        # sort species by ratio
-        # (treat "has no ratio" as 1)
-        sorted_species_by_ratio = sorted(
-            self.species,
-            key=lambda species: 1
-            if not species.has_constant_of_type(DensityRatio)
-            else species.get_constant_by_type(DensityRatio).ratio,
-        )
-
-        placed_species = []
-        for species in sorted_species_by_ratio:
-            placed_species.append(species.get_rendering_context())
-
-        return {
-            "layout": self.layout.get_rendering_context(),
-            "profile": self.profile.get_rendering_context(),
-            "placed_species_initial": placed_species[0],
-            "placed_species_copied": placed_species[1:],
-        }
+        return self

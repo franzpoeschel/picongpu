@@ -5,46 +5,30 @@ Authors: Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
-from .. import util
-from ..species import Species
+from typing import Literal
 
+from pydantic import BaseModel, PrivateAttr, model_validator
+
+from ..species import Species
 from .plugin import Plugin
 from .timestepspec import TimeStepSpec
 
-import typeguard
-import typing
-from typing import Literal
 
+class PhaseSpace(Plugin, BaseModel):
+    species: Species
+    period: TimeStepSpec
+    spatial_coordinate: Literal["x", "y", "z"]
+    momentum_coordinate: Literal["px", "py", "pz"]
+    min_momentum: float
+    max_momentum: float
 
-@typeguard.typechecked
-class PhaseSpace(Plugin):
-    species = util.build_typesafe_property(Species)
-    period = util.build_typesafe_property(TimeStepSpec)
-    spatial_coordinate = util.build_typesafe_property(Literal["x", "y", "z"])
-    momentum_coordinate = util.build_typesafe_property(Literal["px", "py", "pz"])
-    min_momentum = util.build_typesafe_property(float)
-    max_momentum = util.build_typesafe_property(float)
+    _name: str = PrivateAttr("phasespace")
 
-    _name = "phasespace"
-
-    def __init__(self):
-        "do nothing"
-
+    @model_validator(mode="after")
     def check(self):
         if self.min_momentum >= self.max_momentum:
             raise ValueError(
                 "PhaseSpace's min_momentum should be smaller than max_momentum. "
                 f"You gave: {self.min_momentum=} and {self.max_momentum=}."
             )
-
-    def _get_serialized(self) -> typing.Dict:
-        """Return the serialized representation of the object."""
-        self.check()
-        return {
-            "species": self.species.get_rendering_context(),
-            "period": self.period.get_rendering_context(),
-            "spatial_coordinate": self.spatial_coordinate,
-            "momentum_coordinate": self.momentum_coordinate,
-            "min_momentum": self.min_momentum,
-            "max_momentum": self.max_momentum,
-        }
+        return self

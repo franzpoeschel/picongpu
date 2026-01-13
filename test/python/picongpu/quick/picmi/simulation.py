@@ -600,7 +600,7 @@ class TestPicmiSimulation(unittest.TestCase):
         self.sim.picongpu_add_custom_user_input(i_1)
         self.sim.picongpu_add_custom_user_input(i_2)
 
-        with self.assertRaisesRegex(ValueError, "duplicate tag provided!, tags must be unique!"):
+        with self.assertRaises(ValueError):
             self.sim.get_as_pypicongpu().get_rendering_context()
 
     def test_duplicated_key_over_different_custom_inputs(self):

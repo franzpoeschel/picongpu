@@ -8,7 +8,6 @@ License: GPLv3+
 from .phase_space import PhaseSpace
 from .energy_histogram import EnergyHistogram
 from .macro_particle_count import MacroParticleCount
-from .png import Png
 from .timestepspec import TimeStepSpec
 from .checkpoint import Checkpoint
 from .openpmd_plugin import OpenPMDPlugin
@@ -20,7 +19,6 @@ __all__ = [
     "PhaseSpace",
     "EnergyHistogram",
     "MacroParticleCount",
-    "Png",
     "TimeStepSpec",
     "Checkpoint",
 ]

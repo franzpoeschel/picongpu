@@ -9,10 +9,12 @@ import logging
 import tempfile
 import unittest
 from pathlib import Path
+from datetime import timedelta
 
 import typeguard
 from picongpu import picmi, pypicongpu
 from picongpu.pypicongpu.grid import BoundaryCondition
+from picongpu.pypicongpu.walltime import Walltime
 
 
 @typeguard.typechecked
@@ -58,14 +60,14 @@ class TestSimulation(unittest.TestCase):
                 grid_dist=None,
             ),
             laser=None,
-            custom_user_input=None,
+            customuserinput=None,
             moving_window=None,
-            walltime=None,
+            walltime=Walltime(walltime=timedelta(hours=1)),
             binomial_current_interpolation=False,
             solver=pypicongpu.field_solver.Yee.YeeSolver(),
             species=[],
             init_operations=[],
-            plugins=[],
+            output=[],
             base_density=1.0e25,
         )
 

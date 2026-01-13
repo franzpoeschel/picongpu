@@ -10,10 +10,10 @@ from hashlib import sha256
 from os import PathLike
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Annotated, Iterable, Literal
+from typing import Annotated, Literal
 
 import tomli_w
-from pydantic import AfterValidator, BaseModel
+from pydantic import AfterValidator, BaseModel, PrivateAttr, model_serializer
 
 from picongpu.pypicongpu.output.plugin import Plugin
 from picongpu.pypicongpu.output.timestepspec import TimeStepSpec
@@ -55,14 +55,14 @@ class FieldDump(BaseModel):
 
 
 class OpenPMDPlugin(Plugin):
-    _name = "openPMD"
-
-    sources: list[tuple[TimeStepSpec, Iterable[Species]]]
+    sources: list[tuple[TimeStepSpec, Species | FieldDump]]
     config: OpenPMDConfig = OpenPMDConfig(file="simData")
-    _setup_dir: Path | None = None
+
+    _name: str = PrivateAttr("openPMD")
+    _setup_dir: Path | None = PrivateAttr(None)
     # We're using a negation here because now `False` and `None` (evaluating to `False`)
     # both mean that we can't rely on `setup_dir` being anything permanent:
-    _setup_dir_is_not_temporary: bool | None = None
+    _setup_dir_is_not_temporary: bool | None = PrivateAttr(None)
 
     def config_filename(self, content, context: Literal["runtime", "setup"]):
         filename = f"openPMD_config_{sha256(tomli_w.dumps(content).encode()).hexdigest()}.toml"
@@ -86,10 +86,6 @@ class OpenPMDPlugin(Plugin):
     def setup_dir(self, other):
         self._setup_dir = Path(other)
 
-    def __init__(self, sources, config):
-        self.sources = sources
-        self.config = config
-
     def _generate_config_file(self):
         # There's some strange interaction with the custom hashing of TimeStepSpec
         # that's implemented on RenderedObject
@@ -111,6 +107,7 @@ class OpenPMDPlugin(Plugin):
             tomli_w.dump(content, file)
         return content
 
+    @model_serializer(mode="plain")
     def _get_serialized(self) -> dict | None:
         content = self._generate_config_file()
         return {"config_filename": str(self.config_filename(content, context="runtime"))}

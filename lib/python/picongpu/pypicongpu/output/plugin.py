@@ -5,14 +5,12 @@ Authors: Brian Edward Marre, Masoud Afshari, Julian Lenz
 License: GPLv3+
 """
 
+from pydantic import BaseModel
+
 from ..rendering import SelfRegisteringRenderedObject
 
 
-import typeguard
-
-
-@typeguard.typechecked
-class Plugin(SelfRegisteringRenderedObject):
+class Plugin(SelfRegisteringRenderedObject, BaseModel):
     """general interface for all plugins"""
 
     pass

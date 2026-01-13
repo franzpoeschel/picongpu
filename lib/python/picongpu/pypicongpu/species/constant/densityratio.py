@@ -5,11 +5,11 @@ Authors: Hannes Troepgen, Brian Edward Marre
 License: GPLv3+
 """
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 from .constant import Constant
 
 
-class DensityRatio(Constant, BaseModel):
+class DensityRatio(Constant):
     """
     factor for weighting when using profiles/deriving
     """

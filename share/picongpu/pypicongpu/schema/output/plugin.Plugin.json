@@ -15,7 +15,6 @@
         "phasespace",
         "energyhistogram",
         "macroparticlecount",
-        "png",
         "binning",
         "openPMD",
         "checkpoint"
@@ -29,9 +28,6 @@
           "type": "boolean"
         },
         "macroparticlecount": {
-          "type": "boolean"
-        },
-        "png": {
           "type": "boolean"
         },
         "binning": {
@@ -56,9 +52,6 @@
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.macro_particle_count.MacroParticleCount"
-        },
-        {
-          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.png.Png"
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.binning.Binning"
