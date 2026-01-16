@@ -90,7 +90,7 @@ random_layout = picmi.PseudoRandomLayout(n_macroparticles_per_cell=2)
 # for particle type see https://github.com/openPMD/openPMD-standard/blob/upcoming-2.0.0/EXT_SpeciesType.md
 species_list = []
 if not ENABLE_IONIZATION:
-    interaction = None
+    interaction = []
 
     electrons = picmi.Species(particle_type="electron", name="electron", initial_distribution=gaussianProfile)
     species_list.append((electrons, random_layout))
@@ -129,13 +129,7 @@ else:
         ionization_current=None,
     )
 
-    interaction = picmi.Interaction(
-        ground_state_ionization_model_list=[
-            adk_ionization_model,
-            bsi_effectiveZ_ionization_model,
-        ]
-    )
-
+    interaction = [adk_ionization_model, bsi_effectiveZ_ionization_model]
 sim = picmi.Simulation(
     solver=solver,
     max_steps=4000,

@@ -15,7 +15,6 @@ from pathlib import Path
 
 import typeguard
 from picongpu import picmi
-from picongpu.picmi.interaction import Interaction
 from picongpu.picmi.interaction.ionization.fieldionization import ADK, ADKVariant
 from picongpu.pypicongpu import customuserinput, species
 
@@ -372,7 +371,7 @@ class TestPicmiSimulation(unittest.TestCase):
             ion_species=ion2,
             ionization_electron_species=e,
         )
-        interaction = Interaction(ground_state_ionization_model_list=[ionization_model_1, ionization_model_2])
+        interaction = [ionization_model_1, ionization_model_2]
 
         sim = self.sim
         sim.add_species(e, None)

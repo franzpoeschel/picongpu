@@ -1,4 +1,6 @@
-from .interaction import Interaction
 from . import ionization
+from .synchrotron import Synchrotron
 
-__all__ = ["Interaction", "ionization"]
+Interaction = ionization.IonizationModel | Synchrotron
+
+__all__ = ["Interaction", "ionization", "Synchrotron"]

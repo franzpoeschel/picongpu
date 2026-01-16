@@ -57,6 +57,7 @@
         "charge",
         "density_ratio",
         "ground_state_ionization",
+        "synchrotron",
         "element_properties"
       ],
       "properties": {
@@ -100,6 +101,7 @@
             }
           ]
         },
+        "synchrotron": {},
         "element_properties": {
           "anyOf": [
             {

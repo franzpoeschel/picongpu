@@ -11,6 +11,7 @@ from pathlib import Path
 
 from pydantic import field_serializer
 
+from picongpu.pypicongpu.species.constant.synchrotron import SynchrotronParams
 from picongpu.pypicongpu.species.operation.operation import Operation
 from picongpu.pypicongpu.species.species import Species
 
@@ -84,6 +85,7 @@ class Simulation(RenderedObject, BaseModel):
     output: Annotated[list[Plugin] | None, PlainSerializer(_serialize)]
     species: list[Species]
     init_operations: Annotated[list[Operation], PlainSerializer(_serialize)]
+    synchrotron_params: SynchrotronParams = SynchrotronParams()
 
     @field_serializer("customuserinput")
     def _render_custom_user_input_list(self, value):

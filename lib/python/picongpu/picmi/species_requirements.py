@@ -15,6 +15,7 @@ from picongpu.pypicongpu.species.attribute.attribute import Attribute
 from picongpu.pypicongpu.species.constant.constant import Constant
 from picongpu.pypicongpu.species.constant.groundstateionization import GroundStateIonization
 from picongpu.pypicongpu.species.constant.mass import Mass
+from picongpu.pypicongpu.species.constant.synchrotron import SynchrotronConstant
 from picongpu.pypicongpu.species.operation.momentum.temperature import Temperature
 from picongpu.pypicongpu.species.operation.setchargestate import SetChargeState
 from picongpu.pypicongpu.species.operation.simpledensity import SimpleDensity
@@ -277,3 +278,8 @@ class SimpleMomentumOperation(DelayedConstruction):
         operators = {"constructor": constructor}
 
         return super().__init__(metadata=metadata, operators=operators)
+
+
+class SynchrotronConstantConstruction(DelayedConstruction):
+    def __init__(self, /, photon_species):
+        return super().__init__(metadata={"Type": SynchrotronConstant, "kwargs": {"photon_species": photon_species}})

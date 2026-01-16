@@ -21,6 +21,7 @@ import typeguard
 
 from picongpu.picmi.diagnostics import ParticleDump, FieldDump
 from picongpu.picmi.layout import AnyLayout
+from picongpu.picmi.interaction import Synchrotron
 from picongpu.picmi.species_requirements import (
     SimpleDensityOperation,
     SimpleMomentumOperation,
@@ -31,6 +32,7 @@ from picongpu.picmi.species_requirements import (
 from picongpu.pypicongpu.output.openpmd_plugin import OpenPMDPlugin, FieldDump as PyPIConGPUFieldDump
 from picongpu.pypicongpu.species.attribute.weighting import Weighting
 from picongpu.pypicongpu.species.attribute.momentum import Momentum
+from picongpu.pypicongpu.species.constant.synchrotron import SynchrotronParams
 from picongpu.pypicongpu.walltime import Walltime
 
 from .. import pypicongpu
@@ -133,7 +135,7 @@ class Simulation(picmistandard.PICMI_Simulation):
     update using picongpu_add_custom_user_input() or by direct setting
     """
 
-    picongpu_interaction = pypicongpu.util.build_typesafe_property(typing.Optional[Interaction])
+    picongpu_interaction = pypicongpu.util.build_typesafe_property(list[Interaction])
     """Interaction instance containing all particle interactions of the simulation, set to None to have no interactions"""
 
     picongpu_typical_ppc = pypicongpu.util.build_typesafe_property(typing.Optional[int])
@@ -183,7 +185,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         picongpu_typical_ppc: typing.Optional[int] = None,
         picongpu_moving_window_move_point: typing.Optional[float] = None,
         picongpu_moving_window_stop_iteration: typing.Optional[int] = None,
-        picongpu_interaction: typing.Optional[Interaction] = None,
+        picongpu_interaction: typing.Optional[list[Interaction]] = None,
         picongpu_base_density: typing.Optional[float] = None,
         picongpu_walltime: typing.Optional[datetime.timedelta] = None,
         picongpu_binomial_current_interpolation: bool = False,
@@ -193,7 +195,7 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.picongpu_template_dir = _normalise_template_dir(picongpu_template_dir)
         self.picongpu_moving_window_move_point = picongpu_moving_window_move_point
         self.picongpu_moving_window_stop_iteration = picongpu_moving_window_stop_iteration
-        self.picongpu_interaction = picongpu_interaction
+        self.picongpu_interaction = picongpu_interaction or []
         self.picongpu_base_density = picongpu_base_density
         self.picongpu_walltime = picongpu_walltime
         self.picongpu_binomial_current_interpolation = picongpu_binomial_current_interpolation
@@ -384,6 +386,15 @@ class Simulation(picmistandard.PICMI_Simulation):
             None if self.picongpu_walltime is None else pypicongpu.walltime.Walltime(walltime=self.picongpu_walltime)
         )
         time_steps = self.max_steps if self.max_steps is not None else math.ceil(self.max_time / self.time_step_size)
+        synchrotron_params = _unique(
+            [x.synchrotron_parameters for x in self.picongpu_interaction if isinstance(x, Synchrotron)]
+        )
+        if len(synchrotron_params) == 0:
+            synchrotron_params = [SynchrotronParams()]
+        if len(synchrotron_params) > 1:
+            raise ValueError(
+                f"You have configured the Synchrotron extension multiple times with different arguments. This is not allowed! You gave {synchrotron_params=}."
+            )
 
         return pypicongpu.simulation.Simulation(
             species=map(get_as_pypicongpu, sorted(self.species)),
@@ -400,6 +411,7 @@ class Simulation(picmistandard.PICMI_Simulation):
             laser=[ll.get_as_pypicongpu() for ll in self.lasers] or None,
             output=self._generate_plugins(time_steps),
             base_density=self._get_base_density(),
+            synchrotron_params=synchrotron_params[0],
         )
 
     def _get_base_density(self) -> float:
