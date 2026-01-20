@@ -58,6 +58,7 @@
     "walltime": {
       "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.walltime.Walltime"
     },
+    "collisional_physics": {},
     "binomial_current_interpolation": {
       "type": "boolean",
       "description": "use binomial current interpolation"
@@ -100,6 +101,7 @@
     "laser",
     "moving_window",
     "walltime",
+    "collisional_physics",
     "customuserinput",
     "output",
     "synchrotron_params",

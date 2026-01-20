@@ -7,32 +7,35 @@ License: GPLv3+
 
 # make pypicongpu classes accessible for conversion to pypicongpu
 import datetime
-from functools import reduce
-from itertools import chain
 import logging
 import math
-from os import PathLike
 import typing
+from functools import reduce
+from itertools import chain, groupby
+from os import PathLike
 from pathlib import Path
 
 import picmistandard
-from pydantic import BaseModel
 import typeguard
+from pydantic import BaseModel
 
-from picongpu.picmi.diagnostics import ParticleDump, FieldDump
-from picongpu.picmi.layout import AnyLayout
+from picongpu.picmi.diagnostics import FieldDump, ParticleDump
 from picongpu.picmi.interaction import Synchrotron
+from picongpu.picmi.interaction.collision import Collision, CollisionalPhysicsSetup
+from picongpu.picmi.layout import AnyLayout
 from picongpu.picmi.species_requirements import (
     SimpleDensityOperation,
     SimpleMomentumOperation,
-    resolving_add,
     get_as_pypicongpu,
+    resolving_add,
     run_construction,
 )
-from picongpu.pypicongpu.output.openpmd_plugin import OpenPMDPlugin, FieldDump as PyPIConGPUFieldDump
-from picongpu.pypicongpu.species.attribute.weighting import Weighting
+from picongpu.pypicongpu.output.openpmd_plugin import FieldDump as PyPIConGPUFieldDump
+from picongpu.pypicongpu.output.openpmd_plugin import OpenPMDPlugin
 from picongpu.pypicongpu.species.attribute.momentum import Momentum
+from picongpu.pypicongpu.species.attribute.weighting import Weighting
 from picongpu.pypicongpu.species.constant.synchrotron import SynchrotronParams
+from picongpu.pypicongpu.util import unique
 from picongpu.pypicongpu.walltime import Walltime
 
 from .. import pypicongpu
@@ -60,15 +63,6 @@ class _DensityImpl(BaseModel):
                 SimpleMomentumOperation(species=self.species),
             ]
         )
-
-
-def _unique(iterable):
-    # very naive, just for non-hashables that can still be compared
-    result = []
-    for x in iterable:
-        if x not in result:
-            result.append(x)
-    return result
 
 
 def is_iterable(obj):
@@ -114,6 +108,36 @@ def _normalise_template_dir(directory: None | PathLike | typing.Iterable[PathLik
 
 def handled_via_openpmd(diagnostic):
     return isinstance(diagnostic, (ParticleDump, FieldDump))
+
+
+def _validate_collisional_physics_setup(interactions):
+    # Validation is meant in the pydantic sense of checking correctness AND constructing.
+    def by_type(x):
+        return (
+            "collision"
+            if isinstance(x, Collision)
+            else ("setup" if isinstance(x, CollisionalPhysicsSetup) else "other")
+        )
+
+    types = {key: list(values) for key, values in groupby(sorted(interactions, key=by_type), key=by_type)}
+
+    if "setup" in types:
+        if "collision" in types:
+            raise ValueError(
+                f"If you give a CollisionalPhysicsSetup, you have to subsume all collisions under it. You gave: {types['collision']=} and {types['setup']=}."
+            )
+        if len(list(types["setup"])) > 1:
+            raise ValueError(f"Please, only provide at most one CollisionalPhysicsSetup. You gave {types['setup']=}.")
+        # It's fine, interactions is consistent just the way it is.
+        return interactions
+
+    if "collision" in types:
+        # We've found one or more bare collision flying around in the list,
+        # so we've gotta merge them into one setup.
+        return list(types["other"]) + [CollisionalPhysicsSetup(collisions=list(types["collision"]))]
+
+    # No collisions whatsoever...
+    return interactions
 
 
 # may not use pydantic since inherits from _DocumentedMetaClass
@@ -195,7 +219,6 @@ class Simulation(picmistandard.PICMI_Simulation):
         self.picongpu_template_dir = _normalise_template_dir(picongpu_template_dir)
         self.picongpu_moving_window_move_point = picongpu_moving_window_move_point
         self.picongpu_moving_window_stop_iteration = picongpu_moving_window_stop_iteration
-        self.picongpu_interaction = picongpu_interaction or []
         self.picongpu_base_density = picongpu_base_density
         self.picongpu_walltime = picongpu_walltime
         self.picongpu_binomial_current_interpolation = picongpu_binomial_current_interpolation
@@ -205,6 +228,8 @@ class Simulation(picmistandard.PICMI_Simulation):
         if picongpu_typical_ppc is not None and picongpu_typical_ppc <= 0:
             raise ValueError(f"Typical ppc should be > 0, not {picongpu_typical_ppc=}.")
         self.picongpu_typical_ppc = picongpu_typical_ppc
+
+        self.picongpu_interaction = _validate_collisional_physics_setup(picongpu_interaction or [])
 
         picmistandard.PICMI_Simulation.__init__(self, **keyword_arguments)
 
@@ -339,7 +364,7 @@ class Simulation(picmistandard.PICMI_Simulation):
                 ],
                 config=options,
             )
-            for options in _unique(map(lambda x: x.options, diagnostics))
+            for options in unique(map(lambda x: x.options, diagnostics))
         ]
 
     def _generate_plugins(self, num_steps):
@@ -386,15 +411,18 @@ class Simulation(picmistandard.PICMI_Simulation):
             None if self.picongpu_walltime is None else pypicongpu.walltime.Walltime(walltime=self.picongpu_walltime)
         )
         time_steps = self.max_steps if self.max_steps is not None else math.ceil(self.max_time / self.time_step_size)
-        synchrotron_params = _unique(
+        # We provide the default as last element and we'll only read the first element:
+        synchrotron_params = unique(
             [x.synchrotron_parameters for x in self.picongpu_interaction if isinstance(x, Synchrotron)]
-        )
-        if len(synchrotron_params) == 0:
-            synchrotron_params = [SynchrotronParams()]
-        if len(synchrotron_params) > 1:
+        ) + [SynchrotronParams()]
+        if len(synchrotron_params) > 2:
             raise ValueError(
-                f"You have configured the Synchrotron extension multiple times with different arguments. This is not allowed! You gave {synchrotron_params=}."
+                f"You have configured the Synchrotron extension multiple times with different arguments. This is not allowed! You gave {synchrotron_params[:-1]=}."
             )
+        # We provide the default as last element and we'll only read the first element:
+        collisions = [x for x in self.picongpu_interaction if isinstance(x, CollisionalPhysicsSetup)] + [
+            CollisionalPhysicsSetup()
+        ]
 
         return pypicongpu.simulation.Simulation(
             species=map(get_as_pypicongpu, sorted(self.species)),
@@ -412,6 +440,7 @@ class Simulation(picmistandard.PICMI_Simulation):
             output=self._generate_plugins(time_steps),
             base_density=self._get_base_density(),
             synchrotron_params=synchrotron_params[0],
+            collisional_physics=collisions[0].get_as_pypicongpu(),
         )
 
     def _get_base_density(self) -> float:

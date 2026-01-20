@@ -5,12 +5,12 @@ Authors: Hannes Troepgen, Brian Edward Marre, Julian Lenz
 License: GPLv3+
 """
 
-from typing import Annotated
-from pydantic import BaseModel, PlainSerializer
 from pathlib import Path
+from typing import Annotated
 
-from pydantic import field_serializer
+from pydantic import BaseModel, PlainSerializer, field_serializer
 
+from picongpu.pypicongpu.collisions import CollisionalPhysicsSetup
 from picongpu.pypicongpu.species.constant.synchrotron import SynchrotronParams
 from picongpu.pypicongpu.species.operation.operation import Operation
 from picongpu.pypicongpu.species.species import Species
@@ -20,7 +20,7 @@ from .field_solver import AnySolver
 from .grid import Grid3D
 from .laser import AnyLaser
 from .movingwindow import MovingWindow
-from .output import Plugin, OpenPMDPlugin
+from .output import OpenPMDPlugin, Plugin
 from .rendering import RenderedObject
 from .walltime import Walltime
 
@@ -86,6 +86,7 @@ class Simulation(RenderedObject, BaseModel):
     species: list[Species]
     init_operations: Annotated[list[Operation], PlainSerializer(_serialize)]
     synchrotron_params: SynchrotronParams = SynchrotronParams()
+    collisional_physics: CollisionalPhysicsSetup = CollisionalPhysicsSetup()
 
     @field_serializer("customuserinput")
     def _render_custom_user_input_list(self, value):
