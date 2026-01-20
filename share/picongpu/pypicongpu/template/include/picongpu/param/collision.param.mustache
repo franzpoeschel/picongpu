@@ -68,7 +68,7 @@ namespace picongpu
             {{/functor.typeID.constlog}}
 
             {{#functor.typeID.dynamiclog}}
-            using ColliderFunctor_{{{_idx}}} = relativistic::RelativisticCollisionDynamicLog<true>;
+            using ColliderFunctor_{{{_idx}}} = relativistic::RelativisticCollisionDynamicLog<false>;
             {{/functor.typeID.dynamiclog}}
 {{/collisional_physics.collisions}}
 
