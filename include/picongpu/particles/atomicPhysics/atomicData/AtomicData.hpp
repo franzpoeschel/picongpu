@@ -798,22 +798,38 @@ namespace picongpu::particles::atomicPhysics::atomicData
 
             uint32_t const numberTransitions = transitionHostBox.getNumberOfTransitionsTotal();
 
-            for(uint32_t collectionIndex = u32(0u); collectionIndex < numberTransitions; collectionIndex++)
+            auto atomicStateBox = this->getAtomicStateDataDataBox<true>();
+            auto chargeStateBox = this->getChargeStateDataDataBox<true>();
+
+            for(uint32_t transitionCollectionIndex = u32(0u); transitionCollectionIndex < numberTransitions;
+                transitionCollectionIndex++)
             {
                 float_X const deltaEnergy = picongpu::particles::atomicPhysics::DeltaEnergyTransition::get(
-                    collectionIndex,
-                    this->getAtomicStateDataDataBox<true>(),
+                    transitionCollectionIndex,
+                    atomicStateBox,
                     transitionHostBox,
                     // ionization potential depression
                     0._X,
-                    this->getChargeStateDataDataBox<true>());
+                    chargeStateBox);
 
                 if(deltaEnergy < 0._X)
+                {
+                    uint32_t const lowerStateCollectionIndex
+                        = transitionHostBox.lowerStateCollectionIndex(transitionCollectionIndex);
+                    uint32_t const upperStateCollectionIndex
+                        = transitionHostBox.upperStateCollectionIndex(transitionCollectionIndex);
+                    uint64_t const lowerStateConfigNumber = atomicStateBox.configNumber(lowerStateCollectionIndex);
+                    uint64_t const upperStateConfigNumber = atomicStateBox.configNumber(upperStateCollectionIndex);
+
                     throw std::runtime_error(
                         "atomicPhysics ERROR: upper and lower state inverted in energy in input"
                         ", energy lower state must be <= energy upper state, transitionType: "
                         + enumToString<T_TransitionHostBox::processClassGroup>() + " ,transition #"
-                        + std::to_string(collectionIndex));
+                        + std::to_string(transitionCollectionIndex) + " : " + std::to_string(lowerStateCollectionIndex)
+                        + "(configNumber: " + std::to_string(lowerStateConfigNumber) + ") -> "
+                        + std::to_string(upperStateCollectionIndex)
+                        + "(configNumber: " + std::to_string(upperStateConfigNumber) + ")");
+                }
             }
         }
 

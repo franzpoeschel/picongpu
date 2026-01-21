@@ -26,6 +26,7 @@
 #include "picongpu/particles/atomicPhysics/stateRepresentation/ConfigNumber.hpp"
 
 #include <cstdint>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -88,19 +89,19 @@ namespace picongpu::particles::atomicPhysics::debug
     {
         if(chargeState == T_AtomicData::ConfigNumber::atomicNumber)
         {
-            std::cout << "\t" << static_cast<uint16_t>(T_AtomicData::ConfigNumber::atomicNumber) << ": "
-                      << "na"
-                      << " [ " << chargeStateOrgaBox.numberAtomicStates(T_AtomicData::ConfigNumber::atomicNumber)
-                      << ", "
+            std::cout << std::setw(3) << static_cast<uint16_t>(T_AtomicData::ConfigNumber::atomicNumber) << ":"
+                      << "      na, [" << std::setw(4)
+                      << chargeStateOrgaBox.numberAtomicStates(T_AtomicData::ConfigNumber::atomicNumber) << ", "
+                      << std::setw(4)
                       << chargeStateOrgaBox.startIndexBlockAtomicStates(T_AtomicData::ConfigNumber::atomicNumber)
-                      << " ], ";
+                      << "],";
         }
         else
         {
-            std::cout << "\t" << static_cast<uint16_t>(chargeState) << ":( "
-                      << chargeStateDataBox.ionizationEnergy(chargeState) << ", "
-                      << chargeStateOrgaBox.numberAtomicStates(chargeState) << ", "
-                      << chargeStateOrgaBox.startIndexBlockAtomicStates(chargeState) << " ], ";
+            std::cout << std::setw(3) << static_cast<uint16_t>(chargeState) << ":" << std::setw(8)
+                      << chargeStateDataBox.ionizationEnergy(chargeState) << ", [" << std::setw(4)
+                      << chargeStateOrgaBox.numberAtomicStates(chargeState) << ", " << std::setw(4)
+                      << chargeStateOrgaBox.startIndexBlockAtomicStates(chargeState) << "],";
         }
     }
 
@@ -156,29 +157,29 @@ namespace picongpu::particles::atomicPhysics::debug
         uint32_t numberAtomicStatesOfChargeState = chargeStateOrgaBox.numberAtomicStates(chargeState);
         uint32_t startIndexBlockOfChargeState = chargeStateOrgaBox.startIndexBlockAtomicStates(chargeState);
 
-        std::cout << "b:["
+        std::cout << " b:[" << std::setw(5)
                   << getNumberTransitionsOfChargeState<true>(
                          numberAtomicStatesOfChargeState,
                          startIndexBlockOfChargeState,
                          boundBoundNumberTransitionsBox)
-                  << " / "
+                  << " / " << std::setw(5)
                   << getNumberTransitionsOfChargeState<false>(
                          numberAtomicStatesOfChargeState,
                          startIndexBlockOfChargeState,
                          boundBoundNumberTransitionsBox)
                   << "], ";
-        std::cout << "f:["
+        std::cout << "f:[" << std::setw(5)
                   << getNumberTransitionsOfChargeState<true>(
                          numberAtomicStatesOfChargeState,
                          startIndexBlockOfChargeState,
                          boundFreeNumberTransitionsBox)
-                  << " / "
+                  << " / " << std::setw(5)
                   << getNumberTransitionsOfChargeState<false>(
                          numberAtomicStatesOfChargeState,
                          startIndexBlockOfChargeState,
                          boundFreeNumberTransitionsBox)
                   << "], ";
-        std::cout << "a:["
+        std::cout << "a:[" << std::setw(5)
                   << getNumberTransitionsOfChargeState<false>(
                          numberAtomicStatesOfChargeState,
                          startIndexBlockOfChargeState,
@@ -191,7 +192,7 @@ namespace picongpu::particles::atomicPhysics::debug
     {
         std::cout << "AtomicState Data" << std::endl;
         std::cout << "index : [ConfigNumber, chargeState, levelVector]: E_overGround, screenedCharge, multiplicity, "
-                     "IPDIonizationState[index, chargeState, dE to IPD-IonizationState, levelVector]"
+                     "IPDIonizationState[index, chargeState, (dE to state [eV]), levelVector]"
                   << std::endl;
         std::cout << "\t b/f/a: [#TransitionsUp/]#TransitionsDown, [startIndexUp/]startIndexDown" << std::endl;
     }
@@ -219,15 +220,14 @@ namespace picongpu::particles::atomicPhysics::debug
 
         auto const stateConfigNumber = atomicStateDataBox.configNumber(stateCollectionIndex);
         auto const chargeState = static_cast<uint16_t>(S_ConfigNumber::getChargeState(stateConfigNumber));
-        auto const stateLevelVector
-            = precisionCast<uint16_t>(precisionCast<uint16_t>(S_ConfigNumber::getLevelVector(stateConfigNumber)));
+        auto const stateLevelVector = precisionCast<uint16_t>(S_ConfigNumber::getLevelVector(stateConfigNumber));
 
         auto const ipdIonizationStateCollectionIndex
             = ipdIonizationStateDataBox.ipdIonizationState(stateCollectionIndex);
-        auto const chargeStateIPDIonizationVector
-            = S_ConfigNumber::getChargeState(atomicStateDataBox.configNumber(ipdIonizationStateCollectionIndex));
-        auto const levelVectorIPDIonizationState
-            = S_ConfigNumber::getLevelVector(atomicStateDataBox.configNumber(ipdIonizationStateCollectionIndex));
+        auto const chargeStateIPDIonizationVector = static_cast<uint16_t>(
+            S_ConfigNumber::getChargeState(atomicStateDataBox.configNumber(ipdIonizationStateCollectionIndex)));
+        auto const levelVectorIPDIonizationState = precisionCast<uint16_t>(
+            S_ConfigNumber::getLevelVector(atomicStateDataBox.configNumber(ipdIonizationStateCollectionIndex)));
         auto const energyToIPDIonizationState
             = atomicStateDataBox.energy(ipdIonizationStateCollectionIndex)
               + DeltaEnergyTransition::template ionizationEnergy<s_enums::ProcessClassGroup::boundFreeBased, float_X>(
