@@ -217,7 +217,7 @@ sim.diagnostics = [
     ),
     picmi.diagnostics.Radiation(
         species=electrons,
-        period=picmi.diagnostics.TimeStepSpec[::100],
+        period=picmi.diagnostics.TimeStepSpec[100::100],
         observer=RadiationObserverConfiguration(
             N_observer=N_OBSERVER,
             index_to_direction=lambda i: [

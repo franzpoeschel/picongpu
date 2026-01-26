@@ -6,7 +6,7 @@ License: GPLv3+
 """
 
 from enum import Enum
-from operator import itemgetter
+from operator import attrgetter, itemgetter
 from typing import Annotated, Callable
 
 from pydantic import (
@@ -239,3 +239,10 @@ class RadiationPlugin(Plugin):
     config: RadiationPluginConfig
     species: list[Species]
     period: TimeStepSpec
+
+    @field_validator("period", mode="after")
+    @classmethod
+    def _validate_period(cls, period):
+        if 0 in map(attrgetter("start"), period.specs):
+            raise ValueError(f"The radiation plugin cannot produce output at time step 0. You gave {period=}.")
+        return period
