@@ -12,6 +12,7 @@ from .timestepspec import TimeStepSpec
 from .checkpoint import Checkpoint
 from .openpmd_plugin import OpenPMDPlugin
 from .plugin import Plugin
+from .radiation import RadiationConfiguration, RadiationPlugin, RadiationObserverConfiguration
 
 __all__ = [
     "OpenPMDPlugin",
@@ -21,4 +22,7 @@ __all__ = [
     "MacroParticleCount",
     "TimeStepSpec",
     "Checkpoint",
+    "RadiationPlugin",
+    "RadiationObserverConfiguration",
+    "RadiationConfiguration",
 ]

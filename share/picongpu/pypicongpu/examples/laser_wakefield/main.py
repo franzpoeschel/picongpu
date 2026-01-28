@@ -12,6 +12,7 @@ import numpy as np
 import sympy
 from picongpu import picmi, pypicongpu
 from picongpu.picmi.diagnostics import binning
+from picongpu.picmi.diagnostics.radiation import RadiationObserverConfiguration
 from picongpu.picmi.diagnostics.unit_dimension import I, L, M, T
 from scipy.constants import c, elementary_charge
 
@@ -180,17 +181,18 @@ eSPec_binning = binning.Binning(
     name="eSpec",
     deposition_functor=eSpec_deposition_functor,
     axes=[energyAxis, thetaAxis],
-    species=species,
+    species=electrons,
     period=picmi.diagnostics.TimeStepSpec[::100],
 )
 
 
+N_OBSERVER = 256
 sim.diagnostics = [
     eSPec_binning,
     picmi.diagnostics.PhaseSpace(
         species=electrons,
         # Resulting values for period:
-        # 17, 50, 57, 64, 71, 100, 200, ...
+        # 0, 17, 50, 57, 64, 71, 100, 200, ...
         period=picmi.diagnostics.TimeStepSpec[::100, 50:72:7, 17],
         spatial_coordinate="y",
         momentum_coordinate="py",
@@ -200,7 +202,7 @@ sim.diagnostics = [
     picmi.diagnostics.EnergyHistogram(
         species=electrons,
         # Resulting values for period:
-        # 100, 200, ...
+        # 0, 100, 200, ...
         period=picmi.diagnostics.TimeStepSpec[::100],
         bin_count=1024,
         min_energy=0.0,
@@ -212,6 +214,18 @@ sim.diagnostics = [
     ),
     picmi.diagnostics.Checkpoint(
         period=picmi.diagnostics.TimeStepSpec[::100],
+    ),
+    picmi.diagnostics.Radiation(
+        species=electrons,
+        period=picmi.diagnostics.TimeStepSpec[100::100],
+        observer=RadiationObserverConfiguration(
+            N_observer=N_OBSERVER,
+            index_to_direction=lambda i: [
+                sympy.sin(2 * sympy.pi / N_OBSERVER * i),
+                sympy.cos(2 * sympy.pi / N_OBSERVER * i),
+                0,
+            ],
+        ),
     ),
 ]
 

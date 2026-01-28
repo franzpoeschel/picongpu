@@ -17,6 +17,7 @@
         "macroparticlecount",
         "binning",
         "openPMD",
+        "radiation",
         "checkpoint"
       ],
       "unevaluatedProperties": false,
@@ -34,6 +35,9 @@
           "type": "boolean"
         },
         "openPMD": {
+          "type": "boolean"
+        },
+        "radiation": {
           "type": "boolean"
         },
         "checkpoint": {
@@ -58,6 +62,9 @@
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.openpmd_plugin.OpenPMDPlugin"
+        },
+        {
+          "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.radiation.RadiationPlugin"
         },
         {
           "$ref": "https://registry.hzdr.de/crp/picongpu/schema/picongpu.pypicongpu.output.checkpoint.Checkpoint"
