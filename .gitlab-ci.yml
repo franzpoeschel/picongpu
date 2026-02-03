@@ -198,6 +198,6 @@ pypicongpu-compiling-test:
     CI_CONTAINER_NAME: 'ubuntu24.04'
     PYTHON_VERSION: '3.11.*'
     CXX_VERSION: 'g++-13'
-    CMAKE_VERSION: '3.25'
+    CMAKE_VERSION: '3.28'
     BOOST_VERSION: '1.75.0'
     PYTHON_COMPILING_TEST: 'ON'
