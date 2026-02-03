@@ -34,16 +34,17 @@ export PIC_NODE_OVERSUBSCRIPTION_PT=2
 module --force purge
 
 module load init-lumi/0.2
-module load LUMI/24.03  partition/G
-module load buildtools/24.03
+module load LUMI/25.03 partition/G
+module load buildtools/25.03
 
 export MPICH_GPU_SUPPORT_ENABLED=1
 # Compiling with amdclang from rocm module
 # Note, independent of the PrgEnv, all compilers are wrapped via cc (C-compiler) and CC (C++ compiler)
 module load PrgEnv-amd
 module load craype-accel-amd-gfx90a
-module load rocm/6.0.3
-module load Boost/1.83.0-cpeAMD-24.03
+module load rocm/6.3.4
+module load Boost/1.88.0-cpeAMD-25.03
+module load cray-hdf5-parallel/1.12.2.11
 
 ## set environment variables required for compiling and linking
 ##   see (https://docs.lumi-supercomputer.eu/development/compiling/prgenv/#using-the-wrappers-with-build-systems)
@@ -55,9 +56,9 @@ export HIPFLAGS=$CXXFLAGS
 
 # Other Software ##############################################################
 #
-module load libpng/1.6.40-cpeAMD-24.03
-module load freetype/2.13.2-cpeAMD-24.03
-module load bzip2/1.0.8-cpeAMD-24.03
+module load libpng/1.6.47-cpeAMD-25.03
+module load freetype/2.13.3-cpeAMD-25.03
+module load bzip2/1.0.8-cpeAMD-25.03
 module load cray-python/3.11.7
 
 # Self-Build Software #########################################################
