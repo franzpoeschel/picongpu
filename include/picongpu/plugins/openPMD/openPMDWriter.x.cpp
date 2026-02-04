@@ -220,8 +220,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
 
             plugins::multi::Option<std::string> source = {"source", "data sources: ", "species_all, fields_all"};
 
-            plugins::multi::Option<std::string> pluginConfigForbidden
-                = {"toml", "Option renamed as .pluginConfig", "REMOVED"};
+            plugins::multi::Option<std::string> pluginConfigForbidden = {"toml", "Option renamed as .pluginConfig"};
             plugins::multi::Option<std::string> pluginConfig
                 = {"pluginConfig", "specify plugin configuration and dynamic data sources via TOML"};
 
@@ -245,8 +244,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                    " an empty string will be assumed instead.",
                    "_%06T"};
 
-            plugins::multi::Option<std::string> backendConfigForbidden
-                = {"json", "Option renamed as .backendConfig", "REMOVED"};
+            plugins::multi::Option<std::string> backendConfigForbidden = {"json", "Option renamed as .backendConfig"};
 
             plugins::multi::Option<std::string> backendConfig
                 = {"backendConfig",
@@ -362,16 +360,13 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 {&fileName, "file", &PluginParameters::fileName, ApplyParameter::NotInCheckpoint},
                 {&fileNameExtension, "ext", &PluginParameters::fileExtension},
                 {&fileNameInfix, "infix", &PluginParameters::fileInfix},
-                {&backendConfigForbidden, std::nullopt, &PluginParameters::backendConfigStringForbidden},
+                {&backendConfigForbidden, std::nullopt, std::nullopt},
                 {&backendConfig, "backend_config", &PluginParameters::backendConfigString},
                 {&dataPreparationStrategy,
                  "data_preparation_strategy",
                  &PluginParameters::dataPreparationStrategyString},
                 {&range, "range", &PluginParameters::rangeString, ApplyParameter::NotInCheckpoint},
-                {&backendConfigRestartForbidden,
-                 std::nullopt,
-                 &PluginParameters::backendConfigRestartStringForbidden,
-                 ApplyParameter::OnlyInCheckpoint},
+                {&backendConfigRestartForbidden, std::nullopt, std::nullopt, ApplyParameter::OnlyInCheckpoint},
                 {&backendConfigRestart,
                  std::nullopt,
                  &PluginParameters::backendConfigRestartString,
@@ -653,7 +648,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 % fileExtension;
 
             // Avoid repeatedly parsing the JSON config
-            if(backendConfigStringForbidden != "REMOVED")
+            if(!help.backendConfigForbidden.empty())
             {
                 throw std::runtime_error("Command line option openPMD.json was renamed as openPMD.backendConfig.");
             }
@@ -665,7 +660,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
             }
 
             log<picLog::INPUT_OUTPUT>("openPMD: global JSON output config: %1%") % jsonMatcher->getDefault();
-            if(backendConfigRestartStringForbidden != "REMOVED")
+            if(!help.backendConfigRestartForbidden.empty())
             {
                 throw std::runtime_error(
                     "Command line option openPMD.jsonRestart was renamed as openPMD.backendConfigRestart.");
