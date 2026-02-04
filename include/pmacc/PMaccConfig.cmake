@@ -24,7 +24,7 @@
 ###############################################################################
 # PMacc
 ###############################################################################
-cmake_minimum_required(VERSION 3.25.0)
+cmake_minimum_required(VERSION 3.28.0)
 
 # set helper pathes to find libraries and packages
 # Add specific hints
@@ -378,7 +378,13 @@ if(alpaka_ACC_GPU_CUDA_ENABLE OR alpaka_ACC_GPU_HIP_ENABLE)
     endif()
     include(FetchContent)
 
-    FetchContent_Declare(mallocMC SOURCE_DIR "${PMacc_DIR}/../../thirdParty/mallocMC" FIND_PACKAGE_ARGS 3.0.0 QUIET)
+    FetchContent_Declare(
+        mallocMC
+        SOURCE_DIR
+        "${PMacc_DIR}/../../thirdParty/mallocMC"
+        EXCLUDE_FROM_ALL
+        FIND_PACKAGE_ARGS 3.0.0 QUIET
+    )
     FetchContent_MakeAvailable(mallocMC)
 
     target_link_libraries(pmacc PUBLIC mallocMC::mallocMC)
