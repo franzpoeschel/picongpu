@@ -220,7 +220,10 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
 
             plugins::multi::Option<std::string> source = {"source", "data sources: ", "species_all, fields_all"};
 
-            plugins::multi::Option<std::string> tomlSources = {"toml", "specify dynamic data sources via TOML"};
+            plugins::multi::Option<std::string> pluginConfigForbidden
+                = {"toml", "Option renamed as .pluginConfig", "REMOVED"};
+            plugins::multi::Option<std::string> pluginConfig
+                = {"pluginConfig", "specify plugin configuration and dynamic data sources via TOML"};
 
             std::vector<std::string> allowedDataSources = {"species_all", "fields_all"};
 
@@ -327,7 +330,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
 
             /*
              * The sub-commands for the openPMD plugin.
-             * Not listed in here: notifyPeriod and tomlSources.
+             * Not listed in here: notifyPeriod and pluginConfig.
              * Those two parameters are implemented manually since they are the
              * plugin's main commands that activate it and decide its interaction
              * with the main program.
@@ -428,8 +431,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 std::string const& masterPrefix = std::string{}) override
             {
                 notifyPeriod.registerHelp(desc, masterPrefix + prefix);
-                tomlSources.registerHelp(desc, masterPrefix + prefix);
-
+                pluginConfig.registerHelp(desc, masterPrefix + prefix);
+                pluginConfigForbidden.registerHelp(desc, masterPrefix + prefix);
 
                 for(auto const& param : parameters)
                 {
@@ -481,9 +484,15 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
             {
                 if(selfRegister)
                 {
-                    if(tomlSources.empty() && notifyPeriod.empty())
+                    if(!pluginConfigForbidden.empty())
+                    {
                         throw std::runtime_error(
-                            name + ": Either parameter .toml XOR parameter .period must be defined.");
+                            "Command line option openPMD.toml was renamed as openPMD.pluginConfig.");
+                    }
+
+                    if(pluginConfig.empty() && notifyPeriod.empty())
+                        throw std::runtime_error(
+                            name + ": Either parameter .pluginConfig XOR parameter .period must be defined.");
 
                     // check if user passed data source names are valid
                     for(auto const& dataSourceNames : source)
@@ -509,7 +518,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                     // If using periods in some instances and TOML sources in others, then the other parameter
                     // must be specified as empty.
                     // Not this method's task to check this though.
-                    auto res = tomlSources.size() > notifyPeriod.size() ? tomlSources.size() : notifyPeriod.size();
+                    auto res = std::max({pluginConfig.size(), notifyPeriod.size(), pluginConfigForbidden.size()});
                     if(res == 0)
                     {
                         for(auto const& parameter : parameters)
@@ -1091,10 +1100,16 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
 
                 if(m_help->selfRegister)
                 {
+                    if(!m_help->pluginConfigForbidden.empty())
+                    {
+                        throw std::runtime_error(
+                            "Command line option openPMD.toml was renamed as openPMD.pluginConfig.");
+                    }
+
                     /* only register for notify callback when .period is set on
                      * command line */
                     bool tomlSourcesSpecified
-                        = m_help->tomlSources.optionDefined(m_id) && not m_help->tomlSources.get(m_id).empty();
+                        = m_help->pluginConfig.optionDefined(m_id) && not m_help->pluginConfig.get(m_id).empty();
                     bool notifyPeriodSpecified
                         = m_help->notifyPeriod.optionDefined(m_id) && not m_help->notifyPeriod.get(m_id).empty();
                     if(tomlSourcesSpecified && not notifyPeriodSpecified)
@@ -1112,7 +1127,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                             }
                         }
 
-                        std::string const& tomlSources = m_help->tomlSources.get(id);
+                        std::string const& pluginConfig = m_help->pluginConfig.get(id);
 
                         PluginParameters pluginParametersWithDefaults;
                         for(auto const& parameter : m_help->parameters)
@@ -1146,7 +1161,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                             std::piecewise_construct,
                             std::make_tuple(id),
                             std::make_tuple(
-                                /* tomlFile = */ m_help->tomlSources.get(id),
+                                /* tomlFile = */ m_help->pluginConfig.get(id),
                                 /* tomlParameters = */ m_help->tomlParameters(),
                                 /* allowedDataSources = */ m_help->allowedDataSources,
                                 /* comm = */ mThreadParams.communicator,
