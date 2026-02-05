@@ -150,17 +150,11 @@ namespace pmacc::simulationControl
             /* trigger checkpoint notification */
             if(pluginSystem::containsStep(seqCheckpointPeriod, currentStep))
             {
-                /* first synchronize: if something failed, we can spare the time
-                 * for the checkpoint writing */
-                alpaka::wait(manager::Device<ComputeDevice>::get().current());
-
-                // avoid deadlock between not finished PMacc tasks and MPI_Barrier
-                eventSystem::getTransactionEvent().waitForFinished();
-
                 GridController<DIM>& gc = Environment<DIM>::get().GridController();
-                /* can be spared for better scalings, but allows to spare the
-                 * time for checkpointing if some ranks died */
-                MPI_CHECK(MPI_Barrier(gc.getCommunicator().getMPIComm()));
+
+                /* ensure that all MPI ranks are in the same time step to avoid that MPI collectives block asynchronous
+                 * communication enqueued in the event system. */
+                eventSystem::mpiBlocking(gc.getCommunicator().getMPIComm());
 
                 /* create directory containing checkpoints  */
                 if(numCheckpoints == 0 && gc.getGlobalRank() == 0)
@@ -170,17 +164,17 @@ namespace pmacc::simulationControl
 
                 Environment<DIM>::get().PluginConnector().checkpointPlugins(currentStep, checkpointDirectory);
 
-                /* important synchronize: only if no errors occured until this
-                 * point guarantees that a checkpoint is usable */
+                /* ensure that all MPI ranks are in the same time step to avoid that MPI collectives block asynchronous
+                 * communication enqueued in the event system. */
+                eventSystem::mpiBlocking(gc.getCommunicator().getMPIComm());
+
+                /** important synchronize: only if no errors occurred until this  point guarantees that a checkpoint is
+                 * usable
+                 *
+                 * @todo this should not be required but is kept because we do not know anymore why it is here
+                 * maybe it should catch possible backend (CUDA/HIP) errors.
+                 */
                 alpaka::wait(manager::Device<ComputeDevice>::get().current());
-
-                /* avoid deadlock between not finished PMacc tasks and MPI_Barrier */
-                eventSystem::getTransactionEvent().waitForFinished();
-
-                /* \todo in an ideal world with MPI-3, this would be an
-                 * MPI_Ibarrier call and this function would return a MPI_Request
-                 * that could be checked */
-                MPI_CHECK(MPI_Barrier(gc.getCommunicator().getMPIComm()));
 
                 if(gc.getGlobalRank() == 0)
                 {
