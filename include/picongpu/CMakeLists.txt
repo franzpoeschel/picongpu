@@ -107,13 +107,13 @@ endfunction()
 ################################################################################
 # CMake policies
 #
+# Set the Cmake policy version. This sets the behaviour of the following policies
 # Search in <PackageName>_ROOT:
-#   https://cmake.org/cmake/help/v3.12/policy/CMP0074.html
+#   https://cmake.org/cmake/help/latest/policy/CMP0074.html
+# Search in <PACKAGENAME>_ROOT:
+#   https://cmake.org/cmake/help/latest/policy/CMP0144.html
 ################################################################################
-
-if(POLICY CMP0074)
-    cmake_policy(SET CMP0074 NEW)
-endif()
+cmake_policy(VERSION 3.28.0)
 
 ###############################################################################
 # Language Flags
