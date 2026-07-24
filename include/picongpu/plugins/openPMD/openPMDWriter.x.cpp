@@ -1006,7 +1006,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
 
                 ::openPMD::Iteration iteration = params->openPMDSeries->writeIterations()[currentStep];
                 ::openPMD::RecordComponent rng_dataset
-                    = iteration[picongpuInternal]["RNG"].asContainerOf<::openPMD::RecordComponent>()[name];
+                    = iteration[picongpuInternal].customHierarchies()["RNG"][name].asDataset();
 
                 std::string datasetName = params->openPMDSeries->meshesPath() + name; // @todo change
 
@@ -1072,7 +1072,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
 
                 ::openPMD::Iteration iteration = params->openPMDSeries->iterations[restartStep].open();
                 ::openPMD::RecordComponent rng_dataset
-                    = iteration[picongpuInternal]["RNG"].asContainerOf<::openPMD::RecordComponent>()[name];
+                    = iteration.customHierarchies()[picongpuInternal]["RNG"][name].asDataset();
 
                 auto numRNGsPerSuperCell = DataSpace<simDim>::create(1);
                 numRNGsPerSuperCell.x() = numFrameSlots;

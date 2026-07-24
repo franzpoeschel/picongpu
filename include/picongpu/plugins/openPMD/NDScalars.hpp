@@ -90,8 +90,8 @@ namespace picongpu
                 }
 
                 ::openPMD::Series& series = *params.openPMDSeries;
-                ::openPMD::RecordComponent rc = series.writeIterations()[currentStep][baseName][group]
-                                                    .asContainerOf<::openPMD::RecordComponent>()[dataset];
+                ::openPMD::RecordComponent rc
+                    = series.writeIterations()[currentStep].customHierarchies()[baseName][group][dataset].asDataset();
 
                 if(!attrName.empty())
                 {
@@ -166,8 +166,8 @@ namespace picongpu
 
                 auto datasetName = baseName + "/" + group + "/" + dataset;
                 ::openPMD::Series& series = *params.openPMDSeries;
-                ::openPMD::RecordComponent rc = series.iterations[currentStep][baseName][group]
-                                                    .asContainerOf<::openPMD::RecordComponent>()[dataset];
+                ::openPMD::RecordComponent rc
+                    = series.iterations[currentStep].customHierarchies()[baseName][group][dataset].asDataset();
                 auto ndim = rc.getDimensionality();
                 if(ndim != simDim)
                 {
@@ -177,7 +177,7 @@ namespace picongpu
                 DataSpace<simDim> gridPos = Environment<simDim>::get().GridController().getPosition();
                 ::openPMD::Offset start;
                 ::openPMD::Extent count;
-                ::openPMD::Extent extent = mrc.getExtent();
+                ::openPMD::Extent extent = rc.getExtent();
                 start.reserve(ndim);
                 count.reserve(ndim);
                 for(int d = 0; d < ndim; ++d)
