@@ -166,8 +166,11 @@ namespace picongpu
 
                 auto datasetName = baseName + "/" + group + "/" + dataset;
                 ::openPMD::Series& series = *params.openPMDSeries;
-                ::openPMD::RecordComponent rc
-                    = series.iterations[currentStep].customHierarchies()[baseName][group][dataset].asDataset();
+                ::openPMD::RecordComponent rc = series.iterations[currentStep]
+                                                    .customHierarchies()
+                                                    .read()[baseName]
+                                                    .read(0)[group][dataset]
+                                                    .asDataset();
                 auto ndim = rc.getDimensionality();
                 if(ndim != simDim)
                 {
