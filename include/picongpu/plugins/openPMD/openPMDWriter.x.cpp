@@ -88,6 +88,7 @@
 #    include <tuple>
 
 #    include <openPMD/auxiliary/StringManip.hpp>
+#    include <openPMD/auxiliary/Variant.hpp>
 #    include <openPMD/openPMD.hpp>
 
 #    if !defined(_WIN32)
@@ -101,6 +102,7 @@
 #    include <iostream>
 #    include <limits>
 #    include <list>
+#    include <optional>
 #    include <sstream>
 #    include <string>
 #    include <vector>
@@ -608,7 +610,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
         inline void ThreadParams::initFromConfig(
             Help& help,
             size_t id,
-            uint32_t const currentStep,
+            std::optional<uint32_t> currentStep,
             std::string const& dir,
             std::optional<std::string> file)
         {
@@ -704,11 +706,15 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                     "Wrong write access mode specified: '" + writeAccessString + "'. Pick either [create|append].");
             }
 
-            SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
-            /* window selection */
-            auto simulationOutputWindow = MovingWindow::getInstance().getWindow(currentStep);
-            window = plugins::misc::intersectRangeWithWindow(subGrid, simulationOutputWindow, rangeString);
             particleIOChunkSize = std::stoull(particleIOChunkSizeString);
+
+            if(currentStep.has_value())
+            {
+                SubGrid<simDim> const& subGrid = Environment<simDim>::get().SubGrid();
+                /* window selection */
+                auto simulationOutputWindow = MovingWindow::getInstance().getWindow(*currentStep);
+                window = plugins::misc::intersectRangeWithWindow(subGrid, simulationOutputWindow, rangeString);
+            }
         }
 
         /** Writes simulation data to openPMD.
@@ -1296,6 +1302,29 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                     eventSystem::getTransactionEvent().waitForFinished();
                     MPI_CHECK_NO_EXCEPT(MPI_Comm_free(&(mThreadParams.communicator)));
                 }
+            }
+
+            /** Parse and validate the openPMD configuration at plugin load time.
+             *
+             * This happens before the simulation starts (time step zero) and
+             * independently of the configured output period, so that invalid
+             * configuration is reported early instead of only when the plugin
+             * is first executed.
+             */
+            void init(InstanceKind instanceKind) override
+            {
+                eventSystem::getTransactionEvent().waitForFinished();
+
+                std::visit(
+                    ::openPMD::auxiliary::overloaded{
+                        [&](RegularInstance const&)
+                        { mThreadParams.initFromConfig(*m_help, m_id, std::nullopt, outputDirectory); },
+                        [&](CheckpointInstance const& instance)
+                        {
+                            mThreadParams
+                                .initFromConfig(*m_help, m_id, std::nullopt, instance.directory, instance.filename);
+                        }},
+                    instanceKind);
             }
 
             void notify(uint32_t currentStep) override
