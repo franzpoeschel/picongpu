@@ -1310,6 +1310,17 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
              * independently of the configured output period, so that invalid
              * configuration is reported early instead of only when the plugin
              * is first executed.
+             *
+             * The checkpoint backend additionally opens its write Series here so
+             * that configuration and backend errors are reported at simulation
+             * start instead of at the first checkpoint. This must only be done
+             * after a possible restart has happened, otherwise the write Series
+             * would conflict with the read Series opened while restarting, so
+             * the Checkpoint plugin decides when to call this for writing.
+             *
+             * The restart backend only validates its configuration here: its
+             * read Series is opened and closed by doRestart() when the restart
+             * actually happens.
              */
             void init(InstanceKind instanceKind) override
             {
@@ -1323,6 +1334,11 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                         {
                             mThreadParams
                                 .initFromConfig(*m_help, m_id, std::nullopt, instance.directory, instance.filename);
+                            if(instance.checkpointKind != CheckpointKind::Write)
+                            {
+                                return;
+                            }
+                            mThreadParams.openSeries(mThreadParams.writeAccess);
                         }},
                     instanceKind);
             }
