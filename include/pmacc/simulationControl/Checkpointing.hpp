@@ -285,6 +285,26 @@ namespace pmacc::simulationControl
             return restartDirectory;
         }
 
+        [[nodiscard]] std::string const& getCheckpointDir() const
+        {
+            return checkpointDirectory;
+        }
+
+        /** Whether the user configured periodic checkpoint creation
+         *
+         * Note: signal-triggered checkpoints are not covered here.
+         */
+        [[nodiscard]] bool isCheckpointingConfigured() const
+        {
+            return !checkpointPeriod.empty() || checkpointPeriodMinutes != 0u;
+        }
+
+        /** Whether the user requested a restart from a checkpoint */
+        [[nodiscard]] bool isRestartConfigured() const
+        {
+            return restartState == RestartState::TRY || restartState == RestartState::FORCE;
+        }
+
     private:
         /** Presentations: loop the whole simulation `softRestarts` times from
          *                 initial step to runSteps */
@@ -454,6 +474,23 @@ namespace pmacc::simulationControl
             return restartDirectory;
         }
 
+        [[nodiscard]] std::string const& getCheckpointDir() const
+        {
+            return checkpointDirectory;
+        }
+
+        /** Checkpointing is disabled at compile time. */
+        [[nodiscard]] bool isCheckpointingConfigured() const
+        {
+            return false;
+        }
+
+        /** Restarting is disabled at compile time. */
+        [[nodiscard]] bool isRestartConfigured() const
+        {
+            return false;
+        }
+
     private:
         /** Presentations: loop the whole simulation `softRestarts` times from
          *                 initial step to runSteps */
@@ -463,6 +500,9 @@ namespace pmacc::simulationControl
 
         /* checkpoint step to restart from */
         int32_t restartStep{-1};
+
+        /* common directory for checkpoints */
+        std::string checkpointDirectory{"checkpoints"};
 
         /* common directory for restarts */
         std::string restartDirectory{"checkpoints"};

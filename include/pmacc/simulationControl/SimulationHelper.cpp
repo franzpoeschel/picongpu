@@ -267,6 +267,15 @@ namespace pmacc
         Environment<>::get().SimulationDescription().setRunSteps(runSteps);
         Environment<>::get().SimulationDescription().setAuthor(author);
 
+        // Make the checkpointing configuration available to plugins (e.g. the
+        // checkpoint IO-backends) before they are loaded, so that they can skip
+        // initialization of unused I/O capabilities.
+        auto& simulationDescription = Environment<>::get().SimulationDescription();
+        simulationDescription.setCheckpointingConfigured(checkpointing.isCheckpointingConfigured());
+        simulationDescription.setRestartConfigured(checkpointing.isRestartConfigured());
+        simulationDescription.setCheckpointDirectory(checkpointing.getCheckpointDir());
+        simulationDescription.setRestartDirectory(checkpointing.getRestartDir());
+
         calcProgress();
         progressStepPeriodEnabled = !progressPeriod.empty();
         if(progressStepPeriodEnabled)
