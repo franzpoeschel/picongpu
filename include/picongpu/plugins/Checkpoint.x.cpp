@@ -30,7 +30,9 @@
 #endif
 #include <pmacc/pluginSystem/PluginConnector.hpp>
 
+#include <atomic>
 #include <exception>
+#include <future>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -130,94 +132,87 @@ namespace picongpu
                 return;
             }
 
-            int mpiInitialized;
+            cBackend->second->dumpCheckpoint(currentStep, checkpointDirectory, checkpointFilename, std::nullopt);
+        }
+
+        void rebalance(
+            uint32_t currentStep,
+            std::string const& checkpointDirectory,
+            std::function<void()> reinitialize) override
+        {
+            auto cBackend = ioBackends.find(checkpointBackendName);
+            if(cBackend == ioBackends.end())
+                throw std::runtime_error("Rebalance: no checkpoint backend configured.");
+            auto rBackend = ioBackendsRestart.find(restartBackendName);
+            if(rBackend == ioBackendsRestart.end())
+                rBackend = cBackend;
+
+            int mpiInitialized = MPI_THREAD_SINGLE;
             MPI_CHECK(MPI_Query_thread(&mpiInitialized));
-
             if(mpiInitialized < MPI_THREAD_MULTIPLE)
-            {
-                cBackend->second->dumpCheckpoint(currentStep, checkpointDirectory, checkpointFilename, std::nullopt);
-            }
-            else
-            {
-                std::atomic<signed int> synchronization = 0;
+                throw std::runtime_error("Rebalance requires PIC_USE_THREADED_MPI=MPI_THREAD_MULTIPLE.");
 
-                // need to copy the plugin temporarily to avoid race conditions
-                auto restartFuture = std::async(
-                    std::launch::async,
-                    [this, copiedBackend = cBackend, currentStep, &checkpointDirectory, &synchronization]()
+            std::atomic<signed int> synchronization{0};
+            constexpr signed int abortState = 100;
+
+            auto restartFuture = std::async(
+                std::launch::async,
+                [this, copiedBackend = rBackend, currentStep, &checkpointDirectory, &synchronization]()
+                {
+                    try
                     {
-                        try
-                        {
-                            copiedBackend->second->doRestart(
-                                currentStep,
-                                checkpointDirectory,
-                                this->checkpointFilename,
-                                this->restartChunkSize,
-                                {&synchronization});
-                        }
-                        catch(std::exception const& e)
-                        {
-                            // The writer thread may be waiting for a synchronization state that the reader will
-                            // never reach. Release it so that the exception can be propagated instead of hanging.
-                            constexpr signed int abortState = 100;
-                            synchronization.store(abortState, std::memory_order_release);
-                            synchronization.notify_all();
-                            std::cerr << "Checkpoint: concurrent restart failed: " << e.what() << std::endl;
-                            throw;
-                        }
-                    });
-                cBackend->second
-                    ->dumpCheckpoint(currentStep, checkpointDirectory, checkpointFilename, {&synchronization});
-                // Propagate exceptions from the concurrent restart instead of silently waiting for the writer only.
-                restartFuture.get();
+                        copiedBackend->second->doRestart(
+                            currentStep,
+                            checkpointDirectory,
+                            this->checkpointFilename,
+                            this->restartChunkSize,
+                            {&synchronization});
+                    }
+                    catch(std::exception const& e)
+                    {
+                        synchronization.store(abortState, std::memory_order_release);
+                        synchronization.notify_all();
+                        std::cerr << "Rebalance: concurrent restart failed: " << e.what() << std::endl;
+                        throw;
+                    }
+                });
+
+            try
+            {
+                cBackend->second->dumpCheckpoint(
+                    currentStep,
+                    checkpointDirectory,
+                    checkpointFilename,
+                    {&synchronization},
+                    std::move(reinitialize));
             }
+            catch(...)
+            {
+                synchronization.store(abortState, std::memory_order_release);
+                synchronization.notify_all();
+                try
+                {
+                    restartFuture.get();
+                }
+                catch(...)
+                {
+                }
+                throw;
+            }
+
+            restartFuture.get();
         }
 
         void restart(uint32_t restartStep, std::string const restartDirectory) override
         {
-            auto rBackend = ioBackends.find(restartBackendName);
+            auto rBackend = ioBackendsRestart.find(restartBackendName);
+            if(rBackend == ioBackendsRestart.end())
+                rBackend = ioBackends.find(restartBackendName);
             if(rBackend != ioBackends.end())
             {
                 rBackend->second
                     ->doRestart(restartStep, restartDirectory, restartFilename, restartChunkSize, std::nullopt);
             }
-        }
-
-        /** Open the checkpoint write backend once the simulation is initialized.
-         *
-         * This runs after a possible restart so that write-side checkpoint initialization does not conflict with
-         * read-side restarting. This gives checkpointing plugins the chance to report configuration and backend errors
-         * before the first time step instead of only at the first checkpoint.
-         */
-        void simulationStart() override
-        {
-            // initialize only once
-            if(checkpointBackendInitialized)
-            {
-                return;
-            }
-
-            auto const& simulationDescription = Environment<>::get().SimulationDescription();
-
-            // Only open the output for checkpoint creation if it is actually
-            // configured, otherwise this would leave an unused (and possibly
-            // empty) output file behind.
-            if(!simulationDescription.isCheckpointingConfigured())
-            {
-                return;
-            }
-
-            auto cBackend = ioBackends.find(checkpointBackendName);
-            if(cBackend == ioBackends.end())
-            {
-                return;
-            }
-
-            cBackend->second->initInstance(
-                plugins::multi::IInstance::CheckpointInstance{
-                    checkpointFilename,
-                    simulationDescription.getCheckpointDirectory()});
-            checkpointBackendInitialized = true;
         }
 
     private:
@@ -251,12 +246,18 @@ namespace picongpu
                 else
                     ioBackends[checkpointBackendName] = std::static_pointer_cast<IIOBackend>(
                         cBackendHelp->second->create(cBackendHelp->second, 0, m_cellDescription));
+
+                auto rBackendHelp = ioBackendsHelp.find(restartBackendName);
+                if(rBackendHelp != ioBackendsHelp.end())
+                    ioBackendsRestart[restartBackendName] = std::static_pointer_cast<IIOBackend>(
+                        rBackendHelp->second->create(rBackendHelp->second, 0, m_cellDescription));
             }
         }
 
         void pluginUnload() override
         {
             ioBackends.clear();
+            ioBackendsRestart.clear();
         }
 
         //! string list with all possible IO-backends
@@ -280,11 +281,10 @@ namespace picongpu
 
         // can be "openPMD"
         std::map<std::string, std::shared_ptr<IIOBackend>> ioBackends;
+        std::map<std::string, std::shared_ptr<IIOBackend>> ioBackendsRestart;
 
         std::map<std::string, std::shared_ptr<plugins::multi::IHelp>> ioBackendsHelp;
 
-        //! whether the checkpoint write backend has been opened in simulationStart()
-        bool checkpointBackendInitialized{false};
 
         MappingDesc* m_cellDescription = nullptr;
     };

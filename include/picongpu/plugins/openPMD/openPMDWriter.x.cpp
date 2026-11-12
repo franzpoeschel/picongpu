@@ -1523,7 +1523,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 mThreadParams.initFromConfig(*m_help, m_id, currentStep, outputDirectory);
 
                 mThreadParams.isCheckpoint = false;
-                dumpData(currentStep, std::nullopt);
+                dumpData(currentStep, std::nullopt, {});
             }
 
             void restart(uint32_t const restartStep, std::string const& restartDirectory) override
@@ -1592,7 +1592,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 uint32_t const currentStep,
                 std::string const& checkpointDirectory,
                 std::string const& checkpointFilename,
-                std::optional<std::atomic<signed int>*> sync) override
+                std::optional<std::atomic<signed int>*> sync,
+                std::function<void()> beforeReaderRelease) override
             {
                 // checkpointing is only allowed if the plugin is controlled by the
                 // class Checkpoint
@@ -1607,7 +1608,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 mThreadParams.window = MovingWindow::getInstance().getDomainAsWindow(currentStep);
                 updatePmlSlabViewsIfEnabled(currentStep);
 
-                dumpData(currentStep, sync);
+                dumpData(currentStep, sync, std::move(beforeReaderRelease));
             }
 
             /** Checks if a loaded openPMD series is supported for restarting.
@@ -1812,7 +1813,10 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
              *
              * @param currentStep current simulation step
              */
-            void dumpData(uint32_t currentStep, std::optional<std::atomic<signed int>*> sync)
+            void dumpData(
+                uint32_t currentStep,
+                std::optional<std::atomic<signed int>*> sync,
+                std::function<void()> beforeReaderRelease)
             {
                 /* ensure that all MPI ranks are in the same time step to avoid that MPI collectives block asynchronous
                  * communication enqueued in the event system. */
@@ -1854,7 +1858,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 timer.toggleStart();
                 initWrite();
 
-                write(&mThreadParams, currentStep, mpiTransportParams, sync);
+                write(&mThreadParams, currentStep, mpiTransportParams, sync, std::move(beforeReaderRelease));
 
                 // TODO: add a better keepalive logic for in-situ-restarting,
                 // e.g. keep Series alive on writer AND reader and use proper streaming API
@@ -1862,9 +1866,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 // of the IO plugin to avoid race conditions
 
                 if(sync.has_value())
-                {
                     mThreadParams.closeSeries(::openPMD::Access::CREATE);
-                }
 
                 endWrite();
                 timer.toggleEnd();
@@ -2203,7 +2205,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 ThreadParams* threadParams,
                 uint32_t const currentStep,
                 std::string mpiTransportParams,
-                std::optional<std::atomic<signed int>*> sync)
+                std::optional<std::atomic<signed int>*> sync,
+                std::function<void()> beforeReaderRelease)
             {
                 threadParams->m_dumpTimes.now<std::chrono::milliseconds>(
                     "Beginning iteration " + std::to_string(currentStep));
@@ -2382,6 +2385,10 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 // The above code might have ignored this state, we must now catch up to it in order not to set the
                 // next state too soon
                 catchUpSync(sync, SyncState::WriterCreateNextIteration, "WRITER", "WriterCreateNextIteration");
+                if(sync.has_value())
+                    mThreadParams.writeOpenPMDSeries->flush(PreferredFlushTarget::Disk);
+                if(beforeReaderRelease)
+                    beforeReaderRelease();
                 notifySync(sync, SyncState::ReaderLetsGo, "WRITER", "ReaderLetsGo");
                 mThreadParams.m_dumpTimes.flush();
                 catchUpSync(sync, SyncState::WriterRelease, "WRITER", "WriterRelease");

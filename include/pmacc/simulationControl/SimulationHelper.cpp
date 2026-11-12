@@ -179,6 +179,7 @@ namespace pmacc
             {
                 notifyPlugins(currentStep);
                 dumpOneStep(currentStep);
+                maybeRebalance(currentStep);
             }
 
             /* dump 0% output */
@@ -211,6 +212,7 @@ namespace pmacc
                 notifyPlugins(currentStep);
                 /* dump at the beginning of the simulated step */
                 dumpOneStep(currentStep);
+                maybeRebalance(currentStep);
             }
 
             // The simulation is finished, wait until all MPI ranks finished the time step loop

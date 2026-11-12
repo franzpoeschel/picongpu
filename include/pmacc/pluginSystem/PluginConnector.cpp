@@ -130,6 +130,15 @@ namespace pmacc
         }
     }
 
+    void PluginConnector::rebalancePlugins(
+        uint32_t currentStep,
+        std::string const& checkpointDirectory,
+        std::function<void()> reinitialize)
+    {
+        for(auto iter = plugins.begin(); iter != plugins.end(); ++iter)
+            (*iter)->rebalance(currentStep, checkpointDirectory, reinitialize);
+    }
+
     void PluginConnector::simulationStartPlugins()
     {
         for(auto iter = plugins.begin(); iter != plugins.end(); ++iter)

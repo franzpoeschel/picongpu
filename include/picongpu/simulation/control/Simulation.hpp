@@ -33,11 +33,14 @@
 #include "picongpu/initialization/ParserGridDistribution.hpp"
 #include "picongpu/particles/ParticlesFunctors.hpp"
 #include "picongpu/particles/debyeLength/Check.hpp"
+#include "picongpu/particles/filter/filter.def"
 #include "picongpu/particles/filter/filter.hpp"
 #include "picongpu/particles/manipulators/manipulators.hpp"
+#include "picongpu/plugins/openPMD/writer/misc.hpp"
 #include "picongpu/random/seed/ISeed.hpp"
 #include "picongpu/simulation/control/DomainAdjuster.hpp"
 #include "picongpu/simulation/control/MovingWindow.hpp"
+#include "picongpu/simulation/control/Rebalance.hpp"
 #include "picongpu/simulation/control/checkpointingState.hpp"
 #include "picongpu/simulation/stage/AtomicPhysics.hpp"
 #include "picongpu/simulation/stage/Collision.hpp"
@@ -60,11 +63,15 @@
 #include <pmacc/assert.hpp>
 #include <pmacc/dimensions/GridLayout.hpp>
 #include <pmacc/mappings/kernel/MappingDescription.hpp>
+#include <pmacc/mappings/simulation/Filesystem.hpp>
 #include <pmacc/mappings/simulation/GridController.hpp>
 #include <pmacc/mappings/simulation/SubGrid.hpp>
 #include <pmacc/meta/ForEach.hpp>
 #include <pmacc/meta/conversion/SeqToMap.hpp>
+#include <pmacc/particles/IdProvider.hpp>
 #include <pmacc/particles/memory/buffers/MallocMCBuffer.hpp>
+#include <pmacc/particles/particleFilter/FilterFactory.hpp>
+#include <pmacc/particles/particleFilter/PositionFilter.hpp>
 #include <pmacc/particles/traits/FilterByFlag.hpp>
 #include <pmacc/particles/traits/FilterByIdentifier.hpp>
 #include <pmacc/random/RNGProvider.hpp>
@@ -82,6 +89,7 @@
 #include <cstddef>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -91,6 +99,69 @@ namespace picongpu
     using namespace pmacc;
 
     using SimHelper = SimulationHelper<simDim, simulationControl::Checkpointing<checkpointingEnabled>>;
+
+    namespace detail
+    {
+        /** Add all particle counts of one species to a global per-supercell weight array. */
+        template<typename T_SpeciesType>
+        struct CollectParticleWeights
+        {
+            using SpeciesType = pmacc::particles::meta::FindByNameOrType_t<VectorAllSpecies, T_SpeciesType>;
+            using FrameType = typename SpeciesType::FrameType;
+
+            HINLINE void operator()(
+                uint32_t currentStep,
+                std::shared_ptr<IdProvider> const& idProvider,
+                MappingDesc* cellDescription,
+                std::vector<uint64_t>& globalWeights,
+                DataSpace<simDim> const& globalSuperCells,
+                DataSpace<simDim> const& localSuperCellOffset,
+                DataSpace<simDim> const& guardingSuperCells) const
+            {
+                DataConnector& dc = Environment<>::get().DataConnector();
+                auto species = dc.get<SpeciesType>(FrameType::getName());
+
+                auto const areaMapper = makeAreaMapper<CORE + BORDER>(*cellDescription);
+                auto rangeMapper = makeRangeMapper(areaMapper);
+
+                auto histogram = alpaka::allocMappedBufIfSupported<uint32_t, MemIdxType>(
+                    manager::Device<HostDevice>::get().current(),
+                    manager::Device<ComputeDevice>::get().getPlatform(),
+                    MemSpace<DIM1>(rangeMapper.size()).toAlpakaMemVec());
+                uint32_t* histData = alpaka::getPtrNative(histogram);
+
+                using UsedPositionFilters = mp_list<typename GetPositionFilter<simDim>::type>;
+                using MyParticleFilter = typename FilterFactory<UsedPositionFilters>::FilterType;
+                MyParticleFilter posFilter;
+                auto const localDomain = Environment<simDim>::get().SubGrid().getLocalDomain();
+                posFilter.setWindowPosition(DataSpace<simDim>::create(0), localDomain.size);
+
+                particles::filter::IUnary<particles::filter::All> particleFilter{
+                    currentStep,
+                    idProvider->getDeviceGenerator()};
+
+                PMACC_LOCKSTEP_KERNEL(openPMD::KernelSuperCellHistogram{})
+                    .config(
+                        rangeMapper.getGridDim(),
+                        *species)(species->getDeviceParticlesBox(), histData, particleFilter, posFilter, rangeMapper);
+                eventSystem::getTransactionEvent().waitForFinished();
+
+                for(size_t i = 0u; i < rangeMapper.size(); ++i)
+                {
+                    auto const superCellWithGuards = rangeMapper.getSuperCellIndex(DataSpace<DIM1>::create(i));
+                    auto const superCell = superCellWithGuards - guardingSuperCells;
+                    auto const globalSuperCell = localSuperCellOffset + superCell;
+                    for(uint32_t d = 0; d < simDim; ++d)
+                    {
+                        if(globalSuperCell[d] < 0 || globalSuperCell[d] >= globalSuperCells[d])
+                            throw std::runtime_error("Rebalance: particle contribution outside the global domain.");
+                    }
+                    auto const weightIdx = pmacc::math::linearize(globalSuperCells, globalSuperCell);
+                    globalWeights[weightIdx] += histData[i];
+                }
+            }
+        };
+    } // namespace detail
 
     /**
      * Global simulation controller class.
@@ -142,6 +213,8 @@ namespace picongpu
                  "-1 means that window is never stopping")
                 ("autoAdjustGrid", po::value<bool>(&autoAdjustGrid)->default_value(true),
                  "auto adjust the grid size if PIConGPU conditions are not fulfilled")
+                ("rebalance", po::value<uint32_t>(&rebalanceStep),
+                 "simulation step at which to perform a load-balanced re-decomposition")
                 ("numRanksPerDevice,r", po::value<uint32_t>(&numRanksPerDevice)->default_value(1u),
                  "set the number of MPI ranks using a single device together")
                 ("apu", po::value<bool>(&isDeviceMemoryShared)->zero_tokens(),
@@ -266,7 +339,7 @@ namespace picongpu
 
             domainAdjuster(gridSizeGlobal, gridSizeLocal, gridOffset);
 
-            Environment<simDim>::get().initGrids(gridSizeGlobal, gridSizeLocal, gridOffset);
+            installDecomposition(gridSizeGlobal, DataSpace<simDim>::create(0), gridSizeLocal, gridOffset);
 
             if(!slidingWindow)
             {
@@ -281,8 +354,9 @@ namespace picongpu
 
             SimHelper::pluginLoad();
 
-            GridLayout<simDim> layout(gridSizeLocal, GuardSize::toRT() * SuperCellSize::toRT());
-            cellDescription = std::make_unique<MappingDesc>(layout.sizeND(), DataSpace<simDim>(GuardSize::toRT()));
+            if(rebalanceStep != std::numeric_limits<uint32_t>::max()
+               && !Environment<>::get().SimulationDescription().isCheckpointingConfigured())
+                throw std::runtime_error("--rebalance requires checkpointing to be configured.");
 
             if(gc.getGlobalRank() == 0)
             {
@@ -295,8 +369,6 @@ namespace picongpu
 
         void pluginUnload() override
         {
-            DataConnector& dc = Environment<>::get().DataConnector();
-
             SimHelper::pluginUnload();
 
             /** unshare all registered ISimulationData sets
@@ -304,7 +376,7 @@ namespace picongpu
              * @todo can be removed as soon as our Environment learns to shutdown in
              *       a distinct order, e.g. DataConnector before CUDA context
              */
-            dc.clean();
+            teardownSimulationData();
         }
 
         void notify(uint32_t) override
@@ -472,15 +544,7 @@ namespace picongpu
                     % (freeGpuMem / 1024 / 1024);
             }
 
-            DataConnector& dc = Environment<>::get().DataConnector();
-            auto fieldE = dc.get<FieldE>(FieldE::getName());
-            auto fieldB = dc.get<FieldB>(FieldB::getName());
-
-            // generate valid GUARDS (overwrite)
-            EventTask eRfieldE = fieldE->asyncCommunication(eventSystem::getTransactionEvent());
-            eventSystem::setTransactionEvent(eRfieldE);
-            EventTask eRfieldB = fieldB->asyncCommunication(eventSystem::getTransactionEvent());
-            eventSystem::setTransactionEvent(eRfieldB);
+            updateFieldGuards();
 
             log<picLog::SIMULATION_STATE>("Starting simulation from timestep 0");
             return step;
@@ -531,6 +595,115 @@ namespace picongpu
             {
                 slide(currentStep);
             }
+        }
+
+        void maybeRebalance(uint32_t currentStep) override
+        {
+            if(rebalanceStep == std::numeric_limits<uint32_t>::max() || currentStep != rebalanceStep)
+                return;
+            rebalanceStep = std::numeric_limits<uint32_t>::max();
+            rebalance(currentStep);
+        }
+
+        /** Stop-the-world rebalance via a pseudo-checkpoint and the current decomposition.
+         *
+         * The current state is written with the existing checkpoint infrastructure, the
+         * decomposition is recomputed and installed, and the state is loaded back.
+         */
+        void rebalance(uint32_t currentStep)
+        {
+            log<picLog::SIMULATION_STATE>("rebalance at step %1%") % currentStep;
+
+            GridController<simDim>& gc = Environment<simDim>::get().GridController();
+            DataConnector& dc = Environment<>::get().DataConnector();
+            auto idProvider = dc.get<IdProvider>("globalId");
+
+            auto const& subGrid = Environment<simDim>::get().SubGrid();
+            auto const globalDomainSize = subGrid.getGlobalDomain().size;
+            auto const globalDomainOffset = subGrid.getGlobalDomain().offset;
+            auto const localDomain = subGrid.getLocalDomain();
+            auto const gpuNodes = gc.getGpuNodes();
+            auto const guardingSuperCells = DataSpace<simDim>(GuardSize::toRT());
+            auto const superCellSize = SuperCellSize::toRT();
+
+            for(uint32_t d = 0; d < simDim; ++d)
+            {
+                if(globalDomainSize[d] % superCellSize[d] != 0)
+                    throw std::runtime_error("Rebalance: global domain is not a multiple of the supercell size.");
+            }
+
+            DataSpace<simDim> const globalSuperCells = globalDomainSize / superCellSize;
+            DataSpace<simDim> const localSuperCellOffset = localDomain.offset / superCellSize;
+
+            std::vector<uint64_t> globalWeights(globalSuperCells.productOfComponents(), 0u);
+            meta::ForEach<VectorAllSpecies, detail::CollectParticleWeights<boost::mpl::_1>> collectWeights;
+            collectWeights(
+                currentStep,
+                idProvider,
+                cellDescription.get(),
+                globalWeights,
+                globalSuperCells,
+                localSuperCellOffset,
+                guardingSuperCells);
+
+            MPI_CHECK(MPI_Allreduce(
+                MPI_IN_PLACE,
+                globalWeights.data(),
+                static_cast<int>(globalWeights.size()),
+                MPI_UINT64_T,
+                MPI_SUM,
+                gc.getCommunicator().getMPIComm()));
+
+            DataSpace<simDim> newLocalSize;
+            DataSpace<simDim> newLocalOffset;
+            auto const position = gc.getPosition();
+            bool const movingWindow = MovingWindow::getInstance().isEnabled();
+
+            for(uint32_t d = 0; d < simDim; ++d)
+            {
+                std::vector<uint64_t> profile(globalSuperCells[d], 0u);
+                for(size_t weightIdx = 0u; weightIdx < globalWeights.size(); ++weightIdx)
+                {
+                    auto const superCell = pmacc::math::mapToND(globalSuperCells, static_cast<int>(weightIdx));
+                    profile[superCell[d]] += globalWeights[weightIdx];
+                }
+
+                uint32_t const minBlock = 2u * static_cast<uint32_t>(guardingSuperCells[d]) + 1u;
+                std::vector<size_t> cuts;
+                if(movingWindow && d == MovingWindow::moveDirection)
+                    cuts = rebalance::equalCuts(globalSuperCells[d], gpuNodes[d], minBlock);
+                else
+                    cuts = rebalance::recursiveWeightedCuts(profile, gpuNodes[d], minBlock);
+
+                auto const localSuperCells = cuts[position[d] + 1u] - cuts[position[d]];
+                newLocalSize[d] = static_cast<int>(localSuperCells) * superCellSize[d];
+                newLocalOffset[d] = static_cast<int>(cuts[position[d]]) * superCellSize[d];
+            }
+
+            log<picLog::SIMULATION_STATE>("rebalance: new local size %1%, offset %2%") % newLocalSize.toString()
+                % newLocalOffset.toString();
+
+            auto const checkpointDirectory = Environment<>::get().SimulationDescription().getCheckpointDirectory();
+            PluginConnector& pluginConnector = Environment<>::get().PluginConnector();
+
+            if(gc.getGlobalRank() == 0)
+                pmacc::Filesystem::get().createDirectoryWithPermissions(checkpointDirectory);
+            eventSystem::mpiBlocking(gc.getCommunicator().getMPIComm());
+
+            pluginConnector.rebalancePlugins(
+                currentStep,
+                checkpointDirectory,
+                [&]()
+                {
+                    teardownSimulationData();
+                    installDecomposition(globalDomainSize, globalDomainOffset, newLocalSize, newLocalOffset);
+                    init();
+                    dc.share(idProvider);
+                });
+            updateFieldGuards();
+            eventSystem::getTransactionEvent().waitForFinished();
+
+            log<picLog::SIMULATION_STATE>("rebalance finished at step %1%") % currentStep;
         }
 
         void resetAll(uint32_t currentStep) override
@@ -612,6 +785,8 @@ namespace picongpu
         bool skipSimulation{false};
         // true if the device and host memory is shared, else false
         bool isDeviceMemoryShared{false};
+
+        uint32_t rebalanceStep{std::numeric_limits<uint32_t>::max()};
 
     private:
         /** Get available memory on device
@@ -696,6 +871,59 @@ namespace picongpu
             }
 
             return allocatableMemory;
+        }
+
+        void teardownSimulationData()
+        {
+            eventSystem::getTransactionEvent().waitForFinished();
+
+            myFieldSolver.reset();
+            currentBackground.reset();
+            atomicPhysics.reset();
+            synchrotronRadiation.reset();
+            deviceHeap.reset();
+
+            DataConnector& dc = Environment<>::get().DataConnector();
+            dc.clean();
+        }
+
+        /** Install a decomposition, both at simulation start and at rebalancing. */
+        void installDecomposition(
+            DataSpace<simDim> const& globalDomainSize,
+            DataSpace<simDim> const& globalDomainOffset,
+            DataSpace<simDim> const& localDomainSize,
+            DataSpace<simDim> const& localDomainOffset)
+        {
+            Environment<simDim>::get().initGrids(globalDomainSize, localDomainSize, localDomainOffset);
+            Environment<simDim>::get().SubGrid().setGlobalDomainOffset(globalDomainOffset);
+
+            gridSizeLocal = localDomainSize;
+
+            DataSpace<simDim> const guardingSuperCells(GuardSize::toRT());
+            DataSpace<simDim> const totalSuperCells
+                = localDomainSize / SuperCellSize::toRT() + DataSpace<simDim>::create(2) * guardingSuperCells;
+
+            if(cellDescription)
+            {
+                cellDescription->setGridSuperCells(totalSuperCells);
+            }
+            else
+            {
+                GridLayout<simDim> const layout(localDomainSize, guardingSuperCells * SuperCellSize::toRT());
+                cellDescription = std::make_unique<MappingDesc>(layout.sizeND(), guardingSuperCells);
+            }
+        }
+
+        void updateFieldGuards()
+        {
+            DataConnector& dc = Environment<>::get().DataConnector();
+            auto fieldE = dc.get<FieldE>(FieldE::getName());
+            auto fieldB = dc.get<FieldB>(FieldB::getName());
+
+            EventTask eRfieldE = fieldE->asyncCommunication(eventSystem::getTransactionEvent());
+            eventSystem::setTransactionEvent(eRfieldE);
+            EventTask eRfieldB = fieldB->asyncCommunication(eventSystem::getTransactionEvent());
+            eventSystem::setTransactionEvent(eRfieldB);
         }
 
         void initFields(DataConnector& dataConnector)
