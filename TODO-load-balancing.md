@@ -69,13 +69,23 @@ and patch metadata. That logic is currently duplicated across
 - [ ] Merge patch metadata writing into one implementation. Keep the one
       per-strategy constraint (`PerSupercell` requires the same number of
       patches on every MPI rank) as a validation step, not as a separate copy.
-- [ ] Keep all observable output identical for each strategy:
-      patch count, `beginSupercellIdx`/`endSupercellIdx`, `numParticles`,
-      `numParticlesOffset`, `offset`, `extent`, and iteration layout.
+- [ ] Do **not** force identical outputs across strategies. The patch layout is
+      intentionally strategy-specific; the different particle-patch output is
+      the purpose of the change. Define and test per-strategy invariants
+      instead:
+      - `PerRank`: exactly one patch per rank;
+      - `PerSupercell`: exactly one patch per supercell;
+      - `SizeBounded`: contiguous supercell ranges bounded by
+        `--openPMD.particleIOChunkSize`.
+- [ ] For every strategy, verify the data-level invariants: total particle
+      count, consistent `numParticles`/`numParticlesOffset`, offsets and
+      extents covering the local domain, and a restart that reconstructs the
+      same particle set.
 - [ ] Make the strategy selectable from configuration/CLI.
-- [ ] Add tests comparing all three strategies, including zero-particle
-      supercells, ranks with different local supercell counts, and one
-      over-sized supercell.
+- [ ] Add tests per strategy for the expected patch layout, including
+      zero-particle supercells, ranks with different local supercell counts,
+      and one over-sized supercell. Compare physics/particle data, not patch
+      layouts.
 - [ ] Verify that restart (`LoadSpecies`) consumes output from all three
       strategies.
 
