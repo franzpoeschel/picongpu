@@ -30,6 +30,8 @@ Currently `Checkpoint::checkpoint()` abuses `--checkpoint.period`: under
 `MPI_THREAD_MULTIPLE` it writes a checkpoint and asynchronously restarts from it.
 
 - [ ] Separate checkpointing from checkpoint-and-reload.
+- [ ] Define stop-the-world semantics: the simulation continues only after the
+      reload completes; concurrent write/read is only I/O overlap.
 - [ ] Add a dedicated operation/plugin/backend API (`checkpointAndReload()` or a
       `LoadBalance` controller) that owns the writer/reader sync state machine.
 - [ ] Add an explicit trigger/CLI; regular checkpointing must never restart.
@@ -46,40 +48,57 @@ Currently `Checkpoint::checkpoint()` abuses `--checkpoint.period`: under
 
 ## 3. Actual load balancing
 
-Current branch restarts into the same decomposition (no-op).
+Goal: one-shot, stop-the-world re-decomposition. Recompute the field
+decomposition so that the particle subdecomposition is reasonably balanced,
+apply it, then continue as if load balancing did not exist. No persistent load
+balancing scheduler and no change to the core particle/field algorithm.
 
 Constraints:
 
-- PIConGPU assumes one contiguous Cartesian subdomain per rank.
-- Compute a new rectangular decomposition and apply it via the patch-aware
-  restart. Arbitrary patch-to-rank mappings need a field/guard refactor.
+- Runtime re-decomposition is the feature to implement, not a blocker.
+- Particles must stay with the GPU that owns their field region. Particle-only
+  migration or work stealing is out of scope.
+- Decomposition must stay a contiguous Cartesian grid. Compute new block
+  offsets/extents; arbitrary patch-to-rank mappings are out of scope.
+- Moving window: only the slide axis must remain equidistant. Keep that axis
+  uniform and restrict rebalancing to the other axes.
+- Patch output must tolerate unequal local supercell counts; fix the
+  per-supercell writer (or use per-rank patch metadata).
 - Supercell granularity is sufficient; below-supercell is out of scope.
-- The open issue is where/how the new decomposition is applied (IO plugin vs
-  simulation/PMacc control).
+- Concurrent checkpoint/restart I/O is an implementation detail; the
+  balancing operation itself is stop-the-world.
 
-Strategies:
+Candidate decomposition algorithms:
 
-- static `--gridDist` (baseline, not adaptive)
 - weighted axis cuts / weighted median (simple, contiguous, 1D only)
 - recursive coordinate bisection / Zoltan RCB (multi-D, contiguous-ish)
 - space-filling curve (locality-preserving, blocks not rectangular)
-- graph partitioning: ParMETIS / PT-Scotch / Zoltan (communication-aware, external dependency)
-- diffusive neighbor boundary shifting (keeps rectangular layout, slow convergence)
-- work stealing (incompatible with fixed field decomposition)
-- particle-only migration (incompatible with local field coupling)
+- graph partitioning: ParMETIS / PT-Scotch / Zoltan (communication-aware,
+  external dependency)
+- diffusive neighbor boundary shifting (keeps rectangular layout, slow
+  convergence)
+- static `--gridDist` is the baseline only, not adaptive
 
-Recommended: start with weighted axis cuts/RCB, optionally refined by boundary
-shifting; migrate via the existing in-situ checkpoint + patch-aware restart.
+Recommended: start with weighted axis cuts/RCB on the non-slide axes,
+optionally refined by boundary shifting. Use the in-situ checkpoint/restart as
+the data movement mechanism, with stop-the-world semantics.
 
-- [ ] Define decomposition ownership and a handoff format (offsets/extents or cuts).
+- [ ] Implement runtime re-decomposition: update `GridController`,
+      `CommunicatorMPI`, `SubGrid`, field and particle buffers, guard exchange,
+      mapping descriptions, and plugin state for changed local sizes.
+- [ ] Keep the moving-window axis uniform; rebalance only the other axes.
+- [ ] Fix per-supercell patch output for unequal local supercell counts, or
+      select per-rank patch metadata when sizes differ.
+- [ ] Define decomposition ownership and a handoff format (offsets/extents or
+      cuts).
 - [ ] Define the load metric (particle counts first; then push/deposition and
       guard-exchange cost).
-- [ ] Define the trigger (periodic, hysteresis, imbalance threshold).
+- [ ] Define the stop-the-world trigger (explicit signal or imbalance
+      threshold; no continuous scheduler).
 - [ ] Collect weights and implement the chosen decomposition.
 - [ ] Replace the self-restart target with the computed decomposition.
-- [ ] Decide field handling (reload vs redistribute).
-- [ ] Validate: imbalanced synthetic cases, no-op equivalence, improved imbalance,
-      correct restart, no deadlocks.
+- [ ] Validate: imbalanced synthetic cases, no-op equivalence, improved
+      imbalance, correct restart, no deadlocks.
 
 ## 4. Scaling follow-ups (PR #5405)
 
