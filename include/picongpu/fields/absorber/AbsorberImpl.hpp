@@ -64,6 +64,13 @@ namespace picongpu
                  */
                 static AbsorberImpl& getImpl(MappingDesc cellDescription);
 
+                /** Destroy the absorber implementation instance.
+                 *
+                 * Needed when the domain decomposition changes and the absorber has to be re-created for the
+                 * new mapping description.
+                 */
+                static void reset();
+
                 /** Interpret this as ExponentialImpl instance
                  *
                  * @return reference to this object if conversion is valid,

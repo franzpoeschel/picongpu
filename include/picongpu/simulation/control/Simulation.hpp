@@ -28,6 +28,7 @@
 #include "picongpu/fields/FieldJ.hpp"
 #include "picongpu/fields/FieldTmp.hpp"
 #include "picongpu/fields/MaxwellSolver/Solvers.hpp"
+#include "picongpu/fields/absorber/AbsorberImpl.hpp"
 #include "picongpu/fields/absorber/pml/Field.hpp"
 #include "picongpu/initialization/InitialiserController.hpp"
 #include "picongpu/initialization/ParserGridDistribution.hpp"
@@ -701,6 +702,8 @@ namespace picongpu
                 [&]()
                 {
                     teardownSimulationData();
+                    // The absorber caches its mapping description, so recreate it for the new decomposition.
+                    fields::absorber::AbsorberImpl::reset();
                     /* The global domain offset is reconstructed by the reader from the checkpoint's slide counter
                      * (GridController::setStateAfterSlides). Start from the unslid base, as at simulation start, so
                      * that the accumulated moving-window offset is not applied twice.
