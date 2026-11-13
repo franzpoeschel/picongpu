@@ -53,6 +53,9 @@ namespace picongpu
         {
 #if (ENABLE_OPENPMD == 1)
             ioBackendsHelp["openPMD"] = std::shared_ptr<plugins::multi::IHelp>(openPMD::getOpenPMDWriterHelp());
+            // Dedicated backend instance for rebalancing, with its own configuration options.
+            ioBackendsHelpRebalance["openPMD"]
+                = std::shared_ptr<plugins::multi::IHelp>(openPMD::getOpenPMDWriterHelp());
 #endif
             // currently we support only `openPMD` as IO checkpoint plugin
             if(!ioBackendsHelp.empty())
@@ -109,6 +112,12 @@ namespace picongpu
 
             for(auto& backend : ioBackendsHelp)
                 backend.second->expandHelp(desc, "checkpoint.");
+
+            /* Options for the backend used by the rebalance operation. These are kept separate from the regular
+             * checkpoint options so that engine parameters can be configured independently.
+             */
+            for(auto& backend : ioBackendsHelpRebalance)
+                backend.second->expandHelp(desc, "rebalance.");
         }
 
         std::string pluginGetName() const override
@@ -141,12 +150,11 @@ namespace picongpu
             std::string const& checkpointDirectory,
             std::function<void()> reinitialize) override
         {
-            auto cBackend = ioBackends.find(checkpointBackendName);
-            if(cBackend == ioBackends.end())
-                throw std::runtime_error("Rebalance: no checkpoint backend configured.");
-            auto rBackend = getRestartBackend();
-            if(!rBackend)
-                rBackend = cBackend->second;
+            auto cBackend = ioBackendsRebalance.find(checkpointBackendName);
+            if(cBackend == ioBackendsRebalance.end())
+                throw std::runtime_error("Rebalance: no rebalance backend configured.");
+            auto const rBackendIt = ioBackendsRebalanceRestart.find(checkpointBackendName);
+            auto rBackend = rBackendIt != ioBackendsRebalanceRestart.end() ? rBackendIt->second : cBackend->second;
 
             int mpiInitialized = MPI_THREAD_SINGLE;
             MPI_CHECK(MPI_Query_thread(&mpiInitialized));
@@ -260,12 +268,35 @@ namespace picongpu
                     ioBackendsRestart[restartBackendName] = std::static_pointer_cast<IIOBackend>(
                         rBackendHelp->second->create(rBackendHelp->second, 0, m_cellDescription));
             }
+
+            // create backends for the rebalance pseudo-checkpoint
+            for(auto& backendHelp : ioBackendsHelpRebalance)
+                backendHelp.second->validateOptions();
+
+            if(!ioBackendsHelpRebalance.empty())
+            {
+                auto rebalanceBackendHelp = ioBackendsHelpRebalance.find(checkpointBackendName);
+                if(rebalanceBackendHelp == ioBackendsHelpRebalance.end())
+                    throw std::runtime_error(
+                        std::string("IO-backend ") + checkpointBackendName
+                        + " for rebalancing not found, possible backends: " + activeBackends);
+
+                // Use the write configuration for reading unless a restart configuration was given explicitly.
+                rebalanceBackendHelp->second->applyWriteConfigToRestart();
+
+                ioBackendsRebalance[checkpointBackendName] = std::static_pointer_cast<IIOBackend>(
+                    rebalanceBackendHelp->second->create(rebalanceBackendHelp->second, 0, m_cellDescription));
+                ioBackendsRebalanceRestart[checkpointBackendName] = std::static_pointer_cast<IIOBackend>(
+                    rebalanceBackendHelp->second->create(rebalanceBackendHelp->second, 0, m_cellDescription));
+            }
         }
 
         void pluginUnload() override
         {
             ioBackends.clear();
             ioBackendsRestart.clear();
+            ioBackendsRebalance.clear();
+            ioBackendsRebalanceRestart.clear();
         }
 
         /** Find the backend to read checkpoints from.
@@ -305,8 +336,12 @@ namespace picongpu
         // can be "openPMD"
         std::map<std::string, std::shared_ptr<IIOBackend>> ioBackends;
         std::map<std::string, std::shared_ptr<IIOBackend>> ioBackendsRestart;
+        //! backends used for the rebalance pseudo-checkpoint, configured via --rebalance.<backend>.*
+        std::map<std::string, std::shared_ptr<IIOBackend>> ioBackendsRebalance;
+        std::map<std::string, std::shared_ptr<IIOBackend>> ioBackendsRebalanceRestart;
 
         std::map<std::string, std::shared_ptr<plugins::multi::IHelp>> ioBackendsHelp;
+        std::map<std::string, std::shared_ptr<plugins::multi::IHelp>> ioBackendsHelpRebalance;
 
 
         MappingDesc* m_cellDescription = nullptr;

@@ -687,6 +687,15 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 }
             }
 
+            void applyWriteConfigToRestart() override
+            {
+                /* If the user configured the write side but not the read side, reuse the write configuration.
+                 * If neither is configured, keep the backend-specific default for reading.
+                 */
+                if(!backendConfigRestart.optionDefined(0u) && backendConfig.optionDefined(0u))
+                    backendConfigRestart.setDefault(backendConfig.get(0u));
+            }
+
             size_t getNumPlugins() const override
             {
                 if(selfRegister)
