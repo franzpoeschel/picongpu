@@ -62,7 +62,9 @@
 
 #include <pmacc/assert.hpp>
 #include <pmacc/dimensions/GridLayout.hpp>
+#include <pmacc/mappings/kernel/AreaMapping.hpp>
 #include <pmacc/mappings/kernel/MappingDescription.hpp>
+#include <pmacc/mappings/kernel/RangeMapping.hpp>
 #include <pmacc/mappings/simulation/Filesystem.hpp>
 #include <pmacc/mappings/simulation/GridController.hpp>
 #include <pmacc/mappings/simulation/SubGrid.hpp>
