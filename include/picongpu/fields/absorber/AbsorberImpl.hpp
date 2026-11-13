@@ -66,8 +66,8 @@ namespace picongpu
 
                 /** Destroy the absorber implementation instance.
                  *
-                 * Needed when the domain decomposition changes and the absorber has to be re-created for the
-                 * new mapping description.
+                 * The instance is re-created lazily on the next call to getImpl(). It is also re-created
+                 * automatically when getImpl() is called with a different mapping description.
                  */
                 static void reset();
 
