@@ -356,10 +356,6 @@ namespace picongpu
 
             SimHelper::pluginLoad();
 
-            if(rebalanceStep != std::numeric_limits<uint32_t>::max()
-               && !Environment<>::get().SimulationDescription().isCheckpointingConfigured())
-                throw std::runtime_error("--rebalance requires checkpointing to be configured.");
-
             if(gc.getGlobalRank() == 0)
             {
                 if(MovingWindow::getInstance().isEnabled())
