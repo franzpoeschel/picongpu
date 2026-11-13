@@ -122,6 +122,7 @@ PIConGPU command line option                  description
 ``--openPMD.backendConfig``                   Set backend-specific parameters for openPMD backends in JSON format. Used in writing procedures.
 ``--checkpoint.openPMD.backendConfigRestart`` Set backend-specific parameters for openPMD backends in JSON format for restarting from a checkpoint.
 ``--openPMD.dataPreparationStrategy``         Strategy for preparation of particle data ('doubleBuffer' or 'mappedMemory'). Aliases 'adios' and 'hdf5' may be used respectively.
+``--openPMD.patchStrategy``                   Granularity of particle patches and write chunks: ``perRank`` (one patch per rank, default), ``perSupercell`` (one patch per supercell), or ``sizeBounded`` (chunks of contiguous supercells bounded by ``particleIOChunkSize``).
 ``--openPMD.pluginConfig``                    Alternatively configure the openPMD plugin via a TOML file (see below).
 ``--openPMD.particleIOChunkSize``             Particle data will be written in chunks of the given size. unit: MiB
                                               The memory footprint on the host side is reduced compared to writing all particles with one write call.

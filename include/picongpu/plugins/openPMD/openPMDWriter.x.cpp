@@ -290,6 +290,12 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                    "respectively.",
                    "doubleBuffer"};
 
+            plugins::multi::Option<std::string> patchStrategy
+                = {"patchStrategy",
+                   "Granularity of particle patches and write chunks "
+                   "('perRank', 'perSupercell' or 'sizeBounded').",
+                   "perRank"};
+
             plugins::multi::Option<size_t> particleIOChunkSize
                 = {"particleIOChunkSize",
                    "Particle data will be written in chunks of the given size. unit: MiB",
@@ -537,6 +543,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                         &dataPreparationStrategy,
                         "data_preparation_strategy",
                         &PluginParameters::dataPreparationStrategyString),
+                    makeParam(&patchStrategy, "patch_strategy", &PluginParameters::patchStrategyString),
                     makeParam(&range, "range", &PluginParameters::rangeString, ApplyParameter::NotInCheckpoint),
                     makeParam(
                         &backendConfigRestartForbidden,
@@ -866,10 +873,20 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 }
                 else
                 {
-                    std::cerr << "Passed dataPreparationStrategy for openPMD"
-                                 " plugin is invalid."
-                              << std::endl;
+                    throw std::runtime_error(
+                        "Passed dataPreparationStrategy for openPMD plugin is invalid: "
+                        + dataPreparationStrategyString);
                 }
+
+                if(patchStrategyString == "perRank")
+                    patchStrategy = ParticlePatchStrategy::PerRank;
+                else if(patchStrategyString == "perSupercell")
+                    patchStrategy = ParticlePatchStrategy::PerSupercell;
+                else if(patchStrategyString == "sizeBounded")
+                    patchStrategy = ParticlePatchStrategy::SizeBounded;
+                else
+                    throw std::runtime_error(
+                        "Passed patchStrategy for openPMD plugin is invalid: " + patchStrategyString);
             }
 
             std::transform(
@@ -2431,9 +2448,11 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
             return std::shared_ptr<plugins::multi::IInstance>(new openPMDWriter(help, id, cellDescription));
         }
 
-        std::shared_ptr<plugins::multi::IHelp> getOpenPMDWriterHelp()
+        std::shared_ptr<plugins::multi::IHelp> getOpenPMDWriterHelp(std::string const& defaultPatchStrategy)
         {
-            return std::shared_ptr<plugins::multi::IHelp>(new Help{});
+            auto help = std::shared_ptr<Help>(new Help{});
+            help->patchStrategy.setDefault(defaultPatchStrategy);
+            return std::shared_ptr<plugins::multi::IHelp>(help);
         }
 
     } // namespace openPMD

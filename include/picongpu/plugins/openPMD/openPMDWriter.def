@@ -65,6 +65,17 @@ namespace picongpu
             HDF5
         };
 
+        /** Granularity of particle patch metadata and particle write chunks. */
+        enum class ParticlePatchStrategy
+        {
+            //! One patch per MPI rank, all particles written in one go
+            PerRank,
+            //! One patch per local supercell
+            PerSupercell,
+            //! Chunks are formed from contiguous supercell ranges bounded by a byte size
+            SizeBounded
+        };
+
 
         /**
          * Writes simulation data to openPMD series.
@@ -99,6 +110,8 @@ namespace picongpu
             std::optional<std::string> backendConfigResolved;
 
             WriteSpeciesStrategy strategy = WriteSpeciesStrategy::ADIOS;
+
+            ParticlePatchStrategy patchStrategy = ParticlePatchStrategy::PerRank;
 
             MappingDesc* cellDescription = nullptr;
 
