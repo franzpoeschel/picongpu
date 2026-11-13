@@ -54,9 +54,10 @@ namespace picongpu
 #if (ENABLE_OPENPMD == 1)
             ioBackendsHelp["openPMD"] = std::shared_ptr<plugins::multi::IHelp>(openPMD::getOpenPMDWriterHelp());
             // Dedicated backend instance for rebalancing, with its own configuration options.
-            // Use per-supercell patches by default so that the restart can handle unequal local supercell counts.
+            // Use size-bounded chunks by default: they keep the host buffer bounded while avoiding one
+            // collective flush per supercell.
             ioBackendsHelpRebalance["openPMD"]
-                = std::shared_ptr<plugins::multi::IHelp>(openPMD::getOpenPMDWriterHelp("perSupercell"));
+                = std::shared_ptr<plugins::multi::IHelp>(openPMD::getOpenPMDWriterHelp("sizeBounded"));
 #endif
             // currently we support only `openPMD` as IO checkpoint plugin
             if(!ioBackendsHelp.empty())

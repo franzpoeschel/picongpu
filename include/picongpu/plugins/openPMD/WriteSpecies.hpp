@@ -640,28 +640,26 @@ namespace picongpu
                 log<picLog::INPUT_OUTPUT>("openPMD: species '%1%': global particle count=%2%")
                     % T_SpeciesFilter::getName() % globalNumParticles;
 
-                uint64_t globalNumDumpRounds = requiredDumpRounds;
-                if constexpr(TPatchStrategy == ParticlePatchStrategy::PerRank)
-                    globalNumDumpRounds = std::max<uint64_t>(globalNumDumpRounds, 1u);
-                else
-                {
-                    // @todo combine this and the MPI_Allgather above to a single gather for better scaling
-                    std::vector<uint64_t> numRounds(mpiSize);
-                    MPI_CHECK(MPI_Allgather(
-                        &requiredDumpRounds,
-                        1,
-                        MPI_UNSIGNED_LONG_LONG,
-                        numRounds.data(),
-                        1,
-                        MPI_UNSIGNED_LONG_LONG,
-                        gc.getCommunicator().getMPIComm()));
-                    for(uint64_t i = 0; i < mpiSize; ++i)
-                        globalNumDumpRounds = std::max(globalNumDumpRounds, numRounds[i]);
+                /* seriesFlush() is an MPI-collective operation, so all ranks must perform the same number of
+                 * dumping rounds (and thus flushes), independently of their local chunk count.
+                 */
+                // @todo combine this and the MPI_Allgather above to a single gather for better scaling
+                std::vector<uint64_t> numRounds(mpiSize);
+                MPI_CHECK(MPI_Allgather(
+                    &requiredDumpRounds,
+                    1,
+                    MPI_UNSIGNED_LONG_LONG,
+                    numRounds.data(),
+                    1,
+                    MPI_UNSIGNED_LONG_LONG,
+                    gc.getCommunicator().getMPIComm()));
+                uint64_t globalNumDumpRounds = 1u;
+                for(uint64_t i = 0; i < mpiSize; ++i)
+                    globalNumDumpRounds = std::max(globalNumDumpRounds, numRounds[i]);
 
-                    log<picLog::INPUT_OUTPUT>(
-                        "openPMD: species '%1%': global particle count=%2%, number of dumping iterations=%3%")
-                        % T_SpeciesFilter::getName() % globalNumParticles % globalNumDumpRounds;
-                }
+                log<picLog::INPUT_OUTPUT>(
+                    "openPMD: species '%1%': global particle count=%2%, number of dumping iterations=%3%")
+                    % T_SpeciesFilter::getName() % globalNumParticles % globalNumDumpRounds;
 
                 size_t const hostBufferParticles = TPatchStrategy == ParticlePatchStrategy::PerRank
                                                        ? myNumParticles
