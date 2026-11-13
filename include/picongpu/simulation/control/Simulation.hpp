@@ -612,7 +612,7 @@ namespace picongpu
             if(rebalanceStep == std::numeric_limits<uint32_t>::max() || currentStep != rebalanceStep)
                 return;
             rebalanceStep = std::numeric_limits<uint32_t>::max();
-            rebalance(currentStep);
+            rebalanceSimulation(currentStep);
         }
 
         /** Stop-the-world rebalance via a pseudo-checkpoint and the current decomposition.
@@ -620,7 +620,7 @@ namespace picongpu
          * The current state is written with the existing checkpoint infrastructure, the
          * decomposition is recomputed and installed, and the state is loaded back.
          */
-        void rebalance(uint32_t currentStep)
+        void rebalanceSimulation(uint32_t currentStep)
         {
             log<picLog::SIMULATION_STATE>("rebalance at step %1%") % currentStep;
 
