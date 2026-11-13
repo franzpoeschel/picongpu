@@ -702,8 +702,6 @@ namespace picongpu
                 [&]()
                 {
                     teardownSimulationData();
-                    // The absorber caches its mapping description, so recreate it for the new decomposition.
-                    fields::absorber::AbsorberImpl::reset();
                     /* The global domain offset is reconstructed by the reader from the checkpoint's slide counter
                      * (GridController::setStateAfterSlides). Start from the unslid base, as at simulation start, so
                      * that the accumulated moving-window offset is not applied twice.
@@ -897,6 +895,9 @@ namespace picongpu
             atomicPhysics.reset();
             synchrotronRadiation.reset();
             deviceHeap.reset();
+
+            // Free the absorber and its PML fields while the event system is still usable.
+            fields::absorber::AbsorberImpl::reset();
 
             DataConnector& dc = Environment<>::get().DataConnector();
             dc.clean();
