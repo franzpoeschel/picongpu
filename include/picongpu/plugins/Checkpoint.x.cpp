@@ -38,6 +38,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace picongpu
 {
@@ -143,29 +144,39 @@ namespace picongpu
             auto cBackend = ioBackends.find(checkpointBackendName);
             if(cBackend == ioBackends.end())
                 throw std::runtime_error("Rebalance: no checkpoint backend configured.");
-            auto rBackend = ioBackendsRestart.find(restartBackendName);
-            if(rBackend == ioBackendsRestart.end())
-                rBackend = cBackend;
+            auto rBackend = getRestartBackend();
+            if(!rBackend)
+                rBackend = cBackend->second;
 
             int mpiInitialized = MPI_THREAD_SINGLE;
             MPI_CHECK(MPI_Query_thread(&mpiInitialized));
             if(mpiInitialized < MPI_THREAD_MULTIPLE)
                 throw std::runtime_error("Rebalance requires PIC_USE_THREADED_MPI=MPI_THREAD_MULTIPLE.");
 
+            /* Use a dedicated filename for the pseudo-checkpoint so that it cannot collide with a regular
+             * checkpoint written at the same step or with the checkpoint being used as the restart source.
+             */
+            std::string const rebalanceFilename = checkpointFilename + "_rebalance";
+
             std::atomic<signed int> synchronization{0};
             constexpr signed int abortState = 100;
 
             auto restartFuture = std::async(
                 std::launch::async,
-                [this, copiedBackend = rBackend, currentStep, &checkpointDirectory, &synchronization]()
+                [rBackend,
+                 currentStep,
+                 &checkpointDirectory,
+                 rebalanceFilename,
+                 restartChunkSize = this->restartChunkSize,
+                 &synchronization]()
                 {
                     try
                     {
-                        copiedBackend->second->doRestart(
+                        rBackend->doRestart(
                             currentStep,
                             checkpointDirectory,
-                            this->checkpointFilename,
-                            this->restartChunkSize,
+                            rebalanceFilename,
+                            restartChunkSize,
                             {&synchronization});
                     }
                     catch(std::exception const& e)
@@ -182,7 +193,7 @@ namespace picongpu
                 cBackend->second->dumpCheckpoint(
                     currentStep,
                     checkpointDirectory,
-                    checkpointFilename,
+                    rebalanceFilename,
                     {&synchronization},
                     std::move(reinitialize));
             }
@@ -205,13 +216,10 @@ namespace picongpu
 
         void restart(uint32_t restartStep, std::string const restartDirectory) override
         {
-            auto rBackend = ioBackendsRestart.find(restartBackendName);
-            if(rBackend == ioBackendsRestart.end())
-                rBackend = ioBackends.find(restartBackendName);
-            if(rBackend != ioBackends.end())
+            auto rBackend = getRestartBackend();
+            if(rBackend)
             {
-                rBackend->second
-                    ->doRestart(restartStep, restartDirectory, restartFilename, restartChunkSize, std::nullopt);
+                rBackend->doRestart(restartStep, restartDirectory, restartFilename, restartChunkSize, std::nullopt);
             }
         }
 
@@ -258,6 +266,21 @@ namespace picongpu
         {
             ioBackends.clear();
             ioBackendsRestart.clear();
+        }
+
+        /** Find the backend to read checkpoints from.
+         *
+         * Prefers the dedicated restart backend and falls back to the checkpoint backend.
+         */
+        std::shared_ptr<IIOBackend> getRestartBackend() const
+        {
+            auto const rBackend = ioBackendsRestart.find(restartBackendName);
+            if(rBackend != ioBackendsRestart.end())
+                return rBackend->second;
+            auto const cBackend = ioBackends.find(restartBackendName);
+            if(cBackend != ioBackends.end())
+                return cBackend->second;
+            return nullptr;
         }
 
         //! string list with all possible IO-backends

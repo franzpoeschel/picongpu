@@ -89,26 +89,42 @@ namespace picongpu
                         "Rebalance: cannot split domain while respecting the minimum block size.");
 
                 uint64_t const totalWeight = prefix[hi] - prefix[lo];
-                uint64_t const target = prefix[lo] + totalWeight / 2u;
 
-                auto begin = prefix.begin() + static_cast<std::ptrdiff_t>(leftMin);
-                auto end = prefix.begin() + static_cast<std::ptrdiff_t>(leftMax + 1u);
-                auto it = std::lower_bound(begin, end, target);
-
-                size_t cut = leftMax;
-                if(it != end)
-                    cut = static_cast<size_t>(std::distance(prefix.begin(), it));
-                cut = std::max(cut, leftMin);
-                cut = std::min(cut, leftMax);
-
-                // Pick the closer of the two neighbours around the target.
-                if(cut > leftMin)
+                size_t cut;
+                if(totalWeight == 0u)
                 {
-                    uint64_t const currentDist = prefix[cut] > target ? prefix[cut] - target : target - prefix[cut];
-                    uint64_t const previousDist
-                        = prefix[cut - 1u] > target ? prefix[cut - 1u] - target : target - prefix[cut - 1u];
-                    if(previousDist < currentDist)
-                        --cut;
+                    /* No particle weight in this range: split by block count instead. Falling back to the
+                     * weight-based search would place every cut at the minimum block size and leave the
+                     * remaining extent in a single block.
+                     */
+                    cut = lo + static_cast<size_t>(leftBlocks) * (hi - lo) / numBlocks;
+                    cut = std::max(cut, leftMin);
+                    cut = std::min(cut, leftMax);
+                }
+                else
+                {
+                    uint64_t const target = prefix[lo] + totalWeight / 2u;
+
+                    auto begin = prefix.begin() + static_cast<std::ptrdiff_t>(leftMin);
+                    auto end = prefix.begin() + static_cast<std::ptrdiff_t>(leftMax + 1u);
+                    auto it = std::lower_bound(begin, end, target);
+
+                    cut = leftMax;
+                    if(it != end)
+                        cut = static_cast<size_t>(std::distance(prefix.begin(), it));
+                    cut = std::max(cut, leftMin);
+                    cut = std::min(cut, leftMax);
+
+                    // Pick the closer of the two neighbours around the target.
+                    if(cut > leftMin)
+                    {
+                        uint64_t const currentDist
+                            = prefix[cut] > target ? prefix[cut] - target : target - prefix[cut];
+                        uint64_t const previousDist
+                            = prefix[cut - 1u] > target ? prefix[cut - 1u] - target : target - prefix[cut - 1u];
+                        if(previousDist < currentDist)
+                            --cut;
+                    }
                 }
 
                 cuts[blockOffset + leftBlocks] = cut;

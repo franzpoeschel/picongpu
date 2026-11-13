@@ -21,6 +21,7 @@
 #pragma once
 
 #include "picongpu/defines.hpp"
+#include "picongpu/particles/SuperCellHistogram.hpp"
 
 #include <pmacc/eventSystem/events/kernelEvents.hpp>
 #include <pmacc/lockstep/ForEach.hpp>
@@ -41,58 +42,6 @@ namespace picongpu
 {
     namespace openPMD
     {
-        struct KernelSuperCellHistogram
-        {
-            template<
-                typename T_Mapping,
-                typename T_Worker,
-                typename T_ParBox,
-                typename T_Filter,
-                typename T_PositionFilter>
-            DINLINE void operator()(
-                T_Worker const& worker,
-                T_ParBox pb,
-                uint32_t* particlesPerSuperCell,
-                T_Filter filter,
-                T_PositionFilter posFilter,
-                T_Mapping mapper) const
-            {
-                DataSpace<simDim> const superCellIdxND(mapper.getSuperCellIndex(worker.blockDomIdxND()));
-
-                PMACC_SMEM(worker, numParticlesInBlock, uint32_t);
-
-                auto onlyMaster = lockstep::makeMaster(worker);
-                onlyMaster([&]() { numParticlesInBlock = 0u; });
-
-                worker.sync();
-
-                auto forEachParticle = pmacc::particles::algorithm::acc::makeForEach(worker, pb, superCellIdxND);
-                if(forEachParticle.hasParticles())
-                {
-                    uint32_t parCount = 0u;
-                    auto accFilter = filter(worker, superCellIdxND - mapper.getGuardingSuperCells());
-                    posFilter.setSuperCellPosition(
-                        (superCellIdxND - mapper.getGuardingSuperCells()) * mapper.getSuperCellSize());
-                    forEachParticle(
-                        [&accFilter, &posFilter, &worker, &parCount](auto const& lockstepWorker, auto& particle)
-                        {
-                            if(accFilter(lockstepWorker, particle) && posFilter(particle))
-                            {
-                                parCount++;
-                            }
-                        });
-
-                    worker.sync();
-                    alpaka::atomicAdd(worker.getAcc(), &numParticlesInBlock, parCount, alpaka::hierarchy::Threads{});
-                }
-
-                worker.sync();
-
-                auto superCellIdx = mapper.superCellIdx(worker.blockDomIdxND());
-                onlyMaster([&]() { particlesPerSuperCell[superCellIdx] = numParticlesInBlock; });
-            }
-        };
-
         struct ChunkDescription
         {
             //! index of the first supercell with particles

@@ -179,8 +179,8 @@ namespace pmacc
             {
                 notifyPlugins(currentStep);
                 dumpOneStep(currentStep);
-                maybeRebalance(currentStep);
             }
+            maybeRebalance(currentStep);
 
             /* dump 0% output */
             dumpTimes(tSimCalculation, tRound, roundAvg, currentStep);

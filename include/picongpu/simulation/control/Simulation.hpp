@@ -32,11 +32,11 @@
 #include "picongpu/initialization/InitialiserController.hpp"
 #include "picongpu/initialization/ParserGridDistribution.hpp"
 #include "picongpu/particles/ParticlesFunctors.hpp"
+#include "picongpu/particles/SuperCellHistogram.hpp"
 #include "picongpu/particles/debyeLength/Check.hpp"
 #include "picongpu/particles/filter/filter.def"
 #include "picongpu/particles/filter/filter.hpp"
 #include "picongpu/particles/manipulators/manipulators.hpp"
-#include "picongpu/plugins/openPMD/writer/misc.hpp"
 #include "picongpu/random/seed/ISeed.hpp"
 #include "picongpu/simulation/control/DomainAdjuster.hpp"
 #include "picongpu/simulation/control/MovingWindow.hpp"
@@ -140,7 +140,7 @@ namespace picongpu
                     currentStep,
                     idProvider->getDeviceGenerator()};
 
-                PMACC_LOCKSTEP_KERNEL(openPMD::KernelSuperCellHistogram{})
+                PMACC_LOCKSTEP_KERNEL(KernelSuperCellHistogram{})
                     .config(
                         rangeMapper.getGridDim(),
                         *species)(species->getDeviceParticlesBox(), histData, particleFilter, posFilter, rangeMapper);
@@ -499,8 +499,16 @@ namespace picongpu
             }
 
 #if (ALPAKA_LANG_CUDA || ALPAKA_COMP_HIP)
-            /* add CUDA streams to the QueueController for concurrent execution */
-            Environment<>::get().QueueController().addQueues(6);
+            /* add CUDA streams to the QueueController for concurrent execution
+             *
+             * init() is called again during a rebalance, but the queues belong to the device and must only be
+             * created once.
+             */
+            if(!additionalQueuesInitialized)
+            {
+                Environment<>::get().QueueController().addQueues(6);
+                additionalQueuesInitialized = true;
+            }
 #endif
         }
 
@@ -620,7 +628,6 @@ namespace picongpu
 
             auto const& subGrid = Environment<simDim>::get().SubGrid();
             auto const globalDomainSize = subGrid.getGlobalDomain().size;
-            auto const globalDomainOffset = subGrid.getGlobalDomain().offset;
             auto const localDomain = subGrid.getLocalDomain();
             auto const gpuNodes = gc.getGpuNodes();
             auto const guardingSuperCells = DataSpace<simDim>(GuardSize::toRT());
@@ -696,7 +703,11 @@ namespace picongpu
                 [&]()
                 {
                     teardownSimulationData();
-                    installDecomposition(globalDomainSize, globalDomainOffset, newLocalSize, newLocalOffset);
+                    /* The global domain offset is reconstructed by the reader from the checkpoint's slide counter
+                     * (GridController::setStateAfterSlides). Start from the unslid base, as at simulation start, so
+                     * that the accumulated moving-window offset is not applied twice.
+                     */
+                    installDecomposition(globalDomainSize, DataSpace<simDim>::create(0), newLocalSize, newLocalOffset);
                     init();
                     dc.share(idProvider);
                 });
@@ -787,6 +798,9 @@ namespace picongpu
         bool isDeviceMemoryShared{false};
 
         uint32_t rebalanceStep{std::numeric_limits<uint32_t>::max()};
+
+        //! whether the additional device queues required by init() have already been created
+        bool additionalQueuesInitialized{false};
 
     private:
         /** Get available memory on device
