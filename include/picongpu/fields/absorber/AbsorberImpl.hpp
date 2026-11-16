@@ -66,8 +66,8 @@ namespace picongpu
 
                 /** Destroy the absorber implementation instance.
                  *
-                 * The instance is re-created lazily on the next call to getImpl(). It is also re-created
-                 * automatically when getImpl() is called with a different mapping description.
+                 * The instance is re-created lazily on the next call to getImpl(). Callers that change the
+                 * mapping description must call reset() explicitly before using the new one.
                  */
                 static void reset();
 

@@ -2288,17 +2288,32 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                  * configured step. */
                 if(threadParams->isEmptyIteration(currentStep))
                 {
-                    log<picLog::INPUT_OUTPUT>(
-                        "openPMD: skipping mesh and particle data for empty output iteration %1%")
-                        % currentStep;
+                    /* Rebalancing coordinates with a concurrent reader via the sync protocol and requires the
+                     * full simulation state. Aborting at this point would mean unwinding the already running
+                     * rebalance, so ignore the empty-iteration request and write the full checkpoint instead.
+                     */
+                    if(sync.has_value())
+                    {
+                        if(Environment<simDim>::get().GridController().getGlobalRank() == 0)
+                            std::cerr << "Warning: empty output iteration " << currentStep
+                                      << " coincides with the rebalance step. Ignoring it and writing full "
+                                         "particle and field data for the rebalance checkpoint."
+                                      << std::endl;
+                    }
+                    else
+                    {
+                        log<picLog::INPUT_OUTPUT>(
+                            "openPMD: skipping mesh and particle data for empty output iteration %1%")
+                            % currentStep;
 
-                    eventSystem::getTransactionEvent().waitForFinished();
-                    mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>(
-                        "Closing iteration " + std::to_string(currentStep));
-                    mThreadParams.writeOpenPMDSeries->writeIterations()[currentStep].close();
-                    mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>("Done.");
-                    mThreadParams.m_dumpTimes.flush();
-                    return;
+                        eventSystem::getTransactionEvent().waitForFinished();
+                        mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>(
+                            "Closing iteration " + std::to_string(currentStep));
+                        mThreadParams.writeOpenPMDSeries->writeIterations()[currentStep].close();
+                        mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>("Done.");
+                        mThreadParams.m_dumpTimes.flush();
+                        return;
+                    }
                 }
 
                 /* write fields */

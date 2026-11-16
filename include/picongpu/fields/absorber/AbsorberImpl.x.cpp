@@ -48,13 +48,15 @@ namespace picongpu
 
             AbsorberImpl& AbsorberImpl::getImpl(MappingDesc const cellDescription)
             {
-                if(absorberImplInstance && absorberImplInstance->cellDescription != cellDescription)
-                    reset();
                 if(!absorberImplInstance)
                 {
                     auto& factory = AbsorberFactory::get();
                     absorberImplInstance = factory.makeImpl(cellDescription);
                 }
+                else if(absorberImplInstance->cellDescription != cellDescription)
+                    throw std::runtime_error(
+                        "AbsorberImpl::getImpl() called with a different mapping description. Call "
+                        "AbsorberImpl::reset() before using a new decomposition.");
                 return *absorberImplInstance;
             }
 

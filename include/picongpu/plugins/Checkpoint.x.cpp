@@ -152,6 +152,15 @@ namespace picongpu
             std::string const& checkpointDirectory,
             std::function<void()> reinitialize) override
         {
+            /* The rebalance operation writes the pseudo-checkpoint with the checkpoint backend and reads it back
+             * with the rebalance reader. Both use the checkpoint backend configuration, so a separate restart
+             * backend cannot be honored here.
+             */
+            if(restartBackendName != checkpointBackendName)
+                throw std::runtime_error(
+                    "Rebalance requires the checkpoint and restart backends to be identical, but '"
+                    + checkpointBackendName + "' and '" + restartBackendName + "' were selected.");
+
             auto cBackend = ioBackendsRebalance.find(checkpointBackendName);
             if(cBackend == ioBackendsRebalance.end())
                 throw std::runtime_error("Rebalance: no rebalance backend configured.");
