@@ -290,6 +290,12 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                    "respectively.",
                    "doubleBuffer"};
 
+            plugins::multi::Option<std::string> patchStrategy
+                = {"patchStrategy",
+                   "Granularity of particle patches and write chunks "
+                   "('perRank', 'perSupercell' or 'sizeBounded').",
+                   "perRank"};
+
             plugins::multi::Option<size_t> particleIOChunkSize
                 = {"particleIOChunkSize",
                    "Particle data will be written in chunks of the given size. unit: MiB",
@@ -537,6 +543,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                         &dataPreparationStrategy,
                         "data_preparation_strategy",
                         &PluginParameters::dataPreparationStrategyString),
+                    makeParam(&patchStrategy, "patch_strategy", &PluginParameters::patchStrategyString),
                     makeParam(&range, "range", &PluginParameters::rangeString, ApplyParameter::NotInCheckpoint),
                     makeParam(
                         &backendConfigRestartForbidden,
@@ -685,6 +692,15 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                         }
                     }
                 }
+            }
+
+            void applyWriteConfigToRestart() override
+            {
+                /* If the user configured the write side but not the read side, reuse the write configuration.
+                 * If neither is configured, keep the backend-specific default for reading.
+                 */
+                if(!backendConfigRestart.optionDefined(0u) && backendConfig.optionDefined(0u))
+                    backendConfigRestart.setDefault(backendConfig.get(0u));
             }
 
             size_t getNumPlugins() const override
@@ -857,10 +873,20 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 }
                 else
                 {
-                    std::cerr << "Passed dataPreparationStrategy for openPMD"
-                                 " plugin is invalid."
-                              << std::endl;
+                    throw std::runtime_error(
+                        "Passed dataPreparationStrategy for openPMD plugin is invalid: "
+                        + dataPreparationStrategyString);
                 }
+
+                if(patchStrategyString == "perRank")
+                    patchStrategy = ParticlePatchStrategy::PerRank;
+                else if(patchStrategyString == "perSupercell")
+                    patchStrategy = ParticlePatchStrategy::PerSupercell;
+                else if(patchStrategyString == "sizeBounded")
+                    patchStrategy = ParticlePatchStrategy::SizeBounded;
+                else
+                    throw std::runtime_error(
+                        "Passed patchStrategy for openPMD plugin is invalid: " + patchStrategyString);
             }
 
             std::transform(
@@ -1523,7 +1549,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 mThreadParams.initFromConfig(*m_help, m_id, currentStep, outputDirectory);
 
                 mThreadParams.isCheckpoint = false;
-                dumpData(currentStep, std::nullopt);
+                dumpData(currentStep, std::nullopt, {});
             }
 
             void restart(uint32_t const restartStep, std::string const& restartDirectory) override
@@ -1592,7 +1618,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 uint32_t const currentStep,
                 std::string const& checkpointDirectory,
                 std::string const& checkpointFilename,
-                std::optional<std::atomic<signed int>*> sync) override
+                std::optional<std::atomic<signed int>*> sync,
+                std::function<void()> beforeReaderRelease) override
             {
                 // checkpointing is only allowed if the plugin is controlled by the
                 // class Checkpoint
@@ -1607,7 +1634,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 mThreadParams.window = MovingWindow::getInstance().getDomainAsWindow(currentStep);
                 updatePmlSlabViewsIfEnabled(currentStep);
 
-                dumpData(currentStep, sync);
+                dumpData(currentStep, sync, std::move(beforeReaderRelease));
             }
 
             /** Checks if a loaded openPMD series is supported for restarting.
@@ -1812,7 +1839,10 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
              *
              * @param currentStep current simulation step
              */
-            void dumpData(uint32_t currentStep, std::optional<std::atomic<signed int>*> sync)
+            void dumpData(
+                uint32_t currentStep,
+                std::optional<std::atomic<signed int>*> sync,
+                std::function<void()> beforeReaderRelease)
             {
                 /* ensure that all MPI ranks are in the same time step to avoid that MPI collectives block asynchronous
                  * communication enqueued in the event system. */
@@ -1854,7 +1884,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 timer.toggleStart();
                 initWrite();
 
-                write(&mThreadParams, currentStep, mpiTransportParams, sync);
+                write(&mThreadParams, currentStep, mpiTransportParams, sync, std::move(beforeReaderRelease));
 
                 // TODO: add a better keepalive logic for in-situ-restarting,
                 // e.g. keep Series alive on writer AND reader and use proper streaming API
@@ -1862,9 +1892,7 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 // of the IO plugin to avoid race conditions
 
                 if(sync.has_value())
-                {
                     mThreadParams.closeSeries(::openPMD::Access::CREATE);
-                }
 
                 endWrite();
                 timer.toggleEnd();
@@ -2203,7 +2231,8 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 ThreadParams* threadParams,
                 uint32_t const currentStep,
                 std::string mpiTransportParams,
-                std::optional<std::atomic<signed int>*> sync)
+                std::optional<std::atomic<signed int>*> sync,
+                std::function<void()> beforeReaderRelease)
             {
                 threadParams->m_dumpTimes.now<std::chrono::milliseconds>(
                     "Beginning iteration " + std::to_string(currentStep));
@@ -2259,17 +2288,32 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                  * configured step. */
                 if(threadParams->isEmptyIteration(currentStep))
                 {
-                    log<picLog::INPUT_OUTPUT>(
-                        "openPMD: skipping mesh and particle data for empty output iteration %1%")
-                        % currentStep;
+                    /* Rebalancing coordinates with a concurrent reader via the sync protocol and requires the
+                     * full simulation state. Aborting at this point would mean unwinding the already running
+                     * rebalance, so ignore the empty-iteration request and write the full checkpoint instead.
+                     */
+                    if(sync.has_value())
+                    {
+                        if(Environment<simDim>::get().GridController().getGlobalRank() == 0)
+                            std::cerr << "Warning: empty output iteration " << currentStep
+                                      << " coincides with the rebalance step. Ignoring it and writing full "
+                                         "particle and field data for the rebalance checkpoint."
+                                      << std::endl;
+                    }
+                    else
+                    {
+                        log<picLog::INPUT_OUTPUT>(
+                            "openPMD: skipping mesh and particle data for empty output iteration %1%")
+                            % currentStep;
 
-                    eventSystem::getTransactionEvent().waitForFinished();
-                    mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>(
-                        "Closing iteration " + std::to_string(currentStep));
-                    mThreadParams.writeOpenPMDSeries->writeIterations()[currentStep].close();
-                    mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>("Done.");
-                    mThreadParams.m_dumpTimes.flush();
-                    return;
+                        eventSystem::getTransactionEvent().waitForFinished();
+                        mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>(
+                            "Closing iteration " + std::to_string(currentStep));
+                        mThreadParams.writeOpenPMDSeries->writeIterations()[currentStep].close();
+                        mThreadParams.m_dumpTimes.now<std::chrono::milliseconds>("Done.");
+                        mThreadParams.m_dumpTimes.flush();
+                        return;
+                    }
                 }
 
                 /* write fields */
@@ -2382,6 +2426,10 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
                 // The above code might have ignored this state, we must now catch up to it in order not to set the
                 // next state too soon
                 catchUpSync(sync, SyncState::WriterCreateNextIteration, "WRITER", "WriterCreateNextIteration");
+                if(sync.has_value())
+                    mThreadParams.writeOpenPMDSeries->flush(PreferredFlushTarget::Disk);
+                if(beforeReaderRelease)
+                    beforeReaderRelease();
                 notifySync(sync, SyncState::ReaderLetsGo, "WRITER", "ReaderLetsGo");
                 mThreadParams.m_dumpTimes.flush();
                 catchUpSync(sync, SyncState::WriterRelease, "WRITER", "WriterRelease");
@@ -2415,9 +2463,11 @@ make sure that environment variable OPENPMD_BP_BACKEND is not set to ADIOS1.
             return std::shared_ptr<plugins::multi::IInstance>(new openPMDWriter(help, id, cellDescription));
         }
 
-        std::shared_ptr<plugins::multi::IHelp> getOpenPMDWriterHelp()
+        std::shared_ptr<plugins::multi::IHelp> getOpenPMDWriterHelp(std::string const& defaultPatchStrategy)
         {
-            return std::shared_ptr<plugins::multi::IHelp>(new Help{});
+            auto help = std::shared_ptr<Help>(new Help{});
+            help->patchStrategy.setDefault(defaultPatchStrategy);
+            return std::shared_ptr<plugins::multi::IHelp>(help);
         }
 
     } // namespace openPMD

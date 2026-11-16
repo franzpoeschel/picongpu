@@ -26,6 +26,7 @@
 
 #include <boost/program_options/options_description.hpp>
 
+#include <functional>
 #include <stdexcept>
 #include <string>
 
@@ -91,6 +92,19 @@ namespace pmacc
          * @param restartDirectory common restart directory (contains checkpoints)
          */
         virtual void restart(uint32_t restartStep, std::string const restartDirectory) = 0;
+
+        /** Perform a stop-the-world rebalance via a pseudo-checkpoint.
+         *
+         * The callback is invoked after the checkpoint was written and before the
+         * concurrent reader is released, allowing the caller to install a new
+         * decomposition before the state is loaded back.
+         */
+        virtual void rebalance(
+            uint32_t /*currentStep*/,
+            std::string const& /*checkpointDirectory*/,
+            std::function<void()> /*reinitialize*/)
+        {
+        }
 
         /**
          * Called once after the simulation has been initialized or restarted

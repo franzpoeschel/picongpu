@@ -64,6 +64,13 @@ namespace picongpu
                  */
                 static AbsorberImpl& getImpl(MappingDesc cellDescription);
 
+                /** Destroy the absorber implementation instance.
+                 *
+                 * The instance is re-created lazily on the next call to getImpl(). Callers that change the
+                 * mapping description must call reset() explicitly before using the new one.
+                 */
+                static void reset();
+
                 /** Interpret this as ExponentialImpl instance
                  *
                  * @return reference to this object if conversion is valid,

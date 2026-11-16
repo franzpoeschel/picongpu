@@ -19,6 +19,7 @@ namespace picongpu::openPMD
         std::string fileInfix;
         std::string fileExtension; /* Extension of the file name */
         std::string dataPreparationStrategyString;
+        std::string patchStrategyString;
         std::string backendConfigString;
         std::string rangeString;
         std::string backendConfigRestartString;

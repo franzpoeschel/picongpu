@@ -96,6 +96,15 @@ namespace pmacc
          */
         virtual void movingWindowCheck(uint32_t currentStep) = 0;
 
+        /** Hook for a stop-the-world re-decomposition.
+         *
+         * Called after plugins and checkpointing ran for the given step.
+         * Implementations may ignore this hook.
+         */
+        virtual void maybeRebalance(uint32_t /*currentStep*/)
+        {
+        }
+
         /** Call all plugins
          *
          * This function is called inside the simulation loop.

@@ -22,6 +22,7 @@
 #include "picongpu/plugins/multi/IInstance.hpp"
 
 #include <atomic>
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -40,7 +41,8 @@ namespace picongpu
             uint32_t currentStep,
             std::string const& checkpointDirectory,
             std::string const& checkpointFilename,
-            std::optional<std::atomic<signed int>*> synchronization)
+            std::optional<std::atomic<signed int>*> synchronization,
+            std::function<void()> beforeReaderRelease = {})
             = 0;
 
         //! restart from a checkpoint

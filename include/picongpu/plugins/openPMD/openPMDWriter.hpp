@@ -26,12 +26,18 @@
 #    include "picongpu/plugins/multi/IHelp.hpp"
 
 #    include <memory>
+#    include <string>
 
 namespace picongpu
 {
     namespace openPMD
     {
-        std::shared_ptr<plugins::multi::IHelp> getOpenPMDWriterHelp();
+        /** Create a new openPMD writer help instance.
+         *
+         * @param defaultPatchStrategy default for the patchStrategy option
+         */
+        std::shared_ptr<plugins::multi::IHelp> getOpenPMDWriterHelp(
+            std::string const& defaultPatchStrategy = "perRank");
     } // namespace openPMD
 } // namespace picongpu
 

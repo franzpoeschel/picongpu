@@ -27,6 +27,7 @@
 #include "pmacc/pluginSystem/IPlugin.hpp"
 #include "pmacc/pluginSystem/Slice.hpp"
 
+#include <functional>
 #include <list>
 #include <string>
 #include <vector>
@@ -102,6 +103,12 @@ namespace pmacc
          * @param restartDirectory common restart directory (contains checkpoints)
          */
         void restartPlugins(uint32_t restartStep, std::string const restartDirectory);
+
+        /** Notifies plugins that a stop-the-world rebalance is requested. */
+        void rebalancePlugins(
+            uint32_t currentStep,
+            std::string const& checkpointDirectory,
+            std::function<void()> reinitialize);
 
         /**
          * Notifies plugins that the simulation has been initialized or restarted.

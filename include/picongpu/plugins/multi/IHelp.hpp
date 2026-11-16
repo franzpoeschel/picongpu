@@ -61,6 +61,16 @@ namespace picongpu
                 //! validate if the command line interface options are well formated
                 virtual void validateOptions() = 0;
 
+                /** Apply the write-side configuration to the read side where no explicit read configuration
+                 * was given.
+                 *
+                 * Backends with separate read and write configurations can override this to provide a useful
+                 * default. The default implementation does nothing.
+                 */
+                virtual void applyWriteConfigToRestart()
+                {
+                }
+
                 //! number of plugin which must be created
                 virtual size_t getNumPlugins() const = 0;
 
